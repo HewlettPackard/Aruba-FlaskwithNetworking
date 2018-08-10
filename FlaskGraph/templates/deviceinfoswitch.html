@@ -1,0 +1,108 @@
+<!-- (C) Copyright 2018 Hewlett Packard Enterprise Development LP. -->
+{% extends "bootstrap/base.html" %}
+
+{% block scripts %}
+
+{{super()}}
+<script type="text/javascript" src="{{ url_for('static', filename='deviceinfo.js') }}"></script>
+<script type="text/javascript" src="{{ url_for('static', filename='linechart.js') }}"></script>
+<script type="text/javascript" src="{{ url_for('static', filename='updatedeviceinfo.js') }}"></script>
+
+{% if formresult['interface'] %}
+<script type="text/javascript" src="{{ url_for('static', filename='interfaceinfo.js') }}"></script>
+{% endif %}
+
+{% endblock %}
+
+{% block content %}
+{% set pagename = "Device Monitoring" %}
+
+{% if formresult['deviceid'] is defined %}
+    {% set deviceid = formresult['deviceid'] | int %}
+{% else %}
+    {% set deviceid = 0 %}
+{% endif %}
+
+{% include 'navbar.html' %}
+
+<p>
+    <form method="POST" name="Select Device">
+        <div class="container-fluid">
+            <div class="row">
+                <div class="col-sm-9">
+                    Select device:
+                    <select name="deviceid" onchange="this.form.submit()">
+                        <option value="None">Select device</option>
+                        {% for info in devicelist %}
+                        {% if info['ostype'] != "Unknown" %}
+                        <option value="{{ info['id'] }}" {% if info['id']==deviceid %} selected="selected" {% endif %}>{{ info['ipaddress'] }} ({{ info['description'] }}, {{ info['ostype'] }})</option>
+                        {% endif %}
+                        {% endfor %}
+                    </select>
+                    <input type="hidden" name="action" value="Show Device Information" />
+                </div>
+                <div class="col-sm-3">
+                    {% if formresult['deviceid'] %}
+                      Interface: <select name="interface" onchange="this.form.submit()">
+                        <option value="0">Select Interface</option>
+                          {% for info in sysinfo['blades'] %}
+                             {% for ports in info['data_ports'] |sort(attribute='port_name') %}
+                                <option value="{{ ports['port_name'] }}" {% if ports['port_name']==interface %} selected="selected" {% endif %}>{{ ports['port_name'] }}</option>
+                             {% endfor %}
+                          {% endfor %}
+                      </select>
+                    {% elif isOnline=="Offline" %}
+                      Device is offline
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </form>
+</p>
+<div class="deviceid" id="deviceid" value="{{ deviceid }}"></div>
+<div class="ostype" id="ostype" value="{{ ostype }}"></div>
+
+
+{% if 'vsf_member_element' in sysinfo %}
+<div class="stacktype" id="stacktype" value="vsf"></div>
+{% elif 'bps_member_element' in sysinfo %}
+<div class="stacktype" id="stacktype" value="bps"></div>
+{% elif sysinfo['switch_type'] =="ST_STANDALONE" %}
+<div class="stacktype" id="stacktype" value="standalone"></div>
+{% endif %}
+<p>
+    <div class="container-fluid">
+        <div class="row">
+            <div class="col-sm-4">
+                <div data-cpuchart="graphData-CPU" class="graphData-CPU" id="graphData-CPU" value="CPU"></div>
+            </div>
+            <div class="col-sm-4">
+                <div data-memchart="graphData-Memory" class="graphData-Memory" id="graphData-Memory" value="Memory"></div>
+            </div>
+            <div class="col-sm-4">
+                {% if formresult['interface'] %}
+                <div class="monitorinterface" id="monitorinterface" value="{{ interface }}"></div>
+                <div data-chart="interfaceinfo" class="interfaceinfo" id="interfaceinfo" value="Interface"></div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</p>
+
+<p>
+{% if formresult['deviceid'] %}
+<div data-updateinfo="updatedeviceinfo" class="updatedeviceinfo" id="updatedeviceinfo" value="updatedeviceinfo"></div>
+{% endif %}
+<div class="container-fluid">
+    <div class="row">
+        <div class="col-sm-12">
+            {% if formresult['deviceid'] %}
+            <div class="deviceinfo" id="deviceinfo" value="{{ deviceid }}"></div>
+            <div data-chart="deviceinfo" class="deviceinfo" id="deviceinfo" value="Device"></div>
+            {% endif %}
+        </div>
+    </div>
+</div>
+</p>
+
+{% endblock %}

@@ -1,0 +1,67 @@
+<!-- (C) Copyright 2018 Hewlett Packard Enterprise Development LP. -->
+
+{% block content %}
+
+{% if interfaceinfo %}
+
+<table border="1" width="100%" style="margin-top:0px;margin-bottom:0px;">
+    {% if interfaceinfo.link_state is defined %}
+    <tr style="line-height:12px;"><td style="background-color:black;"><font face="arial" size="1" style="color: darkorange;">Link State:</font></td> <td><font face="arial" size="1">{{ interfaceinfo['link_state'] }} </font></td></tr>
+    {% endif %}
+    {% if interfaceinfo.duplex is defined %}
+    <tr style="line-height:12px;"><td style="background-color:black;"><font face="arial" size="1" style="color: darkorange;">Duplex type:</font></td> <td><font face="arial" size="1">{{ interfaceinfo['duplex'] }}</font></td></tr>
+    {% endif %}
+    {% if interfaceinfo.hw_intf_info.connector is defined %}
+    <tr style="line-height:12px;"><td style="background-color:black;"><font face="arial" size="1" style="color: darkorange;">Connector type:</font></td> <td><font face="arial" size="1"> {{ interfaceinfo['hw_intf_info']['connector'] }} </font></td></tr>
+    {% endif %}
+    {% if interfaceinfo.hw_intf_info.mac_addr is defined %}
+    <tr style="line-height:12px;"><td style="background-color:black;"><font face="arial" size="1" style="color: darkorange;">MAC Address:</font></td> <td><font face="arial" size="1"> {{ interfaceinfo['hw_intf_info']['mac_addr'] }} </font></td></tr>
+    {% endif %}
+    {% if interfaceinfo.hw_intf_info.transceiver_bay_type is defined %}
+    <tr style="line-height:12px;"><td style="background-color:black;"><font face="arial" size="1" style="color: darkorange;">Transceiver Type:</font></td> <td><font face="arial" size="1"> {{ interfaceinfo['hw_intf_info']['transceiver_bay_type'] }} </font></td></tr>
+    {% endif %}
+    {% if interfaceinfo.hw_status.linkspeed is defined %}
+    <tr style="line-height:12px;"><td style="background-color:black;"><font face="arial" size="1" style="color: darkorange;">Link Speed:</font></td> <td><font face="arial" size="1"> {{ interfaceinfo['hw_status']['linkspeed'] }} </font></td></tr>
+    {% endif %}
+    {% if interfaceinfo.mtu is defined %}
+    <tr style="line-height:12px;"><td style="background-color:black;"><font face="arial" size="1" style="color: darkorange;">MTU Size:</font></td> <td><font face="arial" size="1"> {{ interfaceinfo['mtu'] }} </font></td></tr>
+    {% endif %}
+    {% if interfaceinfo.statistics.if_hc_in_bytes is defined %}
+    <tr style="line-height:12px;"><td style="background-color:black;"><font face="arial" size="1" style="color: darkorange;">Bytes In:</font></td> <td><font face="arial" size="1"> {{ interfaceinfo['statistics']['if_hc_in_bytes'] }} </font></td></tr>
+    {% endif %}
+    {% if interfaceinfo.statistics.if_hc_in_unicast_packets is defined %}
+    <tr style="line-height:12px;"><td style="background-color:black;"><font face="arial" size="1" style="color: darkorange;">Unicast Packets In:</font></td> <td><font face="arial" size="1"> {{ interfaceinfo['statistics']['if_hc_in_unicast_packets'] }} </font></td></tr>
+    {% endif %}
+    {% if interfaceinfo.statistics.if_hc_out_bytes is defined %}
+    <tr style="line-height:12px;"><td style="background-color:black;"><font face="arial" size="1" style="color: darkorange;">Bytes Out:</font></td> <td><font face="arial" size="1"> {{ interfaceinfo['statistics']['if_hc_out_bytes'] }} </font></td></tr>
+    {% endif %}
+    {% if interfaceinfo.statistics.if_hc_out_unicast_packets is defined %}
+    <tr style="line-height:12px;"><td style="background-color:black;"><font face="arial" size="1" style="color: darkorange;">Unicast Packets Out:</font></td> <td><font face="arial" size="1"> {{ interfaceinfo['statistics']['if_hc_out_unicast_packets'] }} </font></td></tr>
+    {% endif %}
+    {% if interfaceinfo.statistics.if_in_multicast_packets is defined %}
+    <tr style="line-height:12px;"><td style="background-color:black;"><font face="arial" size="1" style="color: darkorange;">Multicast Packets In:</font></td> <td><font face="arial" size="1"> {{ interfaceinfo['statistics']['if_in_multicast_packets'] }} </font></td></tr>
+    {% endif %}
+    {% if interfaceinfo.statistics.if_out_multicast_packets is defined %}
+    <tr style="line-height:12px;"><td style="background-color:black;"><font face="arial" size="1" style="color: darkorange;">Multicast Packets Out:</font></td> <td><font face="arial" size="1"> {{ interfaceinfo['statistics']['if_out_multicast_packets'] }} </font></td></tr>
+    {% endif %}
+    {% if interfaceinfo.statistics.rx_bytes is defined %}
+    <tr style="line-height:12px;"><td style="background-color:black;"><font face="arial" size="1" style="color: darkorange;">Bytes Received:</font></td> <td><font face="arial" size="1"> {{ interfaceinfo['statistics']['rx_bytes'] }} </font></td></tr>
+    {% endif %}
+    {% if interfaceinfo.statistics.rx_dropped is defined %}
+    <tr style="line-height:12px;"><td style="background-color:black;"><font face="arial" size="1" style="color: darkorange;">Bytes Dropped:</font></td> <td><font face="arial" size="1"> {{ interfaceinfo['statistics']['rx_dropped'] }} </font></td></tr>
+    {% endif %}
+    {% if interfaceinfo.statistics.rx_packets is defined %}
+    <tr style="line-height:12px;"><td style="background-color:black;"><font face="arial" size="1" style="color: darkorange;">Packets Received:</font></td> <td><font face="arial" size="1"> {{ interfaceinfo['statistics']['rx_packets'] }} </font></td></tr>
+    {% endif %}
+    {% if interfaceinfo.statistics.tx_bytes is defined %}
+    <tr style="line-height:12px;"><td style="background-color:black;"><font face="arial" size="1" style="color: darkorange;">Bytes Transmitted:</font></td> <td><font face="arial" size="1"> {{ interfaceinfo['statistics']['tx_bytes'] }} </font></td></tr>
+    {% endif %}
+    {% if interfaceinfo.statistics.tx_packets is defined %}
+    <tr style="line-height:12px;"><td style="background-color:black;"><font face="arial" size="1" style="color: darkorange;">Packets Transmitted:</font></td> <td><font face="arial" size="1"> {{ interfaceinfo['statistics']['tx_packets'] }} </font></td></tr>
+    {% endif %}
+</table>
+
+{% endif %}
+
+
+{% endblock %}

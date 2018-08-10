@@ -1,0 +1,36 @@
+<!-- (C) Copyright 2018 Hewlett Packard Enterprise Development LP. -->
+{% extends "bootstrap/base.html" %}
+
+{% block content %}
+{% set pagename = "Device Monitoring" %}
+
+{% if formresult['deviceid'] is defined %}
+    {% set deviceid = formresult['deviceid'] | int %}
+{% else %}
+    {% set deviceid = 0 %}
+{% endif %}
+
+{% include 'navbar.html' %}
+
+<p>
+    <form method="POST" name="Select Device">
+        <div class="container-fluid">
+            <div class="row">
+                <div class="col-sm-8">
+                    Select device:
+                    <select name="deviceid" onchange="this.form.submit()">
+                        <option value="None">Select device</option>
+                        {% for info in devicelist %}
+                        {% if info['ostype'] != "Unknown" %}
+                        <option value="{{ info['id'] }}" {% if info['id']==deviceid %} selected="selected" {% endif %}>{{ info['ipaddress'] }} ({{ info['description'] }}, {{ info['ostype'] }})</option>
+                        {% endif %}
+                        {% endfor %}
+                    </select>
+                    <input type="hidden" name="action" value="Show Device Information" />
+                </div>
+             </div>
+        </div>
+    </form>
+</p>
+
+{% endblock %}
