@@ -1,24 +1,32 @@
 <!-- (C) Copyright 2018 Hewlett Packard Enterprise Development LP. -->
 {% extends "bootstrap/base.html" %}
 
+{% block scripts %}
+
+{{super()}}
+<script type="text/javascript" src="{{ url_for('static', filename='main.js') }}"></script>
+
+{% endblock %}
+
 {% block content %}
 {% set pagename = "Devices" %}
 {% include 'navbar.html' %}
 
 <table width="100%" class="table table-sm">
     <form method="post">
+	<input id='action' name='action' type='hidden' value='' />
         <tr>
             <td width="2%">Item</td>
             <td width="1%" align="left" nowrap>IP Address</td>
-            <td width="6%" align="left" valign="top"><input type="image" name="action" src="/static/images/arrow_triangle-down.png" alt="Order by IP address" value="order by ipaddress" style="outline:none !important;"></td>
+            <td width="6%" align="left" valign="top"><input type="image" name="action" src="/static/images/arrow_triangle-down.png" alt="Order by IP address" value="order by ipaddress" style="outline:none !important;" onclick = "return setHidden('order by ipaddress');"></td>
             <td width="1%" align="left">Description</td>
-            <td width="10%" align="left" valign="top"><input type="image" name="action" src="/static/images/arrow_triangle-down.png" alt="Order by description" value="order by description" style="outline:none !important;"></td>
+            <td width="10%" align="left" valign="top"><input type="image" name="action" src="/static/images/arrow_triangle-down.png" alt="Order by description" value="order by description" style="outline:none !important;"  onclick = "return setHidden('order by description');"></td>
             <td width="10%">Operating System</td>
             <td width="23%">Platform</td>
             <td width="19%">Software version</td>
             <td width="6%">Username</td>
             <td width="6%">Password</td>
-            <td width="16%" align="right"><input type="submit" name="action" class="btn btn-primary btn-sm" value="Home" style="color: darkorange; background-color: black;"> <input type="submit" name="action" class="btn btn-primary btn-sm" value="Add device" style="color: darkorange; background-color: black;"></td>
+            <td width="16%" align="right"><input type="submit" name="action" class="btn btn-primary btn-sm" value="Home" style="color: darkorange; background-color: black;"   onclick = "return setHidden('Home');"> <input type="submit" name="action" class="btn btn-primary btn-sm" value="Add device" style="color: darkorange; background-color: black;"   onclick = "return setHidden('Add device');"></td>
         </tr>
     </form>
     <tbody>
