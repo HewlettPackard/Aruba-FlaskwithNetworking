@@ -9,7 +9,7 @@ apt install mysql-client -y
 apt install libmysqlclient-dev -y
   
 Change root password:
-mysqladmin -u root -p OLDPASSWORD password NEWPASSWORD
+mysqladmin -u root -p password NEWPASSWORD
 
 Mysql cli:		mysql -u root -p
 Create database:      	create database aruba;
@@ -52,6 +52,17 @@ pip3 install flask
 pip3 install flask-bootstrap
 pip3 install pycryptodome
 pip3 install pymysql
+
+Establish an SFTP connection from an SFTP client to the Ubuntu host using the user credentials that you have created during the installation of Ubuntu
+Copy the Flask files (__init__.py, classes.py and static and templates folder) to the Ubuntu server from the SFTP client (they are stored in the /home/... folder
+On the Ubuntu host, copy the files to the /var/www/html/flask folder with the cp -r command
+
+Edit the __init__.py file and search for the line that contains the app.run command (at the bottom of the script).
+
+Change the host IP entry to the IP address that is configured on the Ubuntu host and that is reachable from the network (or your local device).
+
+Run the app with the following command:    python3 __init__.py
+
 
 For Windows:
 
