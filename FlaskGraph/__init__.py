@@ -41,7 +41,6 @@ def deviceinfo ():
     if formresult:
         queryStr="select ipaddress, username, password, ostype, sysinfo, interfaces from devices where id='{}'".format(formresult['deviceid'])
         devInfo=classes.sqlQuery(queryStr,"selectone")
-        print(devInfo)
         if devInfo is not None:
             interfaces=json.loads(devInfo['interfaces'])
             sysinfo=json.loads(devInfo['sysinfo'])
@@ -77,7 +76,6 @@ def showInterface():
 @app.route ("/showDevice", methods=['GET','POST'])
 def showDevice():
     # Show the device information from the selected device
-    print(request.args.get('stacktype'))
     if request.args.get('ostype')=="arubaos-cx":
         queryStr="select sysinfo,bridge,vsx,vrf from devices where id='{}'".format(request.args.get('deviceid'))
         deviceinfo=classes.sqlQuery(queryStr,"selectone")
