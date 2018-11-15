@@ -41,11 +41,17 @@ def deviceinfo ():
     if formresult:
         queryStr="select ipaddress, username, password, ostype, sysinfo, interfaces from devices where id='{}'".format(formresult['deviceid'])
         devInfo=classes.sqlQuery(queryStr,"selectone")
-        interfaces=json.loads(devInfo['interfaces'])
-        sysinfo=json.loads(devInfo['sysinfo'])
+        print(devInfo)
+        if devInfo is not None:
+            interfaces=json.loads(devInfo['interfaces'])
+            sysinfo=json.loads(devInfo['sysinfo'])
+            ostype=devInfo['ostype']
+        else:
+            ostype="none"
+            sysinfo="none"
+            interfaces="none"
         if 'interface' in formresult:
             interface=formresult['interface']
-        ostype=devInfo['ostype']
         isOnline=classes.checkifOnline(formresult['deviceid'],ostype)
     else:
         ostype="none"
