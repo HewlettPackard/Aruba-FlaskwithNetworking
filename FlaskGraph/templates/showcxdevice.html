@@ -248,7 +248,7 @@
         <td width="10%"><font face="arial" size="1">   {{ vsxinfo['keepalive_peer_ip'] }}   </font></td>
     </tr>
 
-
+    {% if vsxinfo['keepalive_port'] is defined %}
     <tr style="line-height:12px;">
         <td style="background-color: black" width="10%"><font face="arial" size="1" style="color: darkorange;">Keep Alive Received Packets</font></td>
         <td width="10%"><font face="arial" size="1"> {{ vsxinfo['keepalive_statistics']['rx'] }} </font></td>
@@ -257,11 +257,12 @@
         <td style="background-color: black" width="10%"><font face="arial" size="1" style="color: darkorange;">Keep Alive Dropped Packets</font></td>
         <td width="10%"><font face="arial" size="1"> {{ vsxinfo['keepalive_statistics']['dropped'] }} </font></td>
         <td style="background-color: black" width="10%"><font face="arial" size="1" style="color: darkorange;">Keep Alive Local Interface</font></td>
-        <td width="10%"><font face="arial" size="1"> {% if vsxinfo['keepalive_port']['name'] is defined %} {{ vsxinfo['keepalive_port']['name'] }} {% endif %} </font></td>
+        <td width="10%"><font face="arial" size="1"> {{ vsxinfo['keepalive_port']['name'] }} </font></td>
         <td style="background-color: black" width="10%"><font face="arial" size="1" style="color: darkorange;">Administrative Status</font></td>
-        <td width="10%"><font face="arial" size="1">  {% if vsxinfo['keepalive_port']['admin'] is defined %} {{ vsxinfo['keepalive_port']['admin'] }} {% endif %} </font></td>
+        <td width="10%"><font face="arial" size="1"> {{ vsxinfo['keepalive_port']['admin'] }} </font></td>
     </tr>
-
+    {% endif %}
+    {% if vsxinfo['keepalive_vrf'] is defined %}
     <tr style="line-height:12px;">
         <td style="background-color: black" width="10%"><font face="arial" size="1" style="color: darkorange;">Keep Alive State</font></td>
         <td width="10%"><font face="arial" size="1"> {{ vsxinfo['keepalive_status']['state'] }} </font></td>
@@ -274,6 +275,7 @@
         <td style="background-color: black" width="10%"><font face="arial" size="1" style="color: darkorange;">Dead Interval Timer (seconds)</font></td>
         <td width="10%"><font face="arial" size="1">  {{ vsxinfo['keepalive_timers']['dead_interval'] }}  </font></td>
     </tr>
+    {% endif %}
 
 </table>
 {% endif %}

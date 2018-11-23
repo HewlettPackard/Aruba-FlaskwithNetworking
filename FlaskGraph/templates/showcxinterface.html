@@ -2,7 +2,7 @@
 
 {% block content %}
 
-{% if interfaceinfo %}
+{% if interfaceinfo['hw_intf_info'] is defined %}
 
 <table border="1" width="100%" style="margin-top:0px;margin-bottom:0px;">
     {% if interfaceinfo.link_state is defined %}
@@ -59,9 +59,17 @@
     {% if interfaceinfo.statistics.tx_packets is defined %}
     <tr style="line-height:12px;"><td style="background-color:black;"><font face="arial" size="1" style="color: darkorange;">Packets Transmitted:</font></td> <td><font face="arial" size="1"> {{ interfaceinfo['statistics']['tx_packets'] }} </font></td></tr>
     {% endif %}
+    {% if lldpinfo[0].neighbor_info.chassis_description is defined %}
+    <tr style="line-height:12px;"><td style="background-color:black;"><font face="arial" size="1" style="color: darkorange;">LLDP remote chassis information:</font></td> <td><font face="arial" size="1"> {{ lldpinfo[0]['neighbor_info']['chassis_description'] }} </font></td></tr>
+    {% endif %}
+    {% if lldpinfo[0].neighbor_info.chassis_name is defined %}
+    <tr style="line-height:12px;"><td style="background-color:black;"><font face="arial" size="1" style="color: darkorange;">LLDP remote chassis name:</font></td> <td><font face="arial" size="1"> {{ lldpinfo[0]['neighbor_info']['chassis_name'] }} </font></td></tr>
+    {% endif %}
+    {% if lldpinfo[0].neighbor_info.port_description is defined %}
+    <tr style="line-height:12px;"><td style="background-color:black;"><font face="arial" size="1" style="color: darkorange;">LLDP Remote port:</font></td> <td><font face="arial" size="1"> {{ lldpinfo[0]['neighbor_info']['port_description'] }} </font></td></tr>
+    {% endif %}
 </table>
 
 {% endif %}
-
 
 {% endblock %}
