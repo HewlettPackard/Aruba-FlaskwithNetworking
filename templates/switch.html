@@ -1,0 +1,270 @@
+<!-- (C) Copyright 2019 Hewlett Packard Enterprise Development LP. -->
+{% block scripts %}
+<script src="static/scripts/jquery-1.10.2.min.js"></script>
+<link href="static/stylesheet.css" rel="stylesheet" />
+<script type="text/javascript" src="static/main.js"></script>
+<script type="text/javascript" src="static/switch.js"></script>
+<script type="text/javascript" src="static/configmgr.js"></script>
+{% endblock %}
+
+{% block content %}
+{% set pagename = "Switches" %}
+{% include 'navbar.html' %}
+
+
+{% if totalentries|int % entryperpage|int == 0 %}
+{% set totalpages=(totalentries|int/entryperpage|int)|int %}
+{% else %}
+{% set totalpages=(totalentries|int/entryperpage|int)|int +1 %}
+{% endif %}
+
+{% if entryExists==1 %}
+<script type="text/javascript">
+document.getElementById("liProgress").style.display = "block";
+                document.getElementById("progresstooltip").style.display = "none";
+                progressInfo.innerHTML = "Duplicate IP address. Device not added or changed.";
+</script>
+
+{% else %}
+
+<script type="text/javascript">
+    document.getElementById("liProgress").style.display = "none";
+    document.getElementById("progresstooltip").style.display = "none";
+</script>
+
+{% endif %}
+
+<div id="maincontainer" style="background-color: mintcream;">
+
+    <table class="tablenoborder">
+        <form method="post">
+            <input id='orderBy' name='orderBy' type='hidden' value="{{ orderBy }}" />
+            <input id='descascDescription' name='descascDescription' type='hidden' value="{{ descascDescription }}" />
+            <input id='descascIpaddress' name='descascIpaddress' type='hidden' value="{{ descascIpaddress }}" />
+            <input id='currentpageoffset' name='currentpageoffset' type='hidden' value="{{pageoffset}}" />
+            <input id='currenttotalentries' name='currenttotalentries' type='hidden' value="{{totalentries}}" />
+            <input id="totalpages" name="totalpages" type="hidden" value="{{ totalpages }}" />
+            <input name='currententryperpage' type='hidden' value="{{ entryperpage }}" />
+            <input name="action" type="hidden" value="navigation" />
+            <tr>
+                <td width="3%"><font class="font13px">Item</font></td>
+                <td width="3%"><font class="font13px">API</font></td>
+                <td width="5%" align="left" nowrap><font class="font13px">IP address</font></td>
+                <td width="9%"><font class="font13px">Description</font></td>
+                <td width="9%"><font class="font13px">Operating System</font></td>
+                <td width="9%"><font class="font13px">Platform</font></td>
+                <td width="9%"><font class="font13px">Software version</font></td>
+                <td width="9%"><font class="font13px">Topology</font></td>
+                <td width="14%" align="right" nowrap>
+                    <font class="font13px">
+                        Show <select name="entryperpage" id="deviceEntryperpage" onchange="this.form.submit()">
+                            <option value="5" {% if entryperpage==5 %} selected {% endif %}>5</option>
+                            <option value="10" {% if entryperpage==10 %} selected {% endif %}>10</option>
+                            <option value="25" {% if entryperpage==25 %} selected {% endif %}>25</option>
+                            <option value="50" {% if entryperpage==50 %} selected {% endif %}>50</option>
+                            <option value="100" {% if entryperpage==100 %} selected {% endif %}>100</option>
+                        </select> entries per page (page <select name="pageoffset" id="devicePageoffset" onchange="this.form.submit();">
+                            {% for i in  range(totalpages) %}
+                            <option value="{{ (i)*entryperpage|int }}" {% if (pageoffset|int)/(entryperpage|int)==(i) %}selected{% endif %}>{{ i+1 }}</option>
+                            {% endfor %}
+                        </select> of {{ totalpages }} pages)
+                    </font>
+                </td>
+            </tr>
+            <tr style="background-color: grey;" class="tableTitle">
+                <td colspan="2">&nbsp;</td>
+                <td align="left" valign="top">
+                    <input type="text" name="searchIPaddress" id="searchIPaddress" size="30" value="{{ formresult['searchIPaddress'] }}">
+                </td>
+                <td align="left" valign="top">
+                    <input type="text" name="searchDescription" id="searchDescription" size="30" value="{{ formresult['searchDescription'] }}">
+                </td>
+                <td align="left" valign="top">
+                    <select name="searchOS" id="searchOS" onchange="this.form.submit();">
+                        <option value="">Select</option>
+                        <option value="arubaos-cx" {% if formresult.searchOS=="arubaos-cx" %} selected {% endif %}>AOS-CX</option>
+                        <option value="arubaos-switch" {% if formresult.searchOS=="arubaos-switch" %} selected {% endif %}>AOS-Switch</option>
+                        <option value="Unknown" {% if formresult.searchOS=="Unknown" %} selected {% endif %}>Unknown</option>
+                    </select>
+                </td>
+                <td align="left" valign="top">
+                    <select name="searchPlatform" id="searchPlatform" onchange="this.form.submit();">
+                        <option value="">Select</option>
+                        {% for items in platforms %}
+                        <option value="{{ items['platform'] }}" {% if formresult.searchPlatform==items['platform'] %} selected {% endif %}>{{ items['platform'] }}</option>
+                        {% endfor %}
+                    </select>
+                </td>
+                <td align="left" valign="top">
+                    <input type="text" name="searchVersion" value="{{ formresult.searchVersion }}" size="30">
+                </td>
+                <td align="left" valign="top">
+                    <select name="searchTopology" id="searchTopology" onchange="this.form.submit();">
+                        <option value="">Select</option>
+                        <option value="0" {% if formresult.searchTopology=="0" %} selected {% endif %}>Disabled</option>
+                        <option value="1" {% if formresult.searchTopology=="1" %} selected {% endif %}>Enabled</option>
+                    </select>
+                </td>
+                <td align="right">
+                    <input type="button" class="button" value="Add device" id="addDevice" onclick="cleardeviceRow(this);"><input type="submit" name="searchAction" value="Search" class="button" id="searchDevice" onclick="cleardeviceRow(this);">
+                </td>
+            </tr>
+        </form>
+        {% for info in result %}
+        <form method="post">
+            <input name='currentpageoffset' type='hidden' value="{{pageoffset}}" />
+            <input name='currenttotalentries' type='hidden' value="{{totalentries}}" />
+            <input name='totalpages' type="hidden" value="{{ totalpages }}" />
+            <input name='entryperpage' type='hidden' value="{{ entryperpage }}" />
+            <input name='currententryperpage' type='hidden' value="{{ entryperpage }}" />
+            <input type="hidden" name="searchIPaddress" value="{{ formresult.searchIPaddress }}">
+            <input type="hidden" name="searchDescription" value="{{ formresult.searchDescription }}">
+            <input type="hidden" name="searchVersion" value="{{ formresult.searchVersion }}">
+            <input type="hidden" name="searchPlatform" value="{{ formresult.searchPlatform }}">
+            <input type="hidden" name="searchOS" value="{{ formresult.searchOS }}">
+            <input type="hidden" name="searchTopology" value="{{ formresult.searchTopology }}">
+            <input type="hidden" name="deviceid" value="{{ info['id'] }}">
+            <tr>
+                <td><font class="font12px">{{ loop.index }}</font></td>
+                <td>
+                    <font class="font12px">
+                        <div class="deviceStatus" id="deviceStatus{{info['id']}}" data-deviceid="{{info['id']}}" data-ostype="{{ info['ostype'] }}"></div>
+                    </font>
+                </td>
+                <td><font class="font12px">{{ info['ipaddress'] }}</font></td>
+                <td><font class="font12px">{{ info['description'] }}</font></td>
+                <td><font class="font12px">{{ info['ostype'] }}</font></td>
+                <td><font class="font12px">{{ info['platform_name'] }} {{ info['platform'] }}</font></td>
+                <td><font class="font12px">{{ info['swversion'] }} {{ info['osversion'] }}</font></td>
+                <td><font class="font12px">{% if info['topology']==1 %}Enabled{% else %}Disabled{% endif %}</font></td>
+                <td align="right">
+                    {% if info['ostype']=="arubaos-switch" %}<input type="button" name="portaccess" value="Port Access" data-deviceid="{{info['id']}}" class="portaccess" id="portaccess{{info['id']}}" onclick="highlightdeviceRow(this);">{% endif %}
+</div><input type="button" name="monitor" value="Monitor" data-deviceid="{{info['id']}}" id="monitor{{info['id']}}" class="monitordevice" onclick="highlightdeviceRow(this);"><input type="button" name="configuration" value="Configuration" data-deviceid="{{info['id']}}" data-ostype="{{info['ostype']}}" class="configuration" onclick="highlightdeviceRow(this);"><input type="button" name="editDevice" value="Edit" data-deviceid="{{info['id']}}" class="editDevice" onclick="highlightdeviceRow(this);"><input type="submit" name="action" value="Delete" class="button" onclick="return confirm('Are you sure you want to delete {{ info['ipaddress'] }}?')">
+            </td>
+        </tr>
+    </form>
+    {% endfor %}
+</table>
+
+
+<div id="portaccess" style="display:none;" data-deviceid="">
+    Port access information
+</div>
+
+<div id="monitordevice" style="display:none;" data-deviceid="">
+    <div data-updateinfo="updatedeviceinfo" class="updatedeviceinfo" id="updatedeviceinfo" value="updatedeviceinfo"></div>
+    <p>
+        <div data-chart="deviceinfo" class="deviceinfo" id="deviceinfo" value="Device"></div>
+    </p>
+    <p>
+        <div class="grid-container">
+            <div>
+                <div data-cpuchart="graphData-CPU" class="graphData-CPU" id="graphData-CPU" value="CPU"></div>
+            </div>
+            <div>
+                <div data-memchart="graphData-Memory" class="graphData-Memory" id="graphData-Memory" value="Memory"></div>
+            </div>
+            <div>
+                <div data-selectinterface="selectinterface" class="selectinterface" id="selectinterface"></div>
+                <div data-interfaceinfo="interfaceinfo" class="interfaceinfo" id="interfaceinfo" style="display:none;"></div>
+            </div>
+        </div>
+    </p>
+
+
+
+</div>
+
+<div id="configurationManager" style="display:none;" data-deviceid="">
+    <p>
+        <div data-configmgr="configmgr" class="configmgr" id="configmgr">Device Configuration</div>
+    </p>
+</div>
+
+
+<div id="addDeviceForm" style="display:none;" data-deviceid="">
+    <p>
+        <table class="tablenoborder">
+            <tr style="background-color: black;line-height:20px;">
+                <td colspan="6" style="color: darkorange;"><center>Add device</center></td>
+            </tr>
+            <tr style="line-height:20px;">
+                <td width="15%" align="left" nowrap><font class="font13px">IP address</font></td>
+                <td width="15%"><font class="font13px">Description</font></td>
+                <td width="15%"><font class="font13px">Username</font></td>
+                <td width="15%"><font class="font13px">Password</font></td>
+                <td width="5%" nowrap><font class="font13px">Topology</font></td>
+            </tr>
+            <tr>
+                <form method="post">
+                    <input name='currentpageoffset' type='hidden' value="{{pageoffset}}" />
+                    <input name="totalpages" type="hidden" value="{{ totalpages }}" />
+                    <input name='entryperpage' type='hidden' value="{{ entryperpage }}" />
+                    <input name='currententryperpage' type='hidden' value="{{ entryperpage }}" />
+                    <input type="hidden" name="searchIPaddress" value="{{ formresult.searchIPaddress }}">
+                    <input type="hidden" name="searchDescription" value="{{ formresult.searchDescription }}">
+                    <input type="hidden" name="searchVersion" value="{{ formresult.searchVersion }}">
+                    <input type="hidden" name="searchPlatform" value="{{ formresult.searchPlatform }}">
+                    <input type="hidden" name="searchOS" value="{{ formresult.searchOS }}">
+                    <input type="hidden" name="searchTopology" value="{{ formresult.searchTopology }}">
+                    <td><div class="addField"><input type="text" name="ipaddress" class="input"></div></td>
+                    <td><div class="addField"><input type="text" name="description" class="input" size="50"></div></td>
+                    <td><div class="addField"><input type="text" name="username" class="input"></div></td>
+                    <td><div class="addField"><input type="password" name="password" class="input"></div></td>
+                    <td align="center"><input type="checkbox" id="addTopology" name="topology" class="input"></td>
+                    <td align="right" width="30%">
+                        <div class="addActions">
+                            <input type="submit" disabled name="action" value="Submit device" class="button" />
+                        </div>
+                    </td>
+                </form>
+            </tr>
+        </table>
+    </p>
+</div>
+
+<div id="editDeviceForm" style="display:none;">
+    <p>
+        <table class="tablenoborder">
+            <tr style="background-color: black;line-height:20px;">
+                <td colspan="6" style="color: darkorange;"><center>Edit device <span name="titleeditDescription" id="titleeditDescription"></span> (<span name="titleeditIpaddress" id="titleeditIpaddress"></span>)</center></td>
+            </tr>
+            <tr style="line-height:20px;">
+                <td width="15%" align="left" nowrap><font class="font13px">IP address</font></td>
+                <td width="15%"><font class="font13px">Description</font></td>
+                <td width="15%"><font class="font13px">Username</font></td>
+                <td width="15%"><font class="font13px">Password</font></td>
+                <td width="5%" nowrap><font class="font13px">Topology</font></td>
+            </tr>
+            <tr>
+                <form method="post">
+                    <input name='currenttotalentries' type='hidden' value="{{descasc}}" />
+                    <input name='currentpageoffset' type='hidden' data-currentpageoffset="{{pageoffset}}" />
+                    <input name="totalpages" type="hidden" data-totalpages="{{ totalpages }}" />
+                    <input name='entryperpage' type='hidden' value="{{ entryperpage }}" />
+                    <input name='currententryperpage' type='hidden' value="{{ entryperpage }}" />
+                    <input name="deviceid" type="hidden" id="deviceid" />
+                    <input type="hidden" name="searchIPaddress" value="{{ formresult.searchIPaddress }}">
+                    <input type="hidden" name="searchDescription" value="{{ formresult.searchDescription }}">
+                    <input type="hidden" name="searchVersion" value="{{ formresult.searchVersion }}">
+                    <input type="hidden" name="searchPlatform" value="{{ formresult.searchPlatform }}">
+                    <input type="hidden" name="searchOS" value="{{ formresult.searchOS }}">
+                    <input type="hidden" name="searchTopology" value="{{ formresult.searchTopology }}">
+                    <td><div class="editField"><input type="text" id="editIpaddress" name="ipaddress" class="input"></div></td>
+                    <td><div class="editField"><input type="text" id="editDescription" name="description" class="input"></div></td>
+                    <td><div class="editField"><input type="text" id="editUsername" name="username" class="input"></div></td>
+                    <td><div class="editField"><input type="password" id="editPassword" name="password" class="input"></div></td>
+                    <td align="center"><input type="checkbox" id="editTopology" name="topology" class="input"></></td>
+                    <td align="right" width="30%">
+                        <div class="editActions">
+                            <input type="submit" name="action" value="Submit changes" class="button" />
+                        </div>
+                    </td>
+                </form>
+            </tr>
+        </table>
+    </p>
+</div>
+
+</div>
+    {% endblock %}

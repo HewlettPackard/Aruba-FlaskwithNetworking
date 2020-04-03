@@ -1,0 +1,31 @@
+﻿<!-- (C) Copyright 2019 Hewlett Packard Enterprise Development LP. -->
+{% block scripts %}
+<script src="static/scripts/jquery-1.10.2.min.js"></script>
+<link href="static/stylesheet.css" rel="stylesheet" />
+<script type="text/javascript" src="static/main.js"></script>
+<script type="text/javascript" src="static/sysconf.js"></script>
+{% endblock %}
+
+{% block content %}
+{% set pagename = "System Monitoring" %}
+{% include 'navbar.html' %}
+
+<div id="maincontainer" style="background-color: mintcream;">
+    <table class="tablenoborder">
+        <tr>
+            <td width="10%" align="left" nowrap><font class="font13px">Process</font></td>
+            <td width="10%" align="left" nowrap><font class="font13px">Status</font></td>
+            <td width="10%" align="left" nowrap><font class="font13px">CPU Utilization</font></td>
+            <td width="10%" align="left" nowrap><font class="font13px">Memory Utilization</font></td>
+            <td width="10%" align="left" nowrap><font class="font13px">Action</font></td>
+        </tr>
+    </table>
+
+    <div data-chart="trackersProcess" class="trackersProcess" id="trackersScheduler" value="Trackers"></div>
+    <div data-chart="cleanupProcess" class="cleanupProcess" id="cleanupScheduler" value="Cleanup"></div>
+    <div data-chart="topologyProcess" class="topologyProcess" id="topologyScheduler" value="Topology"></div>
+    <div data-chart="ztpProcess" class="ztpProcess" id="ztpScheduler" value="ZTP"></div>
+    <div data-chart="listenerProcess" class="listenerProcess" id="listenerScheduler" value="Listener"></div>
+    <div id="systemTime" style="display:none;"></div>
+</div>
+    {% endblock %}

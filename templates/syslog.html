@@ -1,0 +1,90 @@
+<!-- (C) Copyright 2019 Hewlett Packard Enterprise Development LP. -->
+
+{% block scripts %}
+<script src="static/scripts/jquery-1.10.2.min.js"></script>
+<link href="static/stylesheet.css" rel="stylesheet" />
+<script type="text/javascript" src="static/main.js"></script>
+<script type="text/javascript" src="static/switch.js"></script>
+{% endblock %}
+
+{% block content %}
+{% set pagename = "Syslog" %}
+{% include 'navbar.html' %}
+
+{% if totalentries|int % entryperpage|int == 0 %}
+{% set totalpages=(totalentries|int/entryperpage|int)|int %}
+{% else %}
+{% set totalpages=(totalentries|int/entryperpage|int)|int +1 %}
+{% endif %}
+
+<div id="maincontainer" style="background-color: mintcream;">
+    <table class="tablenoborder">
+        <form method="post">
+            <input id='action' name='action' type='hidden' />
+            <input id='currentpageoffset' name='currentpageoffset' type='hidden' value="{{pageoffset}}" />
+            <input id="totalpages" name="totalpages" type="hidden" value="{{ totalpages }}" />
+            <tr>
+                <td width="8%" align="left" nowrap><font class="font13px">Timestamp</font></td>
+                <td width="5%" align="left"><font class="font13px">Source</font></td>
+                <td width="5%" align="left" nowrap><font class="font13px">Facility</font></td>
+                <td width="5%" align="left"><font class="font13px">Severity</font></td>
+                <td width="57%"><font class="font13px">Information</font></td>
+                <td width="20%" align="right">
+                    <font class="font13px">
+                        Show <select name="entryperpage" onchange="this.form.submit()">
+                            <option value="10" {% if formresult.entryperpage=="10" %} selected {% endif %}>10</option>
+                            <option value="25" {% if formresult.entryperpage=="25" or formresult.entryperpage is not defined %} selected {% endif %}>25</option>
+                            <option value="50" {% if formresult.entryperpage=="50" %} selected {% endif %}>50</option>
+                            <option value="100" {% if formresult.entryperpage=="100" %} selected {% endif %}>100</option>
+                        </select> entries per page (page <select name="pageoffset" onchange="this.form.submit()">
+                            {% for i in  range(totalpages) %}
+                            <option value="{{ (i)*entryperpage|int }}" {% if (pageoffset|int)/(entryperpage|int)==(i) %}selected{% endif %}>{{ i+1 }}</option>
+                            {% endfor %}
+                        </select> of {{ totalpages }} pages)
+                    </font>
+                </td>
+            </tr>
+            <tr style="background-color: grey;">
+                <td align="left" nowrap>&nbsp;</td>
+                <td align="left" valign="top"><input type="text" name="searchSource" value="{{ formresult.searchSource }}" size="12"></td>
+                <td align="left" valign="top">
+                    <select name="searchFacility">
+                        <option value="">Select</option>
+                        {% for facilities in facilityInfo %}
+                        <option value="{{ facilities['facility'] }}" {% if formresult.searchFacility==facilities['facility'] %} selected {% endif %}>{{ facilities['facility'] }}</option>
+                        {% endfor %}
+                    </select>
+                </td>
+                <td align="left" valign="top">
+                    <select name="searchSeverity">
+                        <option value="">Select</option>
+                        {% for severities in severityInfo %}
+                        <option value="{{ severities['severity'] }}" {% if formresult.searchSeverity==severities['severity'] %} selected {% endif %}>{{ severities['severity'] }}</option>
+                        {% endfor %}
+                    </select>
+                </td>
+                <td align="left" valign="top"><input type="text" name="searchInfo" value="{{ formresult.searchInfo }}" size="30"></td>
+                <td width="5%" align="right"><input type="submit" name="searchAction" value="Search" class="button"></td>
+            </tr>
+        </form>
+        <tbody>
+            {% for info in result %}
+            <form method="post">
+                <input type="hidden" name="id" value="{{ info['id'] }}" />
+                <tr>
+                    <td><font class="font12px">{{ ctime(info['utctime']) }}</font></td>
+                    <td><font class="font12px">{{ info['source'] }}</font></td>
+                    <td><font class="font12px">{{ info['facility'] }}</font></td>
+                    <td><font class="font12px">{{ info['severity'] }}</font></td>
+                    <td><font class="font12px">{{ info['information'] }}</font></td>
+                    <td align="right">
+                        <input type="submit" name="action" value="Delete" class="button" onclick="return confirm('Are you sure you want to delete this item?')">
+                    </td>
+                </tr>
+            </form>
+            {% endfor %}
+        </tbody>
+    </table>
+    </div>
+
+    {% endblock %}

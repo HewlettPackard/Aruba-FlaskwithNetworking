@@ -1,0 +1,97 @@
+﻿<!-- (C) Copyright 2019 Hewlett Packard Enterprise Development LP. -->
+
+{% block scripts %}
+<script src="static/scripts/jquery-1.10.2.min.js"></script>
+<link href="static/stylesheet.css" rel="stylesheet" />
+<script type="text/javascript" src="static/main.js"></script>
+<script type="text/javascript" src="static/websockets.js"></script>
+{% endblock %}
+
+{% block content %}
+{% set pagename = "Live Subscriptions" %}
+
+{% if formresult['deviceid'] is defined %}
+    {% set deviceid = formresult['deviceid'] | int %}
+{% else %}
+    {% set deviceid = 0 %}
+{% endif %}
+
+{% if formresult['subscribeURL'] is defined %}
+    {% set subscribeURL = formresult['subscribeURL']  %}
+{% else %}
+    {% set subscribeURL = "" %}
+{% endif %}
+
+{% include 'navbar.html' %}
+
+
+<div id="maincontainer" style="background-color: mintcream;">
+    <div class="container-fluid">
+        <div class="row">
+            <div class="col-sm-8">
+                <table>
+                    <tr>
+                        <td>
+                            <select name="deviceid" id="deviceid" onchange="onDisconnectClick()">
+                                {% for info in devicelist %}
+                                {% if info['ostype'] == "arubaos-cx" %}
+                                <option value="{{ info['id'] }}" {% if info['id']==deviceid %}selected={% endif %}>{{ info['ipaddress'] }} ({{ info['description'] }}, {{ info['ostype'] }})</option>
+                                {% endif %}
+                                {% endfor %}
+                            </select>
+                        </td>
+                        <td>
+                            <input id="Connect" type="button" class="button" value="Connect" onclick="onConnectClick()">&nbsp;&nbsp;
+                            <input id="Disconnect" type="button" class="button" value="Disconnect" onclick="onDisconnectClick()" disabled>
+                            <input id="subscriber_name" type="hidden" />
+                        </td>
+                        <td><div id="wsstatus" style="display: none"><font class="font13px">Status:</font></div></td>
+                    </tr>
+                </table><br />
+                <!-- Send Message Table -->
+                <div id="subscribeForm" style="display:none;">
+                    <table>
+                        <tr>
+                            <td>
+                                <font class="font13px">Subject:</font>
+                            <td>
+                                <font class="font13px">Attributes:</font>
+                            </td>
+                            <td>
+                                <font class="font13px">Depth:</font>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td>
+                                <select name="subject" id="subject">
+                                    <option value="" selected>Select</option>
+                                    <option value="ports">Ports</option>
+                                    <option value="snmp_alarms">SNMP alarms</option>
+                                    <option value="snmp_traps">SNMP traps</option>
+                                    <option value="bridge/vlans">VLANs</option>
+                                    <option value="vrfs">VRFs</option>
+                                </select>
+                            </td>
+                            <td>
+                                <input type="text" id="attributes" size="130">
+                            </td>
+                            <td>
+                                <select name="depth" id="depth">
+                                    <option value="0">0</option>
+                                    <option value="1">1</option>
+                                </select>
+                            </td>
+                            <td><input id="subscribeAction" type="button" class="button" value="Subscribe" onclick="subscribeClick()"></td>
+                        </tr>
+                    </table>
+                </div>
+                <div id="subscriptionList" style="display:none;"></div>
+                <div class="textwrapper">
+                    <textarea id="incomingMsgOutput" rows="30" cols="150" onfocus="this.blur();" onclick="clearText()"></textarea>
+                </div>
+            </div>
+        </div>
+        </div>
+        {{subscriptions}}
+
+        {% endblock %}

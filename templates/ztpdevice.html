@@ -1,0 +1,599 @@
+<!-- (C) Copyright 2020 Hewlett Packard Enterprise Development LP. -->
+{% block scripts %}
+<script src="static/scripts/jquery-1.10.2.min.js"></script>
+<link href="static/stylesheet.css" rel="stylesheet" />
+<script type="text/javascript" src="static/main.js"></script>
+<script type="text/javascript" src="static/ztpdevice.js"></script>
+{% endblock %}
+
+{% block content %}
+{% set pagename = "ZTP Devices" %}
+{% include 'navbar.html' %}
+
+{% if totalentries|int % entryperpage|int == 0 %}
+{% set totalpages=(totalentries|int/entryperpage|int)|int %}
+{% else %}
+{% set totalpages=(totalentries|int/entryperpage|int)|int +1 %}
+{% endif %}
+
+<div id="maincontainer" style="background-color: mintcream;">
+<table class="tablenoborder" id="ztpTable">
+    <form method="post" name="ztpdevice" id="ztpdevice">
+        <input name="action" type="hidden" value="navigation" />
+        <input name='currentpageoffset' type='hidden' value="{{pageoffset}}" />
+        <input name='currenttotalentries' type='hidden' value="{{totalentries}}" />
+        <input name='totalpages' type="hidden" value="{{ totalpages }}" />
+        <input name='currententryperpage' type='hidden' value="{{ entryperpage }}" />
+        <tr>
+            <td width="2%" align="left" nowrap><font class="font13px">ID</font></td>
+            <td width="6%" align="left" nowrap><font class="font13px">Name</font></td>
+            <td width="6%" align="left"><font class="font13px">MAC Address</font></td>
+            <td width="6%" align="left" nowrap><font class="font13px">IP address/mask</font></td>
+            <td width="6%"><font class="font13px">Default gateway</font></td>
+            <td width="8%"><font class="font13px">ZTP Profile</font></td>
+            <td width="8%"><font class="font13px">Software image</font></td>
+            <td width="8%"><font class="font13px">Template</font></td>
+            <td width="30%"><font class="font13px">ZTP status</font></td>
+            <td width="20%" align="right">
+                <font class="font13px">
+                    Show <select name="entryperpage" onchange="this.form.submit()">
+                        <option value="5" {% if entryperpage|int==5 or entryperpage is not defined %} selected {% endif %}>5</option>
+                        <option value="10" {% if entryperpage|int==10 %} selected {% endif %}>10</option>
+                        <option value="25" {% if entryperpage|int==25 %} selected {% endif %}>25</option>
+                        <option value="50" {% if entryperpage|int==50 %} selected {% endif %}>50</option>
+                        <option value="100" {% if entryperpage|int==100 %} selected {% endif %}>100</option>
+                    </select> entries per page (page <select name="pageoffset" onchange="this.form.submit()">
+                        {% for i in  range(totalpages) %}
+                        <option value="{{ (i)*entryperpage|int }}" {% if (pageoffset|int)/(entryperpage|int)==(i) %}selected{% endif %}>{{ i+1 }}</option>
+                        {% endfor %}
+                    </select> of {{ totalpages }} pages)
+                </font>
+            </td>
+        </tr>
+        <tr style="background-color: grey;" class="tableTitle">
+            <td align="left" nowrap>&nbsp;</td>
+            <td align="left" valign="top"><input type="text" name="searchName" value="{{ formresult.searchName }}" size="10"></td>
+            <td align="left" valign="top"><input type="text" name="searchMacaddress" value="{{ formresult.searchMacaddress }}" size="10"></td>
+            <td align="left" valign="top"><input type="text" name="searchIpaddress" value="{{ formresult.searchIpaddress }}" size="10"></td>
+            <td align="left" valign="top"><input type="text" name="searchGateway" value="{{ formresult.searchGateway }}" size="10"></td>
+            <td align="left" valign="top">
+                <select name="searchProfile" onchange="this.form.submit();">
+                    <option value="">Select</option>
+                    {% for items in profileResult %}
+                    <option value="{{items['id']}}" {% if items['id']|string==formresult['searchProfile'] %} selected {% endif %}>{{items['name']}}</option>
+                    {% endfor %}
+                </select>
+            </td>
+            <td align="left" valign="top">
+                <select name="searchImage" onchange="this.form.submit();">
+                    <option value="">Select</option>
+                    {% for items in imageResult %}
+                    <option value="{{items['id']}}" {% if items['id']|string==formresult['searchImage'] %} selected {% endif %}>{{items['name']}}</option>
+                    {% endfor %}
+                </select>
+            </td>
+            <td>
+                <select name="searchTemplate" onchange="this.form.submit();">
+                    <option value="">Select</option>
+                    {% for items in templateResult %}
+                    <option value="{{items['id']}}" {% if items['id']|string==formresult['searchTemplate'] %} selected {% endif %}>{{items['name']}}</option>
+                    {% endfor %}
+                </select>
+            </td>
+            <td></td>
+            <td align="right">
+                <input type="button" class="button" value="Add device" id="addztpDevice" onclick="cleardeviceRow(this);"><input type="submit" name="searchAction" value="Search" class="button" id="searchDevice" onclick="cleardeviceRow(this);">
+            </td>
+        </tr>
+    </form>
+    {% for info in result %}
+    <form method="post">
+        <input name='currentpageoffset' type='hidden' value="{{pageoffset}}" />
+        <input name='currenttotalentries' type='hidden' value="{{totalentries}}" />
+        <input name='totalpages' type="hidden" value="{{ totalpages }}" />
+        <input name='entryperpage' type='hidden' value="{{ entryperpage }}" />
+        <input name='currententryperpage' type='hidden' value="{{ entryperpage }}" />
+        <input type="hidden" name="searchName" value="{{ formresult.searchName }}">
+        <input type="hidden" name="searchMacaddress" value="{{ formresult.searchMacaddress }}">
+        <input type="hidden" name="searchIpaddress" value="{{ formresult.searchIpaddress }}">
+        <input type="hidden" name="searchGateway" value="{{ formresult.searchGateway }}">
+        <input type="hidden" name="searchProfile" value="{{ formresult.searchProfile }}">
+        <input type="hidden" name="searchImage" value="{{ formresult.searchImage }}">
+        <input type="hidden" name="searchTemplate" value="{{ formresult.searchTemplate }}">
+        <input type="hidden" name="deviceid" value="{{ info['id'] }}">
+        <input type="hidden" name="template" value="{{ info['template'] }}">
+        <input type="hidden" name="link1" value="">
+        <input type="hidden" name="link2" value="">
+
+        <input type="hidden" name="softwareimage" value="{{ info['image'] }}">
+        <tr>
+            <td><font class="font12px">{{ loop.index }}</font></td>
+            <td><font class="font12px">{{ info['name'] }}</font></td>
+            <td><font class="font12px">{{ info['macaddress'] }}</font></td>
+            <td><font class="font12px">{{ info['ipaddress'] }}/{{ info['netmask'] }}</font></td>
+            <td><font class="font12px">{{ info['gateway'] }}</font></td>
+            <td>
+                <font class="font12px">
+                    {% for dict_item in profileResult %}
+                    {% if dict_item['id']== info['profile'] %}
+                    {{dict_item['name']}}
+                    {% endif %}
+                    {% endfor %}
+                </font>
+            </td>
+            <td>
+                <font class="font12px">
+                    {% if info['softwareimage']|int==0 %}-{% else %}
+                    {% for dict_item in imageResult %}
+                    {% if dict_item['id']== info['softwareimage'] %}
+                    {{dict_item['name']}}
+                    {% endif %}
+                    {% endfor %}
+                    {% endif %}
+                </font>
+            </td>
+            <td>
+                <font class="font12px">
+                    {% if info['template']|int==0 %}-{% else %}
+                    {% for dict_item in templateResult %}
+                    {% if dict_item['id']== info['template'] %}
+                    {{dict_item['name']}}
+                    {% endif %}
+                    {% endfor %}
+                    {% endif %}
+
+                </font>
+            </td>
+            <td><div class="ztpStatus" id="ztpStatus{{ info['id'] }}" data-deviceid="{{info['id']}}"><font class="font12px">{{ info['ztpstatus'] }}</font></div></td>
+            <td align="right">
+
+                {% if info['enableztp']|int>0 %}
+                {% set ztpenabled=1 %}
+                {% else %}
+                {% set ztpenabled=0 %}
+                {% endif %}
+
+                {% if info['gateway'] %}
+                {% set nogateway=0 %}
+                {% else %}
+                {% set nogateway=1 %}
+                {% endif %}
+
+                {% if ztpenabled==1 %}<input type="button" name="disableZTP" value="Disable ZTP" id="disableZTP{{ info['id'] }}" data-macaddress="{{info['macaddress']}}" data-deviceid="{{info['id']}}" class="disableZTP" onclick="highlightdeviceRow(this);">{% else %}<input type="button" name="enableZTP" value="Enable ZTP" id="enableZTP{{ info['id'] }}" data-macaddress="{{ info['macaddress'] }}" data-deviceid="{{info['id']}}" class="enableZTP" onclick="highlightdeviceRow(this);" {% if nogateway==1 %} disabled style="opacity:0.3;" {% endif %}>{% endif %}<input type="button" name="editDevice" value="Edit" data-deviceid="{{info['id']}}" class="editDevice" id="editDevice{{ info['id'] }}" onclick="highlightdeviceRow(this);" {% if ztpenabled==1 %} disabled style="opacity:0.3;" {% endif %}><input type="submit" name="action" value="Delete" class="button" data-deviceid="{{info['id']}}" class="deleteDevice" id="deleteDevice{{ info['id'] }}" onclick="return confirm('Are you sure you want to delete {{ info['name'] }}?')" {% if ztpenabled==1 %} disabled style="opacity:0.6;" {% endif %}>
+            </td>
+        </tr>
+    </form>
+    {% endfor %}
+
+</table>
+
+<div id="addDevice" style="display:none;" data-id="">
+    <p>
+        <form method="post" enctype="application/JSON" id="adddeviceForm">
+            <table class="tablenoborder">
+                <tr style="background-color: black;line-height:20px;">
+                    <td colspan="14" style="color: darkorange;"><center>Add ZTP device</center></td>
+                </tr>
+                <tr style="line-height:30px;">
+                    <input name='currentpageoffset' type='hidden' value="{{pageoffset}}" />
+                    <input name='currenttotalentries' type='hidden' value="{{totalentries}}" />
+                    <input name='totalpages' type="hidden" value="{{ totalpages }}" />
+                    <input name='entryperpage' type='hidden' value="{{ entryperpage }}" />
+                    <input name='currententryperpage' type='hidden' value="{{ entryperpage }}" />
+                    <input type="hidden" name="searchName" value="{{ formresult.searchName }}">
+                    <input type="hidden" name="searchMacaddress" value="{{ formresult.searchMacaddress }}">
+                    <input type="hidden" name="searchIpaddress" value="{{ formresult.searchIpaddress }}">
+                    <input type="hidden" name="searchGateway" value="{{ formresult.searchGateway }}">
+                    <input type="hidden" name="searchProfile" value="{{ formresult.searchProfile }}">
+                    <input type="hidden" name="searchImage" value="{{ formresult.searchImage }}">
+                    <input type="hidden" name="searchTemplate" value="{{ formresult.searchTemplate }}">
+                    <input type="hidden" name="templateparameters" class="templateparameters" />
+                    <td width="4%" align="left" nowrap><font class="font13px">Name</font></td>
+                    <td width="2%"></td>
+                    <td colspan="2"><div class="addField"><input type="text" name="name" id="addName" class="input"></div></td>
+                    <td width="6%" align="left" nowrap><font class="font13px">MAC address</font></td>
+                    <td colspan="3"><div class="addField"><input type="text" name="macaddress" id="addMacaddress" class="input" minlength="12" maxlength="12"></div></td>
+                    {% if sysvars['ipamenabled'] is defined %}
+                    <input type="hidden" class="ipamnetmask" name="ipamnetmask" id="addipamnetmaskvalue" />
+                    <input type="hidden" class="ipamgateway" name="ipamgateway" id="addipamgatewayvalue" />
+                    <td width="6%"><font class="font13px">Subnet</font></td>
+                    <td>
+                        <div>
+                            <select name="ipamsubnet" class="ipamsubnet" id="addipamsubnet">
+                                <option value="">Select</option>
+                            </select>
+                        </div>
+                    </td>
+                    <td width="6%"><font class="font13px">IP Address</font></td>
+                    <td>
+                        <div>
+                            <select name="ipaddress" class="ipamipaddress" id="addipamipaddress">
+                                <option value="">Select</option>
+                            </select>
+                        </div>
+                    </td>
+                    <td width="6%"><font class="font13px">Gateway</font></td>
+                    <td>
+                        <div class="ipamgatewayDiv" id="addipamgatewayDiv"></div>
+                    </td>
+                    {% else %}
+                    <td width="6%"><font class="font13px">IP address</font></td>
+                    <td><div class="addField"><input type="text" name="ipaddress" id="addIpaddress" class="input" minlength="7" maxlength="15" size="15"></div></td>
+                    <td width="6%"><font class="font13px">Subnet mask</font></td>
+                    <td>
+                        <div class="addselectField">
+                            <select name="netmask" id="addNetmask">
+                                <option value="">Select</option>
+                                {% for mask in range(8, 31, 1)  %}
+                                <option value="{{ mask }}">/{{ mask }}</option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                    </td>
+                    <td width="6%"><font class="font13px">Default gateway</font></td>
+                    <td><div class="addField"><input type="text" name="gateway" id="addGateway" class="input"></div></td>
+                    {% endif %}
+                </tr>
+                <tr style="line-height:30px;">
+                    <td colspan="2"><font class="font13px">ZTP profile</font></td>
+                    <td colspan="2">
+                        <div class="addselectField">
+                            <select name="profile" id="addProfile">
+                                <option value="0">Select</option>
+                                {% for items in profileResult %}
+                                <option value="{{items['id']}}">{{items['name']}}</option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                    </td>
+                    <td><font class="font13px">Software image</font></td>
+                    <td colspan="3">
+                        <div>
+                            <select name="softwareimage" id="addSoftwareimage" class="selectSoftwareimage">
+                                <option value="0">Select</option>
+                                {% for dict_item in imageResult %}
+                                <option value="{{dict_item['id']}}"> {{dict_item['name']}} ( {{dict_item['filename']}} )</option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                    </td>
+                    <td><font class="font13px">Template</font></td>
+                    <td>
+                        <div>
+                            <select name="template" id="addTemplate" class="selectTemplateparameters">
+                                <option value="0">Select</option>
+                                {% for dict_item in templateResult %}
+                                <option value="{{dict_item['id']}}"> {{dict_item['name']}}</option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                    </td>
+                    <td colspan="4"></td>
+                </tr>
+
+                <tr style="line-height:30px;">
+                    <td nowrap>
+                        <font class="font13px">Enable VSF</font>
+                    </td>
+                    <td align="left">
+                        <input type="checkbox" id="addEnablevsf" class="Enablevsf" name="enablevsf" class="input" />
+                    </td>
+                    <td><font class="font13px">Switch role</font></td>
+                    <td>
+                        <div>
+                            <select name="vsfrole" id="addVsfrole" class="selectVsfrole" disabled>
+                                <option value="0">Select</option>
+                                <option value="Master">Master</option>
+                                <option value="Secondary">Secondary</option>
+                                <option value="Member">Member</option>
+                            </select>
+                        </div>
+                    </td>
+
+                    <td><div id="addSelectmastertitle"><font class="font13px">Master switch</font></div></td>
+                    <td>
+                        <div id="addSelectmaster">
+                            <select class="selectVsfmaster" id="addVsfmaster" name="vsfmaster" disabled>
+                                <option value="0">Select</option>
+                            </select>
+                        </div>
+                    </td>
+                    <td>
+                        <font class="font13px">Member ID</font>
+                    </td>
+                    <td width="4%">
+                        <div>
+                            <select name="vsfmember" id="addVsfmember" class="selectVsfmember" disabled>
+                                <option value="0">Select</option>
+                                {% for member in range(2, 11, 1)  %}
+                                <option value="{{ member }}">{{ member }}</option>
+                                {% endfor %}
+                            </select>
+
+                        </div>
+                    </td>
+                    <td>
+                        <div>
+                            <font class="font13px">
+                                Switch type
+                            </font>
+                        </div>
+                    </td>
+                    <td>
+                        <div>
+                            <select name="switchtype" id="addSelectswitchtype" class="selectSwitchtype" disabled>
+                                <option value="0">Select</option>
+                                <option value="24">24 port</option>
+                                <option value="48">48 port</option>
+                            </select>
+                        </div>
+                    </td>
+                    <td>
+                        <div>
+                            <font class="font13px">
+                                Link 1
+                            </font>
+                        </div>
+                    </td>
+                    <td>
+                        <div>
+                            <div>
+                                <select multiple name="link1" id="addSelectink1" class="selectVsflink1" disabled>
+                                    <option value="0">Select</option>
+                                </select>
+                            </div>
+                        </div>
+                    </td>
+                    <td>
+                        <div>
+                            <font class="font13px">
+                                Link 2
+                            </font>
+                        </div>
+                    </td>
+                    <td>
+                        <div>
+                            <select multiple name="link2" id="addSelectlink2" class="selectVsflink2" disabled>
+                                <option value="0">Select</option>
+                            </select>
+                        </div>
+                    </td>
+                </tr>
+            </table>
+            <div class="templateparametersDiv" id="addtemplateParametersDiv">
+
+            </div>
+            <table width="100%">
+                <tr>
+                    <td align="center">
+                        <div class="addActions">
+                            <input type="submit" name="action" value="Submit device" class="button" />
+                        </div>
+                    </td>
+                </tr>
+            </table>
+        </form>
+    </p>
+</div>
+
+
+<div id="editDevice" style="display:none;" data-id="">
+    <form method="post" enctype="application/JSON" id="editdeviceForm">
+        <table class="tablenoborder">
+            <tr style="background-color: black;line-height:20px;">
+                <td colspan="14" style="color: darkorange;"><center>Edit ZTP device</center></td>
+            </tr>
+            <tr style="line-height:30px;">
+                <input name='currentpageoffset' type='hidden' value="{{pageoffset}}" />
+                <input name='currenttotalentries' type='hidden' value="{{totalentries}}" />
+                <input name='totalpages' type="hidden" value="{{ totalpages }}" />
+                <input name='entryperpage' type='hidden' value="{{ entryperpage }}" />
+                <input name='currententryperpage' type='hidden' value="{{ entryperpage }}" />
+                <input type="hidden" name="searchName" value="{{ formresult.searchName }}">
+                <input type="hidden" name="searchMacaddress" value="{{ formresult.searchMacaddress }}">
+                <input type="hidden" name="searchIpaddress" value="{{ formresult.searchIpaddress }}">
+                <input type="hidden" name="searchGateway" value="{{ formresult.searchGateway }}">
+                <input type="hidden" name="searchProfile" value="{{ formresult.searchProfile }}">
+                <input type="hidden" name="searchImage" value="{{ formresult.searchImage }}">
+                <input type="hidden" name="searchTemplate" value="{{ formresult.searchTemplate }}">
+                <input type="hidden" name="deviceid" id="deviceid" value="{{ formresult.id }}">
+                <input type="hidden" name="templateparameters" class="templateparameters" />
+                <td width="4%" align="left" nowrap><font class="font13px">Name</font></td>
+                <td width="2%"></td>
+                <td colspan="2"><div class="editField"><input type="text" name="name" id="editName" class="input"></div></td>
+                <td width="6%" align="left" nowrap><font class="font13px">MAC address</font></td>
+                <td colspan="3"><div class="editField"><input type="text" name="macaddress" id="editMacaddress" class="input" minlength="12" maxlength="12"></div></td>
+
+                {% if sysvars['ipamenabled'] is defined %}
+                <input type="hidden" class="ipamnetmask" name="ipamnetmask" id="editipamnetmaskvalue" />
+                <input type="hidden" class="ipamgateway" name="ipamgateway" id="editipamgatewayvalue" />
+                <td width="6%"><font class="font13px">Subnet</font></td>
+                <td>
+                    <div>
+                        <select name="ipamsubnet" class="ipamsubnet" id="editipamsubnet">
+                            <option value="">Select</option>
+                        </select>
+                    </div>
+                </td>
+                <td width="6%"><font class="font13px">IP Address</font></td>
+                <td>
+                    <div>
+                        <select name="ipaddress" class="ipamipaddress" id="editipamipaddress">
+                            <option value="">Select</option>
+                        </select>
+                    </div>
+                </td>
+                <td width="6%"><font class="font13px">Gateway</font></td>
+                <td>
+                    <div class="ipamgatewayDiv" id="editipamgatewayDiv"></div>
+                </td>
+                {% else %}
+
+                <td width="6%"><font class="font13px">IP address</font></td>
+                <td><div class="editField"><input type="text" name="ipaddress" id="editIpaddress" class="input" minlength="7" maxlength="15" size="15"></div></td>
+                <td width="6%"><font class="font13px">Subnet mask</font></td>
+                <td>
+                    <div>
+                        <select name="netmask" id="editNetmask">
+                            <option value="">Select</option>
+                            {% for mask in range(8, 31, 1)  %}
+                            <option value="{{ mask }}">/{{ mask }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                </td>
+                <td width="6%"><font class="font13px">Default gateway</font></td>
+                <td><div class="editField"><input type="text" name="gateway" id="editGateway" class="input"></div></td>
+
+                {% endif %}
+
+
+
+            </tr>
+            <tr style="line-height:30px;">
+                <td colspan="2" nowrap><font class="font13px">ZTP profile</font></td>
+                <td colspan="2">
+                    <div class="editselectField">
+                        <select name="profile" id="editProfile">
+                            <option value="0">Select</option>
+                            {% for items in profileResult %}
+                            <option value="{{items['id']}}">{{items['name']}}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                </td>
+                <td nowrap><font class="font13px">Software image</font></td>
+                <td colspan="3">
+                    <div>
+                        <select name="softwareimage" id="editSoftwareimage" class="selectSoftwareimage">
+                            <option value="0">Select</option>
+                            {% for dict_item in imageResult %}
+                            <option value="{{dict_item['id']}}"> {{dict_item['name']}} ( {{dict_item['filename']}} )</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                </td>
+                <td><font class="font13px">Template</font></td>
+                <td>
+                    <div>
+                        <select name="template" id="editTemplate" class="selectTemplateparameters" data-deviceid="{{ formresult.id }}">
+                            <option value="0">Select</option>
+                            {% for dict_item in templateResult %}
+                            <option value="{{dict_item['id']}}"> {{dict_item['name']}}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                </td>
+                <td colspan="4"></td>
+            </tr>
+            <tr style="line-height:30px;">
+                <td nowrap>
+                    <font class="font13px">Enable VSF</font>
+                </td>
+                <td align="left">
+                    <input type="checkbox" id="editEnablevsf" class="Enablevsf" name="enablevsf" data-deviceid="{{ formresult.id }} class="input" />
+                </td>
+                <td><font class="font13px">Switch role</font></td>
+                <td>
+                    <div>
+                        <select name="vsfrole" id="editVsfrole" class="selectVsfrole" data-deviceid="{{ formresult.id }}">
+                            <option value="0">Select</option>
+                            <option value="Master">Master</option>
+                            <option value="Secondary">Secondary</option>
+                            <option value="Member">Member</option>
+                        </select>
+                    </div>
+                </td>
+
+                <td><div><font class="font13px">Master switch</font></div></td>
+                <td>
+                    <div>
+                        <select class="selectVsfmaster" name="vsfmaster" id="editVsfmaster">
+                            <option value="0">Select</option>
+                        </select>
+                    </div>
+                </td>
+                <td>
+                    <font class="font13px">Member ID</font>
+                </td>
+                <td width="4%">
+                    <div>
+                        <select name="vsfmember" id="editVsfmember" class="selectVsfmember">
+                            <option value="0">Select</option>
+                            {% for member in range(2, 11, 1)  %}
+                            <option value="{{ member }}">{{ member }}</option>
+                            {% endfor %}
+                        </select>
+
+                    </div>
+                </td>
+                <td>
+                    <div>
+                        <font class="font13px">
+                            Switch type
+                        </font>
+                    </div>
+                </td>
+                <td>
+                    <div>
+                        <select name="switchtype" id="editSelectswitchtype" class="selectSwitchtype" data-deviceid="{{ formresult.id }}">
+                            <option value="0">Select</option>
+                            <option value="24">24 port</option>
+                            <option value="48">48 port</option>
+                        </select>
+                    </div>
+                </td>
+                <td>
+                    <div>
+                        <font class="font13px">
+                            Link 1
+                        </font>
+                    </div>
+                </td>
+                <td>
+                    <div>
+                        <div>
+                            <select multiple name="link1" id="editSelectlink1" class="selectVsflink1" data-deviceid="{{ formresult.id }}">
+                                <option value="0">Select</option>
+                            </select>
+                        </div>
+                    </div>
+                </td>
+                <td>
+                    <div>
+                        <font class="font13px">
+                            Link 2
+                        </font>
+                    </div>
+                </td>
+                <td>
+                    <div>
+                        <select multiple name="link2" id="editSelectlink2" class="selectVsflink2" data-deviceid="{{ formresult.id }}">
+                            <option value="0">Select</option>
+                        </select>
+                    </div>
+                </td>
+            </tr>
+
+        </table>
+        <div class="templateparametersDiv" id="edittemplateparametersDiv">
+
+        </div>
+        <table width="100%">
+            <tr>
+                <td align="center">
+                    <div class="editActions">
+                        <input type="submit" name="action" value="Submit changes" class="button" />
+                    </div>
+                </td>
+            </tr>
+
+        </table>
+    </form>
+</div>
+
+
+
+</div>
+
+{% endblock %}

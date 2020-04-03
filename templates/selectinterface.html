@@ -1,0 +1,33 @@
+<!-- (C) Copyright 2019 Hewlett Packard Enterprise Development LP. -->
+{% block scripts %}
+
+    <div id="maincontainer" style="background-color: mintcream;">
+        <table class="tablenoborder">
+            <form method="POST" name="Select interface">
+                <tr>
+                    <td>
+                        <font face="arial" size="2">Interface:</font>
+                        <select name="interface" id="interface">
+                            <option value="">Select interface</option>
+                            {% if ostype=="arubaos-cx" %}
+                            {% for items in interfaces |sort(attribute='name') %}
+                            <option value="{{ items['name'] }}">{{items['name']}}</option></option>
+                            {% endfor %}
+
+                        </select>
+                        {% elif ostype=="arubaos-switch" %}
+
+                        {% for items in interfaces.port_statistics_element  |sort(attribute='id') %}
+                        <option value="{{ items['id'] }}">{{items['id']}}</option></option>
+                        {% endfor %}
+
+                        {% endif %}
+
+                    </td>
+                </tr>
+            </form>
+        </table>
+        </div>
+
+
+        {% endblock %}

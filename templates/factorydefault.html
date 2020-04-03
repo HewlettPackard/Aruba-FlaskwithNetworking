@@ -1,0 +1,33 @@
+<!-- (C) Copyright 2019 Hewlett Packard Enterprise Development LP. -->
+
+{% block scripts %}
+<script src="static/scripts/jquery-1.10.2.min.js"></script>
+<link href="static/stylesheet.css" rel="stylesheet" />
+<script type="text/javascript" src="static/main.js"></script>
+{% endblock %}
+
+{% block content %}
+{% set pagename = "Reset system to factory default" %}
+
+
+
+<div class="form">
+    <form method="post" onsubmit="return confirm('Are you sure you want to set the system to factory defaults?')"">
+        <table class="tablewithborder">
+            <tr style="background-color:black;"><td colspan="3" align="center" style="color:orange;">{{ pagename }}</td></tr>
+            <tr align="center">
+                <td colspan="3">
+                    <font class="font13px">This action will clear all the data in the database and reset the admin password!!!</font>
+                </td>
+            </tr>
+            <tr>
+                <td><font class="font12px">Admin password: <input type="password" min="8" id="password" name="password" onkeyup="checkPass();" title="Minimum password length = 8"/></font></td>
+                <td><font class="font12px">Repeat Admin password: <input type="password" min="8" id="rpassword" name="rpassword" onkeyup="checkPass();"  title="Minimum password length = 8" />&nbsp;&nbsp;<span id="confirm-message"></span></font></td>
+                <td><input type='submit' class='button' id='reset' value='Reset' disabled /></td>
+            </tr>
+        </table>
+    </form>
+</div>
+
+
+{% endblock %}

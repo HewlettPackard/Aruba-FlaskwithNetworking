@@ -1,0 +1,112 @@
+<!-- (C) Copyright 2020 Hewlett Packard Enterprise Development LP. -->
+{% block scripts %}
+<script src="static/scripts/jquery-1.10.2.min.js"></script>
+<script type="text/javascript" src="static/scripts/d3.min.js"></script>
+<link href="static/stylesheet.css" rel="stylesheet" />
+<script type="text/javascript" src="static/main.js"></script>
+<script type="text/javascript" src="static/topology.js"></script>
+
+{% endblock %}
+
+{% block content %}
+{% set pagename = "Topology" %}
+{% include 'navbar.html' %}
+
+
+{% if totalentries|int % entryperpage|int == 0 %}
+{% set totalpages=(totalentries|int/entryperpage|int)|int %}
+{% else %}
+{% set totalpages=(totalentries|int/entryperpage|int)|int +1 %}
+{% endif %}
+
+<div id="maincontainer" style="background-color: mintcream;">
+
+    <table class="tablenoborder">
+        <form method="post">
+            <input id='orderBy' name='orderBy' type='hidden' value="{{ orderBy }}" />
+            <input id='descascDescription' name='descascDescription' type='hidden' value="{{ descascDescription }}" />
+            <input id='descascIpaddress' name='descascIpaddress' type='hidden' value="{{ descascIpaddress }}" />
+            <input id='currentpageoffset' name='currentpageoffset' type='hidden' value="{{pageoffset}}" />
+            <input id='currenttotalentries' name='currenttotalentries' type='hidden' value="{{totalentries}}" />
+            <input id="totalpages" name="totalpages" type="hidden" value="{{ totalpages }}" />
+            <input name='currententryperpage' type='hidden' value="{{ entryperpage }}" />
+            <input name="action" type="hidden" value="navigation" />
+            <tr>
+                <td width="2%"><font class="font13px">Item</font></td>
+                <td width="5%">&nbsp;</td>
+                <td width="20%"><font class="font13px">Hostname</font></td>
+                <td width="20%" align="left" nowrap><font class="font13px">IP address</font></td>
+                <td width="20%"><font class="font13px">System MAC Address</font></td>
+                <td width="35%" align="right" nowrap>
+                    <font class="font13px">
+                        Show <select name="entryperpage" id="deviceEntryperpage" onchange="this.form.submit()">
+                            <option value="5" {% if entryperpage==5 %} selected {% endif %}>5</option>
+                            <option value="10" {% if entryperpage==10 %} selected {% endif %}>10</option>
+                            <option value="25" {% if entryperpage==25 %} selected {% endif %}>25</option>
+                            <option value="50" {% if entryperpage==50 %} selected {% endif %}>50</option>
+                            <option value="100" {% if entryperpage==100 %} selected {% endif %}>100</option>
+                        </select> entries per page (page <select name="pageoffset" id="devicePageoffset" onchange="this.form.submit();">
+                            {% for i in  range(totalpages) %}
+                            <option value="{{ (i)*entryperpage|int }}" {% if (pageoffset|int)/(entryperpage|int)==(i) %}selected{% endif %}>{{ i+1 }}</option>
+                            {% endfor %}
+                        </select> of {{ totalpages }} pages)
+                    </font>
+                </td>
+            </tr>
+            <tr style="background-color: grey;">
+                <td>&nbsp;</td>
+                <td>&nbsp;</td>
+                <td align="left" valign="top">
+                    <input type="text" name="searchHostname" id="searchHostname" size="30" value="{{ formresult['searchHostname'] }}">
+                </td>
+                <td align="left" valign="top">
+                    <input type="text" name="searchSwitchip" id="searchSwitchip" size="30" value="{{ formresult['searchSwitchip'] }}">
+                </td>
+                <td align="left" valign="top">
+                    <input type="text" name="searchSystemmac" id="searchSystemmac" size="30" value="{{ formresult['searchSystemmac'] }}">
+                </td>
+                <td align="right">
+                   <input type="submit" name="searchAction" value="Search" class="button" id="searchDevice" onclick="cleardeviceRow(this);">
+                </td>
+            </tr>
+        </form>
+        {% for info in result %}
+        <form method="post">
+            <input name='currentpageoffset' type='hidden' value="{{pageoffset}}" />
+            <input name='currenttotalentries' type='hidden' value="{{totalentries}}" />
+            <input name='totalpages' type="hidden" value="{{ totalpages }}" />
+            <input name='entryperpage' type='hidden' value="{{ entryperpage }}" />
+            <input name='currententryperpage' type='hidden' value="{{ entryperpage }}" />
+            <input type="hidden" name="searchHostname" value="{{ formresult.searchHostname }}">
+            <input type="hidden" name="searchSwitchip" value="{{ formresult.searchSwitchip }}">
+            <input type="hidden" name="searchSystemmac" value="{{ formresult.searchSystemmac }}">
+            <input type="hidden" name="deviceid" value="{{ info['id'] }}">
+            <tr>
+                <td><font class="font12px">{{ loop.index }}</font></td>
+                <td>
+                    <font class="font12px">
+                        <div class="deviceStatus" id="deviceStatus{{info['id']}}" data-deviceid="{{info['id']}}"></div>
+                    </font>
+                </td>
+                <td><font class="font12px">{{ info['hostname'] }}</font></td>
+                <td><font class="font12px">{{ info['switchip'] }}</font></td>
+                <td><font class="font12px">{{ info['systemmac'] }}</font></td>
+                <td align="right">
+</div><input type="button" name="showEndpoints" value="Show endpoints" data-id="{{info['id']}}" class="showendpoints" onclick="highlightdeviceRow(this);">
+            </td>
+        </tr>
+    </form>
+    {% endfor %}
+</table>
+
+<div id="showEndpoints" data-deviceid="">
+</div>
+
+<div id="showTopology" data-deviceid="">
+    <canvas id="showTopo" width="1920" height="500"></canvas>    
+</div>
+
+
+</div>
+    
+{% endblock %}

@@ -1,0 +1,118 @@
+﻿<!-- (C) Copyright 2019 Hewlett Packard Enterprise Development LP. -->
+{% block scripts %}
+<script src="static/scripts/jquery-1.10.2.min.js"></script>
+<link href="static/stylesheet.css" rel="stylesheet" />
+<script type="text/javascript" src="static/main.js"></script>
+<script type="text/javascript" src="static/useradmin.js"></script>
+{% endblock %}
+
+{% block content %}
+{% set pagename = "User administration" %}
+{% include 'navbar.html' %}
+
+{% set roleMap = ['Superuser','Administrator','Operator','Read only'] %}
+<div id="maincontainer" style="background-color: mintcream;">
+    <table class="tablenoborder">
+        <form method="post">
+            <input id='action' name='action' type='hidden' value='' />
+            <tr>
+                <td width="4%"><font class="font13px">Item</font></td>
+                <td width="1%" align="left" nowrap><font class="font13px">Username</font></td>
+                <td width="6%" align="left" valign="top"><input type="image" name="action" src="/static/images/down-arrow.svg" width="15px" height="15px" title="Order by IP address" value="order by ipaddress" style="outline:none !important;" onclick="return setHidden('order by ipaddress');"></td>
+                <td width="10%"><font class="font13px">Password</font></td>
+                <td width="1%" align="left" nowrap><font class="font13px">e-Mail address</font></td>
+                <td width="10%" align="left" valign="top"><input type="image" name="action" src="/static/images/down-arrow.svg" width="15px" height="15px" title="Order by description" value="order by description" style="outline:none !important;" onclick="return setHidden('order by description');"></td>
+                <td width="10%"><font class="font13px">Role</font></td>
+                <td width="16%" align="right"><input type="submit" class="button" value="Home" onclick="return setHidden('Home');"><input type="submit" class="button" value="Add user" onclick="return setHidden('Add user');"></td>
+            </tr>
+        </form>
+        <tbody>
+            {% if formresult ['action']  == 'Add user' %}
+            <tr>
+                <form method="post">
+                    <td><font class="font13px">Add</font></td>
+                    <td colspan="2"><div class="field"><input type="text" name="username" class="input"></div></td>
+                    <td><div class="field"><input type="password" name="password" class="input" size="50"></div></td>
+                    <td colspan="2"><div class="field"><input type="text" name="email" class="input"></div></td>
+                    <td>
+                        <select name="role">
+                            <option value="0">Superuser</option>
+                            <option value="1">Administrator</option>
+                            <option value="2">Operator</option>
+                            <option value="3">Read only</option>
+                        </select>
+                    </td>
+                    <td align="right">
+                        <div class="actions">
+                            <input type="submit" disabled name="action" value="Submit user" class="button" />
+                        </div>
+                    </td>
+                </form>
+            </tr>
+            {% endif %}
+
+            {% for info in result %}
+            {% if formresult.action=="Edit" and info.id|string==formresult.id  %}
+            <tr>
+                <form method="post">
+                    <input type="hidden" name="id" value="{{ info['id'] }}">
+                    <td><font class="font12px">{{ loop.index }}</font></td>
+                    <td colspan="2">
+                        <div class="field">
+                            <input type="text" name="username" class="input" value="{{ info['username'] }}" {% if info['username']=="admin" %} onfocus="this.blur();" {% endif%}>
+                        </div>
+                    </td>
+                    <td colspan="2" nowrap>
+                        <div class="field">
+                            <input type="password" name="password" class="input" value="{{ decryptPass("ArubaRocks!!!!!!",info['password']) }}" size="50" {% if info['username']=="admin" %} onfocus="this.blur();" {% endif%}>
+                        </div>
+                    </td>
+                    <td>
+                        <div class="field">
+                            <input type="text" name="email" class="input" value="{{ info['email'] }}">
+                        </div>
+                    </td>
+                    <td>
+                        <div class="field">
+                            <select name="role">
+                                <option value="0" {% if info['role']=="0" %}selected{% endif %}>Superuser</option>
+                                <option value="1" {% if info['role']=="1" %}selected{% endif %}>Administrator</option>
+                                <option value="2" {% if info['role']=="2" %}selected{% endif %}>Operator</option>
+                                <option value="3" {% if info['role']=="3" %}selected{% endif %}>Read only</option>
+                            </select>
+                        </div>
+                    </td>
+                    <td align="right">
+                        <div class="actions">
+                            <input type="submit" name="action" value="Submit changes" class="button" />
+                        </div>
+                    </td>
+                </form>
+            </tr>
+            {% else %}
+            <form method="post">
+                <tr>
+                    <td><font class="font12px">{{ loop.index }}</font></td>
+                    <td colspan="2"><font class="font12px">{{ info['username'] }}</font></td>
+                    <td><font class="font12px">xxxxxxxxxxx</font></td>
+                    <td colspan="2"><font class="font12px">{{ info['email'] }}</font></td>
+                    <td><font class="font12px">{{ roleMap[info['role'] | int] }}</font></td>
+                    <td align="right">
+                        <input type="submit" name="action" value="Edit" class="button" /><input type="submit" name="action" value="Delete" {% if info['username']=="admin" %} disabled {% endif%} class="button" onclick="return confirm('Are you sure you want to delete this item?')">
+                        <input type="hidden" name="id" value="{{  info['id'] }}">
+
+                    </td>
+                </tr>
+            </form>
+            {% endif %}
+            {% endfor %}
+        </tbody>
+    </table>
+
+</div>
+
+
+
+
+
+    {% endblock %}

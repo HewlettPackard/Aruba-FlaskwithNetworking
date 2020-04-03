@@ -1,0 +1,21 @@
+<!-- (C) Copyright 2019 Hewlett Packard Enterprise Development LP. -->
+{% block content %}
+<form method="POST" name="{{ name }}">
+    <input type="hidden" name="name" value="{{ name }}" />
+    <table class="tablenoborder">
+        <tr>
+            <td width="10%" align="left" nowrap><font class="font11px">{{ name }}</font></td>
+            <td width="10%" align="left" nowrap><font class="font11px">{% if status==True %}Started{% else %}Stopped{% endif %}</font></td>
+            <td width="10%" align="left" nowrap><font class="font11px">{{ cpu }}%</font></td>
+            <td width="10%" align="left" nowrap><font class="font11px">{{ memory }}%</font></td>
+            <td width="10%" align="left" nowrap>
+                {% if status==True %}
+                <input type="submit" name="action" value="Stop" />
+                {% else %}
+                <input type="submit" name="action" value="Start" />
+                {% endif %}
+            </td>
+        </tr>
+    </table>
+</form>
+{% endblock %}

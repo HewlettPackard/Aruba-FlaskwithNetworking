@@ -1,0 +1,44 @@
+﻿<!-- (C) Copyright 2019 Hewlett Packard Enterprise Development LP. -->
+{% block scripts %}
+<script src="static/scripts/jquery-1.10.2.min.js"></script>
+<link href="static/stylesheet.css" rel="stylesheet" />
+<script type="text/javascript" src="static/main.js"></script>
+{% endblock %}
+
+{% block content %}
+
+<script>clearCookies()</script>
+
+<table class="tablenoborder" align="center" style="margin-top:300px;">
+    <form method="POST" name="Login" action="/submitlogin">
+        <tr>
+            <td align="center">
+                <font class="font13px">Carius Login</font>
+            </td>
+        </tr>
+{% if message %}
+        <tr>
+            <td align="center">
+                <font class="font13px">{{ message }}</font>
+            </td>
+        </tr>
+{% endif %}
+        <tr>
+            <td align="center">
+                <input type="text" name="username" placeholder="Username" autofocus="">
+            </td>
+        </tr>
+        <tr>
+            <td align="center">
+                <input type="password" name="password" placeholder="Password">
+            </td>
+        </tr>
+        <tr>
+            <td align="center">
+                <button>Login</button>
+            </td>
+        </tr>
+    </form>
+</table>
+
+{% endblock %}

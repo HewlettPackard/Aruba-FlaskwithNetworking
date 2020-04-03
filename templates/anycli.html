@@ -1,0 +1,68 @@
+<!-- (C) Copyright 2019 Hewlett Packard Enterprise Development LP. -->
+{% block scripts %}
+<script src="static/scripts/jquery-1.10.2.min.js"></script>
+<link href="static/stylesheet.css" rel="stylesheet" />
+<script type="text/javascript" src="static/main.js"></script>
+{% endblock %}
+
+{% block content %}
+{% set pagename = "Any CLI" %}
+
+{% if formresult['deviceid'] is defined %}
+    {% set deviceid = formresult['deviceid'] | int %}
+{% else %}
+    {% set deviceid = 0 %}
+{% endif %}
+
+{% include 'navbar.html' %}
+
+<div id="maincontainer" style="background-color: mintcream;">
+    <table class="table">
+        <form method="POST" name="Select Device">
+            <tr>
+                <td>
+
+                    Select device:
+                    <select name="deviceid">
+                        {% for info in devicelist %}
+                        {% if info['ostype'] == "arubaos-switch" %}
+                        <option value="{{ info['id'] }}" {% if info['id']==deviceid %} selected="selected" {% endif %}>{{ info['ipaddress'] }} ({{ info['description'] }}, {{ info['ostype'] }})</option>
+                        {% endif %}
+                        {% endfor %}
+                    </select>
+                    <input type="text" size="80" name="cmd" />
+                    <input type="hidden" name="action" value="Send command" />
+                    <input type="submit" name="submit" value="Send Command" class="button" />
+
+                </td>
+            </tr>
+        </form>
+    </table>
+
+    {% if formresult['deviceid'] %}
+
+    <table class="table">
+        <tr>
+            <td>
+                Sent command: {{ formresult['cmd'] }}
+            </td>
+        </tr>
+        <tr>
+            <td>
+
+<textarea name="cmdResult" rows="25" cols="200">{% if cmdResult['status'] == "CCS_SUCCESS" and cmdResult['result_base64_encoded']=="" %}
+Result: Command "{{ cmdResult['cmd'] }}" issued successfully
+{% elif cmdResult['status'] == "CCS_FAILURE" %}
+Result: Command "{{ cmdResult['cmd'] }}" failed.
+           Error message: {{ cmdResult['error_msg'] }}
+        {% else %}{{ cmdContent }}{% endif %}
+        </textarea>
+            </td>
+        </tr>
+    </table>
+
+    {% endif %}
+
+    </div>
+
+    {% endblock %}

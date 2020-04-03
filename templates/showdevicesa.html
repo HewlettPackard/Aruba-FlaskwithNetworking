@@ -1,0 +1,181 @@
+<!-- (C) Copyright 2019 Hewlett Packard Enterprise Development LP. -->
+
+{% block content %}
+
+{%  if sysinfo %}
+    <div id="maincontainer" style="background-color: mintcream;">
+        <table class="tablewithborder">
+            <tr style="background-color: black;line-height:20px;">
+                <td colspan="10" style="color: darkorange;"><center>{{ ipaddress }} ({{ description }}) Device information</b></center></td>
+            </tr>
+            <tr style="line-height:12px;">
+                <td style="background-color: black;" width="10%"><font face="arial" size="1" style="color: darkorange;">Hostname</font></td>
+                <td width="12%"><font face="arial" size="1"> {{ sysinfo['name'] }} </font></td>
+                <td style="background-color: black;" width="10%"><font face="arial" size="1" style="color: darkorange;">Part number</font></td>
+                <td><font face="arial" size="1"> {{ sysinfo['product_number'] }} </font></td>
+                <td style="background-color: black;" width="10%"><font face="arial" size="1" style="color: darkorange;">Serial Number</font></td>
+                <td><font face="arial" size="1"> {{ sysinfo['serial_number'] }} </font></td>
+                <td style="background-color: black;" width="10%"><font face="arial" size="1" style="color: darkorange;">Model</font></td>
+                <td><font face="arial" size="1"> {{ sysinfo['product_name'] }} </font></td>
+                <td style="background-color: black;" width="10%"><font face="arial" size="1" style="color: darkorange;">Firmware</font></td>
+                <td><font face="arial" size="1"> {{ sysinfo['firmware_version'] }} </font></td>
+            </tr>
+            <tr style="line-height:12px;">
+
+                <td style="background-color: black;"><font face="arial" size="1" style="color: darkorange;">Fan Status</font></td>
+                <td>
+                    <font face="arial" size="1">
+                        {% for items in sysinfo.hardware_info %}
+                        {% if items['hardware_type'] == "SHT_FAN" %}
+                        {{ items['status'][4:] }}
+                        {% endif %}
+                        {% endfor %}
+                    </font>
+                </td>
+                <td style="background-color: black;"><font face="arial" size="1" style="color: darkorange;">Temperature Status</font></td>
+                <td>
+                    <font face="arial" size="1">
+                        {% for items in sysinfo.hardware_info %}
+                        {% if items['hardware_type'] == "SHT_TEMP" %}
+                        {{ items['status'][4:] }}
+                        {% endif %}
+                        {% endfor %}
+                    </font>
+                </td>
+                <td style="background-color: black;"><font face="arial" size="1" style="color: darkorange;">Switch type</font></td>
+                <td><font face="arial" size="1">Standalone</font></td>
+                <td style="background-color: black;"><font face="arial" size="1" style="color: darkorange;">PoE Supported</font></td>
+                <td><font face="arial" size="1">{% if sysinfo['is_poe_supported']==True %} Yes  {% else %} No {% endif %}</font></td>
+                <td style="background-color: black;"><font face="arial" size="1" style="color: darkorange;">Telnet enabled</font></td>
+                <td><font face="arial" size="1"> {% if sysinfo['is_telnet_server_enabled']==True %} Yes  {% else %} No {% endif %} </font></td>
+            </tr>
+            {% for items in sysinfo.system_power_supply %}
+            <tr style="line-height:12px;">
+                <td style="background-color: black;"><font face="arial" size="1" style="color: darkorange;">Power supply {{ items['power_supply_number'] }} status</font></td>
+                <td><font face="arial" size="1">{{ items['power_supply_state'][5:] }}</font></td>
+                <td style="background-color: black;"><font face="arial" size="1" style="color: darkorange;">Power usage</font></td>
+                <td><font face="arial" size="1">{{ items['power_in_use_in_watts'] }} Watt</font></td>
+                <td style="background-color: black;"><font face="arial" size="1" style="color: darkorange;">Voltage</font></td>
+                <td><font face="arial" size="1">{{ items['voltage_description'] }}</font></td>
+                <td style="background-color: black;"><font face="arial" size="1" style="color: darkorange;">Model (Serial number)</font></td>
+                <td><font face="arial" size="1">{{ items['model_info'] }} ({{ items['serial_number'] }})</font></td>
+                <td style="background-color: black;"><font face="arial" size="1" style="color: darkorange;">PoE usage</font></td>
+                <td><font face="arial" size="1">{{ sysinfo['total_poe_consumption'] }}</font></td>
+            </tr>
+            {% endfor %}
+            {% for items in sysinfo.snmp_server_community_element %}
+            <tr style="line-height:12px;">
+                <td style="background-color: black;"><font face="arial" size="1" style="color: darkorange;">SNMP Community</font></td>
+                <td colspan="3"><font face="arial" size="1">{{ items['community_name'] }}</font></td>
+                <td style="background-color: black;"><font face="arial" size="1" style="color: darkorange;">Access type</font></td>
+                <td colspan="3"><font face="arial" size="1">{{ items['access_type'][3:] }}</font></td>
+                <td style="background-color: black;"><font face="arial" size="1" style="color: darkorange;">Access mode</font></td>
+                <td><font face="arial" size="1">{% if items['restricted']==True %} ReadWrite  {% else %} ReadOnly {% endif %}</font></td>
+            </tr>
+            {% endfor %}
+            {% for items in sysinfo.snmpv3_user_element %}
+            <tr style="line-height:12px;">
+                <td style="background-color: black;"><font face="arial" size="1" style="color: darkorange;">SNMPv3 User</font></td>
+                <td><font face="arial" size="1">{{ items['user_name'] }}</font></td>
+                <td style="background-color: black;"><font face="arial" size="1" style="color: darkorange;">Authentication protocol</font></td>
+                <td><font face="arial" size="1">{{ items['snmpv3_authentication_protocol'][4:] }}</font></td>
+                <td style="background-color: black;"><font face="arial" size="1" style="color: darkorange;">Encryption protocol</font></td>
+                <td><font face="arial" size="1">{{ items['snmpv3_authentication_privacy_protocol'][5:] }}</font></td>
+                <td style="background-color: black;"><font face="arial" size="1" style="color: darkorange;">SNMPv3 group</font></td>
+                <td colspan="3"><font face="arial" size="1">{{ items['snmpv3_v3_group'][4:] }}</font></td>
+            </tr>
+            {% endfor %}
+            {% for items in sysinfo.radius_server_element %}
+            <tr style="line-height:12px;">
+                <td style="background-color: black;"><font face="arial" size="1" style="color: darkorange;">Radius server</font></td>
+                <td><font face="arial" size="1">{{ items['address']['octets'] }}</font></td>
+                <td style="background-color: black;"><font face="arial" size="1" style="color: darkorange;">Authentication port</font></td>
+                <td><font face="arial" size="1">{{ items['authentication_port'] }}</font></td>
+                <td style="background-color: black;"><font face="arial" size="1" style="color: darkorange;">Accounting port</font></td>
+                <td><font face="arial" size="1">{{ items['accounting_port'] }}</font></td>
+                <td style="background-color: black;"><font face="arial" size="1" style="color: darkorange;">Dynamic Authorization enabled</font></td>
+                <td><font face="arial" size="1">{% if items['is_dyn_authorization_enabled']==True %} Yes  {% else %} No {% endif %}</font></td>
+                <td style="background-color: black;"><font face="arial" size="1" style="color: darkorange;">Time Window</font></td>
+                <td><font face="arial" size="1">{{ items['time_window'] }}</font></td>
+            </tr>
+            {% endfor %}
+            {% if sysinfo['time_server_protocol'] %}
+            <tr style="line-height:12px;">
+                <td style="background-color: black;"><font face="arial" size="1" style="color: darkorange;">NTP protocol</font></td>
+                <td><font face="arial" size="1">{{ sysinfo['time_server_protocol'][4:] }}</font></td>
+                <td style="background-color: black;"><font face="arial" size="1" style="color: darkorange;">Time server</font></td>
+                <td><font face="arial" size="1">{{ sysinfo['Reference ID'] }}</font></td>
+                <td style="background-color: black;"><font face="arial" size="1" style="color: darkorange;">Synchronization status</font></td>
+                <td><font face="arial" size="1">{{ sysinfo['Synchronization Status'] }}</font></td>
+                <td style="background-color: black;"><font face="arial" size="1" style="color: darkorange;">NTP up time</font></td>
+                <td><font face="arial" size="1">{{ sysinfo['NTP Up Time'] }}</font></td>
+            </tr>
+            {% endif %}
+
+
+            {% for items in sysinfo.vlan_element %}
+            <tr style="line-height:12px;">
+                <td style="background-color: black;"><font face="arial" size="1" style="color: darkorange;">VLAN ID</font></td>
+                <td><font face="arial" size="1">{{ items['vlan_id'] }}</font></td>
+                <td style="background-color: black;"><font face="arial" size="1" style="color: darkorange;">Name</font></td>
+                <td><font face="arial" size="1">{{ items['name'] }}</font></td>
+                <td style="background-color: black;"><font face="arial" size="1" style="color: darkorange;">IP Address</font></td>
+                <td>
+                    <font face="arial" size="1">
+                        {% for ipitems in sysinfo.ip_address_subnet_element %}
+                        {% if ipitems['vlan_id'] == items['vlan_id'] %}
+                        {% if ipitems['ip_address'] is defined %}
+                        {{ ipitems['ip_address']['octets'] }}/{{ ipitems['ip_mask']['octets'] }}
+                        {% endif %}
+                        {% endif %}
+                        {% endfor %}
+                    </font>
+                </td>
+                <td style="background-color: black;"><font face="arial" size="1" style="color: darkorange;">Untagged ports</font></td>
+                <td>
+                    <font face="arial" size="1">
+                        {% for vlanitems in sysinfo.vlan_port_element %}
+                        {% if ((vlanitems['vlan_id'] == items['vlan_id']) and (vlanitems['port_mode'] == "POM_UNTAGGED")) %}
+                        {{ vlanitems['port_id'] }}&nbsp;
+                        {% endif %}
+                        {% endfor %}
+                    </font>
+                </td>
+                <td style="background-color: black;"><font face="arial" size="1" style="color: darkorange;">Tagged ports</font></td>
+                <td>
+                    <font face="arial" size="1">
+                        {% for vlanitems in sysinfo.vlan_port_element %}
+                        {% if ((vlanitems['vlan_id'] == items['vlan_id']) and (vlanitems['port_mode'] == "POM_TAGGED_STATIC")) %}
+                        {{ vlanitems['port_id'] }}&nbsp;
+                        {% endif %}
+                        {% endfor %}
+                    </font>
+                </td>
+            </tr>
+            {% endfor %}
+
+            {% for items in sysinfo.lacp_element |sort(attribute='trunk_group') %}
+            <tr style="line-height:12px;">
+                <td style="background-color: black;"><font face="arial" size="1" style="color: darkorange;">Trunk group</font></td>
+                <td><font face="arial" size="1">{{ items['trunk_group'] }}</font></td>
+                <td style="background-color: black;"><font face="arial" size="1" style="color: darkorange;">Port</font></td>
+                <td><font face="arial" size="1">{{ items['port_id'] }}</font></td>
+                {% for bladeitems in sysinfo.blades %}
+                {% for portitems in bladeitems.data_ports %}
+                {% if portitems['port_id']|string == items['port_id'] %}
+                <td style="background-color: black;"><font face="arial" size="1" style="color: darkorange;">Port speed</font></td>
+                <td><font face="arial" size="1">{% if portitems['oper_mode'] %}{{ portitems['oper_mode'][3:] }}{% endif %}</font></td>
+                <td style="background-color: black;"><font face="arial" size="1" style="color: darkorange;">Port status</font></td>
+                <td><font face="arial" size="1">{% if portitems['operStatus'] %}{{ portitems['operStatus'][5:] }}{% endif %}</font></td>
+                <td style="background-color: black;"><font face="arial" size="1" style="color: darkorange;">Connector type</font></td>
+                <td><font face="arial" size="1">{% if portitems['sub_type'] %}{{ portitems['sub_type'] }}{% endif %}</font></td>
+                {% endif %}
+                {% endfor %}
+                {% endfor %}
+            </tr>
+            {% endfor %}
+
+        </table>
+        </div>
+        {% endif %}
+        {% endblock %}

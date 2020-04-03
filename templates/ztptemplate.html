@@ -1,0 +1,160 @@
+<!-- (C) Copyright 2020 Hewlett Packard Enterprise Development LP. -->
+{% block scripts %}
+<script src="static/scripts/jquery-1.10.2.min.js"></script>
+<link href="static/stylesheet.css" rel="stylesheet" />
+<script type="text/javascript" src="static/main.js"></script>
+<script type="text/javascript" src="static/ztptemplate.js"></script>
+{% endblock %}
+
+{% block content %}
+{% set pagename = "ZTP Configuration templates" %}
+{% include 'navbar.html' %}
+
+{% if totalentries|int % entryperpage|int == 0 %}
+{% set totalpages=(totalentries|int/entryperpage|int)|int %}
+{% else %}
+{% set totalpages=(totalentries|int/entryperpage|int)|int +1 %}
+{% endif %}
+<div id="maincontainer" style="background-color: mintcream;">
+    <table class="tablenoborder" id="ztpTable">
+        <form method="post" name="ztptemplate" id="ztptemplate">
+            <input name="action" type="hidden" value="navigation" />
+            <input name='currentpageoffset' type='hidden' value="{{pageoffset}}" />
+            <input name='currenttotalentries' type='hidden' value="{{totalentries}}" />
+            <input name='totalpages' type="hidden" value="{{ totalpages }}" />
+            <input name='currententryperpage' id="currententryperpage" type='hidden' value="{{ entryperpage }}" />
+            <tr>
+                <td width="5%" align="left" nowrap><font class="font13px">ID</font></td>
+                <td width="25%" align="left"><font class="font13px">Name</font></td>
+                <td width="25%" align="left" nowrap><font class="font13px">Description</font></td>
+                <td width="20%" align="right">
+                    <font class="font13px">
+                        Show<select name="entryperpage" id="entryperpage" onchange="this.form.submit()">
+                            <option value="5" {% if entryperpage|int==5 or entryperpage is not defined %} selected {% endif %}>5</option>
+                            <option value="10" {% if entryperpage|int==10 %} selected {% endif %}>10</option>
+                            <option value="25" {% if entryperpage|int==25 %} selected {% endif %}>25</option>
+                            <option value="50" {% if entryperpage|int==50 %} selected {% endif %}>50</option>
+                            <option value="100" {% if entryperpage|int==100 %} selected {% endif %}>100</option>
+                        </select> entries per page (page <select name="pageoffset" onchange="this.form.submit()">
+                            {% for i in  range(totalpages) %}
+                            <option value="{{ (i)*entryperpage|int }}" {% if (pageoffset|int)/(entryperpage|int)==(i) %}selected{% endif %}>{{ i+1 }}</option>
+                            {% endfor %}
+                        </select> of {{ totalpages }} pages)
+                    </font>
+                </td>
+            </tr>
+            <tr style="background-color: grey;" class="tableTitle">
+                <td align="left" nowrap>&nbsp;</td>
+                <td align="left" valign="top"><input type="text" id="searchName" name="searchName" value="{{ formresult.searchName }}" size="15"></td>
+                <td align="left" valign="top"><input type="text" id="searchDescription" name="searchDescription" value="{{ formresult.searchDescription }}" size="15"></td>
+                <td align="right">
+                    <input type="button" class="button" value="Add template" id="addztpTemplate" onclick="cleartemplateRow(this);"><input type="submit" name="searchAction" value="Search" class="button" id="searchTemplate" onclick="cleartemplateRow(this);">
+                </td>
+            </tr>
+        </form>
+        {% for info in result %}
+        <form method="post">
+            <input name='currentpageoffset' type='hidden' value="{{pageoffset}}" />
+            <input name='currenttotalentries' type='hidden' value="{{totalentries}}" />
+            <input name='totalpages' type="hidden" value="{{ totalpages }}" />
+            <input name='entryperpage' type='hidden' value="{{ entryperpage }}" />
+            <input name='currententryperpage' type='hidden' value="{{ entryperpage }}" />
+            <input type="hidden" name="searchName" value="{{ formresult.searchName }}">
+            <input type="hidden" name="searchDescription" value="{{ formresult.searchDescription }}">
+            <input type="hidden" name="templateid" value="{{ info['id'] }}">
+            <tr>
+                <td><font class="font12px">{{ loop.index }}</font></td>
+                <td><font class="font12px">{{ info['name'] }}</font></td>
+                <td><font class="font12px">{{ info['description'] }}</font></td>
+                <td align="right">
+                    <input type="button" name="editTemplate" value="Edit" data-templateid="{{info['id']}}" class="editTemplate" onclick="highlighttemplateRow(this);"><input type="submit" name="action" value="Delete" class="button" onclick="return confirm('Are you sure you want to delete {{ info['name'] }}?')">
+                </td>
+            </tr>
+        </form>
+        {% endfor %}
+
+    </table>
+
+    <div id="addTemplate" style="display:none;" data-id="">
+        <p>
+            <table class="tablenoborder" cellpadding="2">
+                <form method="post">
+                    <input name='currentpageoffset' type='hidden' value="{{pageoffset}}" />
+                    <input name='currenttotalentries' type='hidden' value="{{totalentries}}" />
+                    <input name='totalpages' type="hidden" value="{{ totalpages }}" />
+                    <input name='entryperpage' type='hidden' value="{{ entryperpage }}" />
+                    <input name='currententryperpage' type='hidden' value="{{ entryperpage }}" />
+                    <input type="hidden" name="searchName" value="{{ formresult.searchName }}">
+                    <input type="hidden" name="searchDescription" value="{{ formresult.searchDescription }}">
+                    <tr style="background-color: black;line-height:20px;">
+                        <td colspan="4" style="color: darkorange;"><center>Add ZTP configuration template</center></td>
+                    </tr>
+                    <tr style="line-height:20px;">
+                        <td width="5%" align="left" nowrap><font class="font13px">Name</font></td>
+                        <td width="45%" align="left"><div class="addField"><input type="text" name="name" class="input"></div></td>
+                        <td width="5%"><font class="font13px">Description</font></td>
+                        <td width="45%" align="left"><div class="addField"><input type="text" name="description" class="input"></div></td>
+                    </tr>
+                    <tr>
+                        <td colspan="4">
+                            <div class="addField">
+                                <textarea name="template" rows="20" cols="140"></textarea>
+                            </div>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td colspan="4" align="center">
+                            <div class="addActions">
+                                <input type="submit" disabled name="action" value="Submit template" class="button" />
+                            </div>
+                        </td>
+                    </tr>
+                </form>
+            </table>
+        </p>
+    </div>
+
+
+
+    <div id="editTemplate" style="display:none;" data-id="">
+
+        <p>
+            <table class="tablenoborder" cellpadding="2">
+                <form method="post">
+                    <input name='currentpageoffset' type='hidden' value="{{pageoffset}}" />
+                    <input name='currenttotalentries' type='hidden' value="{{totalentries}}" />
+                    <input name='totalpages' type="hidden" value="{{ totalpages }}" />
+                    <input name='entryperpage' type='hidden' value="{{ entryperpage }}" />
+                    <input name='currententryperpage' type='hidden' value="{{ entryperpage }}" />
+                    <input type="hidden" name="templateid" id="templateid" value="{{ formresult.imageid }}">
+                    <input type="hidden" name="searchName" value="{{ formresult.searchName }}">
+                    <input type="hidden" name="searchDescription" value="{{ formresult.searchDescription }}">
+                    <tr style="background-color: black;line-height:20px;">
+                        <td colspan="4" style="color: darkorange;"><center>Edit ZTP configuration template</center></td>
+                    </tr>
+                    <tr style="line-height:20px;">
+                        <td width="5%" align="left" nowrap><font class="font13px">Name</font></td>
+                        <td width="45%" align="left"><div class="editField"><input type="text" name="name" id="editName" class="input"></div></td>
+                        <td width="5%"><font class="font13px">Description</font></td>
+                        <td width="45%" align="left"><div class="editField"><input type="text" name="description" id="editDescription" class="input"></div></td>
+                    </tr>
+                    <tr>
+                        <td colspan="4">
+                            <div class="editField">
+                                <textarea name="template" rows="20" cols="140" id="editTemplatecontent"></textarea>
+                            </div>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td colspan="4" align="center">
+                            <div class="editActions">
+                                <input type="submit" name="action" value="Submit changes" class="button" />
+                            </div>
+                        </td>
+                    </tr>
+                </form>
+            </table>
+        </p>
+    </div>
+</div>
+    {% endblock %}
