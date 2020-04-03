@@ -61,7 +61,7 @@ pip3 install waitress
 
 Establish an SFTP connection from an SFTP client to the Ubuntu host using the user credentials that you have created during the installation of Ubuntu
 Copy the Flask files (__init__.py, classes.py and static and templates folder) to the Ubuntu server from the SFTP client (they are stored in the /home/... folder
-On the Ubuntu host, copy the files to the /var/www/html/mbrella folder with the cp -r command
+On the Ubuntu host, copy the files to the /var/www/html folder with the cp -r command
 
 Check which adapter is your operational adapter:  ifconfig
 Edit the listener.sh script in the /var/www/html/flask/bash folder and change the network adapter if necessary.
