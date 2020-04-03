@@ -152,8 +152,9 @@ def factoryDefault(result):
     for items in queryStr:
         qresult=sqlQuery(items,"update")
     # Now create the new admin user
-    queryStr="insert into sysuser (username,password,email, cookie) values ('{}','{}','{}','{}')".format("admin",encryptPassword("ArubaRocks!!!!!!", result['password']), "","")
-    sqlQuery(queryStr,"update")
+    queryStr="insert into sysuser (username,password,email, cookie, role) values ('{}','{}','{}','{}','{}')".format("admin",encryptPassword("ArubaRocks!!!!!!", result['password']), "","","0")
+    print(queryStr)
+    sqlQuery(queryStr,"insert")
     # Finally, update the globalvars config file
     pathname = os.path.dirname(sys.argv[0]) 
     if platform.system()=="Windows":
