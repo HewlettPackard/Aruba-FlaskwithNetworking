@@ -1,0 +1,208 @@
+drop database IF EXISTS aruba;
+create database aruba;
+use aruba;
+drop user IF EXISTS 'aruba'@'localhost';
+CREATE USER 'aruba'@'localhost' IDENTIFIED BY 'ArubaRocks';
+GRANT ALL PRIVILEGES ON aruba.* TO 'aruba'@'localhost' WITH GRANT OPTION;
+grant drop on table aruba.* to 'aruba'@'localhost';
+
+DROP TABLE IF EXISTS devices;
+CREATE TABLE IF NOT EXISTS devices (
+  id bigint(20) NOT NULL AUTO_INCREMENT,
+  description text,
+  ipaddress text,
+  username text,
+  password text,
+  secinfo text,
+  websocketconnect int(11) UNSIGNED,
+  ostype text,
+  platform text,
+  osversion text,
+  cpu text,
+  memory text,
+  sysinfo longtext,
+  ports longtext,
+  interfaces longtext,
+  vrf longtext,
+  vsx longtext,
+  vsxlags longtext,
+  vsf longtext,
+  bps mediumtext,
+  lldp mediumtext,
+  routeinfo mediumtext,
+  topology int(11) UNSIGNED,
+  PRIMARY KEY (id)
+) ENGINE=MyISAM AUTO_INCREMENT=335 DEFAULT CHARSET=latin1;
+
+DROP TABLE IF EXISTS dhcptracker;
+CREATE TABLE IF NOT EXISTS dhcptracker (
+  id bigint(20) UNSIGNED NOT NULL AUTO_INCREMENT,
+  utctime double NOT NULL,
+  dhcptype text NOT NULL,
+  information text NOT NULL,
+  options text NOT NULL,
+  PRIMARY KEY (id)
+) ENGINE=MyISAM AUTO_INCREMENT=1563 DEFAULT CHARSET=latin1;
+
+DROP TABLE IF EXISTS dsprofiles;
+CREATE TABLE IF NOT EXISTS dsprofiles (
+  id bigint(20) NOT NULL AUTO_INCREMENT,
+  name text NOT NULL,
+  members text NOT NULL,
+  ports text NOT NULL,
+  macauth int(11) NOT NULL,
+  maclimit int(11) NOT NULL,
+  dot1x int(11) NOT NULL,
+  dot1xlimit int(11) NOT NULL,
+  clearpass text NOT NULL,
+  radiussecret text NOT NULL,
+  duradmin text NOT NULL,
+  durpassword text NOT NULL,
+  macauthsource text NOT NULL,
+  macauthmethod text NOT NULL,
+  dot1xsource text NOT NULL,
+  dot1xmethod text NOT NULL,
+  ntpserver text NOT NULL,
+  ntpauth text NOT NULL,
+  primarycontroller text NOT NULL,
+  backupcontroller text NOT NULL,
+  PRIMARY KEY (id)
+) ENGINE=MyISAM AUTO_INCREMENT=24 DEFAULT CHARSET=latin1;
+
+DROP TABLE IF EXISTS dsservices;
+CREATE TABLE IF NOT EXISTS dsservices (
+  id bigint(20) NOT NULL AUTO_INCREMENT,
+  name text NOT NULL,
+  profile text NOT NULL,
+  policies text NOT NULL,
+  PRIMARY KEY (id)
+) ENGINE=MyISAM AUTO_INCREMENT=26 DEFAULT CHARSET=latin1;
+
+DROP TABLE IF EXISTS snmptracker;
+CREATE TABLE IF NOT EXISTS snmptracker (
+  id bigint(20) UNSIGNED NOT NULL AUTO_INCREMENT,
+  utctime double NOT NULL,
+  source text NOT NULL,
+  version text NOT NULL,
+  community text NOT NULL,
+  information text NOT NULL,
+  PRIMARY KEY (id)
+) ENGINE=MyISAM AUTO_INCREMENT=628 DEFAULT CHARSET=latin1;
+
+DROP TABLE IF EXISTS syslog;
+CREATE TABLE IF NOT EXISTS syslog (
+  id bigint(20) UNSIGNED NOT NULL AUTO_INCREMENT,
+  utctime double NOT NULL,
+  source text NOT NULL,
+  facility text NOT NULL,
+  severity text NOT NULL,
+  information text NOT NULL,
+  PRIMARY KEY (id)
+) ENGINE=MyISAM AUTO_INCREMENT=9 DEFAULT CHARSET=latin1;
+
+DROP TABLE IF EXISTS `sysuser`;
+CREATE TABLE IF NOT EXISTS `sysuser` (
+  `id` bigint(20) UNSIGNED NOT NULL AUTO_INCREMENT,
+  `username` text NOT NULL,
+  `password` text NOT NULL,
+  `email` text NOT NULL,
+  `cookie` text NOT NULL,
+  `role` int NOT NULL,
+  PRIMARY KEY (`id`)
+) ENGINE=MyISAM AUTO_INCREMENT=4 DEFAULT CHARSET=latin1;
+
+
+DROP TABLE IF EXISTS `configmgr`;
+CREATE TABLE IF NOT EXISTS `configmgr` ( 
+   `id` BIGINT(20) UNSIGNED NOT NULL AUTO_INCREMENT, 
+   `deviceid` BIGINT UNSIGNED NOT NULL, 
+   `utctime` DOUBLE NOT NULL, 
+   `backuptype` TEXT NOT NULL, 
+   `owner` TEXT NOT NULL, 
+   `description` TEXT NOT NULL, 
+   `configuration` LONGTEXT NOT NULL,
+   `masterbackup` BIGINT UNSIGNED NOT NULL,
+    PRIMARY KEY (`id`)
+) ENGINE=MyISAM AUTO_INCREMENT=4 DEFAULT CHARSET=latin1;
+
+
+DROP TABLE IF EXISTS `ztpprofiles`;
+CREATE TABLE `ztpprofiles` (
+  `id` bigint(20) UNSIGNED NOT NULL AUTO_INCREMENT,
+  `name` text NOT NULL,
+  `username` text NOT NULL,
+  `password` text NOT NULL,
+  `vrf` text NOT NULL,
+  `dns` text NOT NULL,
+  PRIMARY KEY (`id`)
+) ENGINE=InnoDB DEFAULT CHARSET=latin1;
+
+
+DROP TABLE IF EXISTS `ztpdevices`;
+CREATE TABLE `ztpdevices` (
+  `id` bigint(20) UNSIGNED NOT NULL AUTO_INCREMENT,
+  `name` text NOT NULL,
+  `macaddress` text NOT NULL,
+  `ipaddress` text NOT NULL,
+  `netmask` text NOT NULL,
+  `gateway` text NOT NULL,
+  `profile` bigint(20) NOT NULL,
+  `softwareimage` bigint(20) NOT NULL,
+  `template` bigint(20) NOT NULL,
+  `templateparameters` mediumtext NOT NULL,
+  `vsfenabled` int(11) NOT NULL,
+  `vsfrole` text NOT NULL,
+  `vsfmember` int(11) NOT NULL,
+  `vsfmaster` bigint(20) NOT NULL,
+  `switchtype` int(11) NOT NULL,
+  `link1` text NOT NULL,
+  `link2` text NOT NULL,
+  `enableztp` int(11) NOT NULL,
+  `ztpstatus` text NOT NULL,
+   PRIMARY KEY (`id`)
+) ENGINE=InnoDB DEFAULT CHARSET=latin1;
+
+
+DROP TABLE IF EXISTS `ztpimages`;
+CREATE TABLE `ztpimages` (
+  `id` bigint(20) UNSIGNED NOT NULL AUTO_INCREMENT,
+  `name` text NOT NULL,
+  `devicefamily` text NOT NULL,
+  `filename` text NOT NULL,
+  `version` text NOT NULL,
+  PRIMARY KEY (`id`)
+) ENGINE=InnoDB DEFAULT CHARSET=latin1;
+
+DROP TABLE IF EXISTS `ztptemplates`;
+CREATE TABLE `ztptemplates` (
+  `id` int(10) UNSIGNED NOT NULL AUTO_INCREMENT,
+  `name` text NOT NULL,
+  `description` text NOT NULL,
+  `template` longtext NOT NULL,
+  PRIMARY KEY (`id`)
+) ENGINE=InnoDB DEFAULT CHARSET=latin1;
+
+DROP TABLE IF EXISTS `ztplog`;
+CREATE TABLE `ztplog` (
+  `id` bigint(20) UNSIGNED NOT NULL AUTO_INCREMENT,
+  `ztpdevice` bigint(20) NOT NULL,
+  `logging` longtext NOT NULL,
+  PRIMARY KEY (`id`)
+) ENGINE=InnoDB DEFAULT CHARSET=latin1;
+
+CREATE TABLE `topology` (
+  `id` bigint(20) UNSIGNED NOT NULL AUTO_INCREMENT,
+  `switchip` text NOT NULL,
+  `systemmac` text NOT NULL,
+  `hostname` text NOT NULL,
+  `interface` text NOT NULL,
+  `remoteswitchip` text NOT NULL,
+  `remotesystemmac` text NOT NULL,
+  `remotehostname` text NOT NULL,
+  `remoteinterface` text NOT NULL,
+  `lldpinfo` mediumtext NOT NULL,
+  PRIMARY KEY (`id`)
+) ENGINE=InnoDB DEFAULT CHARSET=latin1;
+
+INSERT INTO `sysuser` (`username`, `email`,`password`,`cookie`,`role`) VALUES
+('admin', 'admin@carius.org', '', '','0');

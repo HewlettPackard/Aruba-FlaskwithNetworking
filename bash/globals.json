@@ -1,0 +1,1 @@
+{"idle_timeout": "3000", "pcap_location": "/var/www/html/bash/trace.pcap", "retain_dhcp": "30", "retain_snmp": "30", "retain_syslog": "30", "secret_key": "ArubaRocks!!!!!!", "appPath": "/var/www/html/", "softwareRelease": "1.1", "sysInfo": ""}
