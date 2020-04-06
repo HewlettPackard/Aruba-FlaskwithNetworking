@@ -3,6 +3,7 @@
 
 import classes.classes
 import requests
+import time
 from requests.auth import HTTPBasicAuth
 import urllib3
 import ssl
@@ -306,17 +307,22 @@ def processAction(name, action):
 
 
 def checkPhpipam(info):
-    url=info['phpipamauth'] + "://" + info['ipamipaddress'] + "/api/" + info['phpipamappid'] + "/user/"
-    result = requests.post(url, auth=(info['ipamuser'], info['ipampassword']), verify=False)
-    if result.status_code==200:
-        return "Online"
-    else:
+    try:
+        url=info['phpipamauth'] + "://" + info['ipamipaddress'] + "/api/" + info['phpipamappid'] + "/user/"
+        result = requests.post(url, auth=(info['ipamuser'], info['ipampassword']), verify=False)
+        if result.status_code==200:
+            return "Online"
+        else:
+            return "Offline"
+    except:
         return "Offline"
-
 def checkInfoblox(info):
-    url = 'https://' + info['ipamipaddress'] + "/wapi/v2.10/network"
-    result=requests.get(url, auth=HTTPBasicAuth(info['ipamuser'], info['ipampassword']), verify=False)
-    if result.status_code==200:
-        return "Online"
-    else:
+    try:
+        url = 'https://' + info['ipamipaddress'] + "/wapi/v2.10/network"
+        result=requests.get(url, auth=HTTPBasicAuth(info['ipamuser'], info['ipampassword']), verify=False) 
+        if result.status_code==200:
+            return "Online"
+        else:
+            return "Offline"
+    except:
         return "Offline"

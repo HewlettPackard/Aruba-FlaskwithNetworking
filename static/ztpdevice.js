@@ -54,29 +54,32 @@ $(document).ready(function () {
             $('.selectSwitchtype').attr('disabled', false);
             if ($(".selectVsfrole").val() == "Master") {
                  //Master is selected, disable the member id and master switch field
-                $('.selectVsfmember').attr('disabled', 'disabled');
-                $('.selectVsfmaster').attr('disabled', 'disabled');
+                $('.selectVsfmember').attr('disabled', true);
+                $('.selectVsfmaster').attr('disabled', true);
+                $('.selectTemplateparameters').attr('disabled', false);
             }
             else {
                 $('.selectVsfmember').attr('disabled', false);
                 $('.selectVsfmaster').attr('disabled', false);
+                $('.selectSoftwareimage').attr('disabled', true);
+                $('.selectTemplateparameters').attr('disabled', true);
             }
             $('.selectVsfrole').attr('disabled', false);
-
             $('.selectVsflink1').attr('disabled', false);
             $('.selectVsflink2').attr('disabled', false);
         }
         else {
             //VSF is deactivated. Disable all the VSF related fields and enable the template and software image field
-            $('.selectVsfrole').attr('disabled', 'disabled');
-            $('.selectVsfmember').attr('disabled', 'disabled');
-            $('.selectVsfmaster').attr('disabled', 'disabled');
-            $('.selectVsflink1').attr('disabled', 'disabled');
-            $('.selectVsflink2').attr('disabled', 'disabled');
-            $('.selectLink1').attr('disabled', 'disabled');
-            $('.selectLink2').attr('disabled', 'disabled');
-            $('.selectSwitchtype').attr('disabled', 'disabled');
-
+            $('.selectVsfrole').attr('disabled', true);
+            $('.selectVsfmember').attr('disabled', true);
+            $('.selectVsfmaster').attr('disabled', true);
+            $('.selectVsflink1').attr('disabled', true);
+            $('.selectVsflink2').attr('disabled', true);
+            $('.selectLink1').attr('disabled', true);
+            $('.selectLink2').attr('disabled', true);
+            $('.selectSwitchtype').attr('disabled', true);
+            $('.selectSoftwareimage').attr('disabled', false);
+            $('.selectTemplateparameters').attr('disabled', false);
          }
         
     });
@@ -91,8 +94,8 @@ $(document).ready(function () {
             //Master is selected, disable the member id and master switch field
             $('#' + vsfmasterId).empty();
             $('#' + vsfmasterId).append('<option value="">Select</option>');
-            $('.selectVsfmember').attr('disabled', 'disabled');
-            $('.selectVsfmaster').attr('disabled', 'disabled');
+            $('.selectVsfmember').attr('disabled', true);
+            $('.selectVsfmaster').attr('disabled', true);
             $('.selectSoftwareimage').attr('disabled', false);
             $('.selectTemplateparameters').attr('disabled', false);
             $('.selectSoftwareimage').attr('disabled', false);
@@ -100,10 +103,10 @@ $(document).ready(function () {
         else {
             $('.selectVsfmember').attr('disabled', false);
             $('.selectVsfmaster').attr('disabled', false);
-            $('.selectSoftwareimage').attr('disabled', 'disabled');
-            $('.selecttemplateparameters').attr('disabled', 'disabled');
-            $('.selectSoftwareimage').attr('disabled', 'disabled');
-            $('.selectTemplateparameters').attr('disabled', 'disabled');
+            $('.selectSoftwareimage').attr('disabled', true);
+            $('.selecttemplateparameters').attr('disabled', true);
+            $('.selectSoftwareimage').attr('disabled', true);
+            $('.selectTemplateparameters').attr('disabled', true);
             // Get the master VSF switches from the database and fill the select options
             response = await $.ajax({
                 type: "POST",
@@ -277,6 +280,42 @@ $(document).ready(function () {
             }, 3000);
         });
 
+    $('.ipamStatus').ready(
+        function () {
+            setInterval(async function () {
+                    try {
+                        response = await $.ajax({
+                            type: "POST",
+                            url: "/checkIpamstatus",
+                            success: function (response) {
+                                if (response == "Online") {
+                                    document.getElementById("liProgress").style.display = "none";
+                                    $(".editDevice").prop('disabled', false);
+                                    $(".addDevice").prop('disabled', false);
+                                    $(".editDevice").css("opacity", "1");
+                                    $(".addDevice").css("opacity", "1");
+
+                                }
+                                else {
+                                    $(".editDevice").prop('disabled', true);
+                                    $(".addDevice").prop('disabled', true);
+                                    $(".editDevice").css("opacity", "0.3");
+                                    $(".addDevice").css("opacity", "0.3");
+                                    document.getElementById("liProgress").style.display = "block";
+                                    document.getElementById("progresstooltip").style.display = "none";
+                                    progressInfo.innerHTML = "IPAM is not reachable";
+                                }
+
+                            }
+                        });
+                    }
+                    catch (e) {
+                        //Ignore this error
+                    }
+             }, 3000);
+        });
+
+
 
     $(document).on("click", ".enableZTP", async function (enableZTP) {
 
@@ -297,10 +336,10 @@ $(document).ready(function () {
         document.getElementById("enableZTP" + $(this).attr('data-deviceid')).value = "Disable ZTP";
         document.getElementById('enableZTP' + $(this).attr('data-deviceid')).setAttribute('id', 'disableZTP' + $(this).attr('data-deviceid'));
         document.getElementById('disableZTP' + $(this).attr('data-deviceid')).setAttribute('data-macaddress', $(this).attr('data-macaddress'));
-        document.getElementById('editDevice' + $(this).attr('data-deviceid')).setAttribute('disabled', 'disabled');
-        document.getElementById('editDevice' + $(this).attr('data-deviceid')).style.opacity = "0.3";
-        document.getElementById('deleteDevice' + $(this).attr('data-deviceid')).setAttribute('disabled', 'disabled');
-        document.getElementById('deleteDevice' + $(this).attr('data-deviceid')).style.opacity = "0.6";
+        //document.getElementById('editDevice' + $(this).attr('data-deviceid')).setAttribute('disabled', 'disabled');
+        //document.getElementById('editDevice' + $(this).attr('data-deviceid')).style.opacity = "0.3";
+        //document.getElementById('deleteDevice' + $(this).attr('data-deviceid')).setAttribute('disabled', 'disabled');
+        //document.getElementById('deleteDevice' + $(this).attr('data-deviceid')).style.opacity = "0.6";
         document.getElementById("addDevice").style.display = "none";
         document.getElementById("editDevice").style.display = "none";
     });
@@ -324,10 +363,10 @@ $(document).ready(function () {
         document.getElementById("disableZTP" + $(this).attr('data-deviceid')).value = "Enable ZTP";
         document.getElementById('disableZTP' + $(this).attr('data-deviceid')).setAttribute('id', 'enableZTP' + $(this).attr('data-deviceid'));
         document.getElementById('enableZTP' + $(this).attr('data-deviceid')).setAttribute('data-macaddress', $(this).attr('data-macaddress'));
-        document.getElementById('editDevice' + $(this).attr('data-deviceid')).removeAttribute('disabled');
-        document.getElementById('editDevice' + $(this).attr('data-deviceid')).style.opacity = "1";
-        document.getElementById('deleteDevice' + $(this).attr('data-deviceid')).removeAttribute('disabled');
-        document.getElementById('deleteDevice' + $(this).attr('data-deviceid')).style.opacity = "1";
+        //document.getElementById('editDevice' + $(this).attr('data-deviceid')).removeAttribute('disabled');
+        //document.getElementById('editDevice' + $(this).attr('data-deviceid')).style.opacity = "1";
+        //document.getElementById('deleteDevice' + $(this).attr('data-deviceid')).removeAttribute('disabled');
+        //document.getElementById('deleteDevice' + $(this).attr('data-deviceid')).style.opacity = "1";
         document.getElementById("addDevice").style.display = "none";
         document.getElementById("editDevice").style.display = "none";
     });
@@ -472,7 +511,7 @@ $(document).ready(function () {
         response = JSON.parse(response);
         deviceInfo = response['deviceInfo'];
         sysvars = response['sysvars'];
-        
+
         if ("ipamenabled" in sysvars) {
             var ipArray = [];
             if ("ipamIpaddress" in response) {
@@ -495,9 +534,13 @@ $(document).ready(function () {
                     }
                 }
             }
+            else {
+                document.getElementById("liProgress").style.display = "block";
+                document.getElementById("progresstooltip").style.display = "none";
+                progressInfo.innerHTML = "IPAM is not reachable";
+            }
             document.getElementById('editipamnetmaskvalue').value = deviceInfo['netmask'];
             document.getElementById('editipamgatewayvalue').value = deviceInfo['gateway'];
-            console.log(document.getElementById('editipamgatewayvalue').value);
             document.getElementById('editipamgatewayDiv').innerHTML = "<font class='font12px'>" + deviceInfo['gateway'] + "</font>";
 
             // Only show IPv4 subnets
@@ -607,8 +650,8 @@ $(document).ready(function () {
                 //Master is selected, disable the software image, template, member id and master switch field
                 $('#' + vsfmasterId).empty();
                 $('#' + vsfmasterId).append('<option value="0">Select</option>');
-                $('.selectVsfmember').attr('disabled', 'disabled');
-                $('.selectVsfmaster').attr('disabled', 'disabled');
+                $('.selectVsfmember').attr('disabled', true);
+                $('.selectVsfmaster').attr('disabled', true);
                 $('.selectSoftwareimage').attr('disabled', false);
                 $('.selecttemplateparameters').attr('disabled', false);
 
@@ -616,8 +659,8 @@ $(document).ready(function () {
             else {
                 $('.selectVsfmember').attr('disabled', false);
                 $('.selectVsfmaster').attr('disabled', false);
-                $('.selectSoftwareimage').attr('disabled', 'disabled');
-                $('.selecttemplateparameters').attr('disabled', 'disabled');
+                $('.selectSoftwareimage').attr('disabled', true);
+                $('.selecttemplateparameters').attr('disabled', true);
             }
                 if (deviceInfo['switchtype'] == "24") {
                     $('#editSelectlink1').empty();
@@ -659,7 +702,17 @@ $(document).ready(function () {
             $('.selectVsflink2').attr('disabled', false);
         }
         else {
+            //VSF is disabled. Disable all the VSF fields
             document.getElementById("editEnablevsf").checked = false;
+            $('.selectSoftwareimage').attr('disabled', false);
+            $('.selectSwitchtype').attr('disabled', true);
+            $('.selectVsfrole').attr('disabled', true);
+            $('.selectVsflink1').attr('disabled', true);
+            $('.selectVsflink2').attr('disabled', true);
+            $('.selectVsfmember').attr('disabled', true);
+            $('.selectVsfmaster').attr('disabled', true);
+            $('.selecttemplateparameters').attr('disabled', false);
+
         }
 
         // If there is a template assigned to the device, we need to get the parameter information and build the table

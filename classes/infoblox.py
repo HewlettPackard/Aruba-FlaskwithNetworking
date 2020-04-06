@@ -7,11 +7,11 @@ import urllib3
 import json
 
 urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)
-ibSession= requests.session()
+
+ibSession=requests.session()
 
 def getInfoblox(url):
     globalsconf=classes.classes.globalvars()
-    global ibSession
     url = 'https://' + globalsconf['ipamipaddress'] + "/wapi/v2.10/" + url
-    response=ibSession.get(url, auth=HTTPBasicAuth(globalsconf['ipamuser'], globalsconf['ipampassword']), verify=False)
+    response=requests.get(url, auth=HTTPBasicAuth(globalsconf['ipamuser'], globalsconf['ipampassword']), verify=False)
     return response.json()

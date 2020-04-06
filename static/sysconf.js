@@ -71,45 +71,45 @@ $('#systemTime').ready(function () {
 
 
 $('#ipamstatus').ready(function () {
-
     var refresh = async function () {
-        var e = document.getElementById("ipamsystem");
-        var ipamsystem = e.options[e.selectedIndex].value;
-        var ipamenabled = document.getElementById("ipamenabled");
-        if ((ipamsystem == "Infoblox" || ipamsystem == "PHPIPAM") && ipamenabled.checked==true) {
-            if (ipamsystem == "Infoblox") {
-                var ipamuser = document.getElementById('ipamuser').value;
-                var ipampassword = document.getElementById('ipampassword').value;
-                var ipamipaddress = document.getElementById('ipamipaddress').value;
-                var phpipamappid = "";
-                var phpipamauth = "";
-            }
-            else if (ipamsystem == "PHPIPAM") {
-                var ipamuser = document.getElementById('ipamuser').value;
-                var ipampassword = document.getElementById('ipampassword').value;
-                var ipamipaddress = document.getElementById('ipamipaddress').value;
-                var e = document.getElementById("phpipamauth");
-                var phpipamauth = e.options[e.selectedIndex].value;
-                var phpipamappid = document.getElementById('phpipamappid').value;
-            }
-
-            response = await $.ajax({
-                url: "/ipamStatus",
-                type: "POST",
-                data: { ipamsystem: ipamsystem, ipamipaddress:ipamipaddress, ipamuser: ipamuser, ipampassword: ipampassword, phpipamauth: phpipamauth, phpipamappid: phpipamappid },
-                success: function (response) {
+        if (document.getElementById('ipamsystem')) {
+            var e = document.getElementById("ipamsystem");
+            var ipamsystem = e.options[e.selectedIndex].value;
+            var ipamenabled = document.getElementById("ipamenabled");
+            if ((ipamsystem == "Infoblox" || ipamsystem == "PHPIPAM") && ipamenabled.checked == true) {
+                if (ipamsystem == "Infoblox") {
+                    var ipamuser = document.getElementById('ipamuser').value;
+                    var ipampassword = document.getElementById('ipampassword').value;
+                    var ipamipaddress = document.getElementById('ipamipaddress').value;
+                    var phpipamappid = "";
+                    var phpipamauth = "";
                 }
-            });
-            if (response == "Online") {
-                document.getElementById("ipamStatus").innerHTML = "<font class='font13px'>IPAM reachable: </font><img src='static/images/ok.png' height='15' width='15'>";
+                else if (ipamsystem == "PHPIPAM") {
+                    var ipamuser = document.getElementById('ipamuser').value;
+                    var ipampassword = document.getElementById('ipampassword').value;
+                    var ipamipaddress = document.getElementById('ipamipaddress').value;
+                    var e = document.getElementById("phpipamauth");
+                    var phpipamauth = e.options[e.selectedIndex].value;
+                    var phpipamappid = document.getElementById('phpipamappid').value;
+                }
+
+                response = await $.ajax({
+                    url: "/ipamStatus",
+                    type: "POST",
+                    data: { ipamsystem: ipamsystem, ipamipaddress: ipamipaddress, ipamuser: ipamuser, ipampassword: ipampassword, phpipamauth: phpipamauth, phpipamappid: phpipamappid },
+                    success: function (response) {
+                    }
+                });
+                if (response == "Online") {
+                    document.getElementById("ipamStatus").innerHTML = "<font class='font13px'>IPAM reachable: </font><img src='static/images/ok.png' height='15' width='15'>";
+                }
+                else {
+                    document.getElementById("ipamStatus").innerHTML = "<font class='font13px'>IPAM unreachable: </font><img src='static/images/notok.png' height='15' width='15'>";
+                }
             }
             else {
-                document.getElementById("ipamStatus").innerHTML = "<font class='font13px'>IPAM unreachable: </font><img src='static/images/notok.png' height='15' width='15'>";
+                document.getElementById("ipamStatus").innerHTML = "<font class='font13px'>IPAM not selected or activated...</font>";
             }
-
-        }
-        else {
-            document.getElementById("ipamStatus").innerHTML = "<font class='font13px'>IPAM not selected or activated...</font>";
         }
     }
     setInterval(refresh, 5000);

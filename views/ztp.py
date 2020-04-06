@@ -39,7 +39,6 @@ def ztpdevice ():
         sysvars=classes.globalvars()
         if request.form:
             formresult=request.form.to_dict()
-            print(formresult)
             # If there are template parameters in the formresult, we need to convert those and get them into a proper dictionary because Python does not really understand form array submission
             for key in request.form.keys():
                 for value in request.form.getlist(key):
@@ -61,7 +60,18 @@ def ztpdevice ():
         imageResult=classes.sqlQuery(queryStr,"select")
         queryStr="select id, name from ztptemplates"
         templateResult=classes.sqlQuery(queryStr,"select")
-        return render_template("ztpdevice.html",result=result['result'],formresult=formresult,imageResult=imageResult, templateResult=templateResult, ztpstatusInfo=ztpstatusInfo,profileResult=result['profileResult'], totalentries=int(result['totalentries']),pageoffset=int(result['pageoffset']),entryperpage=int(result['entryperpage']), authOK=authOK, sysvars=sysvars)
+        # Also need to check whether the IPAM is reachable. If not, we have to disable some buttons on the forms
+        if "ipamenabled" in sysvars:
+            # IPAM is enabled. Check whether IPAM is online
+            if sysvars['ipamsystem']=="PHPIPAM":
+                info={'phpipamauth': sysvars['phpipamauth'],'ipamipaddress':sysvars['ipamipaddress'],'phpipamappid':sysvars['phpipamappid'],'ipamuser':sysvars['ipamuser'],'ipampassword':sysvars['ipampassword']}
+                ipamstatus=classes.checkPhpipam(info)
+            elif sysvars['ipamsystem']=="Infoblox":
+                info={'ipamipaddress':sysvars['ipamipaddress'],'ipamuser':sysvars['ipamuser'],'ipampassword':sysvars['ipampassword']}
+                ipamstatus=classes.checkInfoblox(info)
+        else:
+            ipamstatus="Online"
+        return render_template("ztpdevice.html",result=result['result'],formresult=formresult,imageResult=imageResult, templateResult=templateResult, ipamstatus=ipamstatus, ztpstatusInfo=ztpstatusInfo,profileResult=result['profileResult'], totalentries=int(result['totalentries']),pageoffset=int(result['pageoffset']),entryperpage=int(result['entryperpage']), authOK=authOK, sysvars=sysvars)
     else:
         return render_template("login.html")
 
@@ -126,27 +136,36 @@ def ztpdeviceInfo ():
     result=classes.sqlQuery(queryStr,"selectone")
     # If ipam is enabled, we also need to get the subnet information
     if "ipamenabled" in sysvars:
-        # ipam is enabled, obtain the subnet information, based on which IPAM is used (PHPIPAM or Infoblox)
+        # IPAM is enabled. First check whether IPAM is online
         if sysvars['ipamsystem']=="PHPIPAM":
-            ipamResult=classes.PHPipamget('subnets')       
-            # If there is already a subnet selected, we also have to obtain the IP subnet and IP address information
-            if result['ipamsubnet']:
-                ipamsubnet=classes.PHPipamget('subnets/{}'.format(result['ipamsubnet']))
-                # Obtain the active IP addresses from the subnet
-                ipamIpaddress=classes.PHPipamget('subnets/{}/addresses'.format(result['ipamsubnet']))
-                response={'sysvars':sysvars,'deviceInfo':result,'subnets':ipamResult,'ipamsubnet':ipamsubnet,'ipamIpaddress': ipamIpaddress }
-            else:
-                response={'sysvars':sysvars,'deviceInfo':result,'subnets':ipamResult }
+            info={'phpipamauth': sysvars['phpipamauth'],'ipamipaddress':sysvars['ipamipaddress'],'phpipamappid':sysvars['phpipamappid'],'ipamuser':sysvars['ipamuser'],'ipampassword':sysvars['ipampassword']}
+            ipamstatus=classes.checkPhpipam(info)
         elif sysvars['ipamsystem']=="Infoblox":
-            ipamResult=classes.getInfoblox("network")
-            # If there is already a subnet selected, we also have to obtain the IP subnet and IP address information
-            if result['ipamsubnet']:
-                ipamsubnet=classes.getInfoblox("network?_return_fields%2B=options,members")
-                ipamIpaddress=classes.getInfoblox('ipv4address?status=USED&network={}&_return_as_object=1'.format(result['ipamsubnet']))
-                response={'sysvars':sysvars,'deviceInfo':result,'subnets':ipamResult,'ipamsubnet':ipamsubnet,'ipamIpaddress': ipamIpaddress }
-            else:
-                response={'sysvars':sysvars,'deviceInfo':result,'subnets':ipamResult }
-
+            info={'ipamipaddress':sysvars['ipamipaddress'],'ipamuser':sysvars['ipamuser'],'ipampassword':sysvars['ipampassword']}
+            ipamstatus=classes.checkInfoblox(info)
+        if ipamstatus=="Online":
+            # IPAM is online, obtain the subnet information, based on which IPAM is used (PHPIPAM or Infoblox)
+            if sysvars['ipamsystem']=="PHPIPAM":
+                ipamResult=classes.PHPipamget('subnets')       
+                # If there is already a subnet selected, we also have to obtain the IP subnet and IP address information
+                if result['ipamsubnet']:
+                    ipamsubnet=classes.PHPipamget('subnets/{}'.format(result['ipamsubnet']))
+                    # Obtain the active IP addresses from the subnet
+                    ipamIpaddress=classes.PHPipamget('subnets/{}/addresses'.format(result['ipamsubnet']))
+                    response={'sysvars':sysvars,'deviceInfo':result,'subnets':ipamResult,'ipamsubnet':ipamsubnet,'ipamIpaddress': ipamIpaddress }
+                else:
+                    response={'sysvars':sysvars,'deviceInfo':result,'subnets':ipamResult }
+            elif sysvars['ipamsystem']=="Infoblox":
+                ipamResult=classes.getInfoblox("network")
+                # If there is already a subnet selected, we also have to obtain the IP subnet and IP address information
+                if result['ipamsubnet']:
+                    ipamsubnet=classes.getInfoblox("network?_return_fields%2B=options,members")
+                    ipamIpaddress=classes.getInfoblox('ipv4address?status=USED&network={}&_return_as_object=1'.format(result['ipamsubnet']))
+                    response={'sysvars':sysvars,'deviceInfo':result,'subnets':ipamResult,'ipamsubnet':ipamsubnet,'ipamIpaddress': ipamIpaddress }
+                else:
+                    response={'sysvars':sysvars,'deviceInfo':result,'subnets':ipamResult }
+        else:
+             response={'sysvars':sysvars,'deviceInfo':result}
     else:
         response={'sysvars':sysvars,'deviceInfo':result}
     return json.dumps(response)
@@ -266,3 +285,18 @@ def ztpDeactivate ():
         return json.dumps(result)
     else:
         return render_template("login.html")
+
+@ztp.route("/checkIpamstatus", methods=['GET','POST'])
+def checkIpamstatus ():
+    sysvars=classes.globalvars()
+    if "ipamenabled" in sysvars:
+        # IPAM is enabled. Check whether IPAM is online
+        if sysvars['ipamsystem']=="PHPIPAM":
+            info={'phpipamauth': sysvars['phpipamauth'],'ipamipaddress':sysvars['ipamipaddress'],'phpipamappid':sysvars['phpipamappid'],'ipamuser':sysvars['ipamuser'],'ipampassword':sysvars['ipampassword']}
+            ipamstatus=classes.checkPhpipam(info)
+        elif sysvars['ipamsystem']=="Infoblox":
+            info={'ipamipaddress':sysvars['ipamipaddress'],'ipamuser':sysvars['ipamuser'],'ipampassword':sysvars['ipampassword']}
+            ipamstatus=classes.checkInfoblox(info)
+    else:
+        ipamstatus="Online"
+    return ipamstatus

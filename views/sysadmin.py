@@ -73,9 +73,8 @@ def getsysTime():
 
 @sysadmin.route("/ipamStatus",methods=['GET','POST'])
 def ipamStatus():
-    # Return system time to calling station
+    # Check whether IPAM is online
     formresult=request.form
-    result=""
     if formresult['ipamsystem']=="PHPIPAM":
         result=classes.checkPhpipam(formresult)
     elif formresult['ipamsystem']=="Infoblox":
