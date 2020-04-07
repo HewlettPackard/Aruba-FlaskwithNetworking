@@ -8,6 +8,8 @@ import sys
 import os
 import requests
 import urllib3
+import ipaddress
+
 from urllib.parse import quote, unquote
 urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)
 
@@ -45,7 +47,6 @@ def discoverTopology():
                 sysmac= ':'.join([sysmac[i:i+2] for i in range(0, len(sysmac), 2)])
                 url="lldp/remote-device"
                 lldpresult=getRESTswitch(items['ipaddress'],header,url)
-                #print(lldpresult)
                 logoutswitch(items['ipaddress'], header)
                 try:
                     for lldpitems in lldpresult['lldp_remote_device_element']:
@@ -53,16 +54,26 @@ def discoverTopology():
                         cursor.execute(queryStr)
                         result = cursor.fetchall()
                         if result:
-                            queryStr="update topology set switchip='{}', systemmac='{}',hostname='{}',interface='{}',remoteswitchip='{}',remotesystemmac='{}',remotehostname='{}',remoteinterface='{}',lldpinfo='{}' where id='{}'" \
+                            # We should only store the remote IP address if the IP address of the remote system is the proper format
+                            if checkIpaddress(lldpitems['remote_management_address']['address'])==True: 
+                                queryStr="update topology set switchip='{}', systemmac='{}',hostname='{}',interface='{}',remoteswitchip='{}',remotesystemmac='{}',remotehostname='{}',remoteinterface='{}',lldpinfo='{}' where id='{}'" \
                                 .format(items['ipaddress'],sysmac,switchresult['name'],lldpitems['local_port'],lldpitems['remote_management_address']['address'],lldpitems['chassis_id'].replace(' ',':'),lldpitems['system_name'],lldpitems['port_description'],json.dumps(lldpresult),result[0]['id'])
+                            else:
+                                queryStr="update topology set switchip='{}', systemmac='{}',hostname='{}',interface='{}',remoteswitchip='{}',remotesystemmac='{}',remotehostname='{}',remoteinterface='{}',lldpinfo='{}' where id='{}'" \
+                                .format(items['ipaddress'],sysmac,switchresult['name'],lldpitems['local_port'],'',lldpitems['chassis_id'].replace(' ',':'),lldpitems['system_name'],lldpitems['port_description'],json.dumps(lldpresult),result[0]['id'])
                             cursor.execute(queryStr)
                             existingEntries.append(result[0]['id'])
                         else:
-                            queryStr="insert into topology (switchip,systemmac,hostname,interface,remoteswitchip,remotesystemmac,remotehostname,remoteinterface,lldpinfo) values ('{}','{}','{}','{}','{}','{}','{}','{}','{}')" \
+                            # We should only store the remote IP address if the IP address of the remote system is the proper format
+                            if checkIpaddress(lldpitems['remote_management_address']['address'])==True: 
+                                queryStr="insert into topology (switchip,systemmac,hostname,interface,remoteswitchip,remotesystemmac,remotehostname,remoteinterface,lldpinfo) values ('{}','{}','{}','{}','{}','{}','{}','{}','{}')" \
                                 .format(items['ipaddress'],sysmac,switchresult['name'],lldpitems['local_port'],lldpitems['remote_management_address']['address'],lldpitems['chassis_id'].replace(' ',':'),lldpitems['system_name'],lldpitems['port_description'],json.dumps(lldpresult))
+                            else:
+                                queryStr="insert into topology (switchip,systemmac,hostname,interface,remoteswitchip,remotesystemmac,remotehostname,remoteinterface,lldpinfo) values ('{}','{}','{}','{}','{}','{}','{}','{}','{}')" \
+                                .format(items['ipaddress'],sysmac,switchresult['name'],lldpitems['local_port'],'',lldpitems['chassis_id'].replace(' ',':'),lldpitems['system_name'],lldpitems['port_description'],json.dumps(lldpresult))
                             cursor.execute(queryStr)
                 except:
-                    #print("Could not create or update topology for switch {}".format(items['ipaddress']))
+                    print("Could not create or update topology for switch {}".format(items['ipaddress']))
                     pass
             except:
                 #print ("could not obtain information from Arubaos-switch")
@@ -158,3 +169,13 @@ def decryptPassword(salt, password):
     cipher = AES.new(salt.encode(), AES.MODE_CBC, iv)
     pt = unpad(cipher.decrypt(ct), AES.block_size)
     return pt.decode()
+
+def checkIpaddress(ip):
+    try:
+        ipInfo=bool(ipaddress.ip_address(str(ip)))
+        return True
+    except:
+        return False
+
+
+

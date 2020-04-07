@@ -81,16 +81,21 @@ def topoInfo(deviceid):
     # Obtain IP address from the topology table first
     queryStr="select * from topology where id='{}'".format(deviceid)
     sourceresult=classes.classes.sqlQuery(queryStr,"selectone")
-    nodes=[{'name': sourceresult['switchip'], 'label': sourceresult['hostname']}]
+    nodes=[{'name': sourceresult['systemmac'], 'label': sourceresult['hostname']}]
     links=[]
     # Now, select all the entries
-    queryStr="select * from topology where switchip='{}'".format(sourceresult['switchip']) + " order by interface"
+    queryStr="select * from topology where systemmac='{}'".format(sourceresult['systemmac']) + " order by interface"
     linkresult=classes.classes.sqlQuery(queryStr,"select")
     # Now construct the nodes and links
     for items in linkresult:
-        lldpinfo=json.loads(items['lldpinfo'])
-        nodes.append({'name':items['remoteswitchip'],'label':items['remotehostname']})
-        links.append({'target':items['remoteswitchip'],'remoteinterface':items['remoteinterface'],'source': sourceresult['switchip'],'localinterface':items['interface']})
+        try:
+            nodes.append({'name':items['remotesystemmac'],'label':items['remotehostname']})
+        except:
+            pass
+        try:
+            links.append({'target':items['remotesystemmac'],'remoteinterface':items['remoteinterface'],'source': sourceresult['systemmac'],'localinterface':items['interface']})  
+        except:
+            pass
     return nodes,links
 
 

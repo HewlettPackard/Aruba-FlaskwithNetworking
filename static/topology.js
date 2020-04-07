@@ -70,24 +70,23 @@ $(document).ready(function () {
         //document.getElementById("showEndpoints").style.display = "none";
         //document.getElementById("showTopology").style.display = "Block";
         selectId = $(this).closest(".showendpoints").attr("data-id");
-            topoInfo = await $.ajax({
-                url: "/topoInfo",
-                type: "POST",
-                data: { id: selectId },
-                success: function () {
-                    // Obtaining the topology information was successful
-                    document.getElementById("liProgress").style.display = "none";
-                    document.getElementById("progresstooltip").style.display = "none";
+        topoInfo = await $.ajax({
+            url: "/topoInfo",
+            type: "POST",
+            data: { id: selectId },
+            success: function () {
+                // Obtaining the topology information was successful
+                document.getElementById("liProgress").style.display = "none";
+                document.getElementById("progresstooltip").style.display = "none";
 
-                },
-                error: function () {
-                    document.getElementById("liProgress").style.display = "block";
-                    document.getElementById("progresstooltip").style.display = "none";
-                    progressInfo.innerHTML = "Error finding topology information";
-                }
-            });
-            topoInfo = JSON.parse(topoInfo);
-
+            },
+            error: function () {
+                document.getElementById("liProgress").style.display = "block";
+                document.getElementById("progresstooltip").style.display = "none";
+                progressInfo.innerHTML = "Error finding topology information";
+            }
+        });
+        topoInfo = JSON.parse(topoInfo);
             var baseNodes = topoInfo['nodes'];
             var baseLinks = topoInfo['links'];
 
@@ -121,24 +120,21 @@ $(document).ready(function () {
 
             function update() {
                 ctx.clearRect(0, 0, width, height);
-
                 ctx.beginPath();
                 ctx.globalAlpha = 0.3;
                 baseLinks.forEach(drawLink);
                 ctx.stroke();
-
                 ctx.beginPath();
                 ctx.globalAlpha = 1.0;
                 baseNodes.forEach(drawNode);
                 ctx.fill();
-
             }
 
             function drawNode(d) {
                 ctx.moveTo(d.x, d.y);
                 ctx.fillStyle = '#69b3a2';
                 ctx.fillRect(d.x, d.y, 180, 30);
-                ctx.font = "14px Arial";
+                ctx.font = "10px Arial";
                 ctx.fillStyle = "black";
                 ctx.textAlign = "center";
                 ctx.fillText(d.label + " (" + d.name + ")", d.x + 90, d.y + 20);
@@ -169,7 +165,6 @@ $(document).ready(function () {
                 d3.event.subject.fx = d3.event.subject.x;
                 d3.event.subject.fy = d3.event.subject.y;
             }
-
             update();
     });
 

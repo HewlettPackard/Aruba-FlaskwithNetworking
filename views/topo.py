@@ -43,4 +43,5 @@ def topoInfo ():
     # Obtain the device status from the database
     result=classes.topoInfo(formresult['id'])
     topoInfo={'nodes':result[0],'links': result[1]}
+    print(topoInfo)
     return json.dumps(topoInfo)
