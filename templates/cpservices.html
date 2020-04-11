@@ -1,0 +1,61 @@
+<!-- (C) Copyright 2020 Hewlett Packard Enterprise Development LP. -->
+{% block content %}
+
+<div id="maincontainer" style="background-color: mintcream;">
+    <table class="tablewithborder">
+        <tr><td colspan="7"><font class='font13pxwhite'><center>Services information from {{deviceInfo['ipaddress']}} ({{deviceInfo['description']}})</center></font></td></tr>
+        <tr>
+            <td nowrap><font class='font12pxwhite'>ID</font></td>
+            <td nowrap><font class='font12pxwhite'>Name</font></td>
+            <td nowrap><font class='font12pxwhite'>Type</font></td>
+            <td nowrap><font class='font12pxwhite'>Template</font></td>
+            <td nowrap><font class='font12pxwhite'>Status</font></td>
+            <td nowrap colspan="2"><font class='font12pxwhite'>Order</font></td>
+        </tr>
+        <form>
+            <input type="hidden" name="currentseEntryperpage" id="currentseEntryperpage" value="{{ seEntryperpage }}"/>
+            <tr style="background-color: grey;" class="tableTitle">
+                <td nowrap></td>
+                <td nowrap><font class='font12pxwhite'><input type="text" name="searchName" value="" /></font></td>
+                <td nowrap><font class='font12pxwhite'><input type="text" name="searchType" value="" /></font></td>
+                <td nowrap><font class='font12pxwhite'><input type="text" name="searchTemplate" value="" /></font></td>
+                <td nowrap>
+                    <select name="searchStatus">
+                        <option value="">Select</option>
+                        <option value="False">Disabled</option>
+                        <option value="True">Enabled</option>
+                    </select>
+                </td>
+                <td colspan="2" align="right">
+                    <font class="font13px">
+                        Show <select name="seEntryperpage" id="seEntryperpage" class="showServices" onchange="showServices({{ deviceInfo['id'] }})">
+                            <option value="10" {% if seEntryperpage==10 %} selected {% endif %}>10</option>
+                            <option value="25" {% if seEntryperpage==25 or seEntryperpage is not defined %} selected {% endif %}>25</option>
+                            <option value="50" {% if seEntryperpage==50 %} selected {% endif %}>50</option>
+                            <option value="100" {% if seEntryperpage==100 %} selected {% endif %}>100</option>
+                        </select> entries per page (page <select name="sePageoffset" id="sePageoffset" class="showServices" onchange="showServices({{ deviceInfo['id'] }})">
+                            {% for i in  range((seTotalentries/seEntryperpage)|round(0,'ceil')|int) %}
+                            <option value="{{ i }}" {% if sePageoffset==i %}selected{% endif %}>{{ i+1 }}</option>
+                            {% endfor %}
+                        </select> of {{ (seTotalentries/seEntryperpage)|round(0,'ceil')|int }} pages)
+                    </font><input type="button" name="searchAction" value="Search" class="button" id="searchServices" />
+                </td>
+            </tr>
+        </form>
+        {% for items in servicesInfo['_embedded']['items']|sort(attribute='orderNo') %}
+        <tr>
+            <td class="whiteBG" nowrap><font class='font11px'>{{ items['id'] }}</font></td>
+            <td class="whiteBG" nowrap><font class='font11px'>{{ items['name'] }}</font></td>
+            <td class="whiteBG" nowrap><font class='font11px'>{{ items['type'] }}</font></td>
+            <td class="whiteBG" nowrap><font class='font11px'>{{ items['template'] }}</font></td>
+            <td class="whiteBG" nowrap><font class='font11px'>{% if items['enabled']==False %}Disabled{% else %}Enabled{% endif %}</font></td>
+            <td class="whiteBG" nowrap colspan="2">
+                <font class='font11px'>{{ items['orderNo'] }}</font>
+            </td>
+        </tr>
+
+        {% endfor %}
+
+    </table>
+</div>
+{% endblock %}

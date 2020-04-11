@@ -101,14 +101,14 @@ $('#ipamstatus').ready(function () {
                     }
                 });
                 if (response == "Online") {
-                    document.getElementById("ipamStatus").innerHTML = "<font class='font13px'>IPAM reachable: </font><img src='static/images/ok.png' height='15' width='15'>";
+                    document.getElementById("ipamStatus").innerHTML = "<font class='font13pxwhite'>IPAM is reachable: </font><img src='static/images/ok.png' height='15' width='15'>";
                 }
                 else {
-                    document.getElementById("ipamStatus").innerHTML = "<font class='font13px'>IPAM unreachable: </font><img src='static/images/notok.png' height='15' width='15'>";
+                    document.getElementById("ipamStatus").innerHTML = "<font class='font13pxwhite'>IPAM is unreachable: </font><img src='static/images/notok.png' height='15' width='15'>";
                 }
             }
             else {
-                document.getElementById("ipamStatus").innerHTML = "<font class='font13px'>IPAM not selected or activated...</font>";
+                document.getElementById("ipamStatus").innerHTML = "<font class='font13pxwhite'>IPAM not selected or activated...</font>";
             }
         }
     }

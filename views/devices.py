@@ -208,7 +208,6 @@ def deviceStatus ():
 @devices.route("/cpStatus", methods=['GET','POST'])
 def cpStatus ():
     # Obtain the online/offline status of ClearPass
-    print(request.form['deviceid'])
     result={"status": classes.checkcpOnline(request.form['deviceid'])}
     return json.dumps(result)
 
@@ -217,3 +216,18 @@ def mcStatus ():
     # Obtain the online/offline status of the Mobility Controller
     result={"status": classes.checkmcOnline(request.form['deviceid'])}
     return json.dumps(result)
+
+@devices.route("/cpEndpoints", methods=['GET','POST'])
+def cpEndpoints ():
+    result=classes.getendpointInfo(request.args.get('deviceid'),request.args.get('epEntryperpage'),request.args.get('epPageoffset'))
+    return render_template("cpendpoints.html", endpointInfo=result['endpointInfo'], deviceInfo=result['deviceInfo'], epTotalentries=int(result['epTotalentries']), epEntryperpage=int(result['epEntryperpage']),epPageoffset=int(result['epPageoffset']))
+
+@devices.route("/cpTrusts", methods=['GET','POST'])
+def cpTrusts ():
+    result=classes.gettrustInfo(request.args.get('deviceid'),request.args.get('trEntryperpage'),request.args.get('trPageoffset'))
+    return render_template("cptrusts.html", trustInfo=result['trustInfo'], deviceInfo=result['deviceInfo'], trTotalentries=int(result['trTotalentries']), trEntryperpage=int(result['trEntryperpage']),trPageoffset=int(result['trPageoffset']))
+
+@devices.route("/cpServices", methods=['GET','POST'])
+def cpServices ():
+    result=classes.getservicesInfo(request.args.get('deviceid'),request.args.get('seEntryperpage'),request.args.get('sePageoffset'))
+    return render_template("cpservices.html", servicesInfo=result['servicesInfo'], deviceInfo=result['deviceInfo'], seTotalentries=int(result['seTotalentries']), seEntryperpage=int(result['seEntryperpage']),sePageoffset=int(result['sePageoffset']))

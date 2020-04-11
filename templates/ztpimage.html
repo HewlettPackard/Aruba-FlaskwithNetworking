@@ -15,7 +15,7 @@
 {% else %}
 {% set totalpages=(totalentries|int/entryperpage|int)|int +1 %}
 {% endif %}
-<div id="maincontainer" style="background-color: mintcream;">
+<div id="maincontainer">
     <table class="tablenoborder" id="ztpTable">
         <form method="post" name="ztpimage" id="ztpimage">
             <input name="action" type="hidden" value="navigation" />
@@ -24,13 +24,13 @@
             <input name='totalpages' type="hidden" value="{{ totalpages }}" />
             <input name='currententryperpage' type='hidden' value="{{ entryperpage }}" />
             <tr>
-                <td width="5%" align="left" nowrap><font class="font13px">ID</font></td>
-                <td width="15%" align="left"><font class="font13px">Name</font></td>
-                <td width="15%" align="left" nowrap><font class="font13px">Device family</font></td>
-                <td width="15%" align="left"><font class="font13px">Version</font></td>
-                <td width="15%" align="left"><font class="font13px">Image name</font></td>
+                <td width="5%" align="left" nowrap><font class="font13pxgrey">ID</font></td>
+                <td width="15%" align="left"><font class="font13pxgrey">Name</font></td>
+                <td width="15%" align="left" nowrap><font class="font13pxgrey">Device family</font></td>
+                <td width="15%" align="left"><font class="font13pxgrey">Version</font></td>
+                <td width="15%" align="left"><font class="font13pxgrey">Image name</font></td>
                 <td width="20%" align="right">
-                    <font class="font13px">
+                    <font class="font13pxgrey">
                         Show <select name="entryperpage" onchange="this.form.submit()">
                             <option value="5" {% if entryperpage|int==5 or entryperpage is not defined %} selected {% endif %}>5</option>
                             <option value="10" {% if entryperpage|int==10 %} selected {% endif %}>10</option>
@@ -92,14 +92,14 @@
     <div id="addImage" style="display:none;" data-id="">
         <p>
             <table class="tablenoborder">
-                <tr style="background-color: black;line-height:20px;">
-                    <td colspan="9" style="color: darkorange;"><center>Add software image</center></td>
+                <tr style="background-color: grey;" class="tableTitle">
+                    <td colspan="9"><font class="font13pxwhite"><center>Add software image</center></font></td>
                 </tr>
                 <tr style="line-height:20px;">
-                    <td width="12%" align="left" nowrap><font class="font13px">Name</font></td>
-                    <td width="12%"><font class="font13px">Device family</font></td>
-                    <td width="12%"><font class="font13px">Software version</font></td>
-                    <td width="12%"><font class="font13px">Upload image source</font></td>
+                    <td width="12%" align="left" nowrap><font class="font13pxgrey">Name</font></td>
+                    <td width="12%"><font class="font13pxgrey">Device family</font></td>
+                    <td width="12%"><font class="font13pxgrey">Software version</font></td>
+                    <td width="12%"><font class="font13pxgrey">Upload image source</font></td>
                 </tr>
                 <tr>
                     <form method="post" action="ztpimage" enctype="multipart/form-data">
@@ -141,15 +141,15 @@
     <div id="editImage" style="display:none;" data-id="">
         <p>
             <table class="tablenoborder">
-                <tr style="background-color: black;line-height:20px;">
-                    <td colspan="9" style="color: darkorange;"><center>Edit software image</center></td>
+                <tr style="background-color: grey;" class="tableTitle">
+                    <td colspan="9"><font class="font13pxwhite"><center>Edit software image</center></font></td>
                 </tr>
                 <tr style="line-height:20px;">
-                    <td width="12%" align="left" nowrap><font class="font13px">Name</font></td>
-                    <td width="12%"><font class="font13px">Device family</font></td>
-                    <td width="12%"><font class="font13px">Software version</font></td>
-                    <td width="25%"><font class="font13px">Image name</font></td>
-                    <td width="12%"><font class="font13px">Upload image source</font></td>
+                    <td width="12%" align="left" nowrap><font class="font13pxgrey">Name</font></td>
+                    <td width="12%"><font class="font13pxgrey">Device family</font></td>
+                    <td width="12%"><font class="font13pxgrey">Software version</font></td>
+                    <td width="25%"><font class="font13pxgrey">Image name</font></td>
+                    <td width="12%"><font class="font13pxgrey">Upload image source</font></td>
                 </tr>
                 <tr>
                     <form method="post" action="ztpimage" enctype="multipart/form-data">

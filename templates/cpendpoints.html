@@ -1,0 +1,64 @@
+<!-- (C) Copyright 2020 Hewlett Packard Enterprise Development LP. -->
+{% block content %}
+
+    <div id="maincontainer">
+        <table class="tablewithborder">
+            <tr><td colspan='6' align='center'><font class="font13pxwhite">Endpoint information from {{deviceInfo['ipaddress']}} ({{deviceInfo['description']}})</font></td></tr>
+            <tr>
+                <td nowrap><font class='font12pxwhite'>ID</font></td>
+                <td nowrap><font class='font12pxwhite'>MAC address</font></td>
+                <td nowrap><font class='font12pxwhite'>Description</font></td>
+                <td nowrap><font class='font12pxwhite'>Status</font></td>
+                <td nowrap colspan="2"><font class='font12pxwhite'>Attributes</font></td>
+            </tr>
+            <form>
+                <input type="hidden" name="currentepEntryperpage" id="currentepEntryperpage" value="{{ epEntryperpage }}" />
+                <tr style="background-color: grey;" class="tableTitle">
+                    <td nowrap></td>
+                    <td nowrap><font class='font13px'><input type="text" name="searchMacaddress" value="" /></font></td>
+                    <td nowrap><font class='font13px'><input type="text" name="searchDescription" value="" /></font></td>
+                    <td nowrap>
+                        <select name="searchStatus">
+                            <option value="">Select</option>
+                            <option value="Known">Known</option>
+                            <option value="Unknown">Unknown</option>
+                            <option value="Disabled">Disabled</option>
+                        </select>
+                    </td>
+                    <td colspan="2" align="right">
+                        <font class="font12pxwhite">
+                            Show <select name="epEntryperpage" id="epEntryperpage" class="showEndpoints" onchange="showEndpoints({{ deviceInfo['id'] }})">
+                                <option value="10" {% if epEntryperpage==10 %} selected {% endif %}>10</option>
+                                <option value="25" {% if epEntryperpage==25 or epEntryperpage is not defined %} selected {% endif %}>25</option>
+                                <option value="50" {% if epEntryperpage==50 %} selected {% endif %}>50</option>
+                                <option value="100" {% if epEntryperpage==100 %} selected {% endif %}>100</option>
+                            </select> entries per page (page <select name="epPageoffset" id="epPageoffset" class="showEndpoints" onchange="showEndpoints({{ deviceInfo['id'] }})">
+                                {% for i in  range((epTotalentries/epEntryperpage)|round(0,'ceil')|int) %}
+                                <option value="{{ i }}" {% if epPageoffset==i %}selected{% endif %}>{{ i+1 }}</option>
+                                {% endfor %}
+                            </select> of {{ (epTotalentries/epEntryperpage)|round(0,'ceil')|int }} pages)
+                        </font><input type="button" name="searchAction" value="Search" class="button" id="searchEndpoint" />
+                    </td>
+                </tr>
+            </form>
+            {% for items in endpointInfo['_embedded']['items'] %}
+
+            <tr>
+                <td class="whiteBG"><font class='font11px'>{{ items['id'] }}</font></td>
+                <td class="whiteBG"><font class='font11px'>{{ items['mac_address'] }}</font></td>
+                <td class="whiteBG"><font class='font11px'>{{ items['description'] }}</font></td>
+                <td class="whiteBG"><font class='font11px'>{{ items['status'] }}</font></td>
+                <td class="whiteBG" colspan="2">
+                    <font class='font11px'>
+                        {% for key,value in items['attributes'].items() %}
+                        {{ key }}: {{ value }}  &nbsp;&nbsp;
+                        {% endfor %}
+                    </font>
+                </td>
+            </tr>
+
+            {% endfor %}
+
+        </table>
+     </div>
+{% endblock %}

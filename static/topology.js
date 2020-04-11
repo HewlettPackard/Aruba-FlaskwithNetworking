@@ -51,9 +51,9 @@ $(document).ready(function () {
             });
             endpointHTML = endpointInfo;
             endpointInfo = JSON.parse(endpointInfo);
-            endpointHTML = "<table class='tablenoborder'><tr style='background-color: black;'>";
-            endpointHTML += "<td colspan='5' align='center'  style='color: darkorange;'>Connections of " + endpointInfo[0]['hostname'] + ": " + endpointInfo[0]['switchip'] + " (" + endpointInfo[0]['systemmac'] + ")</td></tr>";
-            endpointHTML += "<tr><td><font class='font13px'>Local interface</font></td><td><font class='font13px'>Remote hostname</font></td><td><font class='font13px'>Remote interface</font></td><td><font class='font13px'>Remote IP address</font></td><td><font class='font13px'>Remote System MAC address</font></td></tr>";
+            endpointHTML = "<table class='tablenoborder'><tr style='background-color: grey;'>";
+            endpointHTML += "<td colspan='5'><font class='font13pxwhite'><center>Connections of " + endpointInfo[0]['hostname'] + ": " + endpointInfo[0]['switchip'] + " (" + endpointInfo[0]['systemmac'] + ")</center></font></td></tr>";
+            endpointHTML += "<tr><td><font class='font13pxgrey'>Local interface</font></td><td><font class='font13pxgrey'>Remote hostname</font></td><td><font class='font13pxgrey'>Remote interface</font></td><td><font class='font13pxgrey'>Remote IP address</font></td><td><font class='font13pxgrey'>Remote System MAC address</font></td></tr>";
             for (var i = 0; i < endpointInfo.length; i++) {
                  endpointHTML += "<tr><td><font class='font11px'>" + endpointInfo[i]['interface'] + "</font></td><td><font class='font11px'>" + endpointInfo[i]['remotehostname'] + "</font></td><td><font class='font11px'>" + endpointInfo[i]['remoteinterface'] + "</font></td><td><font class='font11px'>" + endpointInfo[i]['remoteswitchip'] + "</font></td><td><font class='font11px'>" + endpointInfo[i]['remotesystemmac']  + "</font></td></tr>";
             }
@@ -67,8 +67,6 @@ $(document).ready(function () {
     
     
     $(".showendpoints").click(async function () {
-        //document.getElementById("showEndpoints").style.display = "none";
-        //document.getElementById("showTopology").style.display = "Block";
         selectId = $(this).closest(".showendpoints").attr("data-id");
         topoInfo = await $.ajax({
             url: "/topoInfo",

@@ -15,7 +15,7 @@
 {% else %}
 {% set totalpages=(totalentries|int/entryperpage|int)|int +1 %}
 {% endif %}
-<div id="maincontainer" style="background-color: mintcream;">
+<div id="maincontainer">
     <table class="tablenoborder" id="ztpTable">
         <form method="post" name="ztptemplate" id="ztptemplate">
             <input name="action" type="hidden" value="navigation" />
@@ -24,11 +24,11 @@
             <input name='totalpages' type="hidden" value="{{ totalpages }}" />
             <input name='currententryperpage' id="currententryperpage" type='hidden' value="{{ entryperpage }}" />
             <tr>
-                <td width="5%" align="left" nowrap><font class="font13px">ID</font></td>
-                <td width="25%" align="left"><font class="font13px">Name</font></td>
-                <td width="25%" align="left" nowrap><font class="font13px">Description</font></td>
+                <td width="5%" align="left" nowrap><font class="font13pxgrey">ID</font></td>
+                <td width="25%" align="left"><font class="font13pxgrey">Name</font></td>
+                <td width="25%" align="left" nowrap><font class="font13pxgrey">Description</font></td>
                 <td width="20%" align="right">
-                    <font class="font13px">
+                    <font class="font13pxgrey">
                         Show<select name="entryperpage" id="entryperpage" onchange="this.form.submit()">
                             <option value="5" {% if entryperpage|int==5 or entryperpage is not defined %} selected {% endif %}>5</option>
                             <option value="10" {% if entryperpage|int==10 %} selected {% endif %}>10</option>
@@ -86,13 +86,13 @@
                     <input name='currententryperpage' type='hidden' value="{{ entryperpage }}" />
                     <input type="hidden" name="searchName" value="{{ formresult.searchName }}">
                     <input type="hidden" name="searchDescription" value="{{ formresult.searchDescription }}">
-                    <tr style="background-color: black;line-height:20px;">
-                        <td colspan="4" style="color: darkorange;"><center>Add ZTP configuration template</center></td>
+                    <tr style="background-color: grey;">
+                        <td colspan="4"><font class="font13pxwhite"><center>Add ZTP configuration template</center></font></td>
                     </tr>
                     <tr style="line-height:20px;">
-                        <td width="5%" align="left" nowrap><font class="font13px">Name</font></td>
+                        <td width="5%" align="left" nowrap><font class="font13pxgrey">Name</font></td>
                         <td width="45%" align="left"><div class="addField"><input type="text" name="name" class="input"></div></td>
-                        <td width="5%"><font class="font13px">Description</font></td>
+                        <td width="5%"><font class="font13pxgrey">Description</font></td>
                         <td width="45%" align="left"><div class="addField"><input type="text" name="description" class="input"></div></td>
                     </tr>
                     <tr>
@@ -129,13 +129,13 @@
                     <input type="hidden" name="templateid" id="templateid" value="{{ formresult.imageid }}">
                     <input type="hidden" name="searchName" value="{{ formresult.searchName }}">
                     <input type="hidden" name="searchDescription" value="{{ formresult.searchDescription }}">
-                    <tr style="background-color: black;line-height:20px;">
-                        <td colspan="4" style="color: darkorange;"><center>Edit ZTP configuration template</center></td>
+                    <tr style="background-color: grey;">
+                        <td colspan="4"><font class="font13pxwhite"><center>Edit ZTP configuration template</center></font></td>
                     </tr>
                     <tr style="line-height:20px;">
-                        <td width="5%" align="left" nowrap><font class="font13px">Name</font></td>
+                        <td width="5%" align="left" nowrap><font class="font13pxgrey">Name</font></td>
                         <td width="45%" align="left"><div class="editField"><input type="text" name="name" id="editName" class="input"></div></td>
-                        <td width="5%"><font class="font13px">Description</font></td>
+                        <td width="5%"><font class="font13pxgrey">Description</font></td>
                         <td width="45%" align="left"><div class="editField"><input type="text" name="description" id="editDescription" class="input"></div></td>
                     </tr>
                     <tr>

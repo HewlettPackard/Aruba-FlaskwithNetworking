@@ -16,18 +16,18 @@
 {% set totalpages=(totalentries|int/entryperpage|int)|int +1 %}
 {% endif %}
 
-<div id="maincontainer" style="background-color: mintcream;">
+<div id="maincontainer">
     <table class="tablenoborder">
         <form method="post">
             <input id='action' name='action' type='hidden' value='{{ formresult.action }}' />
             <input id='currentpageoffset' name='currentpageoffset' type='hidden' value="{{pageoffset}}" />
             <input id="totalpages" name="totalpages" type="hidden" value="{{ totalpages }}" />
             <tr>
-                <td width="10%" align="left" nowrap><font class="font13px">Timestamp</font></td>
-                <td width="10%" align="left" nowrap><font class="font13px">DHCP type</font></td>
-                <td width="20%"><font class="font13px">Information</font></td>
+                <td width="10%" align="left" nowrap><font class="font13pxgrey">Timestamp</font></td>
+                <td width="10%" align="left" nowrap><font class="font13pxgrey">DHCP type</font></td>
+                <td width="20%"><font class="font13pxgrey">Information</font></td>
                 <td width="60%" align="right">
-                    <font class="font13px">
+                    <font class="font13pxgrey">
                         Show <select name="entryperpage" onchange="this.form.submit()">
                             <option value="10" {% if formresult.entryperpage=="10" %} selected {% endif %}>10</option>
                             <option value="25" {% if formresult.entryperpage=="25" or formresult.entryperpage is not defined %} selected {% endif %}>25</option>

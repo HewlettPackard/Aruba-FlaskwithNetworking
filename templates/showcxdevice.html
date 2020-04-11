@@ -5,19 +5,19 @@
             {% if sysinfo.software_images is defined %}
             <!-- This is an ArubaOS-CX switch -->
 
-            <tr style="background-color: black;line-height:20px;">
-                <td colspan="12" style="color:darkorange;"><center>{{ ipaddress }}  ({{ description }}) Device information</b></center></td>
+            <tr>
+                <td colspan="12"><font class="font13pxwhite"><center>{{ ipaddress }}  ({{ description }}) Device information</center></font></td>
             </tr>
 
-            <tr style="line-height:12px;">
-                <td style="background-color: black;"><font face="arial" size="1" style="color: darkorange;">Hostname</font></td>
-                <td><font face="arial" size="1"> {{ sysinfo['hostname'] }} </font></td>
-                <td style="background-color: black;"><font face="arial" size="1" style="color: darkorange;">Part number</font></td>
-                <td><font face="arial" size="1"> {{ sysinfo['subsystems'][0]['product_info']['part_number'] }} </font></td>
-                <td style="background-color: black;"><font face="arial" size="1" style="color: darkorange;">Serial Number</font></td>
-                <td><font face="arial" size="1"> {{ sysinfo['subsystems'][0]['product_info']['serial_number'] }} </font></td>
-                <td style="background-color: black;"><font face="arial" size="1" style="color: darkorange;">Interface Count</font></td>
-                <td>
+            <tr>
+                <td><font class="font12pxwhite">Hostname</font></td>
+                <td class="whiteBG"><font face="arial" size="1"> {{ sysinfo['hostname'] }} </font></td>
+                <td><font class="font12pxwhite">Part number</font></td>
+                <td class="whiteBG"><font face="arial" size="1"> {{ sysinfo['subsystems'][0]['product_info']['part_number'] }} </font></td>
+                <td><font class="font12pxwhite">Serial Number</font></td>
+                <td class="whiteBG"><font face="arial" size="1"> {{ sysinfo['subsystems'][0]['product_info']['serial_number'] }} </font></td>
+                <td><font class="font12pxwhite">Interface Count</font></td>
+                <td class="whiteBG">
                     <font face="arial" size="1">
                         {% for items in sysinfo['subsystems'] %}
                         {% if items['product_info']['interface_count'] %}
@@ -26,24 +26,24 @@
                         {% endfor %}
                     </font>
                 </td>
-                <td style="background-color: black;"><font face="arial" size="1" style="color: darkorange;">Platform</font></td>
-                <td><font face="arial" size="1"> {{ sysinfo['platform_name'] }} </font></td>
-                <td style="background-color: black;"><font face="arial" size="1" style="color: darkorange;">Operating System</font></td>
-                <td><font face="arial" size="1"> {{ sysinfo['software_info']['os_name'] }} </font></td>
+                <td><font class="font12pxwhite">Platform</font></td>
+                <td class="whiteBG"><font face="arial" size="1"> {{ sysinfo['platform_name'] }} </font></td>
+                <td><font class="font12pxwhite">Operating System</font></td>
+                <td class="whiteBG"><font face="arial" size="1"> {{ sysinfo['software_info']['os_name'] }} </font></td>
             </tr>
-            <tr style="line-height:12px;">
-                <td style="background-color: black;"><font face="arial" size="1" style="color: darkorange;">Primary Image</font></td>
-                <td><font face="arial" size="1"> {{ sysinfo['software_images']['primary_image_version'] }} ({{ sysinfo['software_images']['primary_image_size'] }}) </font></td>
-                <td style="background-color: black;"><font face="arial" size="1" style="color: darkorange;">Secondary Image</font></td>
-                <td><font face="arial" size="1"> {{ sysinfo['software_images']['secondary_image_version'] }} ({{ sysinfo['software_images']['secondary_image_size'] }}) </font></td>
-                <td style="background-color: black;"><font face="arial" size="1" style="color: darkorange;">Default Image</font></td>
-                <td><font face="arial" size="1"> {{ sysinfo['software_images']['default_image'] }} </font></td>
-                <td style="background-color: black;"><font face="arial" size="1" style="color: darkorange;">Operational Software</font></td>
-                <td><font face="arial" size="1"> {{ sysinfo['software_version'] }} </font></td>
-                <td style="background-color: black;"><font face="arial" size="1" style="color: darkorange;">Build Date</font></td>
-                <td><font face="arial" size="1"> {{ sysinfo['software_info']['build_date'] }} </font></td>
-                <td style="background-color: black;"><font face="arial" size="1" style="color: darkorange;">Up time</font></td>
-                <td>
+            <tr>
+                <td><font class="font12pxwhite">Primary Image</font></td>
+                <td class="whiteBG"><font face="arial" size="1"> {{ sysinfo['software_images']['primary_image_version'] }} ({{ sysinfo['software_images']['primary_image_size'] }}) </font></td>
+                <td><font class="font12pxwhite">Secondary Image</font></td>
+                <td class="whiteBG"><font face="arial" size="1"> {{ sysinfo['software_images']['secondary_image_version'] }} ({{ sysinfo['software_images']['secondary_image_size'] }}) </font></td>
+                <td><font class="font12pxwhite">Default Image</font></td>
+                <td class="whiteBG"><font face="arial" size="1"> {{ sysinfo['software_images']['default_image'] }} </font></td>
+                <td><font class="font12pxwhite">Operational Software</font></td>
+                <td class="whiteBG"><font face="arial" size="1"> {{ sysinfo['software_version'] }} </font></td>
+                <td><font class="font12pxwhite">Build Date</font></td>
+                <td class="whiteBG"><font face="arial" size="1"> {{ sysinfo['software_info']['build_date'] }} </font></td>
+                <td><font class="font12pxwhite">Up time</font></td>
+                <td class="whiteBG">
                     <font face="arial" size="1">
                         {% for items in sysinfo.subsystems |sort(attribute='type') %}
                         {% if items['type'] == "line_card" %}
@@ -55,19 +55,19 @@
                     </font>
                 </td>
             </tr>
-            <tr style="line-height:12px;">
-                <td style="background-color: black;"><font face="arial" size="1" style="color: darkorange;">Management Interface</font></td>
-                <td><font face="arial" size="1"> {{ sysinfo['mgmt_intf_status']['link_state'] }} </font></td>
-                <td style="background-color: black;"><font face="arial" size="1" style="color: darkorange;">MAC Address</font></td>
-                <td><font face="arial" size="1"> {{ sysinfo['mgmt_intf_status']['mac_address'] }} </font></td>
-                <td style="background-color: black;"><font face="arial" size="1" style="color: darkorange;">IP Address</font></td>
-                <td><font face="arial" size="1"> {{ sysinfo['mgmt_intf_status']['ip'] }} </font></td>
-                <td style="background-color: black;"><font face="arial" size="1" style="color: darkorange;">Subnet Mask</font></td>
-                <td><font face="arial" size="1"> {{ sysinfo['mgmt_intf_status']['subnet_mask'] }} </font></td>
-                <td style="background-color: black;"><font face="arial" size="1" style="color: darkorange;"> &nbsp;</font></td>
-                <td><font face="arial" size="1"> &nbsp; </font></td>
-                <td style="background-color: black;"><font face="arial" size="1" style="color: darkorange;"> &nbsp;</font></td>
-                <td><font face="arial" size="1"> &nbsp; </font></td>
+            <tr>
+                <td><font class="font12pxwhite">Management Interface</font></td>
+                <td class="whiteBG"><font face="arial" size="1"> {{ sysinfo['mgmt_intf_status']['link_state'] }} </font></td>
+                <td><font class="font12pxwhite">MAC Address</font></td>
+                <td class="whiteBG"><font face="arial" size="1"> {{ sysinfo['mgmt_intf_status']['mac_address'] }} </font></td>
+                <td><font class="font12pxwhite">IP Address</font></td>
+                <td class="whiteBG"><font face="arial" size="1"> {{ sysinfo['mgmt_intf_status']['ip'] }} </font></td>
+                <td><font class="font12pxwhite">Subnet Mask</font></td>
+                <td class="whiteBG"><font face="arial" size="1"> {{ sysinfo['mgmt_intf_status']['subnet_mask'] }} </font></td>
+                <td><font class="font12pxwhite"> &nbsp;</font></td>
+                <td class="whiteBG"><font face="arial" size="1"> &nbsp; </font></td>
+                <td><font class="font12pxwhite"> &nbsp;</font></td>
+                <td class="whiteBG"><font face="arial" size="1"> &nbsp; </font></td>
             </tr>
             {% for items in sysinfo.subsystems %}
             {% if items['type'] == "chassis" %}
@@ -76,17 +76,17 @@
 
             {% if sysinfo['platform_name']=="6300" %}
 
-            <tr style="line-height:12px;">
-                <td style="background-color: black;"><font face="arial" size="1" style="color: darkorange;">Power Supply Status</font></td>
-                <td><font face="arial" size="1"> {{ items['power_supplies'][0]['status'] }} </font></td>
-                <td style="background-color: black;"><font face="arial" size="1" style="color: darkorange;">Description</font></td>
-                <td><font face="arial" size="1"> {{ items['power_supplies'][0]['identity']['description'] }} </font></td>
-                <td style="background-color: black;"><font face="arial" size="1" style="color: darkorange;">Maximum power</font></td>
-                <td><font face="arial" size="1"> {{ items['power_supplies'][0]['characteristics']['maximum_power'] }} </font></td>
-                <td style="background-color: black;"><font face="arial" size="1" style="color: darkorange;">Failures</font></td>
-                <td><font face="arial" size="1"> {{ items['power_supplies'][0]['statistics']['failures'] }} </font></td>
-                <td style="background-color: black;"><font face="arial" size="1" style="color: darkorange;">Warnings</font></td>
-                <td><font face="arial" size="1"> {{ items['power_supplies'][0]['statistics']['warnings'] }} </font></td>
+            <tr>
+                <td><font class="font12pxwhite">Power Supply Status</font></td>
+                <td class="whiteBG"><font face="arial" size="1"> {{ items['power_supplies'][0]['status'] }} </font></td>
+                <td><font class="font12pxwhite">Description</font></td>
+                <td class="whiteBG"><font face="arial" size="1"> {{ items['power_supplies'][0]['identity']['description'] }} </font></td>
+                <td><font class="font12pxwhite">Maximum power</font></td>
+                <td class="whiteBG"><font face="arial" size="1"> {{ items['power_supplies'][0]['characteristics']['maximum_power'] }} </font></td>
+                <td><font class="font12pxwhite">Failures</font></td>
+                <td class="whiteBG"><font face="arial" size="1"> {{ items['power_supplies'][0]['statistics']['failures'] }} </font></td>
+                <td><font class="font12pxwhite">Warnings</font></td>
+                <td class="whiteBG"><font face="arial" size="1"> {{ items['power_supplies'][0]['statistics']['warnings'] }} </font></td>
                 <td colspan="2"</td>
             </tr>
 
@@ -94,19 +94,19 @@
 
             {% if sysinfo['platform_name']=="8320" or sysinfo['platform_name']=="8325" %}
 
-            <tr style="line-height:12px;">
-                <td style="background-color: black;"><font face="arial" size="1" style="color: darkorange;">Power Supply 1 Status</font></td>
-                <td><font face="arial" size="1"> {{ items['power_supplies'][0]['status'] }} </font></td>
-                <td style="background-color: black;"><font face="arial" size="1" style="color: darkorange;">Part Number</font></td>
-                <td><font face="arial" size="1"> {{ items['power_supplies'][0]['identity']['product_name'] }} </font></td>
-                <td style="background-color: black;"><font face="arial" size="1" style="color: darkorange;">Serial Number</font></td>
-                <td><font face="arial" size="1"> {{ items['power_supplies'][0]['identity']['serial_number'] }} </font></td>
-                <td style="background-color: black;"><font face="arial" size="1" style="color: darkorange;">Power Supply 2 Status</font></td>
-                <td><font face="arial" size="1"> {{ items['power_supplies'][1]['status'] }} </font></td>
-                <td style="background-color: black;"><font face="arial" size="1" style="color: darkorange;">Part Number</font></td>
-                <td><font face="arial" size="1"> {{ items['power_supplies'][1]['identity']['product_name'] }} </font></td>
-                <td style="background-color: black;"><font face="arial" size="1" style="color: darkorange;">Serial Number</font></td>
-                <td><font face="arial" size="1"> {{ items['power_supplies'][1]['identity']['serial_number'] }} </font></td>
+            <tr>
+                <td><font class="font12pxwhite">Power Supply 1 Status</font></td>
+                <td class="whiteBG"><font face="arial" size="1"> {{ items['power_supplies'][0]['status'] }} </font></td>
+                <td><font class="font12pxwhite">Part Number</font></td>
+                <td class="whiteBG"><font face="arial" size="1"> {{ items['power_supplies'][0]['identity']['product_name'] }} </font></td>
+                <td><font class="font12pxwhite">Serial Number</font></td>
+                <td class="whiteBG"><font face="arial" size="1"> {{ items['power_supplies'][0]['identity']['serial_number'] }} </font></td>
+                <td><font class="font12pxwhite">Power Supply 2 Status</font></td>
+                <td class="whiteBG"><font face="arial" size="1"> {{ items['power_supplies'][1]['status'] }} </font></td>
+                <td><font class="font12pxwhite">Part Number</font></td>
+                <td class="whiteBG"><font face="arial" size="1"> {{ items['power_supplies'][1]['identity']['product_name'] }} </font></td>
+                <td><font class="font12pxwhite">Serial Number</font></td>
+                <td class="whiteBG"><font face="arial" size="1"> {{ items['power_supplies'][1]['identity']['serial_number'] }} </font></td>
             </tr>
 
             {% endif %}
@@ -123,14 +123,14 @@
             {% if items['type'] == "line_card" %}
             <!-- Check if sysinfo contains fan information (this is for the 8320) -->
             {% if items['fans'] %}
-            <tr style="line-height:12px;">
-                <td style="background-color: black;"><font face="arial" size="1" style="color: darkorange;">Fan status</font></td>
+            <tr>
+                <td><font class="font12pxwhite">Fan status</font></td>
                 <td colspan="2"><font face="arial" size="1">Fan 1: L: {{ items['fans'][0]['status'] }} ({{ items['fans'][0]['rpm'] }} rpm) R: {{ items['fans'][1]['status'] }} ({{ items['fans'][1]['rpm'] }} rpm) </font></td>
                 <td colspan="2"><font face="arial" size="1">Fan 2: L: {{ items['fans'][2]['status'] }} ({{ items['fans'][2]['rpm'] }} rpm) R: {{ items['fans'][3]['status'] }} ({{ items['fans'][3]['rpm'] }} rpm) </font></td>
                 <td colspan="2"><font face="arial" size="1">Fan 3: L: {{ items['fans'][4]['status'] }} ({{ items['fans'][4]['rpm'] }} rpm) R: {{ items['fans'][5]['status'] }} ({{ items['fans'][5]['rpm'] }} rpm) </font></td>
                 <td colspan="2"><font face="arial" size="1">Fan 4: L: {{ items['fans'][6]['status'] }} ({{ items['fans'][6]['rpm'] }} rpm) R: {{ items['fans'][7]['status'] }} ({{ items['fans'][7]['rpm'] }} rpm) </font></td>
                 <td colspan="2"><font face="arial" size="1">Fan 5: L: {{ items['fans'][8]['status'] }} ({{ items['fans'][8]['rpm'] }} rpm) R: {{ items['fans'][9]['status'] }} ({{ items['fans'][9]['rpm'] }} rpm) </font></td>
-                <td><font face="arial" size="1"> &nbsp; </font></td>
+                <td class="whiteBG"><font face="arial" size="1"> &nbsp; </font></td>
             </tr>
             {% endif %}
             {% endif %}
@@ -140,26 +140,26 @@
         <!-- VLAN information -->
         {% if portinfo %}
         <table class="tablewithborder">
-            <tr style="background-color: black;line-height:20px;">
-                <td colspan="6" style="color: darkorange;"><center>Port information</center></td>
+            <tr>
+                <td colspan="6"><font class="font13pxwhite"><center>Port information</center></font></td>
             </tr>
             <tr>
-                <td style="background-color: black;"><center><font face="arial" size="1" style="color: darkorange;">Interface name</font></center></td>
-                <td style="background-color: black;"><center><font face="arial" size="1" style="color: darkorange;">VRF</font></center></td>
-                <td style="background-color: black;"><center><font face="arial" size="1" style="color: darkorange;">Primary IPv4 address/mask</font></center></td>
-                <td style="background-color: black;"><center><font face="arial" size="1" style="color: darkorange;">Secondary IPv4 address/mask</font></center></td>
-                <td style="background-color: black;"><center><font face="arial" size="1" style="color: darkorange;">IPv6 address/mask</font></center></td>
-                <td style="background-color: black;"><center><font face="arial" size="1" style="color: darkorange;">VLAN membership</font></center></td>
+                <td><center><font class="font12pxwhite">Interface name</font></center></td>
+                <td><center><font class="font12pxwhite">VRF</font></center></td>
+                <td><center><font class="font12pxwhite">Primary IPv4 address/mask</font></center></td>
+                <td><center><font class="font12pxwhite">Secondary IPv4 address/mask</font></center></td>
+                <td><center><font class="font12pxwhite">IPv6 address/mask</font></center></td>
+                <td><center><font class="font12pxwhite">VLAN membership</font></center></td>
             </tr>
             {% for items in portinfo |sort(attribute='name') %}
             {% if items.ip4_address %}
-            <tr style="line-height:12px;">
-                <td width="10%">
+            <tr>
+                <td class="whiteBG">
                     <font face="arial" size="1">
                         {{ items.name }}
                     </font>
                 </td>
-                <td width="10%">
+                <td class="whiteBG">
                     <font face="arial" size="1">
                         {% set vrfname = items.vrf|string %}
                         {% set vrf = vrfname.rsplit('/',1) %}
@@ -167,26 +167,26 @@
                         {{ vrfname }}
                     </font>
                 </td>
-                <td width="10%">
+                <td class="whiteBG">
                     <font face="arial" size="1">
                         {{ items.ip4_address }}
                     </font>
                 </td>
-                <td width="10%">
+                <td class="whiteBG">
                     <font face="arial" size="1">
                         {% for ipv4sec in items.ip4_address_secondary %}
                         {{ ipv4sec }}&nbsp;
                         {% endfor %}
                     </font>
                 </td>
-                <td width="10%">
+                <td class="whiteBG">
                     <font face="arial" size="1">
                         {% for ipv6address in items.ip6_addresses %}
                         {{ ipv6address }}&nbsp;
                         {% endfor %}
                     </font>
                 </td>
-                <td width="10%">
+                <td class="whiteBG">
                     <font face="arial" size="1">
                         {% for vlanitems in items.applied_vlan_trunks %}
                         {% set vlanid = vlanitems.rsplit('/',1) %}
@@ -207,34 +207,34 @@
 
 
         <table class="tablewithborder">
-            <tr style="background-color: black;line-height:20px;">
-                <td style="color: darkorange;" colspan="12"><center>Virtual Switching Exchange (VSX) information</center></td>
+            <tr>
+                <td colspan="12"><font class="font13pxwhite"><center>Virtual Switching Exchange (VSX) information</center></font></td>
             </tr>
 
-            <tr style="line-height:12px;">
-                <td style="background-color: black;" width="10%"><font face="arial" size="1" style="color: darkorange;">Device Role</font></td>
+            <tr>
+                <td class="whiteBG"><font class="font12pxwhite">Device Role</font></td>
                 <td nowrap><font face="arial" size="1"> {{ vsxinfo['device_role'] }} </font></td>
-                <td style="background-color: black;" width="10%"><font face="arial" size="1" style="color: darkorange;">Device System ID</font></td>
+                <td class="whiteBG"><font class="font12pxwhite">Device System ID</font></td>
                 <td nowrap><font face="arial" size="1"> {{ vsxinfo['oper_status']['oper_system_id'] }} </font></td>
-                <td style="background-color: black;" width="10%"><font face="arial" size="1" style="color: darkorange;">Configuration Sync State</font></td>
+                <td class="whiteBG"><font class="font12pxwhite">Configuration Sync State</font></td>
                 <td nowrap><font face="arial" size="1"> {{ vsxinfo['oper_status']['config_sync_state'] }} </font></td>
-                <td style="background-color: black;" width="10%"><font face="arial" size="1" style="color: darkorange;">ISL Management State</font></td>
+                <td class="whiteBG"><font class="font12pxwhite">ISL Management State</font></td>
                 <td nowrap><font face="arial" size="1"> {{ vsxinfo['oper_status']['isl_mgmt_state'] }} </font></td>
-                <td style="background-color: black;" width="10%"><font face="arial" size="1" style="color: darkorange;">ISL Protocol Version (State)</font></td>
+                <td class="whiteBG"><font class="font12pxwhite">ISL Protocol Version (State)</font></td>
                 <td nowrap><font face="arial" size="1">  {{ vsxinfo['oper_status']['islp_version'] }} ({{ vsxinfo['oper_status']['islp_state'] }})</font></td>
             </tr>
 
-            <tr style="line-height:12px;">
-                <td style="background-color: black;" width="10%"><font face="arial" size="1" style="color: darkorange;">Peer Device Role</font></td>
-                <td width="10%"><font face="arial" size="1"> {{ vsxinfo['peer_status']['peer_device_role'] }} </font></td>
-                <td style="background-color: black;" width="10%"><font face="arial" size="1" style="color: darkorange;">Peer ISL Interface</font></td>
-                <td width="10%"><font face="arial" size="1"> {{ vsxinfo['peer_status']['peer_isl_port'] }} </font></td>
-                <td style="background-color: black;" width="10%"><font face="arial" size="1" style="color: darkorange;">Peer Device System ID</font></td>
-                <td width="10%"><font face="arial" size="1"> {{ vsxinfo['peer_status']['peer_system_id'] }} </font></td>
-                <td style="background-color: black;" width="10%"><font face="arial" size="1" style="color: darkorange;">Peer ISL Protocol Version</font></td>
-                <td width="10%"><font face="arial" size="1"> {{ vsxinfo['peer_status']['peer_islp_version'] }} </font></td>
-                <td style="background-color: black;" width="10%"><font face="arial" size="1" style="color: darkorange;">ISL Interfaces</font></td>
-                <td width="10%">
+            <tr>
+                <td class="whiteBG"><font class="font12pxwhite">Peer Device Role</font></td>
+                <td class="whiteBG"><font face="arial" size="1"> {{ vsxinfo['peer_status']['peer_device_role'] }} </font></td>
+                <td class="whiteBG"><font class="font12pxwhite">Peer ISL Interface</font></td>
+                <td class="whiteBG"><font face="arial" size="1"> {{ vsxinfo['peer_status']['peer_isl_port'] }} </font></td>
+                <td class="whiteBG"><font class="font12pxwhite">Peer Device System ID</font></td>
+                <td class="whiteBG"><font face="arial" size="1"> {{ vsxinfo['peer_status']['peer_system_id'] }} </font></td>
+                <td class="whiteBG"><font class="font12pxwhite">Peer ISL Protocol Version</font></td>
+                <td class="whiteBG"><font face="arial" size="1"> {{ vsxinfo['peer_status']['peer_islp_version'] }} </font></td>
+                <td class="whiteBG"><font class="font12pxwhite">ISL Interfaces</font></td>
+                <td class="whiteBG">
                     <font face="arial" size="1">
                         {% for items in vsxinfo['isl_port']['interfaces'] %}
                         {{ items['name'] }}&nbsp;
@@ -243,45 +243,45 @@
                 </td>
             </tr>
 
-            <tr style="line-height:12px;">
-                <td style="background-color: black;" width="10%"><font face="arial" size="1" style="color: darkorange;">ISL Received Packets</font></td>
-                <td width="10%"><font face="arial" size="1"> {{ vsxinfo['isl_mgmt_statistics']['rx_pkts'] }} </font></td>
-                <td style="background-color: black;" width="10%"><font face="arial" size="1" style="color: darkorange;">ISL Transmitted Packets</font></td>
-                <td width="10%"><font face="arial" size="1"> {{ vsxinfo['isl_mgmt_statistics']['tx_pkts'] }} </font></td>
-                <td style="background-color: black;" width="10%"><font face="arial" size="1" style="color: darkorange;">ISL Dropped Packets</font></td>
-                <td width="10%"><font face="arial" size="1"> {{ vsxinfo['isl_mgmt_statistics']['rx_drops'] }} </font></td>
-                <td style="background-color: black;" width="10%"><font face="arial" size="1" style="color: darkorange;">Keep Alive Source IP Address</font></td>
-                <td width="10%"><font face="arial" size="1">  {{ vsxinfo['keepalive_src_ip'] }}  </font></td>
-                <td style="background-color: black;" width="10%"><font face="arial" size="1" style="color: darkorange;">Keep Alive Peer IP Address</font></td>
-                <td width="10%"><font face="arial" size="1">   {{ vsxinfo['keepalive_peer_ip'] }}   </font></td>
+            <tr>
+                <td class="whiteBG"><font class="font12pxwhite">ISL Received Packets</font></td>
+                <td class="whiteBG"><font face="arial" size="1"> {{ vsxinfo['isl_mgmt_statistics']['rx_pkts'] }} </font></td>
+                <td class="whiteBG"><font class="font12pxwhite">ISL Transmitted Packets</font></td>
+                <td class="whiteBG"><font face="arial" size="1"> {{ vsxinfo['isl_mgmt_statistics']['tx_pkts'] }} </font></td>
+                <td class="whiteBG"><font class="font12pxwhite">ISL Dropped Packets</font></td>
+                <td class="whiteBG"><font face="arial" size="1"> {{ vsxinfo['isl_mgmt_statistics']['rx_drops'] }} </font></td>
+                <td class="whiteBG"><font class="font12pxwhite">Keep Alive Source IP Address</font></td>
+                <td class="whiteBG"><font face="arial" size="1">  {{ vsxinfo['keepalive_src_ip'] }}  </font></td>
+                <td class="whiteBG"><font class="font12pxwhite">Keep Alive Peer IP Address</font></td>
+                <td class="whiteBG"><font face="arial" size="1">   {{ vsxinfo['keepalive_peer_ip'] }}   </font></td>
             </tr>
 
             {% if vsxinfo['keepalive_port'] is defined %}
-            <tr style="line-height:12px;">
-                <td style="background-color: black;" width="10%"><font face="arial" size="1" style="color: darkorange;">Keep Alive Received Packets</font></td>
-                <td width="10%"><font face="arial" size="1"> {{ vsxinfo['keepalive_statistics']['rx'] }} </font></td>
-                <td style="background-color: black;" width="10%"><font face="arial" size="1" style="color: darkorange;">Keep Alive Transmitted Packets</font></td>
-                <td width="10%"><font face="arial" size="1"> {{ vsxinfo['keepalive_statistics']['tx'] }} </font></td>
-                <td style="background-color: black;" width="10%"><font face="arial" size="1" style="color: darkorange;">Keep Alive Dropped Packets</font></td>
-                <td width="10%"><font face="arial" size="1"> {{ vsxinfo['keepalive_statistics']['dropped'] }} </font></td>
-                <td style="background-color: black;" width="10%"><font face="arial" size="1" style="color: darkorange;">Keep Alive Local Interface</font></td>
-                <td width="10%"><font face="arial" size="1"> {{ vsxinfo['keepalive_port']['name'] }} </font></td>
-                <td style="background-color: black;" width="10%"><font face="arial" size="1" style="color: darkorange;">Administrative Status</font></td>
-                <td width="10%"><font face="arial" size="1"> {{ vsxinfo['keepalive_port']['admin'] }} </font></td>
+            <tr>
+                <td class="whiteBG"><font class="font12pxwhite">Keep Alive Received Packets</font></td>
+                <td class="whiteBG"><font face="arial" size="1"> {{ vsxinfo['keepalive_statistics']['rx'] }} </font></td>
+                <td class="whiteBG"><font class="font12pxwhite">Keep Alive Transmitted Packets</font></td>
+                <td class="whiteBG"><font face="arial" size="1"> {{ vsxinfo['keepalive_statistics']['tx'] }} </font></td>
+                <td class="whiteBG"><font class="font12pxwhite">Keep Alive Dropped Packets</font></td>
+                <td class="whiteBG"><font face="arial" size="1"> {{ vsxinfo['keepalive_statistics']['dropped'] }} </font></td>
+                <td class="whiteBG"><font class="font12pxwhite">Keep Alive Local Interface</font></td>
+                <td class="whiteBG"><font face="arial" size="1"> {{ vsxinfo['keepalive_port']['name'] }} </font></td>
+                <td class="whiteBG"><font class="font12pxwhite">Administrative Status</font></td>
+                <td class="whiteBG"><font face="arial" size="1"> {{ vsxinfo['keepalive_port']['admin'] }} </font></td>
             </tr>
             {% endif %}
             {% if vsxinfo['keepalive_vrf'] is defined %}
-            <tr style="line-height:12px;">
-                <td style="background-color: black;" width="10%"><font face="arial" size="1" style="color: darkorange;">Keep Alive State</font></td>
-                <td width="10%"><font face="arial" size="1"> {{ vsxinfo['keepalive_status']['state'] }} </font></td>
-                <td style="background-color: black;" width="10%"><font face="arial" size="1" style="color: darkorange;">Keep Alive Status</font></td>
-                <td width="10%"><font face="arial" size="1"> {{ vsxinfo['keepalive_status']['vsx_keepalive_state'] }} </font></td>
-                <td style="background-color: black;" width="10%"><font face="arial" size="1" style="color: darkorange;">Keep Alive VRF</font></td>
-                <td width="10%"><font face="arial" size="1">{% if vsxinfo['keepalive_vrf']['name'] is defined %} {{ vsxinfo['keepalive_vrf']['name'] }} {% endif %} </font></td>
-                <td style="background-color: black;" width="10%"><font face="arial" size="1" style="color: darkorange;">Hello Interval Timer (seconds)</font></td>
-                <td width="10%"><font face="arial" size="1">  {{ vsxinfo['keepalive_timers']['hello_interval'] }}  </font></td>
-                <td style="background-color: black;" width="10%"><font face="arial" size="1" style="color: darkorange;">Dead Interval Timer (seconds)</font></td>
-                <td width="10%"><font face="arial" size="1">  {{ vsxinfo['keepalive_timers']['dead_interval'] }}  </font></td>
+            <tr>
+                <td class="whiteBG"><font class="font12pxwhite">Keep Alive State</font></td>
+                <td class="whiteBG"><font face="arial" size="1"> {{ vsxinfo['keepalive_status']['state'] }} </font></td>
+                <td class="whiteBG"><font class="font12pxwhite">Keep Alive Status</font></td>
+                <td class="whiteBG"><font face="arial" size="1"> {{ vsxinfo['keepalive_status']['vsx_keepalive_state'] }} </font></td>
+                <td class="whiteBG"><font class="font12pxwhite">Keep Alive VRF</font></td>
+                <td class="whiteBG"><font face="arial" size="1">{% if vsxinfo['keepalive_vrf']['name'] is defined %} {{ vsxinfo['keepalive_vrf']['name'] }} {% endif %} </font></td>
+                <td class="whiteBG"><font class="font12pxwhite">Hello Interval Timer (seconds)</font></td>
+                <td class="whiteBG"><font face="arial" size="1">  {{ vsxinfo['keepalive_timers']['hello_interval'] }}  </font></td>
+                <td class="whiteBG"><font class="font12pxwhite">Dead Interval Timer (seconds)</font></td>
+                <td class="whiteBG"><font face="arial" size="1">  {{ vsxinfo['keepalive_timers']['dead_interval'] }}  </font></td>
             </tr>
             {% endif %}
 
@@ -290,14 +290,13 @@
         <p></p>
         {% if sysinfo['capacities_status'] %}
         <table class="tablewithborder">
-
-            <tr style="background-color: black;line-height:20px;">
-                <td style="color: darkorange;" colspan="12"><center>Resources Status: (In Use)  of (Available)</center></td>
+            <tr>
+                <td colspan="12"><font class="font13pxwhite"><center>Resources Status: (In Use)  of (Available)</center></font></td>
             </tr>
 
-            <tr style="line-height:12px;">
-                <td style="background-color: black;"><font face="arial" size="1" style="color: darkorange;">Classifier ACL Entries</font></td>
-                <td>
+            <tr>
+                <td><font class="font12pxwhite">Classifier ACL Entries</font></td>
+                <td class="whiteBG">
                     <font face="arial" size="1">
                         {% if sysinfo['capacities_status']['classifier_acl_entries'] %}
                         {{ sysinfo['capacities_status']['classifier_acl_entries'] }}
@@ -307,14 +306,14 @@
                         &nbsp; of {{ sysinfo['capacities']['classifier_acl_entries'] }}
                     </font>
                 </td>
-                <td style="background-color: black;"><font face="arial" size="1" style="color: darkorange;">Classifier ACL's</font></td>
-                <td><font face="arial" size="1">{{ sysinfo['capacities_status']['classifier_acls'] }} of {{ sysinfo['capacities']['classifier_acls'] }}</font></td>
-                <td style="background-color: black;"><font face="arial" size="1" style="color: darkorange;">Classifier Class Entries</font></td>
-                <td><font face="arial" size="1">{{ sysinfo['capacities_status']['classifier_class_entries'] }} of {{ sysinfo['capacities']['classifier_class_entries'] }}</font></td>
-                <td style="background-color: black;"><font face="arial" size="1" style="color: darkorange;">Classifier Classes</font></td>
-                <td><font face="arial" size="1">{{ sysinfo['capacities_status']['classifier_classes'] }} of {{ sysinfo['capacities']['classifier_classes'] }}</font></td>
-                <td style="background-color: black;"><font face="arial" size="1" style="color: darkorange;">Classifier Entries Per ACL</font></td>
-                <td>
+                <td><font class="font12pxwhite">Classifier ACL's</font></td>
+                <td class="whiteBG"><font face="arial" size="1">{{ sysinfo['capacities_status']['classifier_acls'] }} of {{ sysinfo['capacities']['classifier_acls'] }}</font></td>
+                <td><font class="font12pxwhite">Classifier Class Entries</font></td>
+                <td class="whiteBG"><font face="arial" size="1">{{ sysinfo['capacities_status']['classifier_class_entries'] }} of {{ sysinfo['capacities']['classifier_class_entries'] }}</font></td>
+                <td><font class="font12pxwhite">Classifier Classes</font></td>
+                <td class="whiteBG"><font face="arial" size="1">{{ sysinfo['capacities_status']['classifier_classes'] }} of {{ sysinfo['capacities']['classifier_classes'] }}</font></td>
+                <td><font class="font12pxwhite">Classifier Entries Per ACL</font></td>
+                <td class="whiteBG">
                     <font face="arial" size="1">
                         {% if sysinfo['capacities_status']['classifier_entries_per_acl'] %}
                         {{ sysinfo['capacities_status']['classifier_entries_per_acl'] }}
@@ -324,8 +323,8 @@
                         &nbsp;of {{ sysinfo['capacities']['classifier_entries_per_acl'] }}
                     </font>
                 </td>
-                <td style="background-color: black;"><font face="arial" size="1" style="color: darkorange;">Classifier Entries Per Class</font></td>
-                <td>
+                <td><font class="font12pxwhite">Classifier Entries Per Class</font></td>
+                <td class="whiteBG">
                     <font face="arial" size="1">
                         {% if sysinfo['capacities_status']['classifier_entries_per_class'] %}
                         {{ sysinfo['capacities_status']['classifier_entries_per_class'] }}
@@ -337,9 +336,9 @@
                 </td>
             </tr>
 
-            <tr style="line-height:12px;">
-                <td style="background-color: black;"><font face="arial" size="1" style="color: darkorange;">Classifier Entries Per Policy</font></td>
-                <td>
+            <tr>
+                <td><font class="font12pxwhite">Classifier Entries Per Policy</font></td>
+                <td class="whiteBG">
                     <font face="arial" size="1">
                         {% if sysinfo['capacities_status']['classifier_entries_per_policy'] %}
                         {{ sysinfo['capacities_status']['classifier_entries_per_policy'] }}
@@ -349,12 +348,12 @@
                         &nbsp;of {{ sysinfo['capacities']['classifier_entries_per_policy'] }}
                     </font>
                 </td>
-                <td style="background-color: black;"><font face="arial" size="1" style="color: darkorange;">Classifier Policies</font></td>
-                <td><font face="arial" size="1">{{ sysinfo['capacities_status']['classifier_policies'] }} of {{ sysinfo['capacities']['classifier_policies'] }}  </font></td>
-                <td style="background-color: black;"><font face="arial" size="1" style="color: darkorange;">MSTP Instances</font></td>
-                <td><font face="arial" size="1">{{ sysinfo['capacities_status']['mstp_instances'] }} of {{ sysinfo['capacities']['mstp_instances'] }}</font></td>
-                <td style="background-color: black;"><font face="arial" size="1" style="color: darkorange;">PVST Instances</font></td>
-                <td>
+                <td><font class="font12pxwhite">Classifier Policies</font></td>
+                <td class="whiteBG"><font face="arial" size="1">{{ sysinfo['capacities_status']['classifier_policies'] }} of {{ sysinfo['capacities']['classifier_policies'] }}  </font></td>
+                <td><font class="font12pxwhite">MSTP Instances</font></td>
+                <td class="whiteBG"><font face="arial" size="1">{{ sysinfo['capacities_status']['mstp_instances'] }} of {{ sysinfo['capacities']['mstp_instances'] }}</font></td>
+                <td><font class="font12pxwhite">PVST Instances</font></td>
+                <td class="whiteBG">
                     <font face="arial" size="1">
                         {% if sysinfo['capacities_status']['pvst_instance_count'] %}
                         {{ sysinfo['capacities_status']['pvst_instance_count'] }}
@@ -364,8 +363,8 @@
                         &nbsp;of {{ sysinfo['capacities']['pvst_instance_count'] }}
                     </font>
                 </td>
-                <td style="background-color: black;"><font face="arial" size="1" style="color: darkorange;">VSX LAG Count</font></td>
-                <td>
+                <td><font class="font12pxwhite">VSX LAG Count</font></td>
+                <td class="whiteBG">
                     <font face="arial" size="1">
                         {% if vsxlags %}
                         {{ vsxlags|length }}
@@ -375,17 +374,17 @@
                         &nbsp;of {{ sysinfo['capacities']['vsx_interface_count'] }}
                     </font>
                 </td>
-                <td style="background-color: black;"><font face="arial" size="1" style="color: darkorange;">Active Gateway Virtual MAC</font></td>
-                <td><font face="arial" size="1">{{ sysinfo['capacities_status']['active_gateway_vmacs'] }} of {{ sysinfo['capacities']['active_gateway_vmacs'] }}</font></td>
+                <td><font class="font12pxwhite">Active Gateway Virtual MAC</font></td>
+                <td class="whiteBG"><font face="arial" size="1">{{ sysinfo['capacities_status']['active_gateway_vmacs'] }} of {{ sysinfo['capacities']['active_gateway_vmacs'] }}</font></td>
             </tr>
 
-            <tr style="line-height:12px;">
-                <td style="background-color: black;"><font face="arial" size="1" style="color: darkorange;">OSPFv2 Areas</font></td>
-                <td><font face="arial" size="1">{{ sysinfo['capacities_status']['ospfv2_areas'] }} of {{ sysinfo['capacities']['ospfv2_areas'] }}  </font></td>
-                <td style="background-color: black;"><font face="arial" size="1" style="color: darkorange;">OSPFv2 Interfaces</font></td>
-                <td><font face="arial" size="1">{{ sysinfo['capacities_status']['ospfv2_interfaces'] }} of {{ sysinfo['capacities']['ospfv2_interfaces'] }}  </font></td>
-                <td style="background-color: black;"><font face="arial" size="1" style="color: darkorange;">OSPFv2 Interfaces Per Area</font></td>
-                <td>
+            <tr>
+                <td><font class="font12pxwhite">OSPFv2 Areas</font></td>
+                <td class="whiteBG"><font face="arial" size="1">{{ sysinfo['capacities_status']['ospfv2_areas'] }} of {{ sysinfo['capacities']['ospfv2_areas'] }}  </font></td>
+                <td><font class="font12pxwhite">OSPFv2 Interfaces</font></td>
+                <td class="whiteBG"><font face="arial" size="1">{{ sysinfo['capacities_status']['ospfv2_interfaces'] }} of {{ sysinfo['capacities']['ospfv2_interfaces'] }}  </font></td>
+                <td><font class="font12pxwhite">OSPFv2 Interfaces Per Area</font></td>
+                <td class="whiteBG">
                     <font face="arial" size="1">
                         {% if sysinfo['capacities_status']['ospfv2_interfaces_per_area'] %}
                         {{ sysinfo['capacities_status']['ospfv2_interfaces_per_area'] }}
@@ -395,12 +394,12 @@
                         &nbsp;of {{ sysinfo['capacities']['ospfv2_interfaces_per_area'] }}
                     </font>
                 </td>
-                <td style="background-color: black;"><font face="arial" size="1" style="color: darkorange;">OSPFv3 Areas</font></td>
-                <td><font face="arial" size="1">{{ sysinfo['capacities_status']['ospfv3_areas'] }} of {{ sysinfo['capacities']['ospfv3_areas'] }}  </font></td>
-                <td style="background-color: black;"><font face="arial" size="1" style="color: darkorange;">OSPFv3 Interfaces</font></td>
-                <td><font face="arial" size="1">{{ sysinfo['capacities_status']['ospfv3_interfaces'] }} of {{ sysinfo['capacities']['ospfv3_interfaces'] }}  </font></td>
-                <td style="background-color: black;"><font face="arial" size="1" style="color: darkorange;">OSPFv3 Interfaces Per Area</font></td>
-                <td>
+                <td><font class="font12pxwhite">OSPFv3 Areas</font></td>
+                <td class="whiteBG"><font face="arial" size="1">{{ sysinfo['capacities_status']['ospfv3_areas'] }} of {{ sysinfo['capacities']['ospfv3_areas'] }}  </font></td>
+                <td><font class="font12pxwhite">OSPFv3 Interfaces</font></td>
+                <td class="whiteBG"><font face="arial" size="1">{{ sysinfo['capacities_status']['ospfv3_interfaces'] }} of {{ sysinfo['capacities']['ospfv3_interfaces'] }}  </font></td>
+                <td><font class="font12pxwhite">OSPFv3 Interfaces Per Area</font></td>
+                <td class="whiteBG">
                     <font face="arial" size="1">
                         {% if sysinfo['capacities_status']['ospfv3_interfaces_per_area'] %}
                         {{ sysinfo['capacities_status']['ospfv3_interfaces_per_area'] }}
@@ -412,34 +411,34 @@
                 </td>
             </tr>
 
-            <tr style="line-height:12px;">
-                <td style="background-color: black;"><font face="arial" size="1" style="color: darkorange;">BGP AS Path Lists</font></td>
-                <td><font face="arial" size="1">{{ sysinfo['capacities_status']['bgp_aspath_lists'] }} of {{ sysinfo['capacities']['bgp_aspath_lists'] }}</font></td>
-                <td style="background-color: black;"><font face="arial" size="1" style="color: darkorange;">BGP Neighbors</font></td>
-                <td><font face="arial" size="1">{{ sysinfo['capacities_status']['bgp_neighbors'] }} of {{ sysinfo['capacities']['bgp_neighbors'] }}  </font></td>
-                <td style="background-color: black;"><font face="arial" size="1" style="color: darkorange;">BGP Peer Groups</font></td>
-                <td><font face="arial" size="1">{{ sysinfo['capacities_status']['bgp_peer_groups'] }} of {{ sysinfo['capacities']['bgp_peer_groups'] }}  </font></td>
-                <td style="background-color: black;"><font face="arial" size="1" style="color: darkorange;">BGP RR Clients</font></td>
-                <td><font face="arial" size="1">{{ sysinfo['capacities_status']['bgp_rr_clients'] }} of {{ sysinfo['capacities']['bgp_rr_clients'] }}</font></td>
-                <td style="background-color: black;"><font face="arial" size="1" style="color: darkorange;">BGP Prefix Lists</font></td>
-                <td><font face="arial" size="1">{{ sysinfo['capacities_status']['bgp_prefix_lists'] }} of {{ sysinfo['capacities']['bgp_prefix_lists'] }}  </font></td>
-                <td style="background-color: black;"><font face="arial" size="1" style="color: darkorange;">BGP Route Maps</font></td>
-                <td><font face="arial" size="1">{{ sysinfo['capacities_status']['bgp_route_maps'] }} of {{ sysinfo['capacities']['bgp_route_maps'] }}</font></td>
+            <tr>
+                <td><font class="font12pxwhite">BGP AS Path Lists</font></td>
+                <td class="whiteBG"><font face="arial" size="1">{{ sysinfo['capacities_status']['bgp_aspath_lists'] }} of {{ sysinfo['capacities']['bgp_aspath_lists'] }}</font></td>
+                <td><font class="font12pxwhite">BGP Neighbors</font></td>
+                <td class="whiteBG"><font face="arial" size="1">{{ sysinfo['capacities_status']['bgp_neighbors'] }} of {{ sysinfo['capacities']['bgp_neighbors'] }}  </font></td>
+                <td><font class="font12pxwhite">BGP Peer Groups</font></td>
+                <td class="whiteBG"><font face="arial" size="1">{{ sysinfo['capacities_status']['bgp_peer_groups'] }} of {{ sysinfo['capacities']['bgp_peer_groups'] }}  </font></td>
+                <td><font class="font12pxwhite">BGP RR Clients</font></td>
+                <td class="whiteBG"><font face="arial" size="1">{{ sysinfo['capacities_status']['bgp_rr_clients'] }} of {{ sysinfo['capacities']['bgp_rr_clients'] }}</font></td>
+                <td><font class="font12pxwhite">BGP Prefix Lists</font></td>
+                <td class="whiteBG"><font face="arial" size="1">{{ sysinfo['capacities_status']['bgp_prefix_lists'] }} of {{ sysinfo['capacities']['bgp_prefix_lists'] }}  </font></td>
+                <td><font class="font12pxwhite">BGP Route Maps</font></td>
+                <td class="whiteBG"><font face="arial" size="1">{{ sysinfo['capacities_status']['bgp_route_maps'] }} of {{ sysinfo['capacities']['bgp_route_maps'] }}</font></td>
             </tr>
 
-            <tr style="line-height:12px;">
-                <td style="background-color: black;"><font face="arial" size="1" style="color: darkorange;">BGP Routes</font></td>
-                <td><font face="arial" size="1">{{ routeinfo | selectattr("from", "equalto", "bgp") | list | count }} of {{ sysinfo['capacities']['bgp_routes'] }}</font></td>
-                <td style="background-color: black;"><font face="arial" size="1" style="color: darkorange;">BGP Communities</font></td>
-                <td><font face="arial" size="1">{{ sysinfo['capacities_status']['bgp_community_lists'] }} of {{ sysinfo['capacities']['bgp_community_lists'] }}</font></td>
-                <td style="background-color: black;"><font face="arial" size="1" style="color: darkorange;">VRF's</font></td>
-                <td><font face="arial" size="1">{{ sysinfo['capacities_status']['vrfs'] }} of {{ sysinfo['capacities']['vrfs'] }}</font></td>
-                <td style="background-color: black;"><font face="arial" size="1" style="color: darkorange;">VRRP IPv4 Virtual Addresses</font></td>
-                <td><font face="arial" size="1">{{ sysinfo['capacities_status']['vrrp_ipv4_virtual_address_entries'] }} of {{ sysinfo['capacities']['vrrp_ipv4_virtual_address_entries'] }}</font></td>
-                <td style="background-color: black;"><font face="arial" size="1" style="color: darkorange;">VRRP IPv6 Virtual Addresses</font></td>
-                <td><font face="arial" size="1">{{ sysinfo['capacities_status']['vrrp_ipv6_virtual_address_entries'] }} of {{ sysinfo['capacities']['vrrp_ipv6_virtual_address_entries'] }}</font></td>
-                <td style="background-color: black;"><font face="arial" size="1" style="color: darkorange;">VRRP Group Entries</font></td>
-                <td><font face="arial" size="1">{{ sysinfo['capacities_status']['vrrp_virtual_router_group_entries'] }} of {{ sysinfo['capacities']['vrrp_virtual_router_group_entries'] }}</font></td>
+            <tr>
+                <td><font class="font12pxwhite">BGP Routes</font></td>
+                <td class="whiteBG"><font face="arial" size="1">{{ routeinfo | selectattr("from", "equalto", "bgp") | list | count }} of {{ sysinfo['capacities']['bgp_routes'] }}</font></td>
+                <td><font class="font12pxwhite">BGP Communities</font></td>
+                <td class="whiteBG"><font face="arial" size="1">{{ sysinfo['capacities_status']['bgp_community_lists'] }} of {{ sysinfo['capacities']['bgp_community_lists'] }}</font></td>
+                <td><font class="font12pxwhite">VRF's</font></td>
+                <td class="whiteBG"><font face="arial" size="1">{{ sysinfo['capacities_status']['vrfs'] }} of {{ sysinfo['capacities']['vrfs'] }}</font></td>
+                <td><font class="font12pxwhite">VRRP IPv4 Virtual Addresses</font></td>
+                <td class="whiteBG"><font face="arial" size="1">{{ sysinfo['capacities_status']['vrrp_ipv4_virtual_address_entries'] }} of {{ sysinfo['capacities']['vrrp_ipv4_virtual_address_entries'] }}</font></td>
+                <td><font class="font12pxwhite">VRRP IPv6 Virtual Addresses</font></td>
+                <td class="whiteBG"><font face="arial" size="1">{{ sysinfo['capacities_status']['vrrp_ipv6_virtual_address_entries'] }} of {{ sysinfo['capacities']['vrrp_ipv6_virtual_address_entries'] }}</font></td>
+                <td><font class="font12pxwhite">VRRP Group Entries</font></td>
+                <td class="whiteBG"><font face="arial" size="1">{{ sysinfo['capacities_status']['vrrp_virtual_router_group_entries'] }} of {{ sysinfo['capacities']['vrrp_virtual_router_group_entries'] }}</font></td>
             </tr>
 
         </table>

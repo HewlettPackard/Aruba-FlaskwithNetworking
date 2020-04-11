@@ -24,7 +24,7 @@ function clearCookies() {
 function getCookie(name) {
     var re = new RegExp(name + "=([^;]+)");
     var value = re.exec(document.cookie);
-    document.getElementById('userInfo').innerHTML = "<a href='/login' class='nohover'><img src='/static/images/exit.png' width='20' height='15' title='Logout " + value[1] + " ' />";
+    document.getElementById('userInfo').innerHTML = "<a href='/login' class='nohover'><img src='/static/images/logout.png' width='20' height='20' title='Logout " + value[1] + " ' />";
 }
 
 function checkPass() {

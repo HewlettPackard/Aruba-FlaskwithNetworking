@@ -1,4 +1,4 @@
-# (C) Copyright 2019 Hewlett Packard Enterprise Development LP.
+# (C) Copyright 2020 Hewlett Packard Enterprise Development LP.
 
 from flask import current_app, Blueprint, request, json
 topo = Blueprint('topo', __name__)
@@ -43,5 +43,4 @@ def topoInfo ():
     # Obtain the device status from the database
     result=classes.topoInfo(formresult['id'])
     topoInfo={'nodes':result[0],'links': result[1]}
-    print(topoInfo)
     return json.dumps(topoInfo)

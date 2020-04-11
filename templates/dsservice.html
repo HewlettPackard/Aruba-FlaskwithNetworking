@@ -11,16 +11,16 @@
 {% set pagename = "Dynamic Segmentation Services" %}
 {% include 'navbar.html' %}
 
-<div id="maincontainer" style="background-color: mintcream;">
+<div id="maincontainer">
 
     <table class="tablenoborder">
         <form method="post">
             <input id='action' name='action' type='hidden' value='' />
             <tr>
-                <td width="4%"><font class="font13px">Item</font></td>
-                <td width="6%" align="left" nowrap><font class="font13px">Name</font></td>
-                <td width="10%" align="left" nowrap><font class="font13px">Profile</font></td>
-                <td width="30%"><font class="font13px">Policies (ACL's) (Authentication source(s)) (Authentication method(s))</font></td>
+                <td width="4%"><font class="font13pxgrey">Item</font></td>
+                <td width="6%" align="left" nowrap><font class="font13pxgrey">Name</font></td>
+                <td width="10%" align="left" nowrap><font class="font13pxgrey">Profile</font></td>
+                <td width="30%"><font class="font13pxgrey">Policies (ACL's) (Authentication source(s)) (Authentication method(s))</font></td>
                 <div id="progress" style="display:block;"><td width="10%"></td></div>
                 <td width="10%" align="right"><input type="submit" class="button" value="Add service" onclick="return setHidden('Add service');"></td>
             </tr>
@@ -91,16 +91,13 @@
         <input type="hidden" name="roleinfoselect" id="roleinfoselect" />
         <div name="roleinfo" id="roleinfo"></div>
 
-        <table class="tablewithborder">
-            <tr>
-                <td>
-                    <table class="fwtable">
-                        <tr style="background-color:black;"><td colspan="4" align="center" style="color:orange;">{% if formresult.action=="Add service" %} Add {% elif formresult.action=="Edit" %} Edit {% endif %} service</td></tr>
+                    <table class="tablewithborder">
+                        <tr style="background-color:grey;"><td colspan="4"><font class="font13pxwhite"><center>{% if formresult.action=="Add service" %} Add {% elif formresult.action=="Edit" %} Edit {% endif %} service</center></font></td></tr>
                         <tr>
-                            <td><font class="font12px">Name</font></td>
-                            <td><div class="field"><input type="text" size="30" name="name" value="{{ editService.name }}" /></div></td>
-                            <td><font class="font12px">Profile</font></td>
-                            <td>
+                            <td><font class="font12pxwhite">Name</font></td>
+                            <td class="whiteBG"><div class="field"><input type="text" size="30" name="name" value="{{ editService.name }}" /></div></td>
+                            <td><font class="font12pxwhite">Profile</font></td>
+                            <td class="whiteBG">
                                 <select name="profile" id="profile">
                                     <option value="None">Select</option>
                                     {% for item in profileInfo %}
@@ -114,57 +111,57 @@
                     <p></p>
                     <div id="showPolicy">
                         <div id="roletable">
-                            <table class='fwtable'>
-                                <tr style='background-color:black;'><td colspan='7' align='center' style='color:orange;'>Configured policies</td></tr>
-                                <tr>
-                                    <td nowrap><font class='font13px'>Device authentication</font></td>
-                                    <td nowrap><font class='font13px'>Authentication source(s)</font></td>
-                                    <td nowrap><font class='font13px'>Authentication method(s)</font></td>
-                                    <td nowrap><font class='font13px'>Role</font></td>
-                                    <td nowrap><font class='font13px'>Filter rules</font></td>
-                                    <td nowrap><font class='font13px'>Egress VLAN</font></td>
+                            <table class='tablewithborder'>
+                                <tr style='background-color:grey;'><td colspan='7'><font class="font13pxwhite"><center>Configured policies</center></font></td></tr>
+                                <tr style='background-color:grey;'>
+                                    <td nowrap><font class='font12pxwhite'>Device authentication</font></td>
+                                    <td nowrap><font class='font12pxwhite'>Authentication source(s)</font></td>
+                                    <td nowrap><font class='font12pxwhite'>Authentication method(s)</font></td>
+                                    <td nowrap><font class='font12pxwhite'>Role</font></td>
+                                    <td nowrap><font class='font12pxwhite'>Filter rules</font></td>
+                                    <td nowrap><font class='font12pxwhite'>Egress VLAN</font></td>
                                     <td width='10%'>&nbsp;</td>
                                 </tr>
                                 {% set policyList=converttoJSON(policies) %}
                                 {% for items in policyList %}
                                 <tr>
-                                    <td>
+                                    <td class="whiteBG">
                                         <font class='font12px'>
                                             {% if items.devauth=="dot1x"%}802.1X{% elif items.devauth=="macauth" %}MAC Authentication{% endif %}
                                         </font>
                                     </td>
-                                    <td>
+                                    <td class="whiteBG">
                                         <font class='font12px'>
                                             {% for sources in items.authSource %}
                                             {{ authSource[converttoInteger(sources)]}}
                                             {% endfor %}
                                         </font>
                                     </td>
-                                    <td>
+                                    <td class="whiteBG">
                                         <font class='font12px'>
                                             {% for methods in items.authMethod %}
                                             {{ authMethod[converttoInteger(methods)]}}
                                             {% endfor %}
                                         </font>
                                     </td>
-                                    <td>
+                                    <td class="whiteBG">
                                         <font class='font12px'>
                                             {{ items.rname }}
                                         </font>
                                     </td>
-                                    <td>
+                                    <td class="whiteBG">
                                         <font class='font12px'>
                                             {% for acls in items.ACL %}
                                             {{ acls.pname }}
                                             {% endfor %}
                                         </font>
                                     </td>
-                                    <td>
+                                    <td class="whiteBG">
                                         <font class='font12px'>
                                             {{items.vlan }}
                                         </font>
                                     </td>
-                                    <td><input type='button' class='button' id='rolelistAction' value='Delete' data-roleEntry='{{ loop.index-1 }}'></td>
+                                    <td class="whiteBG"><input type='button' class='button' id='rolelistAction' value='Delete' data-roleEntry='{{ loop.index-1 }}'></td>
                                 </tr>
                                 {% endfor %}
 
@@ -173,49 +170,45 @@
                     </div>
                     <div id="showProfile">
                         <p></p>
-                        <table class="fwtable">
-                            <tr style="background-color:black;"><td colspan="4" align="center" style="color:orange;">Manage policies</td></tr>
+                        <table class="tablewithborder">
+                            <tr style="background-color:grey;"><td colspan="4" align="center" style="color:orange;"><font class="font13pxwhite"><center>Manage policies</center></font></td></tr>
                             <tr>
-                                <td><font class="font12px">Device Authentication</font></td>
-                                <td><select name="devAuth" id="devAuth"><option value="None">Select</option></select></td>
-                                <td><font class="font12px">Role</font></td>
-                                <td>
+                                <td><font class="font12pxwhite">Device Authentication</font></td>
+                                <td class="whiteBG"><select name="devAuth" id="devAuth"><option value="None">Select</option></select></td>
+                                <td><font class="font12pxwhite">Role</font></td>
+                                <td class="whiteBG">
                                     <select name="mcrole" id="mcrole"><option value="None">Select role</option></select>
                                     <div class="roletooltip"><img src="/static/images/information.png" width="15px" height="15px"><span class="roletooltiptext" id="roleInfo"></span></div>
                                 </td>
                             </tr>
                             <tr>
-                                <td><font class="font12px">Authentication method</font></td>
-                                <td width="30%">
+                                <td><font class="font12pxwhite">Authentication method</font></td>
+                                <td class="whiteBG" width="30%">
                                     <div id="authMethod"></div>
                                 </td>
-                                <td><font class="font12px">Authentication source(s)</font></td>
-                                <td width="30%">
+                                <td><font class="font12pxwhite">Authentication source(s)</font></td>
+                                <td class="whiteBG"width="30%">
                                     <div id="authSource"></div>
                                 </td>
 
                             </tr>
-
                             <tr>
-                                <td colspan="4" align="center">
+                                <td colspan="4" class="whiteBG" align="center">
                                     <input type="button" name="policyAction" disabled class="button" id="policyAction" value="Add policy">
                                 </td>
                             </tr>
                         </table>
                     </div>
                     <p></p>
-                    <table class="fwtable">
+                    <table class="tablenoborder">
                         <tr>
-                            <td colspan="4" align="center">
+                            <td align="center">
                                 <div class="actions">
                                     <input type="submit" name="action" class="button" disabled value="{% if formresult.action=="Edit" %}Submit changes{% elif formresult.action=="Add service" %}Submit service{% endif %}">
                                 </div>
                             </td>
                         </tr>
                     </table>
-                </td>
-            </tr>
-        </table>
     </form>
 
     {% endif %}

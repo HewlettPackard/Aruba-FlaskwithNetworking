@@ -1,5 +1,5 @@
 # (C) Copyright 2019 Hewlett Packard Enterprise Development LP.
-from classes.clearpass import clearpassdbAction, getRESTcp, checkcpOnline
+from classes.clearpass import clearpassdbAction, getRESTcp, checkcpOnline, getendpointInfo, getservicesInfo, gettrustInfo
 from classes.arubaoscx import logincx, logoutcx, getRESTcx, getcxInfo
 from classes.arubaosswitch import loginswitch, logoutswitch, getRESTswitch, getswitchInfo,anycli,anycliProvision
 from classes.switch import checkifOnline, discoverModel, devicedbAction, interfacedbAction, showLinechart, portAccess, clearClient

@@ -39,18 +39,17 @@ $(".mobilityRoles").click(async function () {
     deviceInfo = JSON.parse(deviceInfo);
 
     //Build the table
-    roleHTML = "<table class='fwtable'>";
-    roleHTML += "<tr style='background-color:black;'><td colspan='3' align='center' style='color:orange;'>Configured roles for " + deviceInfo['ipaddress'] + " (" + deviceInfo['description'] + ")</td></tr>";
-    roleHTML += "<tr><td nowrap><font class='font13px'>Role name</font></td>";
-    roleHTML += "<td nowrap><font class='font13px'>ACL's</font></td>";
-    roleHTML += "<td width='5%'><input type='button' name='addRole' value='Add role' class='addRole'/></td></tr>";
+    roleHTML = "<table class='tablewithborder'>";
+    roleHTML += "<tr><td colspan='2'><font class='font13pxwhite'><center>Configured roles for " + deviceInfo['ipaddress'] + " (" + deviceInfo['description'] + ")</center></font></td></tr>";
+    roleHTML += "<tr><td nowrap><font class='font13pxwhite'>Role name</font></td>";
+    roleHTML += "<td nowrap><font class='font13pxwhite'>ACL's</font></td></tr>";
     for (counter = 0; counter < roleInfo.length; counter++) {
-        roleHTML += "<td nowrap><font class='font11px'>" + roleInfo[counter]['rname']+ "</font></td><td><font class='font11px'>";
+        roleHTML += "<td class='whiteBG' nowrap><font class='font11px'>" + roleInfo[counter]['rname']+ "</font></td><td class='whiteBG'><font class='font11px'>";
         //Need to get the ACL information from the ACL array
         for (counter2 = 0; counter2 < roleInfo[counter]['role__acl'].length; counter2++) {
             roleHTML += roleInfo[counter]['role__acl'][counter2]['pname'] + " (" + roleInfo[counter]['role__acl'][counter2]['acl_type'] + ")&nbsp;&nbsp;&nbsp;";
         }
-        roleHTML += "</font></td><td nowrap><font class='font11px'><input type='button' name='editRole' value='Edit' class='editRole'/><input type='button' name='deleteRole' value='Delete' class='deleteRole'/></font></td></tr>";
+        roleHTML += "</font></td></tr>";
     }
     roleInfo += "</table>";
     document.getElementById("mobilityRoles").innerHTML = roleHTML;

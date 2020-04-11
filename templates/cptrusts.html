@@ -1,0 +1,70 @@
+<!-- (C) Copyright 2020 Hewlett Packard Enterprise Development LP. -->
+{% block content %}
+<div id="maincontainer" style="background-color: mintcream;">
+    <table class="tablewithborder">
+        <tr><td colspan='8'><font class='font13pxwhite'><center>Trust Certificate information from {{deviceInfo['ipaddress']}} ({{deviceInfo['description']}})</center></font></td></tr>
+        <tr>
+            <td nowrap><font class='font12pxwhite'>ID</font></td>
+            <td nowrap><font class='font12pxwhite'>Subject DN</font></td>
+            <td nowrap><font class='font12pxwhite'>Issue date</font></td>
+            <td nowrap><font class='font12pxwhite'>Expiry date</font></td>
+            <td nowrap><font class='font12pxwhite'>Valid</font></td>
+            <td nowrap><font class='font12pxwhite'>Status</font></td>
+            <td nowrap colspan="2"><font class='font12pxwhite'>Certificate usage</font></td>
+        </tr>
+        <form>
+            <input type="hidden" name="currenttrEntryperpage" id="currenttrEntryperpage" value="{{ trEntryperpage }}" />
+            <tr style="background-color: grey;" class="tableTitle">
+                <td nowrap></td>
+                <td nowrap><input type="text" name="searchSubjectdn" value="" /></td>
+                <td></td>
+                <td></td>
+                <td><select name="searchValid">
+    <option value="">Select</option>
+    <option value="valid">Valid</option>
+    <option value="invalid">Invalid</option>
+</select></td>
+                <td nowrap>
+                    <select name="searchStatus">
+                        <option value="">Select</option>
+                        <option value="False">Disabled</option>
+                        <option value="True">Enabled</option>
+                    </select>
+                </td>
+                <td colspan="2" align="right">
+                    <font class="font12pxwhite">
+                        Show <select name="trEntryperpage" id="trEntryperpage" class="showTrusts" onchange="showTrusts({{ deviceInfo['id'] }})">
+                            <option value="10" {% if trEntryperpage==10 %} selected {% endif %}>10</option>
+                            <option value="25" {% if trEntryperpage==25 or trEntryperpage is not defined %} selected {% endif %}>25</option>
+                            <option value="50" {% if trEntryperpage==50 %} selected {% endif %}>50</option>
+                            <option value="100" {% if trEntryperpage==100 %} selected {% endif %}>100</option>
+                        </select> entries per page (page <select name="trPageoffset" id="trPageoffset" class="showTrusts" onchange="showTrusts({{ deviceInfo['id'] }})">
+                            {% for i in  range((trTotalentries/trEntryperpage)|round(0,'ceil')|int) %}
+                            <option value="{{ i }}" {% if trPageoffset==i %}selected{% endif %}>{{ i+1 }}</option>
+                            {% endfor %}
+                        </select> of {{ (trTotalentries/trEntryperpage)|round(0,'ceil')|int }} pages)
+                    </font><input type="button" name="searchAction" value="Search" class="button" id="searchTrusts" />
+                </td>
+            </tr>
+        </form>
+        {% for items in trustInfo['_embedded']['items'] %}
+
+        <tr>
+            <td class="whiteBG"><font class='font11px'>{{ items['id'] }}</font></td>
+            <td class="whiteBG"><font class='font11px'>{{ items['subject_DN']|truncate(140, True) }}{% if items['subject_dn']|length > 140 %}...{% endif %}</font></td>
+            <td class="whiteBG"><font class='font11px'>{{ items['issue_date'] }}</font></td>
+            <td class="whiteBG"><font class='font11px'>{{ items['expiry_date'] }}</font></td>
+            <td class="whiteBG"><font class='font11px'>{% if items['valid']=="valid" %}Valid{% else %}Invalid{% endif %}</font></td>
+            <td class="whiteBG"><font class='font11px'>{% if items['enabled']==False %}Disabled{% else %}Enabled{% endif %}</font></td>
+            <td class="whiteBG" colspan="2">
+                <font class='font11px'>
+                    {{ items['cert_usage'] }}
+                </font>
+            </td>
+        </tr>
+
+        {% endfor %}
+
+    </table>
+</div>
+{% endblock %}

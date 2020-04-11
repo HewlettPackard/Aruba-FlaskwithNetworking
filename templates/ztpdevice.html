@@ -19,7 +19,7 @@
 
 <div class="ipamStatus" id="ipamStatus"></div>
 
-<div id="maincontainer" style="background-color: mintcream;">
+<div id="maincontainer">
 <table class="tablenoborder" id="ztpTable">
     <form method="post" name="ztpdevice" id="ztpdevice">
         <input name="action" type="hidden" value="navigation" />
@@ -28,17 +28,17 @@
         <input name='totalpages' type="hidden" value="{{ totalpages }}" />
         <input name='currententryperpage' type='hidden' value="{{ entryperpage }}" />
         <tr>
-            <td width="2%" align="left" nowrap><font class="font13px">ID</font></td>
-            <td width="6%" align="left" nowrap><font class="font13px">Name</font></td>
-            <td width="6%" align="left"><font class="font13px">MAC Address</font></td>
-            <td width="6%" align="left" nowrap><font class="font13px">IP address/mask</font></td>
-            <td width="6%"><font class="font13px">Default gateway</font></td>
-            <td width="8%"><font class="font13px">ZTP Profile</font></td>
-            <td width="8%"><font class="font13px">Software image</font></td>
-            <td width="8%"><font class="font13px">Template</font></td>
-            <td width="30%"><font class="font13px">ZTP status</font></td>
+            <td width="2%" align="left" nowrap><font class="font13pxgrey">ID</font></td>
+            <td width="6%" align="left" nowrap><font class="font13pxgrey">Name</font></td>
+            <td width="6%" align="left"><font class="font13pxgrey">MAC Address</font></td>
+            <td width="6%" align="left" nowrap><font class="font13pxgrey">IP address/mask</font></td>
+            <td width="6%"><font class="font13pxgrey">Default gateway</font></td>
+            <td width="8%"><font class="font13pxgrey">ZTP Profile</font></td>
+            <td width="8%"><font class="font13pxgrey">Software image</font></td>
+            <td width="8%"><font class="font13pxgrey">Template</font></td>
+            <td width="30%"><font class="font13pxgrey">ZTP status</font></td>
             <td width="20%" align="right">
-                <font class="font13px">
+                <font class="font13pxgrey">
                     Show <select name="entryperpage" onchange="this.form.submit()">
                         <option value="5" {% if entryperpage|int==5 or entryperpage is not defined %} selected {% endif %}>5</option>
                         <option value="10" {% if entryperpage|int==10 %} selected {% endif %}>10</option>
@@ -110,11 +110,11 @@
 
         <input type="hidden" name="softwareimage" value="{{ info['image'] }}">
         <tr>
-            <td><font class="font12px">{{ loop.index }}</font></td>
-            <td><font class="font12px">{{ info['name'] }}</font></td>
-            <td><font class="font12px">{{ info['macaddress'] }}</font></td>
-            <td><font class="font12px">{{ info['ipaddress'] }}/{{ info['netmask'] }}</font></td>
-            <td><font class="font12px">{{ info['gateway'] }}</font></td>
+            <td class="'whiteBG"><font class="font12px">{{ loop.index }}</font></td>
+            <td class="'whiteBG"><font class="font12px">{{ info['name'] }}</font></td>
+            <td class="'whiteBG"><font class="font12px">{{ info['macaddress'] }}</font></td>
+            <td class="'whiteBG"><font class="font12px">{{ info['ipaddress'] }}/{{ info['netmask'] }}</font></td>
+            <td class="'whiteBG"><font class="font12px">{{ info['gateway'] }}</font></td>
             <td>
                 <font class="font12px">
                     {% for dict_item in profileResult %}
@@ -174,10 +174,10 @@
     <p>
         <form method="post" enctype="application/JSON" id="adddeviceForm">
             <table class="tablenoborder">
-                <tr style="background-color: black;line-height:20px;">
-                    <td colspan="14" style="color: darkorange;"><center>Add ZTP device</center></td>
+                <tr style="background-color: grey;">
+                    <td colspan="14"><font class="font13pxwhite"><center>Add ZTP device</center></font></td>
                 </tr>
-                <tr style="line-height:30px;">
+                <tr>
                     <input name='currentpageoffset' type='hidden' value="{{pageoffset}}" />
                     <input name='currenttotalentries' type='hidden' value="{{totalentries}}" />
                     <input name='totalpages' type="hidden" value="{{ totalpages }}" />
@@ -191,15 +191,15 @@
                     <input type="hidden" name="searchImage" value="{{ formresult.searchImage }}">
                     <input type="hidden" name="searchTemplate" value="{{ formresult.searchTemplate }}">
                     <input type="hidden" name="templateparameters" class="templateparameters" />
-                    <td width="4%" align="left" nowrap><font class="font13px">Name</font></td>
+                    <td width="4%" align="left" nowrap><font class="font13pxgrey">Name</font></td>
                     <td width="2%"></td>
                     <td colspan="2"><div class="addField"><input type="text" name="name" id="addName" class="input"></div></td>
-                    <td width="6%" align="left" nowrap><font class="font13px">MAC address</font></td>
+                    <td width="6%" align="left" nowrap><font class="font13pxgrey">MAC address</font></td>
                     <td colspan="3"><div class="addField"><input type="text" name="macaddress" id="addMacaddress" class="input" minlength="12" maxlength="12"></div></td>
                     {% if sysvars['ipamenabled'] is defined %}
                     <input type="hidden" class="ipamnetmask" name="ipamnetmask" id="addipamnetmaskvalue" />
                     <input type="hidden" class="ipamgateway" name="ipamgateway" id="addipamgatewayvalue" />
-                    <td width="6%"><font class="font13px">Subnet</font></td>
+                    <td width="6%"><font class="font13pxgrey">Subnet</font></td>
                     <td>
                         <div>
                             <select name="ipamsubnet" class="ipamsubnet" id="addipamsubnet">
@@ -207,7 +207,7 @@
                             </select>
                         </div>
                     </td>
-                    <td width="6%"><font class="font13px">IP Address</font></td>
+                    <td width="6%"><font class="font13pxgrey">IP Address</font></td>
                     <td>
                         <div>
                             <select name="ipaddress" class="ipamipaddress" id="addipamipaddress">
@@ -215,14 +215,14 @@
                             </select>
                         </div>
                     </td>
-                    <td width="6%"><font class="font13px">Gateway</font></td>
+                    <td width="6%"><font class="font13pxgrey">Gateway</font></td>
                     <td>
                         <div class="ipamgatewayDiv" id="addipamgatewayDiv"></div>
                     </td>
                     {% else %}
-                    <td width="6%"><font class="font13px">IP address</font></td>
+                    <td width="6%"><font class="font13pxgrey">IP address</font></td>
                     <td><div class="addField"><input type="text" name="ipaddress" id="addIpaddress" class="input" minlength="7" maxlength="15" size="15"></div></td>
-                    <td width="6%"><font class="font13px">Subnet mask</font></td>
+                    <td width="6%"><font class="font13pxgrey">Subnet mask</font></td>
                     <td>
                         <div class="addselectField">
                             <select name="netmask" id="addNetmask">
@@ -233,12 +233,12 @@
                             </select>
                         </div>
                     </td>
-                    <td width="6%"><font class="font13px">Default gateway</font></td>
+                    <td width="6%"><font class="font13pxgrey">Default gateway</font></td>
                     <td><div class="addField"><input type="text" name="gateway" id="addGateway" class="input"></div></td>
                     {% endif %}
                 </tr>
-                <tr style="line-height:30px;">
-                    <td colspan="2"><font class="font13px">ZTP profile</font></td>
+                <tr>
+                    <td colspan="2"><font class="font13pxgrey">ZTP profile</font></td>
                     <td colspan="2">
                         <div class="addselectField">
                             <select name="profile" id="addProfile">
@@ -249,7 +249,7 @@
                             </select>
                         </div>
                     </td>
-                    <td><font class="font13px">Software image</font></td>
+                    <td><font class="font13pxgrey">Software image</font></td>
                     <td colspan="3">
                         <div>
                             <select name="softwareimage" id="addSoftwareimage" class="selectSoftwareimage">
@@ -260,7 +260,7 @@
                             </select>
                         </div>
                     </td>
-                    <td><font class="font13px">Template</font></td>
+                    <td><font class="font13pxgrey">Template</font></td>
                     <td>
                         <div>
                             <select name="template" id="addTemplate" class="selectTemplateparameters">
@@ -274,14 +274,14 @@
                     <td colspan="4"></td>
                 </tr>
 
-                <tr style="line-height:30px;">
+                <tr>
                     <td nowrap>
-                        <font class="font13px">Enable VSF</font>
+                        <font class="font13pxgrey">Enable VSF</font>
                     </td>
                     <td align="left">
                         <input type="checkbox" id="addEnablevsf" class="Enablevsf" name="enablevsf" class="input" />
                     </td>
-                    <td><font class="font13px">Switch role</font></td>
+                    <td><font class="font13pxgrey">Switch role</font></td>
                     <td>
                         <div>
                             <select name="vsfrole" id="addVsfrole" class="selectVsfrole" disabled>
@@ -293,7 +293,7 @@
                         </div>
                     </td>
 
-                    <td><div id="addSelectmastertitle"><font class="font13px">Master switch</font></div></td>
+                    <td><div id="addSelectmastertitle"><font class="font13pxgrey">Master switch</font></div></td>
                     <td>
                         <div id="addSelectmaster">
                             <select class="selectVsfmaster" id="addVsfmaster" name="vsfmaster" disabled>
@@ -302,7 +302,7 @@
                         </div>
                     </td>
                     <td>
-                        <font class="font13px">Member ID</font>
+                        <font class="font13pxgrey">Member ID</font>
                     </td>
                     <td width="4%">
                         <div>
@@ -317,7 +317,7 @@
                     </td>
                     <td>
                         <div>
-                            <font class="font13px">
+                            <font class="font13pxgrey">
                                 Switch type
                             </font>
                         </div>
@@ -333,7 +333,7 @@
                     </td>
                     <td>
                         <div>
-                            <font class="font13px">
+                            <font class="font13pxgrey">
                                 Link 1
                             </font>
                         </div>
@@ -349,7 +349,7 @@
                     </td>
                     <td>
                         <div>
-                            <font class="font13px">
+                            <font class="font13pxgrey">
                                 Link 2
                             </font>
                         </div>
@@ -383,10 +383,10 @@
 <div id="editDevice" style="display:none;" data-id="">
     <form method="post" enctype="application/JSON" id="editdeviceForm">
         <table class="tablenoborder">
-            <tr style="background-color: black;line-height:20px;">
-                <td colspan="14" style="color: darkorange;"><center>Edit ZTP device</center></td>
+            <tr style="background-color: grey;">
+                <td colspan="14"><font class="font13pxwhite"><center>Edit ZTP device</center></font></td>
             </tr>
-            <tr style="line-height:30px;">
+            <tr>
                 <input name='currentpageoffset' type='hidden' value="{{pageoffset}}" />
                 <input name='currenttotalentries' type='hidden' value="{{totalentries}}" />
                 <input name='totalpages' type="hidden" value="{{ totalpages }}" />
@@ -401,16 +401,16 @@
                 <input type="hidden" name="searchTemplate" value="{{ formresult.searchTemplate }}">
                 <input type="hidden" name="deviceid" id="deviceid" value="{{ formresult.id }}">
                 <input type="hidden" name="templateparameters" class="templateparameters" />
-                <td width="4%" align="left" nowrap><font class="font13px">Name</font></td>
+                <td width="4%" align="left" nowrap><font class="font13pxgrey">Name</font></td>
                 <td width="2%"></td>
                 <td colspan="2"><div class="editField"><input type="text" name="name" id="editName" class="input"></div></td>
-                <td width="6%" align="left" nowrap><font class="font13px">MAC address</font></td>
+                <td width="6%" align="left" nowrap><font class="font13pxgrey">MAC address</font></td>
                 <td colspan="3"><div class="editField"><input type="text" name="macaddress" id="editMacaddress" class="input" minlength="12" maxlength="12"></div></td>
 
                 {% if sysvars['ipamenabled'] is defined %}
                 <input type="hidden" class="ipamnetmask" name="ipamnetmask" id="editipamnetmaskvalue" />
                 <input type="hidden" class="ipamgateway" name="ipamgateway" id="editipamgatewayvalue" />
-                <td width="6%"><font class="font13px">Subnet</font></td>
+                <td width="6%"><font class="font13pxgrey">Subnet</font></td>
                 <td>
                     <div>
                         <select name="ipamsubnet" class="ipamsubnet" id="editipamsubnet">
@@ -418,7 +418,7 @@
                         </select>
                     </div>
                 </td>
-                <td width="6%"><font class="font13px">IP Address</font></td>
+                <td width="6%"><font class="font13pxgrey">IP Address</font></td>
                 <td>
                     <div>
                         <select name="ipaddress" class="ipamipaddress" id="editipamipaddress">
@@ -426,15 +426,15 @@
                         </select>
                     </div>
                 </td>
-                <td width="6%"><font class="font13px">Gateway</font></td>
+                <td width="6%"><font class="font13pxgrey">Gateway</font></td>
                 <td>
                     <div class="ipamgatewayDiv" id="editipamgatewayDiv"></div>
                 </td>
                 {% else %}
 
-                <td width="6%"><font class="font13px">IP address</font></td>
+                <td width="6%"><font class="font13pxgrey">IP address</font></td>
                 <td><div class="editField"><input type="text" name="ipaddress" id="editIpaddress" class="input" minlength="7" maxlength="15" size="15"></div></td>
-                <td width="6%"><font class="font13px">Subnet mask</font></td>
+                <td width="6%"><font class="font13pxgrey">Subnet mask</font></td>
                 <td>
                     <div>
                         <select name="netmask" id="editNetmask">
@@ -445,7 +445,7 @@
                         </select>
                     </div>
                 </td>
-                <td width="6%"><font class="font13px">Default gateway</font></td>
+                <td width="6%"><font class="font13pxgrey">Default gateway</font></td>
                 <td><div class="editField"><input type="text" name="gateway" id="editGateway" class="input"></div></td>
 
                 {% endif %}
@@ -453,8 +453,8 @@
 
 
             </tr>
-            <tr style="line-height:30px;">
-                <td colspan="2" nowrap><font class="font13px">ZTP profile</font></td>
+            <tr>
+                <td colspan="2" nowrap><font class="font13pxgrey">ZTP profile</font></td>
                 <td colspan="2">
                     <div class="editselectField">
                         <select name="profile" id="editProfile">
@@ -465,7 +465,7 @@
                         </select>
                     </div>
                 </td>
-                <td nowrap><font class="font13px">Software image</font></td>
+                <td nowrap><font class="font13pxgrey">Software image</font></td>
                 <td colspan="3">
                     <div>
                         <select name="softwareimage" id="editSoftwareimage" class="selectSoftwareimage">
@@ -476,7 +476,7 @@
                         </select>
                     </div>
                 </td>
-                <td><font class="font13px">Template</font></td>
+                <td><font class="font13pxgrey">Template</font></td>
                 <td>
                     <div>
                         <select name="template" id="editTemplate" class="selectTemplateparameters" data-deviceid="{{ formresult.id }}">
@@ -489,14 +489,14 @@
                 </td>
                 <td colspan="4"></td>
             </tr>
-            <tr style="line-height:30px;">
+            <tr>
                 <td nowrap>
-                    <font class="font13px">Enable VSF</font>
+                    <font class="font13pxgrey">Enable VSF</font>
                 </td>
                 <td align="left">
                     <input type="checkbox" id="editEnablevsf" class="Enablevsf" name="enablevsf" data-deviceid="{{ formresult.id }} class="input" />
                 </td>
-                <td><font class="font13px">Switch role</font></td>
+                <td><font class="font13pxgrey">Switch role</font></td>
                 <td>
                     <div>
                         <select name="vsfrole" id="editVsfrole" class="selectVsfrole" data-deviceid="{{ formresult.id }}">
@@ -508,7 +508,7 @@
                     </div>
                 </td>
 
-                <td><div><font class="font13px">Master switch</font></div></td>
+                <td><div><font class="font13pxgrey">Master switch</font></div></td>
                 <td>
                     <div>
                         <select class="selectVsfmaster" name="vsfmaster" id="editVsfmaster">
@@ -517,7 +517,7 @@
                     </div>
                 </td>
                 <td>
-                    <font class="font13px">Member ID</font>
+                    <font class="font13pxgrey">Member ID</font>
                 </td>
                 <td width="4%">
                     <div>
@@ -532,7 +532,7 @@
                 </td>
                 <td>
                     <div>
-                        <font class="font13px">
+                        <font class="font13pxgrey">
                             Switch type
                         </font>
                     </div>
@@ -548,7 +548,7 @@
                 </td>
                 <td>
                     <div>
-                        <font class="font13px">
+                        <font class="font13pxgrey">
                             Link 1
                         </font>
                     </div>
@@ -564,7 +564,7 @@
                 </td>
                 <td>
                     <div>
-                        <font class="font13px">
+                        <font class="font13pxgrey">
                             Link 2
                         </font>
                     </div>

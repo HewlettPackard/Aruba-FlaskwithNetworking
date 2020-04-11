@@ -19,7 +19,7 @@
 {% set totalpages=(totalentries|int/entryperpage|int)|int +1 %}
 {% endif %}
 
-<div id="maincontainer" style="background-color: mintcream;">
+<div id="maincontainer">
 
     <table class="tablenoborder">
         <form method="post">
@@ -32,13 +32,13 @@
             <input name='currententryperpage' type='hidden' value="{{ entryperpage }}" />
             <input name="action" type="hidden" value="navigation" />
             <tr>
-                <td width="2%"><font class="font13px">Item</font></td>
+                <td width="2%"><font class="font13pxgrey">Item</font></td>
                 <td width="5%">&nbsp;</td>
-                <td width="20%"><font class="font13px">Hostname</font></td>
-                <td width="20%" align="left" nowrap><font class="font13px">IP address</font></td>
-                <td width="20%"><font class="font13px">System MAC Address</font></td>
+                <td width="20%"><font class="font13pxgrey">Hostname</font></td>
+                <td width="20%" align="left" nowrap><font class="font13pxgrey">IP address</font></td>
+                <td width="20%"><font class="font13pxgrey">System MAC Address</font></td>
                 <td width="35%" align="right" nowrap>
-                    <font class="font13px">
+                    <font class="font13pxgrey">
                         Show <select name="entryperpage" id="deviceEntryperpage" onchange="this.form.submit()">
                             <option value="5" {% if entryperpage==5 %} selected {% endif %}>5</option>
                             <option value="10" {% if entryperpage==10 %} selected {% endif %}>10</option>

@@ -18,65 +18,65 @@ netInfo is dictionary containing a list of variables:
 17 or -1: MAC address
 -->
 
-<div id="maincontainer" style="background-color: mintcream;">
+<div id="maincontainer">
     <br />
     <table class="tablewithborder">
         <form method="post">
             <input type="hidden" name="orig_secret_key" value="{{ sysvars['secret_key'] }}" />
-            <tr style="background-color:black;"><td colspan="6" align="center" style="color:orange;">System configuration</td></tr>
+            <tr style="background-color:grey;"><td colspan="6"><font class="font13pxwhite"><center>System configuration</center></font></td></tr>
             <tr>
-                <td><font class="font13px">Idle timeout (300-3600 seconds)</font></td>
-                <td><input type="number" name="idle_timeout" min="300" max="3600" value="{{sysvars['idle_timeout']}}" /><font class="font11px"> seconds</font></td>
-                <td><font class="font13px">PCAP Location</font></td>
-                <td>
+                <td><font class="font12pxwhite">Idle timeout (300-3600 seconds)</font></td>
+                <td class="whiteBG"><input type="number" name="idle_timeout" min="300" max="3600" value="{{sysvars['idle_timeout']}}" /><font class="font11px"> seconds</font></td>
+                <td><font class="font12pxwhite">PCAP Location</font></td>
+                <td class="whiteBG">
                     {% if sysvars.sysInfo.platform=="Linux" %}
-                    <font class="font13px">Fixed</font>
+                    <font class="font12px">Fixed</font>
                     <input type="hidden" name="pcap_location" value="/var/www/html/bash/trace.pcap" />
                     {% else %}
                     <input type="text" name="pcap_location" value="{{sysvars['pcap_location']}}" />
                     {% endif %}
                 </td>
-                <td><font class="font13px">Secret Hashing Key (exactly 16 characters)</font></td>
-                <td>
+                <td><font class="font12pxwhite">Secret Hashing Key (exactly 16 characters)</font></td>
+                <td class="whiteBG">
                     <input type="password" maxlength="16" name="secret_key" value="{{ sysvars['secret_key'] }}" id="secret_key" />
                 </td>
             </tr>
             <tr>
-                <td><font class="font13px">Purge DHCP Tracker information after</font></td>
-                <td><input type="number" name="retain_dhcp" value="{{sysvars['retain_dhcp']}}" /><font class="font11px"> days</font></td>
-                <td><font class="font13px">Purge SNMP Tracker information after</font></td>
-                <td><input type="number" name="retain_snmp" value="{{sysvars['retain_snmp']}}" /><font class="font11px"> days</font></td>
-                <td><font class="font13px">Purge Syslog information after</font></td>
-                <td><input type="number" name="retain_syslog" value="{{sysvars['retain_syslog']}}" /><font class="font11px"> days</font></td>
+                <td><font class="font12pxwhite">Purge DHCP Tracker information after</font></td>
+                <td class="whiteBG"><input type="number" name="retain_dhcp" value="{{sysvars['retain_dhcp']}}" /><font class="font11px"> days</font></td>
+                <td><font class="font12pxwhite">Purge SNMP Tracker information after</font></td>
+                <td class="whiteBG"><input type="number" name="retain_snmp" value="{{sysvars['retain_snmp']}}" /><font class="font11px"> days</font></td>
+                <td><font class="font12pxwhite">Purge Syslog information after</font></td>
+                <td class="whiteBG"><input type="number" name="retain_syslog" value="{{sysvars['retain_syslog']}}" /><font class="font11px"> days</font></td>
             </tr>
             </tr>
             <tr>
-                <td><font class="font13px">IPAM System</font></td>
-                <td>
+                <td><font class="font12pxwhite">IPAM System</font></td>
+                <td class="whiteBG">
                     <select name="ipamsystem" id="ipamsystem" onchange="ipamConf();">
                         <option value="">Select</option>
                         <option name="PHPIPAM" {% if sysvars['ipamsystem']=="PHPIPAM" %} selected {% endif %}>PHPIPAM</option>
                         <option name="Infoblox" {% if sysvars['ipamsystem']=="Infoblox" %} selected {% endif %}>Infoblox</option>
                     </select>
                 </td>
-                <td colspan="2"><font class="font13px">Activate IPAM for ZTP</font><input type="checkbox" name="ipamenabled" id="ipamenabled" value="1" {% if sysvars['ipamenabled']=="1" %} checked {% endif %} /></td>
+                <td colspan="2"><font class="font12pxwhite">Activate IPAM for ZTP</font><input type="checkbox" name="ipamenabled" id="ipamenabled" value="1" {% if sysvars['ipamenabled']=="1" %} checked {% endif %} /></td>
                 <td colspan="2"><div id="ipamStatus"></div></td>
             </tr>
 
             
             <tr id="ipamtr" {% if sysvars['ipamsystem']=="PHPIPAM" or sysvars['ipamsystem']=="Infoblox" %} style="display:table-row;" {% else %} style="display:none;" {% endif %}>
-                <td><font class='font13px'>IPAM IP address</font></td>
-                <td><input type="text" name="ipamipaddress" id="ipamipaddress" value="{{ sysvars['ipamipaddress'] }}" /></td>
-                <td><font class='font13px'>IPAM username</font></td>
-                <td><input type='text' name='ipamuser' id="ipamuser" value='{{ sysvars['ipamuser'] }}' /></td>
-                <td><font class='font13px'>IPAM password</font></td>
-                <td><input type='password' maxlength='16' name='ipampassword' id="ipampassword" value='{{ sysvars['ipampassword'] }}' /></td>
+                <td><font class='font12pxwhite'>IPAM IP address</font></td>
+                <td class="whiteBG"><input type="text" name="ipamipaddress" id="ipamipaddress" value="{{ sysvars['ipamipaddress'] }}" /></td>
+                <td><font class='font12pxwhite'>IPAM username</font></td>
+                <td class="whiteBG"><input type='text' name='ipamuser' id="ipamuser" value='{{ sysvars['ipamuser'] }}' /></td>
+                <td><font class='font12pxwhite'>IPAM password</font></td>
+                <td class="whiteBG"><input type='password' maxlength='16' name='ipampassword' id="ipampassword" value='{{ sysvars['ipampassword'] }}' /></td>
             </tr>
 
             <tr id="phpipamtr" {% if sysvars['ipamsystem']=="PHPIPAM" %} style="display:table-row;" {% else %} style="display:none;" {% endif %}>
-                <td><font class='font13px'>PHPIPAM APP ID</font></td>
+                <td><font class='font12pxwhite'>PHPIPAM APP ID</font></td>
                 <td><input type='text' name='phpipamappid' id="phpipamappid" value='{{ sysvars['phpipamappid'] }}' /></td>
-                <td><font class='font13px'>Token type</font></td>
+                <td><font class='font12pxwhite'>Token type</font></td>
                 <td>
                     <select name='phpipamauth' id='phpipamauth'>
                         <option value='http' {% if sysvars['phpipamauth']=='http' %} selected {% endif %}>Token</option>
@@ -87,7 +87,7 @@ netInfo is dictionary containing a list of variables:
             </tr>
 
             <tr>
-                <td colspan="6" align="center">
+                <td colspan="6" align="center" class="whiteBG">
                     <button name="action" value="Submit changes" class="button" id="submitChanges">Submit changes</button>
                 </td>
             </tr>
@@ -95,35 +95,35 @@ netInfo is dictionary containing a list of variables:
     </table>
 
     <table class="tablewithborder">
-        <tr style="background-color:black;"><td colspan="4" align="center" style="color:orange;">System information</td></tr>
+        <tr style="background-color:grey;"><td colspan="4"><font class="font13pxwhite"><center>System information</center></font></td></tr>
         <tr>
-            <td><font class="font13px">Carius Software version</font></td>
-            <td><font class="font11px">{{sysvars.softwareRelease}}</font></td>
-            <td><font class="font13px">System time</font></td>
-            <td>
+            <td><font class="font12pxwhite">Carius Software version</font></td>
+            <td class="whiteBG"><font class="font11px">{{sysvars.softwareRelease}}</font></td>
+            <td><font class="font12pxwhite">System time</font></td>
+            <td class="whiteBG">
                 <font class="font11px">
                     <div id="systemTime"></div>
                 </font>
             </td>
         </tr>
         <tr>
-            <td><font class="font13px">System platform</font></td>
-            <td><font class="font11px">{{sysvars.sysInfo.platform}}</font></td>
-            <td><font class="font13px">Hostname</font></td>
-            <td><font class="font11px">{{sysvars.sysInfo.hostname}}</font></td>
+            <td><font class="font12pxwhite">System platform</font></td>
+            <td class="whiteBG"><font class="font11px">{{sysvars.sysInfo.platform}}</font></td>
+            <td><font class="font12pxwhite">Hostname</font></td>
+            <td class="whiteBG"><font class="font11px">{{sysvars.sysInfo.hostname}}</font></td>
         </tr>
     </table>
 
     <table class="tablewithborder">
-        <tr style="background-color:black;"><td colspan="8" align="center" style="color:orange;">Network interfaces</td></tr>
+        <tr style="background-color:grey;"><td colspan="8"><font class="font13pxwhite"><center>Network interfaces</center></font></td></tr>
 
         {% for netItems in sysvars.netInfo %}
 
         <tr>
-            <td><font class="font13px">Interface name</font></td>
-            <td><font class="font11px">{{netItems}}</font></td>
-            <td><font class="font13px">MAC address</font></td>
-            <td>
+            <td><font class="font12pxwhite">Interface name</font></td>
+            <td class="whiteBG"><font class="font11px">{{netItems}}</font></td>
+            <td><font class="font12pxwhite">MAC address</font></td>
+            <td class="whiteBG">
                 <font class="font11px">
 
                     {% for item in sysvars.netInfo[netItems]  if item[0]==17 or item[0] ==-1 %}
@@ -132,16 +132,16 @@ netInfo is dictionary containing a list of variables:
 
                 </font>
             </td>
-            <td><font class="font13px">IPv4 address / mask</font></td>
-            <td>
+            <td><font class="font12pxwhite">IPv4 address / mask</font></td>
+            <td class="whiteBG">
                 <font class="font11px">
                     {% for item in sysvars.netInfo[netItems]  if item[0]==2 %}
                     {{ item[1] }} / {{item[2]}}<br>
                     {% endfor %}
                 </font>
             </td>
-            <td><font class="font13px">IPv6 address / mask</font></td>
-            <td>
+            <td><font class="font12pxwhite">IPv6 address / mask</font></td>
+            <td class="whiteBG">
                 <font class="font11px">
                     {% for item in sysvars.netInfo[netItems]  if item[0]==10  or item[0]==23 %}
                     {% set splitItem = item[1].split('%') %}

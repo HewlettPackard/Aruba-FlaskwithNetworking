@@ -264,7 +264,7 @@ $(document).on("click", "#submitbackupChanges", async function () {
     x[parseInt(3, 10)].innerHTML = "<font class='font12px'>" + backuptype + "</font>";
     x[parseInt(4, 10)].innerHTML = "<font class='font12px'>Branch</font>";
     x[parseInt(5, 10)].innerHTML = "<font class='font12px'>" + sysuser + "</font>";
-    x[parseInt(6, 10)].innerHTML = "<input type='submit' name='action' value='Restore' class='button' id=restoreConfig' data-id='ID' /><input type='submit' name='action' value='View' class='button' id='viewConfig' data-id='" + backupInfo['id'] + "' /><input type='submit' name='action' value='Edit' class='button' id='editConfig' data-id='" + backupInfo['id'] + "' data-masterbackup='" + backupInfo['masterbackup'] + "' /><input type='submit' name='action' value='Delete' id='deleteConfig' class='button' data-id='" + backupInfo['id'] + "'>";
+    x[parseInt(6, 10)].innerHTML = "<input type='submit' name='action' class='button' value='Restore' class='button' id=restoreConfig' data-id='ID' /><input type='submit' class='button' name='action' value='View' class='button' id='viewConfig' data-id='" + backupInfo['id'] + "' /><input type='submit' name='action' value='Edit' class='button' id='editConfig' data-id='" + backupInfo['id'] + "' data-masterbackup='" + backupInfo['masterbackup'] + "' /><input type='submit' name='action' value='Delete' id='deleteConfig' class='button' data-id='" + backupInfo['id'] + "'>";
 });
 
 $(document).on("click", "#editConfig", async function () {

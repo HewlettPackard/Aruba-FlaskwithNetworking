@@ -6,26 +6,26 @@
 {% else %}
 {% set configtotalpages=(configtotalentries|int/configentryperpage|int)|int +1 %}
 {% endif %}
-    <div id="maincontainer" style="background-color: mintcream;">
+    <div id="maincontainer">
         <table class="tablenoborder" id="backupTable">
             <form method="post" name="configMgr" id="configMgr">
                 <input type="hidden" name="currentconfigentryperpage" id="currentconfigentryperpage" value="{{ configentryperpage }}" />
-                <tr style="background-color: black;line-height:20px;">
-                    <td colspan="7" style="color:darkorange;">
-                        <center>Configuration manager for {{ deviceinfo['ipaddress'] }}  ({{ deviceinfo['description'] }})</b></center>
+                <tr style="background-color: grey;" class="tableTitle">
+                    <td colspan="7">
+                        <center><font class="font13pxwhite">Configuration manager for {{ deviceinfo['ipaddress'] }}  ({{ deviceinfo['description'] }})</font></center>
                     </td>
 
                 </tr>
-                <tr style="line-height:20px;">
-                    <td><font class="font13px">Backup ID</font></td>
-                    <td><font class="font13px">Creation date</font></td>
-                    <td><font class="font13px">Description</font></td>
-                    <td><font class="font13px">Configuration type</font></td>
-                    <td><font class="font13px">Backup type</font></td>
-                    <td><font class="font13px">Owner</font></td>
+                <tr>
+                    <td><font class="font13pxgrey">Backup ID</font></td>
+                    <td><font class="font13pxgrey">Creation date</font></td>
+                    <td><font class="font13pxgrey">Description</font></td>
+                    <td><font class="font13pxgrey">Configuration type</font></td>
+                    <td><font class="font13pxgrey">Backup type</font></td>
+                    <td><font class="font13pxgrey">Owner</font></td>
                     <td width="30%" align="right" nowrap>
                         {% if result %}
-                        <font class="font13px">
+                        <font class="font13pxgrey">
                             Show <select name="configentryperpage" id="configentryperpage" onchange="configentryperPage();">
                                 <option value="5" {% if configentryperpage=="5" %} selected {% endif %}>5</option>
                                 <option value="10" {% if configentryperpage=="10" %} selected {% endif %}>10</option>
@@ -42,7 +42,7 @@
                     </td>
                 </tr>
 
-                <tr style="background-color: grey;">
+                <tr>
 
                     <td colspan="2"></td>
                     <td align="left" valign="top">
@@ -79,13 +79,13 @@
 
 
                 {% for items in result %}
-                <tr style="line-height:12px;">
-                    <td><font class="font12px"> {{ items['id'] }} </font></td>
-                    <td><font class="font12px"> {{ ctime(items['utctime']) }}  </font></td>
-                    <td><font class="font12px"> {{items['description']}} </font></td>
-                    <td><font class="font12px"> {{items['backuptype']}} </font></td>
-                    <td><font class="font12px"> {% if items['masterbackup'] == 0 %}Master{% else %}Branch{% endif %}</font></td>
-                    <td><font class="font12px"> {{items['owner']}} </font></td>
+                <tr>
+                    <td class="whiteBG"><font face="arial" size="1"> {{ items['id'] }} </font></td>
+                    <td class="whiteBG"><font face="arial" size="1"> {{ ctime(items['utctime']) }}  </font></td>
+                    <td class="whiteBG"><font face="arial" size="1"> {{items['description']}} </font></td>
+                    <td class="whiteBG"><font face="arial" size="1"> {{items['backuptype']}} </font></td>
+                    <td class="whiteBG"><font face="arial" size="1"> {% if items['masterbackup'] == 0 %}Master{% else %}Branch{% endif %}</font></td>
+                    <td class="whiteBG"><font face="arial" size="1"> {{items['owner']}} </font></td>
                     <td align="right">
                         <input type="submit" name="action" value="Restore" class="button" id="restoreConfig" data-id="{{items['id']}}" /><input type="submit" name="action" value="View" class="button" id="viewConfig" data-id="{{items['id']}}" />{% if items['masterbackup'] == 0 %}<input type="submit" name="action" value="Create branch" class="button" id="branchBackup" data-id="{{items['id']}}" data-backuptype="{{items['backuptype']}}" />{% else %}<input type="submit" name="action" value="Edit" class="button" id="editConfig" data-id="{{items['id']}}" data-masterbackup="{{items['masterbackup']}}" />{% endif %}<input type="submit" name="action" value="Delete" id="deleteConfig" class="button" data-id="{{items['id']}}">
                     </td>

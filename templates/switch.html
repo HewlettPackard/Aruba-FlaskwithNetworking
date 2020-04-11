@@ -34,7 +34,7 @@ document.getElementById("liProgress").style.display = "block";
 
 {% endif %}
 
-<div id="maincontainer" style="background-color: mintcream;">
+<div id="maincontainer">
 
     <table class="tablenoborder">
         <form method="post">
@@ -47,16 +47,16 @@ document.getElementById("liProgress").style.display = "block";
             <input name='currententryperpage' type='hidden' value="{{ entryperpage }}" />
             <input name="action" type="hidden" value="navigation" />
             <tr>
-                <td width="3%"><font class="font13px">Item</font></td>
-                <td width="3%"><font class="font13px">API</font></td>
-                <td width="5%" align="left" nowrap><font class="font13px">IP address</font></td>
-                <td width="9%"><font class="font13px">Description</font></td>
-                <td width="9%"><font class="font13px">Operating System</font></td>
-                <td width="9%"><font class="font13px">Platform</font></td>
-                <td width="9%"><font class="font13px">Software version</font></td>
-                <td width="9%"><font class="font13px">Topology</font></td>
+                <td width="3%"><font class="font13pxgrey">Item</font></td>
+                <td width="3%"><font class="font13pxgrey">API</font></td>
+                <td width="5%" align="left" nowrap><font class="font13pxgrey">IP address</font></td>
+                <td width="9%"><font class="font13pxgrey">Description</font></td>
+                <td width="9%"><font class="font13pxgrey">Operating System</font></td>
+                <td width="9%"><font class="font13pxgrey">Platform</font></td>
+                <td width="9%"><font class="font13pxgrey">Software version</font></td>
+                <td width="9%"><font class="font13pxgrey">Topology</font></td>
                 <td width="14%" align="right" nowrap>
-                    <font class="font13px">
+                    <font class="font13pxgrey">
                         Show <select name="entryperpage" id="deviceEntryperpage" onchange="this.form.submit()">
                             <option value="5" {% if entryperpage==5 %} selected {% endif %}>5</option>
                             <option value="10" {% if entryperpage==10 %} selected {% endif %}>10</option>
@@ -185,15 +185,15 @@ document.getElementById("liProgress").style.display = "block";
 <div id="addDeviceForm" style="display:none;" data-deviceid="">
     <p>
         <table class="tablenoborder">
-            <tr style="background-color: black;line-height:20px;">
-                <td colspan="6" style="color: darkorange;"><center>Add device</center></td>
+            <tr style="background-color: grey;" class="tableTitle">
+                <td colspan="6"><font class='font13pxwhite'><center>Add device</center></font></td>
             </tr>
             <tr style="line-height:20px;">
-                <td width="15%" align="left" nowrap><font class="font13px">IP address</font></td>
-                <td width="15%"><font class="font13px">Description</font></td>
-                <td width="15%"><font class="font13px">Username</font></td>
-                <td width="15%"><font class="font13px">Password</font></td>
-                <td width="5%" nowrap><font class="font13px">Topology</font></td>
+                <td width="15%" align="left" nowrap><font class="font13pxgrey">IP address</font></td>
+                <td width="15%"><font class="font13pxgrey">Description</font></td>
+                <td width="15%"><font class="font13pxgrey">Username</font></td>
+                <td width="15%"><font class="font13pxgrey">Password</font></td>
+                <td width="5%" nowrap><font class="font13pxgrey">Topology</font></td>
             </tr>
             <tr>
                 <form method="post">
@@ -226,15 +226,15 @@ document.getElementById("liProgress").style.display = "block";
 <div id="editDeviceForm" style="display:none;">
     <p>
         <table class="tablenoborder">
-            <tr style="background-color: black;line-height:20px;">
-                <td colspan="6" style="color: darkorange;"><center>Edit device <span name="titleeditDescription" id="titleeditDescription"></span> (<span name="titleeditIpaddress" id="titleeditIpaddress"></span>)</center></td>
+            <tr style="background-color: grey;" class="tableTitle">
+                <td colspan="6"><font class='font13pxwhite'><center>Edit device <span name="titleeditDescription" id="titleeditDescription"></span> (<span name="titleeditIpaddress" id="titleeditIpaddress"></span>)</center></font></td>
             </tr>
             <tr style="line-height:20px;">
-                <td width="15%" align="left" nowrap><font class="font13px">IP address</font></td>
-                <td width="15%"><font class="font13px">Description</font></td>
-                <td width="15%"><font class="font13px">Username</font></td>
-                <td width="15%"><font class="font13px">Password</font></td>
-                <td width="5%" nowrap><font class="font13px">Topology</font></td>
+                <td width="15%" align="left" nowrap><font class="font13pxgrey">IP address</font></td>
+                <td width="15%"><font class="font13pxgrey">Description</font></td>
+                <td width="15%"><font class="font13pxgrey">Username</font></td>
+                <td width="15%"><font class="font13pxgrey">Password</font></td>
+                <td width="5%" nowrap><font class="font13pxgrey">Topology</font></td>
             </tr>
             <tr>
                 <form method="post">

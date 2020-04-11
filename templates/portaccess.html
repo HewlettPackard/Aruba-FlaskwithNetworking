@@ -1,17 +1,17 @@
 <!-- (C) Copyright 2020 Hewlett Packard Enterprise Development LP. -->
 {% block content %}
 
-    <div id="maincontainer" style="background-color: mintcream;">
+    <div id="maincontainer">
         <table class='tablewithborder'>
-            <tr style='background-color:black;'><td colspan='8' align='center' style='color:orange;'>Access port client information for device {{deviceInfo['ipaddress']}} ({{deviceInfo['description']}})</td></tr>
+            <tr><td colspan='7'><font class='font13pxwhite'><center>Access port client information for device {{deviceInfo['ipaddress']}} ({{deviceInfo['description']}})</center></font></td></tr>
             <tr>
-                <td nowrap><font class='font13px'>Access port</font></td>
-                <td nowrap><font class='font13px'>Client name</font></td>
-                <td nowrap><font class='font13px'>Authentication type</font></td>
-                <td nowrap><font class='font13px'>Status</font></td>
-                <td nowrap><font class='font13px'>MAC Address</font></td>
-                <td nowrap><font class='font13px'>Session time (seconds)</font></td>
-                <td><font class='font13px'>Action</font></td>
+                <td nowrap><font class='font12pxwhite'>Access port</font></td>
+                <td nowrap><font class='font12pxwhite'>Client name</font></td>
+                <td nowrap><font class='font12pxwhite'>Authentication type</font></td>
+                <td nowrap><font class='font12pxwhite'>Status</font></td>
+                <td nowrap><font class='font12pxwhite'>MAC Address</font></td>
+                <td nowrap><font class='font12pxwhite'>Session time (seconds)</font></td>
+                <td><font class='font12pxwhite'>Action</font></td>
             </tr>
 
             {% if accessInfo %}
@@ -20,13 +20,13 @@
             {% for items in accessInfo['Mac_Auth_Client_UR_Status_Detail'] %}
 
             <tr>
-                <td nowrap><font class='font11px'>{{ items['Client Base Details']['Port'] }}</font></td>
-                <td nowrap><font class='font11px'>{{ items['Client Base Details']['Client Name'] }}</font></td>
-                <td nowrap><font class='font11px'>{{ items['Client Base Details']['Authentication Type'] }}</font></td>
-                <td nowrap><font class='font11px'>{{ items['Client Base Details']['Client Status'] }}</font></td>
-                <td nowrap><font class='font11px'>{{ items['Client Base Details']['MAC Address'] }}</font></td>
-                <td nowrap><font class='font11px'>{{ items['Client Base Details']['Session Time'] }}</font></td>
-                <td nowrap width='3%'>
+                <td style="background-color:#ffffff;" nowrap><font class='font11px'>{{ items['Client Base Details']['Port'] }}</font></td>
+                <td style="background-color:#ffffff;" nowrap><font class='font11px'>{{ items['Client Base Details']['Client Name'] }}</font></td>
+                <td style="background-color:#ffffff;" nowrap><font class='font11px'>{{ items['Client Base Details']['Authentication Type'] }}</font></td>
+                <td style="background-color:#ffffff;" nowrap><font class='font11px'>{{ items['Client Base Details']['Client Status'] }}</font></td>
+                <td style="background-color:#ffffff;" nowrap><font class='font11px'>{{ items['Client Base Details']['MAC Address'] }}</font></td>
+                <td style="background-color:#ffffff;" nowrap><font class='font11px'>{{ items['Client Base Details']['Session Time'] }}</font></td>
+                <td style="background-color:#ffffff;" nowrap width='3%'>
                     <font class='font11px'>
                         <input type='button' value='Disconnect' id='accessAction' data-auth='macauth' data-port='{{ items['Client Base Details']['Port'] }}' data-deviceid='{{ deviceInfo['id'] }}' data-macaddress='{{ items['Client Base Details']['MAC Address'] }}'>
                     </font>

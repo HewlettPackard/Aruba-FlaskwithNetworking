@@ -78,7 +78,7 @@ def ztpdevicedbAction(formresult):
     constructQuery=""
     if(bool(formresult)==True):
         # Check if IPAM is enabled, if it is and the gateway and netmask value exists (ipamgateway and ipamnetmask), we have to assign it to the appropriate vars
-        if globalsconf['ipamenabled']:
+        if "ipamenabled" in globalsconf:
             if 'ipamgateway' in formresult:
                 gateway=formresult['ipamgateway']
             if 'ipamnetmask' in formresult:
@@ -139,6 +139,7 @@ def ztpdevicedbAction(formresult):
             enableztp, ztpstatus) values ('{}','{}','{}','{}','{}','{}','{}','{}','{}','{}','{}','{}','{}','{}','{}','{}','{}','{}','Disabled')".format(formresult['name'],formresult['macaddress'], \
             ipamsubnet,formresult['ipaddress'],netmask,gateway,formresult['profile'],softwareimage,template,formresult['parameterValues'], \
             vsfenabled,vsfrole,vsfmember,vsfmaster,switchtype,link1,link2,0,'Disabled')
+            print(queryStr)
             deviceid=classes.classes.sqlQuery(queryStr,"insert")
         elif  (formresult['action']=="Submit changes"):
             queryStr="update ztpdevices set name='{}', macaddress='{}', ipamsubnet='{}',ipaddress='{}',netmask='{}', gateway='{}', profile='{}', softwareimage='{}', template='{}', templateparameters='{}', \

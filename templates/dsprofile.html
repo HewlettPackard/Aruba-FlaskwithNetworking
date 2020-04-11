@@ -11,21 +11,21 @@
 {% set pagename = "Dynamic Segmentation Profiles" %}
 {% include 'navbar.html' %}
 
-<div id="maincontainer" style="background-color: mintcream;">
+<div id="maincontainer">
     <table class="tablenoborder">
         <form method="post">
             <input id='action' name='action' type='hidden' value='' />
             <tr>
-                <td width="4%"><font class="font13px">Item</font></td>
-                <td width="6%" align="left" nowrap><font class="font13px">Name</font></td>
-                <td width="16%" align="left" nowrap><font class="font13px">Members</font></td>
-                <td width="10%"><font class="font13px">Mac Auth. (max.)</font></td>
-                <td width="10%"><font class="font13px">802.1X (max.)</font></td>
-                <td width="6%"><font class="font13px">Ports</font></td>
-                <td witch="10%"><font class="font13px">ClearPass Server</font></td>
-                <td witch="10%"><font class="font13px">NTP Server</font></td>
-                <td witch="9%"><font class="font13px">Primary controller</font></td>
-                <td witch="9%"><font class="font13px">Backup controller</font></td>
+                <td width="4%"><font class="font13pxgrey">Item</font></td>
+                <td width="6%" align="left" nowrap><font class="font13pxgrey">Name</font></td>
+                <td width="16%" align="left" nowrap><font class="font13pxgrey">Members</font></td>
+                <td width="10%"><font class="font13pxgrey">Mac Auth. (max.)</font></td>
+                <td width="10%"><font class="font13pxgrey">802.1X (max.)</font></td>
+                <td width="6%"><font class="font13pxgrey">Ports</font></td>
+                <td witch="10%"><font class="font13pxgrey">ClearPass Server</font></td>
+                <td witch="10%"><font class="font13pxgrey">NTP Server</font></td>
+                <td witch="9%"><font class="font13pxgrey">Primary controller</font></td>
+                <td witch="9%"><font class="font13pxgrey">Backup controller</font></td>
                 <td width="10%" align="right"><input type="submit" class="button" value="Add profile" onclick="return setHidden('Add profile');"></td>
             </tr>
         </form>
@@ -117,14 +117,14 @@
         <form method="post">
             <input type="hidden" name="id" value="{{ formresult.id }}" />
             <table class="tablewithborder">
-                <tr style="background-color:black;"><td colspan="4" align="center" style="color:orange;">{% if formresult.action=="Add profile" %} Add {% elif formresult.action=="Edit" %} Edit {% endif %}Dynamic Segmentation Profile</tdcolspan="4"></tr>
+                <tr style="background-color:grey;"><td colspan="4"><font class="font13pxwhite"><center>{% if formresult.action=="Add profile" %} Add {% elif formresult.action=="Edit" %} Edit {% endif %}Dynamic Segmentation Profile</center></font></td></tr>
                 <tr>
-                    <td><font class="font12px">Name</font></td>
-                    <td colspan="3"><div class="field"><input type="text" size="60" name="name" id="name" value="{{ editProfile.name }}" /></div></td>
+                    <td><font class="font12pxwhite">Name</font></td>
+                    <td colspan="3" class="whiteBG"><div class="field"><input type="text" size="60" name="name" id="name" value="{{ editProfile.name }}" /></div></td>
                 </tr>
                 <tr>
-                    <td><font class="font12px">ClearPass Server</font></td>
-                    <td>
+                    <td><font class="font12pxwhite">ClearPass Server</font></td>
+                    <td class="whiteBG">
                         <select name="clearpass" id="clearpass">
                             <option value="">Select</option>
                             {% for item in cpInfo %}
@@ -132,32 +132,32 @@
                             {% endfor %}
                         </select>
                     </td>
-                    <td><font class="font12px">Radius Secret</font></td>
-                    <td><div class="field"><input type="password" class="input" name="radiussecret" id="radiussecret" value="{{ editProfile.radiussecret }}" /></div></td>
+                    <td><font class="font12pxwhite">Radius Secret</font></td>
+                    <td class="whiteBG"><div class="field"><input type="password" class="input" name="radiussecret" id="radiussecret" value="{{ editProfile.radiussecret }}" /></div></td>
                 </tr>
                 <tr>
-                    <td><font class="font12px">Downloadable User Role administrator</font></td>
-                    <td>
+                    <td><font class="font12pxwhite">Downloadable User Role administrator</font></td>
+                    <td class="whiteBG">
                         <div class="field"><input type="text" class="input" name="duradmin" id="duradmin" value="{{ editProfile.duradmin }}" /></div>
                     </td>
-                    <td><font class="font12px">Downloadable User Role administrator password</font></td>
-                    <td><div class="field"><input type="password" class="input" name="durpassword" id="durpassword" value="{{ editProfile.durpassword }}" /></div></td>
+                    <td><font class="font12pxwhite">Downloadable User Role administrator password</font></td>
+                    <td class="whiteBG"><div class="field"><input type="password" class="input" name="durpassword" id="durpassword" value="{{ editProfile.durpassword }}" /></div></td>
                 </tr>
                 <tr>
-                    <td><font class="font12px">Enable Mac Authentication</font><input type="checkbox" name="macauth" {% if editProfile['macauth']==1 %} checked {% endif %} id="macauth" /></td>
-                    <td>
+                    <td><font class="font12pxwhite">Enable Mac Authentication</font><input type="checkbox" name="macauth" {% if editProfile['macauth']==1 %} checked {% endif %} id="macauth" /></td>
+                    <td class="whiteBG">
                         <font class="font12px">
                             MacAuth Address limit
                         </font><select name="maclimit" id="maclimit">{{ loopCounter(32,maclimit) | safe }}</select>
                     </td>
-                    <td><font class="font12px">Enable 802.1X</font><input type="checkbox" name="dot1x" {% if editProfile['dot1x']==1 %} checked {% endif %} id="dot1x" /></td>
-                    <td>
+                    <td><font class="font12pxwhite">Enable 802.1X</font><input type="checkbox" name="dot1x" {% if editProfile['dot1x']==1 %} checked {% endif %} id="dot1x" /></td>
+                    <td class="whiteBG">
                         <font class="font12px">802.1x Client limit</font> <select name="dot1xlimit" id="dot1xlimit">{{ loopCounter(32,dot1xlimit) | safe }}</select>
                     </td>
                 </tr>
                 <tr>
-                    <td><font class="font12px">MAC Authentication Source(s)</font></td>
-                    <td>
+                    <td><font class="font12pxwhite">MAC Authentication Source(s)</font></td>
+                    <td class="whiteBG">
                         <select name="macauthsource" multiple id="macauthsource">
                             <option disabled>Select authentication source(s)</option>
                             {% for item in authSource %}
@@ -165,8 +165,8 @@
                             {% endfor %}
                         </select>
                     </td>
-                    <td><font class="font12px">MAC Authentication Method(s)</font></td>
-                    <td>
+                    <td><font class="font12pxwhite">MAC Authentication Method(s)</font></td>
+                    <td class="whiteBG">
                         <select name="macauthmethod" multiple id="macauthmethod">
                             <option disabled>Select authentication method(s)</option>
                             {% for item in authMethod %}
@@ -176,8 +176,8 @@
                     </td>
                 </tr>
                 <tr>
-                    <td><font class="font12px">802.1x Authentication Source(s)</font></td>
-                    <td>
+                    <td><font class="font12pxwhite">802.1x Authentication Source(s)</font></td>
+                    <td class="whiteBG">
                         <select name="dot1xsource" multiple id="dot1xsource">
                             <option disabled>Select authentication source(s)</option>
                             {% for item in authSource %}
@@ -185,8 +185,8 @@
                             {% endfor %}
                         </select>
                     </td>
-                    <td><font class="font12px">802.1x Authentication Method(s)</font></td>
-                    <td>
+                    <td><font class="font12pxwhite">802.1x Authentication Method(s)</font></td>
+                    <td class="whiteBG">
                         <select name="dot1xmethod" multiple id="dot1xmethod">
                             <option disabled>Select authentication method(s)</option>
                             {% for item in authMethod %}
@@ -196,8 +196,8 @@
                     </td>
                 </tr>
                 <tr>
-                    <td><font class="font12px">Member(s)</font></td>
-                    <td>
+                    <td><font class="font12pxwhite">Member(s)</font></td>
+                    <td class="whiteBG">
                         <select name="members" multiple>
                             <option disabled>Select member(s)</option>
                             {% for item in devInfo %}
@@ -205,18 +205,18 @@
                             {% endfor %}
                         </select>
                     </td>
-                    <td><font class="font12px">Enable Dynamic Segmentation on port(s)</font></td>
-                    <td><input type="text" class="input" name="ports" value="{{ editProfile.ports }}" /><font class="font12px">(Example: 1,2,5 or 1-6 or 1,2,3-10)</font></td>
+                    <td><font class="font12pxwhite">Enable Dynamic Segmentation on port(s)</font></td>
+                    <td class="whiteBG"><input type="text" class="input" name="ports" value="{{ editProfile.ports }}" /><br/><font class="font12px">(Example: 1,2,5 or 1-6 or 1,2,3-10)</font></td>
                 </tr>
                 <tr>
-                    <td><font class="font12px">NTP Server</font></td>
-                    <td><div class="field"><input type="text" class="input" name="ntpserver" id="ntpserver" value="{{ editProfile.ntpserver }}" /></div></td>
-                    <td><font class="font12px">Authentication password (MD5)</font></td>
-                    <td><input type="password" class="input" name="ntpauth" id="ntpauth" value="{{ editProfile.ntpauth }}" /></td>
+                    <td><font class="font12pxwhite">NTP Server</font></td>
+                    <td class="whiteBG"><div class="field"><input type="text" class="input" name="ntpserver" id="ntpserver" value="{{ editProfile.ntpserver }}" /></div></td>
+                    <td><font class="font12pxwhite">Authentication password (MD5)</font></td>
+                    <td class="whiteBG"><input type="password" class="input" name="ntpauth" id="ntpauth" value="{{ editProfile.ntpauth }}" /></td>
                 </tr>
                 <tr>
-                    <td><font class="font12px">Primary controller</font></td>
-                    <td>
+                    <td><font class="font12pxwhite">Primary controller</font></td>
+                    <td class="whiteBG">
                         <select name="primarycontroller" id="primarycontroller">
 
                             <option value="">Select</option>
@@ -225,8 +225,8 @@
                             {% endfor %}
                         </select>
                     </td>
-                    <td><font class="font12px">Backup controller</font></td>
-                    <td>
+                    <td><font class="font12pxwhite">Backup controller</font></td>
+                    <td class="whiteBG">
                         <select name="backupcontroller" id="#backupcontroller">
                             <option value="">Select</option>
                             {% for item in mcInfo %}
@@ -236,9 +236,9 @@
                     </td>
                 </tr>
                 <tr>
-                    <td colspan="4" align="center">
+                    <td colspan="4" align="center" class="whiteBG">
                         <div class="actions">
-                            <input type="submit" disabled name="action" class="button" value="{% if formresult.action==" Edit" %}Submit changes{% elif formresult.action=="Add profile" %}Submit profile{% endif %}">
+                            <input type="submit" disabled name="action" class="button" value="{% if formresult.action=="Edit" %}Submit changes{% elif formresult.action=="Add profile" %}Submit profile{% endif %}">
                         </div>
                     </td>
                 </tr>

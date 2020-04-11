@@ -125,3 +125,46 @@ def checkcpOnline(deviceid):
         return "Offline"
     else:
         return "Online"
+
+def getendpointInfo(deviceid,epEntryperpage,epPageoffset):
+    if not epEntryperpage:
+        epEntryperpage=25
+    if not epPageoffset:
+        pageOffset=0
+    else:
+        pageOffset=int(epPageoffset)*int(epEntryperpage)
+    queryStr="select id, ipaddress, description from devices where id='{}'".format(deviceid)
+    deviceInfo=classes.classes.sqlQuery(queryStr,"selectone")
+    # Obtain the ClearPass endpoint information from ClearPass
+    url="endpoint?sort=%2Bid&offset=" + str(pageOffset) + "&limit=" + str(epEntryperpage) + "&calculate_count=true"
+    endpointInfo=classes.classes.getRESTcp(deviceid,url)
+    return {'endpointInfo': endpointInfo,'deviceInfo': deviceInfo, 'epTotalentries': endpointInfo['count'], 'epEntryperpage': epEntryperpage, 'epPageoffset': epPageoffset }
+
+def gettrustInfo(deviceid,trEntryperpage,trPageoffset):
+    if not trEntryperpage:
+        trEntryperpage=25
+    if not trPageoffset:
+        pageOffset=0
+    else:
+        pageOffset=int(trPageoffset)*int(trEntryperpage)
+    queryStr="select id, ipaddress, description from devices where id='{}'".format(deviceid)
+    deviceInfo=classes.classes.sqlQuery(queryStr,"selectone")
+    # Obtain the ClearPass trusted certificates information from ClearPass
+    url="cert-trust-list-details?sort=%2Bid&offset=" + str(pageOffset) + "&limit=" + str(trEntryperpage) + "&calculate_count=true"
+    trustInfo=classes.classes.getRESTcp(deviceid,url)
+    return {'trustInfo': trustInfo,'deviceInfo': deviceInfo, 'trTotalentries': trustInfo['count'], 'trEntryperpage': trEntryperpage, 'trPageoffset': trPageoffset }
+
+def getservicesInfo(deviceid,seEntryperpage,sePageoffset):
+    if not seEntryperpage:
+        seEntryperpage=25
+    if not sePageoffset:
+        pageOffset=0
+    else:
+        pageOffset=int(sePageoffset)*int(seEntryperpage)
+    queryStr="select id, ipaddress, description from devices where id='{}'".format(deviceid)
+    deviceInfo=classes.classes.sqlQuery(queryStr,"selectone")
+    # Obtain the ClearPass services information from ClearPass
+    url="config/service?sort=%2Bid&offset=" + str(pageOffset) + "&limit=" + str(seEntryperpage) + "&calculate_count=true"
+    servicesInfo=classes.classes.getRESTcp(deviceid,url)
+    print(servicesInfo)
+    return {'servicesInfo': servicesInfo,'deviceInfo': deviceInfo, 'seTotalentries': servicesInfo['count'], 'seEntryperpage': seEntryperpage, 'sePageoffset': sePageoffset }

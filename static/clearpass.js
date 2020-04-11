@@ -38,6 +38,9 @@ $(document).ready(function () {
         deviceid = $(this).attr('data-deviceid');
         document.getElementById("adddeviceForm").style.display = "none";
         document.getElementById("editdeviceForm").style.display = "block";
+        document.getElementById("showTrust").style.display = "none";
+        document.getElementById("showEndpoints").style.display = "none";
+        document.getElementById("showServices").style.display = "none";
 
         deviceInfo = await $.ajax({
             url: "/deviceInfo",
@@ -53,7 +56,6 @@ $(document).ready(function () {
             }
         });
         deviceInfo = JSON.parse(deviceInfo);
-        console.log(deviceInfo);
         document.getElementById('editIpaddress').value = deviceInfo['ipaddress'];
         document.getElementById('editDescription').value = deviceInfo['description'];
         document.getElementById('titleeditIpaddress').innerHTML = deviceInfo['ipaddress'];
@@ -68,9 +70,102 @@ $(document).ready(function () {
     $(document).on("click", "#addDevice", function () {
         document.getElementById("adddeviceForm").style.display = "block";
         document.getElementById("editdeviceForm").style.display = "none";
+        document.getElementById("showTrust").style.display = "none";
+        document.getElementById("showEndpoints").style.display = "none";
+        document.getElementById("showServices").style.display = "none";
+    });
+
+
+
+
+    $(".showTrust").on('click change', function () {
+        deviceid = $(this).attr('data-deviceid');
+        document.getElementById("showTrust").style.display = "block";
+        document.getElementById("showEndpoints").style.display = "none";
+        document.getElementById("showServices").style.display = "none";
+        document.getElementById("adddeviceForm").style.display = "none";
+        document.getElementById("editdeviceForm").style.display = "none";
+        $('#showTrust').load('cpTrusts?deviceid=' + deviceid + "&trEntryperpage=25&trPageoffset=0");
+    });
+
+    $(".showServices").on('click change', function () {
+        deviceid = $(this).attr('data-deviceid');
+        document.getElementById("showTrust").style.display = "none";
+        document.getElementById("showEndpoints").style.display = "none";
+        document.getElementById("showServices").style.display = "block";
+        document.getElementById("adddeviceForm").style.display = "none";
+        document.getElementById("editdeviceForm").style.display = "none";
+        $('#showServices').load('cpServices?deviceid=' + deviceid + "&seEntryperpage=25&sePageoffset=0");
+    });
+
+    $(".showEndpoints").on('click change', function (event) {
+        deviceid = $(this).attr('data-deviceid');
+        document.getElementById("showTrust").style.display = "none";
+        document.getElementById("showEndpoints").style.display = "block";
+        document.getElementById("showServices").style.display = "none";
+        document.getElementById("adddeviceForm").style.display = "none";
+        document.getElementById("editdeviceForm").style.display = "none";
+        $('#showEndpoints').load('cpEndpoints?deviceid=' + deviceid + "&epEntryperpage=25&epPageoffset=0");
     });
 
 });
+
+function showEndpoints(deviceid) {
+    var epp_select = document.getElementById('epEntryperpage');
+    var epEntryperpage = epp_select.options[epp_select.selectedIndex].value;
+    var currentepEntryperpage = document.getElementById('currentepEntryperpage').value;
+    if (epEntryperpage == currentepEntryperpage) {
+        var po_select = document.getElementById('epPageoffset');
+        var epPageoffset = po_select.options[po_select.selectedIndex].value;
+    }
+    else {
+        epPageoffset = 0;
+    }
+    document.getElementById("showTrust").style.display = "none";
+    document.getElementById("showEndpoints").style.display = "block";
+    document.getElementById("showServices").style.display = "none";
+    document.getElementById("adddeviceForm").style.display = "none";
+    document.getElementById("editdeviceForm").style.display = "none";
+    $('#showEndpoints').load('cpEndpoints?deviceid=' + deviceid + "&epEntryperpage=" + epEntryperpage + "&epPageoffset=" + epPageoffset);
+}
+
+function showTrusts(deviceid) {
+    var epp_select = document.getElementById('trEntryperpage');
+    var trEntryperpage = epp_select.options[epp_select.selectedIndex].value;
+    var currenttrEntryperpage = document.getElementById('currenttrEntryperpage').value;
+    if (trEntryperpage == currenttrEntryperpage) {
+        var po_select = document.getElementById('trPageoffset');
+        var trPageoffset = po_select.options[po_select.selectedIndex].value;
+    }
+    else {
+        trPageoffset = 0;
+    }
+    document.getElementById("showTrust").style.display = "block";
+    document.getElementById("showEndpoints").style.display = "none";
+    document.getElementById("showServices").style.display = "none";
+    document.getElementById("adddeviceForm").style.display = "none";
+    document.getElementById("editdeviceForm").style.display = "none";
+    $('#showTrust').load('cpTrusts?deviceid=' + deviceid + "&trEntryperpage=" + trEntryperpage + "&trPageoffset=" + trPageoffset);
+}
+
+function showServices(deviceid) {
+    var epp_select = document.getElementById('seEntryperpage');
+    var seEntryperpage = epp_select.options[epp_select.selectedIndex].value;
+    var currentseEntryperpage = document.getElementById('currentseEntryperpage').value;
+    if (seEntryperpage == currentseEntryperpage) {
+        var po_select = document.getElementById('sePageoffset');
+        var sePageoffset = po_select.options[po_select.selectedIndex].value;
+    }
+    else {
+        sePageoffset = 0;
+    }
+    document.getElementById("showTrust").style.display = "none";
+    document.getElementById("showEndpoints").style.display = "none";
+    document.getElementById("showServices").style.display = "block";
+    document.getElementById("adddeviceForm").style.display = "none";
+    document.getElementById("editdeviceForm").style.display = "none";
+    $('#showServices').load('cpServices?deviceid=' + deviceid + "&seEntryperpage=" + seEntryperpage + "&sePageoffset=" + sePageoffset);
+}
 
 function highlightdeviceRow(e) {
     var tr = e.parentNode.parentNode;

@@ -3,57 +3,91 @@
 <script>updateCookie({{ authOK | safe }}, {{ sysvars['idle_timeout'] }})</script>
 {% set userinfo="Logout" %}
 
-<ul>
-    <li class="nav-float-left"><img src="/static/images/umbrella.png" height="25" width="50" title="Mbrella" /></li>
-    <li class="dropdown" {% if pagename=="Switches" or pagename=="ClearPass" or pagename=="Mobility Controllers" %} style="background-color:white" {% endif %}>
-        <a href="javascript:void(0)" class="dropbtn">Devices</a>
-        <div class="dropdown-content">
-            <a href="/switches" style="color: darkorange;">Switches</a>
-            <a href="/clearpass" style="color: darkorange;">ClearPass</a>
-            <a href="/mobility" style="color: darkorange;">Mobility Controllers</a>
-        </div>
-    </li>
-    <li class="dropdown">
-        <a href="javascript:void(0)" class="dropbtn">ZTP</a>
-        <div class="dropdown-content">
-            <a href="ztpprofile" style="color: darkorange;">Profiles</a>
-            <a href="ztpimage" style="color: darkorange;">Software image repository</a>
-            <a href="ztptemplate" style="color: darkorange;">
-                Configuration templates
-                <a href="ztpdevice" style="color: darkorange;">Devices</a>
 
-        </div>
+<ul id="menu">
+    <li class="menu_left no_event">
+            <img src="/static/images/umbrella.png" height="25" width="50" title="Carius" />
     </li>
-    <li {% if pagename=="Topology" %} style="background-color:white" {% endif %}><a href="/topology" style="color: darkorange;">Topology</a></li>
-    <li class="dropdown">
-        <a href="javascript:void(0)" class="dropbtn">Dynamic Segmentation</a>
-        <div class="dropdown-content">
-            <a href="dsprofile" style="color: darkorange;">Profiles</a>
-            <a href="dsservice" style="color: darkorange;">Services</a>
+    <li class="menu_item">
+        <a href="#" class="drop">Devices</a>
+        <div class="dropdown align_left">
+            <div class="col_1">
+                <ul class="simple">
+                    <li><a href="/switches">Switches</a></li>
+                    <li><a href="/clearpass">Clearpass</a></li>
+                    <li><a href="/mobility">Mobility</a></li>
+                </ul>
+            </div>
         </div>
     </li>
 
-    <!--
-     <li {% if pagename=="Live Subscriptions" %} style="background-color:white" {% endif %}><a href="/subscribe" style="color: darkorange;">Live Subscriptions</a></li>
-       -->
-    <li class="dropdown">
-        <a href="javascript:void(0)" class="dropbtn">Trackers</a>
-        <div class="dropdown-content">
-            <a href="dhcptracker" style="color: darkorange;">DHCP</a>
-            <a href="snmptracker" style="color: darkorange;">SNMP</a>
-            <a href="syslog" style="color: darkorange;">Syslog</a>
+    <li class="menu_item">
+        <a href="#" class="drop">ZTP</a>
+        <div class="dropdown align_left">
+            <div class="col_1">
+                <ul class="simple">
+                    <li><a href="/ztpprofile">Profiles</a></li>
+                    <li><a href="/ztpimage">Image repository</a></li>
+                    <li><a href="/ztptemplate">Templates</a></li>
+                    <li><a href="/ztpdevice">Devices</a></li>
+                </ul>
+            </div>
         </div>
     </li>
 
-    <li {% if pagename=="Any CLI" %} style="background-color:white" {% endif %}><a href="/anycli" style="color: darkorange;">Any CLI</a></li>
-    <li class="dropdown">
-        <a href="javascript:void(0)" class="dropbtn">Administration</a>
-        <div class="dropdown-content">
-            <a href="useradmin" style="color: darkorange;">Users</a>
-            <a href="sysconf" style="color: darkorange;">System configuration</a>
-            <a href="sysmon" style="color: darkorange;">System Monitoring</a>
+    <li class="menu_item">
+        <a href="/topology">Topology</a>
+    </li>
+    <li>
+        <a href="#" class="drop">UBT</a>
+        <div class="submenu dropdown align_left">
+            <div class="col_1">
+                <ul class="simple">
+                    <li><a href="/dsprofile">Profiles</a></li>
+                    <li><a href="/dsservice">Services</a></li>
+                </ul>
+            </div>
         </div>
     </li>
+
+    <li class="menu_item">
+        <a href="#" class="drop">Trackers</a>
+        <div class="dropdown align_left">
+            <div class="col_1">
+                <ul class="simple">
+                    <li><a href="/dhcptracker">DHCP</a></li>
+                    <li><a href="/snmptracker">SNMP</a></li>
+                    <li><a href="/syslog">Syslog</a></li>
+                </ul>
+            </div>
+        </div>
+    </li>
+
+    <li class="menu_item">
+        <a href="#" class="drop">Tools</a>
+        <div class="dropdown align_left">
+            <div class="col_1">
+                <ul class="simple">
+                    <li><a href="/anycli">AnyCLI</a></li>
+                </ul>
+            </div>
+        </div>
+    </li>
+
+    <li class="menu_item">
+        <a href="#" class="drop">Administration</a>
+        <div class="dropdown align_left">
+            <div class="col_1">
+                <ul class="simple">
+                    <li><a href="/useradmin">Users</a></li>
+                    <li><a href="/sysconf">System configuration</a></li>
+                    <li><a href="/sysmon">Services status</a></li>
+                </ul>
+            </div>
+        </div>
+    </li>
+
+
     <li id="liProgress" class="nav-float" style="width: 300px;display: none; overflow: visible;">
         <div class="progressContainer" id="progressContainer">
             <div class="progressInfo" id="progressInfo"></div>
@@ -77,12 +111,15 @@
 
     </li>
 
-    <li class="nav-float-right">
+    <li class="menu_right" >
+            <a title="Logout"></a>
         <div id="userInfo">
             <script>getCookie('username');</script>
         </div>
     </li>
-    <li class="nav-float-right">
-        <a title="Logout">{{ pagename }}</a>
+    <li class="menu_right no_event" style="top:0px;">
+        <div >
+            {{ pagename }}
+        </div>
     </li>
 </ul>

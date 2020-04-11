@@ -143,6 +143,7 @@ CREATE TABLE `ztpdevices` (
   `id` bigint(20) UNSIGNED NOT NULL AUTO_INCREMENT,
   `name` text NOT NULL,
   `macaddress` text NOT NULL,
+  `ipamsubnet` text NOT NULL,
   `ipaddress` text NOT NULL,
   `netmask` text NOT NULL,
   `gateway` text NOT NULL,

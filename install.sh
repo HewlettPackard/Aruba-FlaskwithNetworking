@@ -157,7 +157,7 @@ echo " Configuring the app"
 
 activeInterface=$(route | grep '^default' | grep -o '[^ ]*$')
 cat > /var/www/html/bash/globals.json  << ENDOFFILE
-{"idle_timeout": "3000", "pcap_location": "/var/www/html/bash/trace.pcap", "retain_dhcp": "30", "retain_snmp": "30", "retain_syslog": "30", "secret_key": "ArubaRocks!!!!!!", "appPath": "/var/www/html/", "softwareRelease": "1.1", "sysInfo": "","activeInterface":"$activeInterface"}
+{"idle_timeout": "3000", "pcap_location": "/var/www/html/bash/trace.pcap", "retain_dhcp": "30", "retain_snmp": "30", "retain_syslog": "30", "secret_key": "ArubaRocks!!!!!!", "appPath": "/var/www/html/", "softwareRelease": "1.2", "sysInfo": "","activeInterface":"$activeInterface"}
 ENDOFFILE
 chmod 777 /var/www/html/bash/listener.sh
 chmod 777 /var/www/html/bash/cleanup.sh
@@ -166,6 +166,11 @@ chmod 777 /var/www/html/bash/trackers.sh
 chmod 777 /var/www/html/bash/ztp.sh
 
 dos2unix -q /var/www/html/startapp.sh >/dev/null
+dos2unix -q /var/www/html/bash/listener.sh >/dev/null
+dos2unix -q /var/www/html/bash/cleanup.sh >/dev/null
+dos2unix -q /var/www/html/bash/topology.sh >/dev/null
+dos2unix -q /var/www/html/bash/trackers.sh >/dev/null
+dos2unix -q /var/www/html/bash/ztp.sh >/dev/null
 chmod 777 /var/www/html/startapp.sh
 chmod +x /var/www/html/startapp.sh
 
