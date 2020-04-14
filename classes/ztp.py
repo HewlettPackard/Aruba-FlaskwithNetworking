@@ -139,7 +139,6 @@ def ztpdevicedbAction(formresult):
             enableztp, ztpstatus) values ('{}','{}','{}','{}','{}','{}','{}','{}','{}','{}','{}','{}','{}','{}','{}','{}','{}','{}','Disabled')".format(formresult['name'],formresult['macaddress'], \
             ipamsubnet,formresult['ipaddress'],netmask,gateway,formresult['profile'],softwareimage,template,formresult['parameterValues'], \
             vsfenabled,vsfrole,vsfmember,vsfmaster,switchtype,link1,link2,0,'Disabled')
-            print(queryStr)
             deviceid=classes.classes.sqlQuery(queryStr,"insert")
         elif  (formresult['action']=="Submit changes"):
             queryStr="update ztpdevices set name='{}', macaddress='{}', ipamsubnet='{}',ipaddress='{}',netmask='{}', gateway='{}', profile='{}', softwareimage='{}', template='{}', templateparameters='{}', \

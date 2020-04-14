@@ -1,0 +1,22 @@
+<!-- (C) Copyright 2020 Hewlett Packard Enterprise Development LP. -->
+{% block content %}
+
+    <div id="maincontainer">
+        <table class='tablewithborder'>
+            <tr><td colspan='2'><font class='font13pxwhite'><center>ZTP log information for device {{deviceInfo['ipaddress']}} ({{deviceInfo['name']}})</center></font></td></tr>
+            <tr>
+                <td nowrap><font class='font12pxwhite'>Date</font></td>
+                <td nowrap><font class='font12pxwhite'>Information</font></td>
+            </tr>
+            {% if logInfo %}
+            {% for items in logInfo %}
+            <tr>
+                <td style="background-color:#ffffff;" nowrap><font class='font11px'>{{ items['datetime'] }}</font></td>
+                <td style="background-color:#ffffff;" nowrap><font class='font11px'>{{ items['logEntry'] }}</font></td>
+            </tr>
+
+           {% endfor %}
+            {% endif %}
+        </table>
+        </div>
+        {% endblock %}

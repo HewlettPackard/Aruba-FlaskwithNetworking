@@ -162,7 +162,7 @@
                 {% set nogateway=1 %}
                 {% endif %}
 
-                {% if ztpenabled==1 %}<input type="button" name="disableZTP" value="Disable ZTP" id="disableZTP{{ info['id'] }}" data-macaddress="{{info['macaddress']}}" data-deviceid="{{info['id']}}" class="disableZTP" onclick="highlightdeviceRow(this);">{% else %}<input type="button" name="enableZTP" value="Enable ZTP" id="enableZTP{{ info['id'] }}" data-macaddress="{{ info['macaddress'] }}" data-deviceid="{{info['id']}}" class="enableZTP" onclick="highlightdeviceRow(this);" {% if nogateway==1 %} disabled style="opacity:0.3;" {% endif %}>{% endif %}<input type="button" name="editDevice" value="Edit" data-deviceid="{{info['id']}}" class="editDevice" id="editDevice{{ info['id'] }}" onclick="highlightdeviceRow(this);" {% if ipamstatus=="Offline" %} disabled style="opacity:0.3;" {% endif %}><input type="submit" name="action" value="Delete" class="button" data-deviceid="{{info['id']}}" class="deleteDevice" id="deleteDevice{{ info['id'] }}" onclick="return confirm('Are you sure you want to delete {{ info['name'] }}?')">
+                <input type="button" class="button" value="Show log" id="showztplog" data-deviceid="{{info['id']}}"  onclick="highlightdeviceRow(this);">{% if ztpenabled==1 %}<input type="button" name="disableZTP" value="Disable ZTP" id="disableZTP{{ info['id'] }}" data-macaddress="{{info['macaddress']}}" data-deviceid="{{info['id']}}" class="disableZTP" onclick="highlightdeviceRow(this);">{% else %}<input type="button" name="enableZTP" value="Enable ZTP" id="enableZTP{{ info['id'] }}" data-macaddress="{{ info['macaddress'] }}" data-deviceid="{{info['id']}}" class="enableZTP" onclick="highlightdeviceRow(this);" {% if nogateway==1 %} disabled style="opacity:0.3;" {% endif %}>{% endif %}<input type="button" name="editDevice" value="Edit" data-deviceid="{{info['id']}}" class="editDevice" id="editDevice{{ info['id'] }}" onclick="highlightdeviceRow(this);" {% if ipamstatus=="Offline" %} disabled style="opacity:0.3;" {% endif %}><input type="submit" name="action" value="Delete" class="button" data-deviceid="{{info['id']}}" class="deleteDevice" id="deleteDevice{{ info['id'] }}" onclick="return confirm('Are you sure you want to delete {{ info['name'] }}?')">
             </td>
         </tr>
     </form>
@@ -595,7 +595,7 @@
     </form>
 </div>
 
-
+<div id="ztplog" style="display:none;" data-id="">Show log</div>
 
 </div>
 

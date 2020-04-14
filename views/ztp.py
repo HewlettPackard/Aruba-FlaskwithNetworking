@@ -308,3 +308,18 @@ def checkIpamstatus ():
     else:
         ipamstatus="Online"
     return ipamstatus
+
+@ztp.route("/ztplog", methods=['GET','POST'])
+def ztplog ():
+    sysvars=classes.globalvars()
+    queryStr="select * from ztpdevices where id='{}'".format(request.args.get('deviceid'))
+    # Obtain the relevant ZTP logging information from the database
+    deviceInfo=classes.sqlQuery(queryStr,"selectone")
+    queryStr="select * from ztplog where ztpdevice='{}'".format(request.args.get('deviceid'))
+    # Obtain the relevant ZTP logging information from the database
+    logInfo=classes.sqlQuery(queryStr,"selectone")
+    if logInfo:
+        logInfo=json.loads(logInfo['logging'])
+    else:
+        logInfo=""
+    return render_template("ztplog.html",deviceInfo=deviceInfo,logInfo=logInfo)

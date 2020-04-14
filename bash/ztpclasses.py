@@ -70,6 +70,7 @@ def ztpupdate():
             try:
                 url="system?attributes=ztp"
                 response=getRESTcxIP(items['ipaddress'],credentialResult[0]['username'],credentialResult[0]['password'],url)
+                print(response)
                 if response['ztp']['state']=="success":
                     ztpstatus=response['ztp']['configuration_file'] + " successful download from " + response['ztp']['tftp_server']
                     queryStr="update ztpdevices set enableztp=2, ztpstatus='{}' where id='{}'".format(ztpstatus,items['id'])
@@ -110,12 +111,12 @@ def ztpupdate():
                 if imagename==response['current_version']:
                     # There is no need to upgrade the switch. Switch is already running on the right software
                     logEntry(items['id'],"Stage 2: {} is already on the right software".format(items['ipaddress']), cursor)
-                    # print("Stage 2: ",items['ipaddress'], " already on the right software")
                     ztpstatus="Switch running on " + imagename + ". Configure VSF"
                     queryStr="update ztpdevices set enableztp=24, ztpstatus='{}' where id='{}'".format(ztpstatus,items['id'])
                     cursor.execute(queryStr)
                 else:
                     # Switch is not running on the right software, we need to upgrade.
+                    logEntry(items['id'],"Stage 2: Upgrade {} with software {}".format(items['ipaddress'],imagename), cursor)
                     url="firmware?image=primary&from=http://" + hostip + "/images/" + imageResult[0]['filename'] + "&vrf=" + credentialResult[0]['vrf']
                     response=putRESTcxIP(items['ipaddress'],credentialResult[0]['username'],credentialResult[0]['password'],url,'')
                     ztpstatus="Upgrade switch to " + imagename
@@ -144,7 +145,6 @@ def ztpupdate():
                 cursor.execute(queryStr)
         elif items['enableztp']==22:
             logEntry(items['id'],"Stage 2c: Waiting for {} to reboot".format(items['ipaddress']), cursor)
-            # print("Stage 2c: Waiting for ",items['ipaddress']," to reboot")
             # The switch does not reboot straight away. We have to wait until the switch reboots and then go to the next stage
             url="firmware/status"
             response=getRESTcxIP(items['ipaddress'],credentialResult[0]['username'],credentialResult[0]['password'],url)
@@ -203,12 +203,17 @@ def ztpupdate():
                 connection.send('y\n')
                 time.sleep(3)
                 output = connection.recv(65532).decode(encoding='utf-8')
-                connection.close()
-                client.close()  
+                print(output)
+                try:
+                    connection.close()
+                    client.close()
+                except:
+                    pass
                 # If the output contains 'transaction success', VSF is provisioned and the switch is rebooting
                 # Setting the ZTP status to 3, this is a substage, waiting until the switch comes back. When the switch is back online, we need to verify the VSF status
                 if "transaction success" in output:
-                    ztpstatus="VSF has been deployed to the member switch, rebooting"
+                    logEntry(items['id'],"VSF has been deployed to the member switch, rebooting switch", cursor)
+                    ztpstatus=""
                     queryStr="update ztpdevices set enableztp=3, ztpstatus='{}' where id='{}'".format(ztpstatus,items['id'])
                     cursor.execute(queryStr)
             except:
@@ -219,7 +224,6 @@ def ztpupdate():
                 cursor.execute(queryStr)
 
         elif items['enableztp']==3:
-            print("Stage 3: Verify VSF member status")
             # First we need to check whether the master is online and whether the VSF has been formed. We need to get the master switch IP address and profile (for the credentials...)
             queryStr="select * from ztpdevices where id='{}'".format(items['vsfmaster'])
             cursor.execute(queryStr)
@@ -235,13 +239,11 @@ def ztpupdate():
             if "status" in response:
                 if response['status']=="ready":
                     logEntry(items['id'],"Stage 3: The VSF member switch has joined the VSF stack", cursor)
-                    print("Stage 3: The VSF member switch has joined the VSF stack")
                     # We also have to check whether the role of the member switch is secondary, if that is the case we have to configure this on the master
                     ztpstatus="Member switch has joined the VSF"
                     queryStr="update ztpdevices set ztpstatus='{}' where id='{}'".format(ztpstatus,items['id'])
                     cursor.execute(queryStr)
                     if items['vsfrole']=="Secondary":
-                        print ("Stage 3: This member switch is designated secondary")
                         # At the moment there is no API call for configuring the secondary role, therefore we have to set this using SSH. And for this we need to login to the master switch
                         try:
                             client=SSHClient()
@@ -272,7 +274,6 @@ def ztpupdate():
                                     ztpstatus="ZTP completed"
                                     queryStr="update ztpdevices set enableztp=100, ztpstatus='{}' where id='{}'".format(ztpstatus,items['id'])
                                     logEntry(items['id'],"ZTP provisioning successful", cursor)
-                                    print("ZTP provisioning successful")
                                     cursor.execute(queryStr)
                             connection.close()
                             client.close()  

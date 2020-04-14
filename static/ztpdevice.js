@@ -34,8 +34,6 @@ $(document).ready(function () {
             templateHTML += "</table>";
             document.getElementById(templateDiv).style.display = "block";
             document.getElementById(templateDiv).innerHTML = templateHTML;
-            //document.getElementsById(templateDiv)[0].style.display = "block";
-            //document.getElementsById(templateDiv)[0].innerHTML = templateHTML;
         }
     });
 
@@ -342,6 +340,7 @@ $(document).ready(function () {
         //document.getElementById('deleteDevice' + $(this).attr('data-deviceid')).style.opacity = "0.6";
         document.getElementById("addDevice").style.display = "none";
         document.getElementById("editDevice").style.display = "none";
+        document.getElementById("ztplog").style.display = "none"; 
     });
 
     $(document).on("click", ".disableZTP", async function (disableZTP) {
@@ -369,6 +368,7 @@ $(document).ready(function () {
         //document.getElementById('deleteDevice' + $(this).attr('data-deviceid')).style.opacity = "1";
         document.getElementById("addDevice").style.display = "none";
         document.getElementById("editDevice").style.display = "none";
+        document.getElementById("ztplog").style.display = "none"; 
     });
 
 
@@ -495,6 +495,7 @@ $(document).ready(function () {
         document.getElementById("editDevice").style.display = "block";
         document.getElementById("addDevice").style.display = "none";
         document.getElementById("liProgress").style.display = "none";
+        document.getElementById("ztplog").style.display = "none"; 
         response = await $.ajax({
             url: "/ztpdeviceInfo",
             type: "POST",
@@ -789,6 +790,7 @@ function cleardeviceRow(e) {
 $(document).on("click", "#searchDevice", function () {
     document.getElementById("editDevice").style.display = "none";
     document.getElementById("addDevice").style.display = "none";
+    document.getElementById("ztplog").style.display = "none"; 
     document.getElementById("liProgress").style.display = "none";
     if (document.getElementById("configentryperpage")) {
         var e = document.getElementById("configentryperpage");
@@ -812,6 +814,7 @@ $(document).on("click", "#searchDevice", function () {
 $(document).on("click", "#addztpDevice", async function () {
     document.getElementById("addDevice").style.display = "block";
     document.getElementById("editDevice").style.display = "none";
+    document.getElementById("ztplog").style.display = "none"; 
     document.getElementById("liProgress").style.display = "none";
     formId = "adddeviceForm";
     response = await $.ajax({
@@ -854,6 +857,22 @@ $(document).on("click", "#addztpDevice", async function () {
         }
     }    
 });
+
+
+$(document).on("click", "#showztplog", function () {
+    document.getElementById("addDevice").style.display = "none";
+    document.getElementById("editDevice").style.display = "none";
+    document.getElementById("liProgress").style.display = "none"; 
+    document.getElementById("ztplog").style.display = "block"; 
+    deviceid = $(this).attr('data-deviceid');
+    document.getElementById('ztplog').setAttribute('data-deviceid', deviceid);
+    var refresh = function (deviceid) {
+        $('#ztplog').load('ztplog?deviceid=' + document.getElementById('ztplog').getAttribute('data-deviceid'));
+    }
+    setInterval(refresh, 5000);
+    refresh();  
+});
+
 
 
 

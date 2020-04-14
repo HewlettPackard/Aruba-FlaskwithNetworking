@@ -87,7 +87,7 @@ table.tablewithborder {
     }
 
     table.tablewithborder tr {
-        border: 1px solid black;
+        border: 1px solid #333333;
         background-color: #777777;
     }
 
@@ -133,6 +133,13 @@ table.insidetable {
     font-size: 12px;
 }
 
+.font12pxgrey {
+    font-family: Arial, Helvetica, sans-serif;
+    font-size: 12px;
+    color: #555555;
+    text-decoration: none;
+}
+
 .font12pxwhite {
     font-family: Arial, Helvetica, sans-serif;
     font-size: 12px;
@@ -150,7 +157,7 @@ table.insidetable {
 .font13pxgrey {
     font-family: Arial, Helvetica, sans-serif;
     font-size: 13px;
-    color: #777777;
+    color: #555555;
     text-decoration: none;
 }
 
