@@ -208,7 +208,6 @@ def ztpupdate():
                 connection.send('y\n')
                 time.sleep(3)
                 output = connection.recv(65532).decode(encoding='utf-8')
-                print(output)
                 try:
                     connection.close()
                     client.close()
@@ -222,11 +221,12 @@ def ztpupdate():
                     queryStr="update ztpdevices set enableztp=3, ztpstatus='{}' where id='{}'".format(ztpstatus,items['id'])
                     cursor.execute(queryStr)
             except:
-                logEntry(items['id'],"There is an issue configuring VSF on the member switch", cursor)
+                pass
+                # logEntry(items['id'],"There is an issue configuring VSF on the member switch", cursor)
                 # print("There is an issue configuring VSF on the member switch")
-                ztpstatus="Error provisioning VSF to the member switch"
-                queryStr="update ztpdevices set ztpstatus='{}' where id='{}'".format(ztpstatus,items['id'])
-                cursor.execute(queryStr)
+                # ztpstatus="Error provisioning VSF to the member switch"
+                # queryStr="update ztpdevices set ztpstatus='{}' where id='{}'".format(ztpstatus,items['id'])
+                # cursor.execute(queryStr)
 
         elif items['enableztp']==3:
             # First we need to check whether the master is online and whether the VSF has been formed. We need to get the master switch IP address and profile (for the credentials...)
