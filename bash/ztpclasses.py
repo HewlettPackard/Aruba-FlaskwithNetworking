@@ -70,7 +70,6 @@ def ztpupdate():
             try:
                 url="system?attributes=ztp"
                 response=getRESTcxIP(items['ipaddress'],credentialResult[0]['username'],credentialResult[0]['password'],url)
-                print(response)
                 if response['ztp']['state']=="success":
                     ztpstatus=response['ztp']['configuration_file'] + " successful download from " + response['ztp']['tftp_server']
                     queryStr="update ztpdevices set enableztp=2, ztpstatus='{}' where id='{}'".format(ztpstatus,items['id'])
