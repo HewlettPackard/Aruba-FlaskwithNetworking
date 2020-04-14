@@ -131,17 +131,23 @@ def ztpupdate():
         elif items['enableztp']==21:
             url="firmware/status"
             response=getRESTcxIP(items['ipaddress'],credentialResult[0]['username'],credentialResult[0]['password'],url)
-            if response['status']=="success":
-                # upgrade is successful to the primary image. We now have to reboot the switch on the primary image
-                url="boot?image=primary"
-                response=postRESTcxIP(items['ipaddress'],credentialResult[0]['username'],credentialResult[0]['password'],url,'')
-                ztpstatus="Upgrade successful, preparing for reboot"
-                queryStr="update ztpdevices set enableztp=22, ztpstatus='{}' where id='{}'".format(ztpstatus,items['id'])
-                cursor.execute(queryStr)
-            elif response['status']=="in_progress":
-                ztpstatus="Upgrade in progress"
-                queryStr="update ztpdevices set ztpstatus='{}' where id='{}'".format(ztpstatus,items['id'])
-                cursor.execute(queryStr)
+            if response:
+                if response['status']=="success":
+                    # upgrade is successful to the primary image. We now have to reboot the switch on the primary image
+                    url="boot?image=primary"
+                    response=postRESTcxIP(items['ipaddress'],credentialResult[0]['username'],credentialResult[0]['password'],url,'')
+                    ztpstatus="Upgrade successful, preparing for reboot"
+                    queryStr="update ztpdevices set enableztp=22, ztpstatus='{}' where id='{}'".format(ztpstatus,items['id'])
+                    cursor.execute(queryStr)
+                elif response['status']=="in_progress":
+                    ztpstatus="Upgrade in progress"
+                    queryStr="update ztpdevices set ztpstatus='{}' where id='{}'".format(ztpstatus,items['id'])
+                    cursor.execute(queryStr)
+                elif response['status']=="failure":
+                    logEntry(items['id'],"Software upgrade failed. Retrying", cursor)
+                    ztpstatus="Failed to upgrade the device, Retrying"
+                    queryStr="update ztpdevices set enableztp=2, ztpstatus='{}' where id='{}'".format(ztpstatus,items['id'])
+                    cursor.execute(queryStr)
         elif items['enableztp']==22:
             logEntry(items['id'],"Stage 2c: Waiting for {} to reboot".format(items['ipaddress']), cursor)
             # The switch does not reboot straight away. We have to wait until the switch reboots and then go to the next stage
