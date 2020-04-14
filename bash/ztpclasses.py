@@ -516,7 +516,7 @@ def getRESTcxIP(ipaddress,username,password,url):
             response=json.loads(response.content)
         except:
             sessionid.post(baseurl + "logout", verify=False, timeout=5)
-            print("Error obtaining response from get call")
+            # print("Error obtaining response from get call")
             response={}
         sessionid.post(baseurl + "logout", verify=False, timeout=5)
     except:
