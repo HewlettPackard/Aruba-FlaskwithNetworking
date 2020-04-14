@@ -69,6 +69,8 @@ def ztpdevice ():
             elif sysvars['ipamsystem']=="Infoblox":
                 info={'ipamipaddress':sysvars['ipamipaddress'],'ipamuser':sysvars['ipamuser'],'ipampassword':sysvars['ipampassword']}
                 ipamstatus=classes.checkInfoblox(info)
+            else:
+                ipamstatus="Online"
         else:
             ipamstatus="Online"
         return render_template("ztpdevice.html",result=result['result'],formresult=formresult,imageResult=imageResult, templateResult=templateResult, ipamstatus=ipamstatus, ztpstatusInfo=ztpstatusInfo,profileResult=result['profileResult'], totalentries=int(result['totalentries']),pageoffset=int(result['pageoffset']),entryperpage=int(result['entryperpage']), authOK=authOK, sysvars=sysvars)
@@ -143,6 +145,8 @@ def ztpdeviceInfo ():
         elif sysvars['ipamsystem']=="Infoblox":
             info={'ipamipaddress':sysvars['ipamipaddress'],'ipamuser':sysvars['ipamuser'],'ipampassword':sysvars['ipampassword']}
             ipamstatus=classes.checkInfoblox(info)
+        else:
+            ipamstatus="Online"
         if ipamstatus=="Online":
             # IPAM is online, obtain the subnet information, based on which IPAM is used (PHPIPAM or Infoblox)
             if sysvars['ipamsystem']=="PHPIPAM":
@@ -164,6 +168,8 @@ def ztpdeviceInfo ():
                     response={'sysvars':sysvars,'deviceInfo':result,'subnets':ipamResult,'ipamsubnet':ipamsubnet,'ipamIpaddress': ipamIpaddress }
                 else:
                     response={'sysvars':sysvars,'deviceInfo':result,'subnets':ipamResult }
+            else:
+                response={'sysvars':sysvars,'deviceInfo':result}
         else:
              response={'sysvars':sysvars,'deviceInfo':result}
     else:
@@ -297,6 +303,8 @@ def checkIpamstatus ():
         elif sysvars['ipamsystem']=="Infoblox":
             info={'ipamipaddress':sysvars['ipamipaddress'],'ipamuser':sysvars['ipamuser'],'ipampassword':sysvars['ipampassword']}
             ipamstatus=classes.checkInfoblox(info)
+        else:
+            ipamstatus="Online"
     else:
         ipamstatus="Online"
     return ipamstatus
