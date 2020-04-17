@@ -1,8 +1,10 @@
 # (C) Copyright 2020 Hewlett Packard Enterprise Development LP.
+#/usr/bin/python3
 
 from datetime import datetime, time, timedelta
 import time
 import socket
+import subprocess
 from paramiko.client import SSHClient, AutoAddPolicy
 import json
 import pymysql.cursors
@@ -30,19 +32,16 @@ def ztpupdate():
     '''
     EnableZTP status defines the status of the ZTP process
     0 = disabled
-    1 = enabled for initial ztp
-    2 = initial ZTP configuration has been downloaded successfully and stored to the startup configuration. Check whether VSF is enabled and switch is not master. Check software version
-    21 = Upgrade VSF member software so that it is the same as the master 
-    22 = Reboot the member switch
-    23 = Provision the VSF member
-    3 = VSF has been provisioned to a member switch, check if the switch is back online again. If it is verify the VSF status
-    4 = Check whether the switch requires a software update
-    5 = Downloading optional software image to the switch
-    6 = Successfully downloaded the software image, preparing to reboot
-    7 = Switch reboots
-    8 = Switch has been rebooted with the right image and is accessible again, pushing the configuration template
-    10 = Configure the master VSF ports
-    11 = Successfully pushed the configuration template
+    STAGE 1: Initial ZTP configuration push through DHCP
+    STAGE 2: Check software version and upgrade if needed. If not needed, go to stage 3. If needed go to stage 21
+    STAGE 21: Switch is upgrading. Once upgraded, go to stage 22
+    STAGE 22: Switch is rebooting. Wait until online again, go to stage 3
+    STAGE 3: Check if this is a VSF enabled switch. If switch is VSF, go to stage 4, else go to stage 6
+    STAGE 4: It is a VSF switch, provision the VSF links and renumber the member switches. Check if it is Master or member. If switch is master go to stage 5, if member switch go to stage 41
+    STAGE 41: Check is VSF member is secondary. If secondary, wait until VSF is complete, then designate secondary, if not secondary ZTP completed (stage 100)
+    STAGE 5: If VSF on master is successful, check whether all VSF members have joined. If not, loop in this stage. If VSF is completed, go to stage 6
+    STAGE 6: Provision configuration to the switch
+    100 = Successfully pushed the configuration template
     '''
     dbconnection=pymysql.connect(host='localhost',user='aruba',password='ArubaRocks',db='aruba', autocommit=True)
     cursor=dbconnection.cursor(pymysql.cursors.DictCursor)
@@ -65,9 +64,11 @@ def ztpupdate():
         credentialResult[0]['password'] = decryptPassword(globalconf['secret_key'], credentialResult[0]['password'])
         # Now that we have the IP address of the device, and the username/password. Obtain the ZTP information
         if items['enableztp']==1:
-            # logEntry(items['id'],"Stage 1 for {}".format(items['name']),cursor)
-            # print("Stage 1 for ", items['name'])
+            # STAGE 1: INITIAL ZTP CONFIGURATION PUSH THROUGH DHCP OPTIONS
+            print("STAGE 1: INITIAL ZTP CONFIGURATION PUSH THROUGH DHCP OPTIONS FOR {}".format(items['ipaddress']))
+            logEntry(items['id'],"Stage 1: Provision initial configuration for {}".format(items['name']),cursor)
             try:
+                # WIP: NEED TO ADD FUNCTIONALITY TO CHECK OLDER SOFTWARE VERSIONS. "system?attributes=ztp" IS ONLY SUPPORTED AS OF 10.04.0020
                 url="system?attributes=ztp"
                 response=getRESTcxIP(items['ipaddress'],credentialResult[0]['username'],credentialResult[0]['password'],url)
                 if response['ztp']['state']=="success":
@@ -75,104 +76,217 @@ def ztpupdate():
                     queryStr="update ztpdevices set enableztp=2, ztpstatus='{}' where id='{}'".format(ztpstatus,items['id'])
                     cursor.execute(queryStr)
                     logEntry(items['id'],"Stage 1: Initial template downloaded successful", cursor)
-                    # print("Stage 1: Initial template downloaded successful")
                 elif response['ztp']['failure_reason']=="non_default_startup_config" and  response['ztp']['state']=="aborted":
                     ztpstatus="Initial configuration is present"
                     queryStr="update ztpdevices set enableztp=8, ztpstatus='{}' where id='{}'".format(ztpstatus,items['id'])
                     cursor.execute(queryStr)
             except:
-                logEntry(items['id'],"Stage 1: Cannot obtain ZTP information from {}".format(items['ipaddress']), cursor)
-                #print("Stage 1: Cannot obtain ZTP information from",items['ipaddress'])
+                logEntry(items['id'],"Stage 1: Provision initial configuration for {}".format(items['name']),cursor)
                 pass
-        # The initial configuration file has been successfully downloaded and saved to the startup-configuration. We now need to check whether VSF is enabled for this device
-        # If VSF is enabled, if the switch role is member or secondary, we should only push the member id and the VSF ports.
-        # If the member role is primary, we should just go through the process and at the end of the ztp process, configure the VSF ports (stage 9)
+        # The initial configuration file has been successfully downloaded and saved to the startup-configuration. We now need to check whether the device requires a software upgrade
         elif items['enableztp']==2:
-            if items['vsfenabled']==1 and items['vsfmaster']!=0:
-                logEntry(items['id'],"Stage 2: VSF is enabled, need to provision secondary/member configuration", cursor)
-                # print("Stage 2: VSF is enabled and we need to provision secondary/member configuration")
-                ztpstatus="Provisioning VSF member"
-                queryStr="update ztpdevices set ztpstatus='{}' where id='{}'".format(ztpstatus,items['id'])
+            # STAGE 2: SOFTWARE UPGRADE
+            print("STAGE 2: SOFTWARE UPGRADE")
+            # We have to check whether the switch is a VSF member, if this is the case, we need to get the required software version from the master switch entry
+            if (items['vsfenabled']==1 and items['vsfmaster']!=0):
+                queryStr="select softwareimage from ztpdevices where id='{}'".format(items['vsfmaster'])
                 cursor.execute(queryStr)
-                # First thing to do is to check whether the member switch requires a software upgrade. For this we need to check whether the software image is selected on the master switch
-                queryStr="select * from ztpdevices where id='{}'".format(items['vsfmaster'])
-                cursor.execute(queryStr)
-                vsfmasterResult=cursor.fetchall()
-                # Obtain the firmware version from the member switch
+                softwareimage=cursor.fetchall()
+                softwareimage=softwareimage[0]['softwareimage']
+            elif items['softwareimage']!=0:
+                softwareimage=items['softwareimage']
+            if softwareimage:
+                logEntry(items['id'],"Stage 2: There is a software image configured for this device", cursor)
                 url="firmware"
                 response=getRESTcxIP(items['ipaddress'],credentialResult[0]['username'],credentialResult[0]['password'],url)
-                # Obtain the image file name from the master switch
-                queryStr="select filename from ztpimages where id='{}'".format(vsfmasterResult[0]['softwareimage'])
+                # Only continue if there is a response. If there is no response, the switch might be offline
+                if response:
+                    # Obtain the image file name
+                    queryStr="select filename from ztpimages where id='{}'".format(softwareimage)
+                    cursor.execute(queryStr)
+                    imageResult=cursor.fetchall()
+                    # Formating the image name so that we can compare with the information from the rest call
+                    imagename="FL."+imageResult[0]['filename'].split('_',2)[2].rsplit('.',1)[0].replace("_",".")
+                    if imagename==response['current_version']:
+                        # There is no need to upgrade the switch. Switch is already running on the right software
+                        logEntry(items['id'],"Stage 2: {} already on the right software".format(items['ipaddress']), cursor)
+                        ztpstatus="Switch running on " + imagename + ". Verify VSF configuration"
+                        queryStr="update ztpdevices set enableztp=3, ztpstatus='{}' where id='{}'".format(ztpstatus,items['id'])
+                        cursor.execute(queryStr)
+                    else:
+                        # Switch is not running on the right software, we need to upgrade.
+                        # url="\"firmware?image=primary&from=http://"+hostip+"/images/"+imageResult[0]['filename']+"&vrf="+credentialResult[0]['vrf'] + "\""
+                        # subprocess.call(['python3','softwareupgrade.py',items['ipaddress'],credentialResult[0]['username'],credentialResult[0]['password'],url,str(items['id']),imagename])
+                        # print("Upgrade {} to {}".format(items['ipaddress'],imagename))
+                        url="firmware?image=primary&from=http://" + hostip + "/images/" + imageResult[0]['filename'] + "&vrf=" + credentialResult[0]['vrf']
+                        response=putRESTcxIP(items['ipaddress'],credentialResult[0]['username'],credentialResult[0]['password'],url,'')
+                        if response==200:
+                            ztpstatus="Upgrade switch to " + imagename
+                            queryStr="update ztpdevices set enableztp=21, ztpstatus='{}' where id='{}'".format(ztpstatus,items['id'])
+                            cursor.execute(queryStr)
+                            logEntry (items['id'],"Stage 2: Upgrade the switch to {}".format(imagename), cursor)
+            else:
+                # There is no image attached to the device. No need to upgrade. Next stage is to verify whether switch operates in VSF or standalone (stage 3)
+                logEntry (items['id'],"Stage 2: There is no software image attached. Verify VSF configuration", cursor)
+                ztpstatus="Verify VSF configuration"
+                queryStr="update ztpdevices set enableztp=3, ztpstatus='{}' where id='{}'".format(ztpstatus,items['id'])
+                cursor.execute(queryStr)
+        elif items['enableztp']==21:
+            # STAGE 21: SWITCH IS UPGRADING. CHECK STATUS
+            print("STAGE 21: {} IS UPGRADING. CHECK STATUS".format(items['ipaddress']))
+            logEntry(items['id'],"Stage 21: {} is upgrading, checking the status".format(items['ipaddress']), cursor)
+            url="firmware/status"
+            response=getRESTcxIP(items['ipaddress'],credentialResult[0]['username'],credentialResult[0]['password'],url)
+            if response['status']=="success":
+                # Another check to see whether the image has been pushed to the primary partition. If it has not been pushed, we have to re-issue the upload command
+                url="firmware"
+                response=getRESTcxIP(items['ipaddress'],credentialResult[0]['username'],credentialResult[0]['password'],url)
+                # The response content should contain the primary version information that is the updated image
+                # Obtain the image file name
+                if (items['vsfenabled']==1 and items['vsfmaster']!=0):
+                    queryStr="select softwareimage from ztpdevices where id='{}'".format(items['vsfmaster'])
+                    cursor.execute(queryStr)
+                    softwareimage=cursor.fetchall()
+                    softwareimage=softwareimage[0]['softwareimage']
+                elif items['softwareimage']!=0:
+                    softwareimage=items['softwareimage']
+                queryStr="select filename from ztpimages where id='{}'".format(softwareimage)
                 cursor.execute(queryStr)
                 imageResult=cursor.fetchall()
                 # Formating the image name so that we can compare with the information from the rest call
                 imagename="FL."+imageResult[0]['filename'].split('_',2)[2].rsplit('.',1)[0].replace("_",".")
-                if imagename==response['current_version']:
-                    # There is no need to upgrade the switch. Switch is already running on the right software
-                    logEntry(items['id'],"Stage 2: {} is already on the right software".format(items['ipaddress']), cursor)
-                    ztpstatus="Switch running on " + imagename + ". Configure VSF"
-                    queryStr="update ztpdevices set enableztp=24, ztpstatus='{}' where id='{}'".format(ztpstatus,items['id'])
-                    cursor.execute(queryStr)
-                else:
-                    # Switch is not running on the right software, we need to upgrade.
-                    logEntry(items['id'],"Stage 2: Upgrade {} with software {}".format(items['ipaddress'],imagename), cursor)
-                    url="firmware?image=primary&from=http://" + hostip + "/images/" + imageResult[0]['filename'] + "&vrf=" + credentialResult[0]['vrf']
-                    response=putRESTcxIP(items['ipaddress'],credentialResult[0]['username'],credentialResult[0]['password'],url,'')
-                    ztpstatus="Upgrade switch to " + imagename
-                    queryStr="update ztpdevices set enableztp=21, ztpstatus='{}' where id='{}'".format(ztpstatus,items['id'])
-                    cursor.execute(queryStr)
-            else:
-                # VSF is not activated on this switch, go to the next stage
-                queryStr="update ztpdevices set enableztp=4 where id='{}'".format(items['id'])
+                if response['primary_version']:
+                    if imagename==response['primary_version']:
+                        # upgrade is successful to the primary image. We now have to reboot the switch on the primary image
+                        # CAREFUL: IF THIS IS VSF, WE HAVE TO MAKE SURE THAT THE MASTER SWITCH DOES NOT REBOOT UNTIL ALL MEMBERS HAVE BEEN UPGRADED
+                        if items['vsfenabled']==1:
+                            # Dealing with a VSF. Make sure that the master only reboots after all VSF members have been upgraded successfully
+                            # This is easy to check because all the member switches should have the enableztp variable set to 3
+                            # If it is a member switch, go ahead and reboot
+                            if items['vsfmaster']!=0:
+                                # This is a member switch
+                                url="boot?image=primary"
+                                response=postRESTcxIP(items['ipaddress'],credentialResult[0]['username'],credentialResult[0]['password'],url,'')
+                                ztpstatus="Upgrade successful, preparing for reboot"
+                                queryStr="update ztpdevices set enableztp=22, ztpstatus='{}' where id='{}'".format(ztpstatus,items['id'])
+                                cursor.execute(queryStr)
+                            else:   
+                                # This is the master switch
+                                queryStr="select enableztp from ztpdevices where vsfmaster='{}'".format(items['id'])
+                                cursor.execute(queryStr)
+                                upgradeStatus=cursor.fetchall()
+                                goodtoBoot=1
+                                for statusItems in upgradeStatus:
+                                    if statusItems['enableztp']!=24:
+                                        goodtoBoot=0
+                                        print("VSF Member switches are not ready yet")
+                                if goodtoBoot==1:
+                                    # All the VSF members have been upgraded and are back online
+                                    url="boot?image=primary"
+                                    response=postRESTcxIP(items['ipaddress'],credentialResult[0]['username'],credentialResult[0]['password'],url,'')
+                                    ztpstatus="Upgrade successful, rebooting the switch"
+                                    queryStr="update ztpdevices set enableztp=23, ztpstatus='{}' where id='{}'".format(ztpstatus,items['id'])
+                                    cursor.execute(queryStr)
+                        else: 
+                            # It's not a VSF, so we can reboot the switch straight away
+                            url="boot?image=primary"
+                            response=postRESTcxIP(items['ipaddress'],credentialResult[0]['username'],credentialResult[0]['password'],url,'')
+                            ztpstatus="Upgrade successful, preparing for reboot"
+                            queryStr="update ztpdevices set enableztp=28, ztpstatus='{}' where id='{}'".format(ztpstatus,items['id'])
+                            cursor.execute(queryStr)
+                    else:
+                        pass           
+            elif response['status']=="in_progress":
+                ztpstatus="Upgrade in progress"
+                queryStr="update ztpdevices set ztpstatus='{}' where id='{}'".format(ztpstatus,items['id'])
                 cursor.execute(queryStr)
-                # Next step is to verify whether there is a software image assigned to the non VSF or master device. If this is the case, we need to check whether the switch is already running this code
-                # If this is the case, go to the next step, which is the configuration template provisioning, which is step 8
-
-        elif items['enableztp']==21:
-            url="firmware/status"
-            response=getRESTcxIP(items['ipaddress'],credentialResult[0]['username'],credentialResult[0]['password'],url)
-            if response:
-                if response['status']=="success":
-                    # upgrade is successful to the primary image. We now have to reboot the switch on the primary image
-                    url="boot?image=primary"
-                    response=postRESTcxIP(items['ipaddress'],credentialResult[0]['username'],credentialResult[0]['password'],url,'')
-                    ztpstatus="Upgrade successful, preparing for reboot"
-                    queryStr="update ztpdevices set enableztp=22, ztpstatus='{}' where id='{}'".format(ztpstatus,items['id'])
-                    cursor.execute(queryStr)
-                elif response['status']=="in_progress":
-                    ztpstatus="Upgrade in progress"
-                    queryStr="update ztpdevices set ztpstatus='{}' where id='{}'".format(ztpstatus,items['id'])
-                    cursor.execute(queryStr)
-                elif response['status']=="failure":
-                    logEntry(items['id'],"Software upgrade failed. Retrying", cursor)
-                    ztpstatus="Failed to upgrade the device, Retrying"
-                    queryStr="update ztpdevices set enableztp=2, ztpstatus='{}' where id='{}'".format(ztpstatus,items['id'])
-                    cursor.execute(queryStr)
         elif items['enableztp']==22:
-            logEntry(items['id'],"Stage 2c: Waiting for {} to reboot".format(items['ipaddress']), cursor)
-            # The switch does not reboot straight away. We have to wait until the switch reboots and then go to the next stage
+            #STAGE 22: VSF MEMBER REBOOTED. CHECK WHETHER VSF MEMBER IS BACK ONLINE. IF BACK ONLINE, ONLY CONTINUE WHEN THE MASTER IS ALSO BACK ONLINE. IF MASTER IS BACK ONLINE GOTO STAGE 4
             url="firmware/status"
             response=getRESTcxIP(items['ipaddress'],credentialResult[0]['username'],credentialResult[0]['password'],url)
             if not bool(response):
+                # VSF Member is not online yet. Loop this stage
                 ztpstatus="Rebooting switch"
-                queryStr="update ztpdevices set enableztp=23, ztpstatus='{}' where id='{}'".format(ztpstatus,items['id'])
+                queryStr="update ztpdevices set ztpstatus='{}' where id='{}'".format(ztpstatus,items['id'])
                 cursor.execute(queryStr)
-        elif items['enableztp']==23:
-            logEntry(items['id'],"Stage 2d: Switch is rebooting, check when {} is back online again".format(items['ipaddress']), cursor)
-            # print ("Stage 2d: Switch is rebooting, check when ",items['ipaddress']," is back online again")
-            # Switch is rebooting. We need to perform rest calls to check whether the switch is back online
-            url="firmware"
-            response=getRESTcxIP(items['ipaddress'],credentialResult[0]['username'],credentialResult[0]['password'],url)
-            if response:
-                ztpstatus="Upgrade member switch successful. Configure VSF"
+            else:
+                # VSF member is back online. Only go to stage 4 (provision VSF), when the master is also back online (master switch should be set to stage 4)
+                ztpstatus="Member switch is back online"
                 queryStr="update ztpdevices set enableztp=24, ztpstatus='{}' where id='{}'".format(ztpstatus,items['id'])
                 cursor.execute(queryStr)
+                logEntry(items['id'],"Stage 22: Member is back online", cursor)
+        elif items['enableztp']==23:
+            # STAGE 23: VSF MASTER REBOOTED. CHECK WHETHER VSF MASTER IS BACK ONLINE. IF BACK ONLINE, GOTO STAGE 4 FOR THE VSF CONFIGURATION
+            queryStr="select filename from ztpimages where id='{}'".format(items['softwareimage'])
+            cursor.execute(queryStr)
+            imageResult=cursor.fetchall()
+            # Formating the image name so that we can compare with the information from the rest call
+            imagename="FL."+imageResult[0]['filename'].split('_',2)[2].rsplit('.',1)[0].replace("_",".")
+            url="firmware"
+            response=getRESTcxIP(items['ipaddress'],credentialResult[0]['username'],credentialResult[0]['password'],url)
+            if not bool(response):
+                # VSF Master is not online yet. Loop this stage
+                ztpstatus="Rebooting switch"
+                queryStr="update ztpdevices set ztpstatus='{}' where id='{}'".format(ztpstatus,items['id'])
+                cursor.execute(queryStr)
+            elif response['current_version']==imagename:
+                # Master switch is back online and on the right software Go to stage 4
+                ztpstatus="Switch is back online"
+                queryStr="update ztpdevices set enableztp=4, ztpstatus='{}' where id='{}'".format(ztpstatus,items['id'])
+                cursor.execute(queryStr)
+                logEntry(items['id'],"Stage 23: Switch is back online. Provision VSF to the master switch", cursor)
         elif items['enableztp']==24:
-            ztpstatus="Configure VSF"
+            # STAGE 24: VSF MEMBER IS BACK ONLINE. ONLY PROVISION VSF WHEN THE MASTER IS BACK ONLINE (stage 4)
+            ztpstatus="Member switch is back online. Check if master is online"
             queryStr="update ztpdevices set ztpstatus='{}' where id='{}'".format(ztpstatus,items['id'])
             cursor.execute(queryStr)
-            # VSF is enabled and the switch is not a master
+            queryStr="select enableztp from ztpdevices where id='{}'".format(items['vsfmaster'])
+            cursor.execute(queryStr)
+            masterStatus=cursor.fetchall()
+            if masterStatus[0]['enableztp']==4:
+                # The master is back online, members can be provisioned for VSF
+                ztpstatus="Master switch is back online"
+                queryStr="update ztpdevices set enableztp=4, ztpstatus='{}' where id='{}'".format(ztpstatus,items['id'])
+                cursor.execute(queryStr)
+                logEntry(items['id'],"Stage 22: Master Switch is back online. Provision VSF to the member switch", cursor)
+            else:
+                # Master switch is not back online yet
+                # The master is back online, members can be provisioned for VSF
+                ztpstatus="Waiting for master switch to come online"
+                queryStr="update ztpdevices set ztpstatus='{}' where id='{}'".format(ztpstatus,items['id'])
+                cursor.execute(queryStr)
+        elif items['enableztp']==28:
+            # STAGE 28: STANDALONE SWITCH HAS BEEN UPGRADED AND IS REBOOTING
+            logEntry(items['id'],"Stage 28: {} is rebooting".format(items['ipaddress']), cursor)
+            url="firmware/status"
+            response=getRESTcxIP(items['ipaddress'],credentialResult[0]['username'],credentialResult[0]['password'],url)
+            if not bool(response):
+                # Standalone switch not online yet. Loop this stage
+                ztpstatus="Rebooting switch"
+                queryStr="update ztpdevices set ztpstatus='{}' where id='{}'".format(ztpstatus,items['id'])
+                cursor.execute(queryStr)
+            else:
+                # Standalone switch is back online, go to configuration provisioning stage
+                ztpstatus="Upgrade successful, provision configuration"
+                queryStr="update ztpdevices set enableztp=6, ztpstatus='{}' where id='{}'".format(ztpstatus,items['id'])
+                cursor.execute(queryStr)
+                logEntry(items['id'],"Stage 28: Upgrade has been successful, provision configuration", cursor)
+        elif items['enableztp']==3:
+            # STAGE 3: CHECK WHETHER VSF IS CONFIGURED. IF YES, GOTO STAGE 4 (PROVISION VSF), IF NOT, GOTO STAGE 6 (PROVISION CONFIGURATION)
+            # This stage runs if there was no software image attached
+            print("STAGE 3: CHECK IF SWITCH IS CONFIGURED FOR VSF")
+            if items['vsfenabled']==1:
+                ztpstatus="Switch is configured for VSF"
+                queryStr="update ztpdevices set enableztp=4, ztpstatus='{}' where id='{}'".format(ztpstatus,items['id'])
+                cursor.execute(queryStr)
+            else:
+                ztpstatus="This is a stand alone switch"
+                queryStr="update ztpdevices set enableztp=6, ztpstatus='{}' where id='{}'".format(ztpstatus,items['id'])
+                cursor.execute(queryStr)
+        elif items['enableztp']==4:
+            # STAGE 4: VSF CONFIGURATION REQUIRED.
             # We have to push the ID and VSF port information to the switch. At the moment this can only be done through SSH.
+            print("STAGE 4: CONFIGURE VSF PORTS AND RENUMBER MEMBER SWITCH")
             try:
                 client=SSHClient()
                 client.set_missing_host_key_policy(AutoAddPolicy)
@@ -182,327 +296,317 @@ def ztpupdate():
                 time.sleep(1)
                 connection.send("configure terminal\n")
                 time.sleep(1)
-                connection.send("vsf member 1\n")
-                time.sleep(1)
-                link1=json.loads(items['link1'])
-                link2=json.loads(items['link2']) 
-                if items['link1']:
-                    if len(link1)>0:
-                        link1Cmd="link 1 "
-                        for l1Items in link1:
-                            link1Cmd+=unquote(l1Items) +","
-                        link1Cmd=link1Cmd[:-1]+" \n"
-                        connection.send(link1Cmd)
-                        time.sleep(3)
-                if items['link2']:
-                    if len(link2)>0:
-                        link2Cmd="link 2 "
-                        for l2Items in link2:
-                            link2Cmd+=unquote(l2Items) +","
-                        link2Cmd=link2Cmd[:-1]+" \n"
-                        connection.send(link2Cmd)
-                        time.sleep(3)
-                renumberCmd="vsf renumber-to " + str(items['vsfmember']) + "\n"
-                connection.send(renumberCmd)
-                time.sleep(4)
-                connection.send('y\n')
-                time.sleep(3)
-                output = connection.recv(65532).decode(encoding='utf-8')
                 try:
-                    connection.close()
-                    client.close()
+                    connection.send("vsf member 1\n")
+                    time.sleep(1)
+                    link1=json.loads(items['link1'])
+                    link2=json.loads(items['link2']) 
+                    if items['link1']:
+                        if len(link1)>0:
+                            link1Cmd="link 1 "
+                            for l1Items in link1:
+                                link1Cmd+=unquote(l1Items) +","
+                            link1Cmd=link1Cmd[:-1]+" \n"
+                            connection.send(link1Cmd)
+                            time.sleep(3)
+                    if items['link2']:
+                        if len(link2)>0:
+                            link2Cmd="link 2 "
+                            for l2Items in link2:
+                                link2Cmd+=unquote(l2Items) +","
+                            link2Cmd=link2Cmd[:-1]+" \n"
+                            connection.send(link2Cmd)
+                            time.sleep(3)
                 except:
                     pass
-                # If the output contains 'transaction success', VSF is provisioned and the switch is rebooting
-                # Setting the ZTP status to 3, this is a substage, waiting until the switch comes back. When the switch is back online, we need to verify the VSF status
-                if "transaction success" in output:
-                    logEntry(items['id'],"VSF has been deployed to the member switch, rebooting switch", cursor)
-                    ztpstatus=""
-                    queryStr="update ztpdevices set enableztp=3, ztpstatus='{}' where id='{}'".format(ztpstatus,items['id'])
-                    cursor.execute(queryStr)
-            except:
-                pass
-                # logEntry(items['id'],"There is an issue configuring VSF on the member switch", cursor)
-                # print("There is an issue configuring VSF on the member switch")
-                # ztpstatus="Error provisioning VSF to the member switch"
-                # queryStr="update ztpdevices set ztpstatus='{}' where id='{}'".format(ztpstatus,items['id'])
-                # cursor.execute(queryStr)
-
-        elif items['enableztp']==3:
-            # First we need to check whether the master is online and whether the VSF has been formed. We need to get the master switch IP address and profile (for the credentials...)
-            queryStr="select * from ztpdevices where id='{}'".format(items['vsfmaster'])
-            cursor.execute(queryStr)
-            vsfmasterResult=cursor.fetchall()
-            # And the ZTP profile for the credentials
-            queryStr="select * from ztpprofiles where id='{}'".format(vsfmasterResult[0]['profile'])
-            cursor.execute(queryStr)
-            masterprofileResult=cursor.fetchall()
-            masterprofileResult[0]['password'] = decryptPassword(globalconf['secret_key'], masterprofileResult[0]['password'])
-            # Now that we have all the information, get the VSF status from the master
-            url="system/vsf_members/"+str(items['vsfmember'])
-            response=getRESTcxIP(vsfmasterResult[0]['ipaddress'],masterprofileResult[0]['username'],masterprofileResult[0]['password'],url)
-            if "status" in response:
-                if response['status']=="ready":
-                    logEntry(items['id'],"Stage 3: The VSF member switch has joined the VSF stack", cursor)
-                    # We also have to check whether the role of the member switch is secondary, if that is the case we have to configure this on the master
-                    ztpstatus="Member switch has joined the VSF"
-                    queryStr="update ztpdevices set ztpstatus='{}' where id='{}'".format(ztpstatus,items['id'])
-                    cursor.execute(queryStr)
-                    if items['vsfrole']=="Secondary":
-                        # At the moment there is no API call for configuring the secondary role, therefore we have to set this using SSH. And for this we need to login to the master switch
-                        try:
-                            client=SSHClient()
-                            client.set_missing_host_key_policy(AutoAddPolicy)
-                            client.connect(vsfmasterResult[0]['ipaddress'],username=masterprofileResult[0]['username'],password=masterprofileResult[0]['password'])
-                            connection=client.invoke_shell()
-                            connection.send("\n")
-                            time.sleep(1)
-                            connection.send("configure terminal\n")
-                            time.sleep(1)
-                            vsfCmd="vsf secondary-member " + str(items['vsfmember']) + "\n"
-                            connection.send(vsfCmd)
-                            time.sleep(4)
-                            output = connection.recv(65532).decode(encoding='utf-8')
-                            # If the output is empty, the secondary switch has already been configured
-                            if "save the configuration" in output:
-                                connection.send('y\n')
-                                time.sleep(3)
-                                ztpstatus="Member is designated secondary switch"
-                                queryStr="update ztpdevices set enableztp=31, ztpstatus='{}' where id='{}'".format(ztpstatus,items['id'])
-                                cursor.execute(queryStr)
-                            else:
-                                # Secondary is already configured. Now check the VSF status again. If the member is up and running again, we can set the status to completed
-                                url="system/vsf_members/"+str(items['vsfmember'])
-                                response=getRESTcxIP(vsfmasterResult[0]['ipaddress'],masterprofileResult[0]['username'],masterprofileResult[0]['password'],url)
-                                if response['status']=="ready":
-                                    # It is done. The member switch has been provisioned
-                                    ztpstatus="ZTP completed"
-                                    queryStr="update ztpdevices set enableztp=100, ztpstatus='{}' where id='{}'".format(ztpstatus,items['id'])
-                                    logEntry(items['id'],"ZTP provisioning successful", cursor)
-                                    cursor.execute(queryStr)
-                            connection.close()
-                            client.close()  
-                        except:
-                            logEntry(items['id'],"There is an issue configuring the secondary member of the VSF", cursor)
-                            # print("There is an issue configuring the secondary member of the VSF")
-                    else:
-                        ztpstatus="ZTP completed"
-                        queryStr="update ztpdevices set enableztp=100, ztpstatus='{}' where id='{}'".format(ztpstatus,items['id'])
-                        logEntry(items['id'],"ZTP provisioning successful", cursor)
-                        # print("ZTP provisioning successful")
+                # IF THE SWITCH IS NOT MASTER, WE HAVE TO RENUMBER THE SWITCH
+                if items['vsfmaster']!=0:
+                    renumberCmd="vsf renumber-to " + str(items['vsfmember']) + "\n"
+                    connection.send(renumberCmd)
+                    time.sleep(4)
+                    connection.send('y\n')
+                    time.sleep(3)
+                    output = connection.recv(65532).decode(encoding='utf-8')
+                    try:
+                        connection.close()
+                        client.close()
+                    except:
+                        pass
+                    # If the output contains 'transaction success', VSF is provisioned
+                    # Setting the ZTP status to , this is a substage, waiting until the switch comes back. When the switch is back online, we need to verify the VSF status and optionally configure for secondary
+                    if "transaction success" in output:
+                        logEntry(items['id'],"Stage 4: VSF has been deployed to the member switch, rebooting switch", cursor)
+                        ztpstatus="VSF has been deployed to the member switch, rebooting switch"
+                        queryStr="update ztpdevices set enableztp=41, ztpstatus='{}' where id='{}'".format(ztpstatus,items['id'])
                         cursor.execute(queryStr)
-        elif items['enableztp']==31:
-            # This is when the VSF secondary member has been configured. This action reboots the secondary switch so we need to check when the secondary switch is back online again
-            # Then check the VSF status, whether the member switch has joined. Once it has joined, the ZTP process was successful
-            logEntry(items['id'],"Stage 3a: Check secondary member status", cursor)
-            # print("Stage 3a: Check secondary member status")
-            queryStr="select * from ztpdevices where id='{}'".format(items['vsfmaster'])
-            cursor.execute(queryStr)
-            vsfmasterResult=cursor.fetchall()
-            # And the ZTP profile for the credentials
-            queryStr="select * from ztpprofiles where id='{}'".format(vsfmasterResult[0]['profile'])
-            cursor.execute(queryStr)
-            masterprofileResult=cursor.fetchall()
-            masterprofileResult[0]['password'] = decryptPassword(globalconf['secret_key'], masterprofileResult[0]['password'])
-            # Now that we have all the information, get the VSF status from the master
-            url="system/vsf_members/"+str(items['vsfmember'])
-            response=getRESTcxIP(vsfmasterResult[0]['ipaddress'],masterprofileResult[0]['username'],masterprofileResult[0]['password'],url)
-            if "status" in response:
-                if response['status']=="ready":
-                    # ZTP for the VSF secondary switch has completed. We now have to save the running config on the master switch
-                    url="fullconfigs/startup-config?from=%2Frest%2Fv1%2Ffullconfigs%2Frunning-config"
-                    response=putRESTcxIP(vsfmasterResult[0]['ipaddress'],masterprofileResult[0]['username'],masterprofileResult[0]['password'],url,'')
-                    if response==200:
-                        ztpstatus="ZTP completed"
-                        queryStr="update ztpdevices set enableztp=100, ztpstatus='{}' where id='{}'".format(ztpstatus,items['id'])
-                        logEntry(items['id'],"ZTP provisioning successful", cursor)
-                        print("ZTP provisioning successful")
-                        cursor.execute(queryStr)
-
-        elif items['enableztp']==4:
-            logEntry(items['id'],"Stage 4: Checking whether the switch requires a software image", cursor)
-            # print("Stage 4: Checking whether there is a software image")
-            if items['softwareimage']:
-                logEntry(items['id'],"Stage 4: There is a software image configured for this device", cursor)
-                # print("Stage 4: There is a software image attached")
-                # There is an image attached. First check whether it is required to upgrade the switch or whether the switch is already running the right code
-                url="firmware"
-                response=getRESTcxIP(items['ipaddress'],credentialResult[0]['username'],credentialResult[0]['password'],url)
-                # Obtain the image file name
-                queryStr="select filename from ztpimages where id='{}'".format(items['softwareimage'])
-                cursor.execute(queryStr)
-                imageResult=cursor.fetchall()
-                # Formating the image name so that we can compare with the information from the rest call
-                imagename="FL."+imageResult[0]['filename'].split('_',2)[2].rsplit('.',1)[0].replace("_",".")
-                if imagename==response['current_version']:
-                    # There is no need to upgrade the switch. Switch is already running on the right software
-                    logEntry(items['id'],"Stage 4: {} already on the right software".format(items['ipaddress']), cursor)
-                    # print("Stage 4: ",items['ipaddress'], " already on the right software")
-                    ztpstatus="Switch running on " + imagename + ". Provisioning configuration template"
-                    queryStr="update ztpdevices set enableztp=8, ztpstatus='{}' where id='{}'".format(ztpstatus,items['id'])
-                    cursor.execute(queryStr)
+                # SWITCH IS MASTER
                 else:
-                    # Switch is not running on the right software, we need to upgrade.
-                    url="firmware?image=primary&from=http://" + hostip + "/images/" + imageResult[0]['filename'] + "&vrf=" + credentialResult[0]['vrf']
-                    response=putRESTcxIP(items['ipaddress'],credentialResult[0]['username'],credentialResult[0]['password'],url,'')
-                    ztpstatus="Upgrade switch to " + imagename
+                    try:
+                        connection.close()
+                        client.close()
+                    except:
+                        pass
+                    # We can go into the next stage, which is for the master switch to wait until all members have joined the stack
+                    logEntry(items['id'],"Stage 4: VSF has been deployed to the master switch. Waiting for member switches", cursor)
+                    ztpstatus="VSF has been deployed. Waiting for member switches"
                     queryStr="update ztpdevices set enableztp=5, ztpstatus='{}' where id='{}'".format(ztpstatus,items['id'])
                     cursor.execute(queryStr)
+            except:
+                # First, get the VSF topology from the master
+                if items['vsfmaster']!=0:
+                     queryStr="select * from ztpdevices where id='{}'".format(items['vsfmaster'])
+                     cursor.execute(queryStr)
+                     vsfmasterResult=cursor.fetchall()
+                     queryStr="select * from ztpprofiles where id='{}'".format(vsfmasterResult[0]['profile'])
+                     cursor.execute(queryStr)
+                     masterprofileResult=cursor.fetchall()
+                     masterprofileResult[0]['password'] = decryptPassword(globalconf['secret_key'], masterprofileResult[0]['password'])
+                     url="system/vsf_members?attributes=id%2Crole%2Cstatus&depth=2"
+                     response=getRESTcxIP(vsfmasterResult[0]['ipaddress'],credentialResult[0]['username'],credentialResult[0]['password'],url)
+                     # Now check if the VSF member exists in the VSF and status is ready
+                     memberInfo=next(item for item in response if item["id"] == items['vsfmember'])
+                     if memberInfo['id']==items['vsfmember'] and memberInfo['status']=="ready":
+                         logEntry(items['id'],"Stage 4: VSF has been deployed to the member switch", cursor)
+                         ztpstatus="VSF has been deployed to the member switch"
+                         queryStr="update ztpdevices set enableztp=41, ztpstatus='{}' where id='{}'".format(ztpstatus,items['id'])
+                         cursor.execute(queryStr)
+        elif items['enableztp']==41:
+            # CHECK WHETHER VSF MEMBER IS CONFIGURED TO BE SECONDARY
+            print("STAGE 41: CHECK WHETHER {} IS CONFIGURED TO BE VSF SECONDARY".format(items['ipaddress']))
+            # First check is to verify whether the member is back online and whether it has joined the stack.
+            # If it has joined the stack, check whether the member is designated secondary. If not, set the ZTP to completed (stage 100)
+            # If member is designated secondary, set the secondary member on the master switch
+            queryStr="select * from ztpdevices where id='{}'".format(items['vsfmaster'])
+            cursor.execute(queryStr)
+            vsfmasterResult=cursor.fetchall()
+            queryStr="select * from ztpprofiles where id='{}'".format(vsfmasterResult[0]['profile'])
+            cursor.execute(queryStr)
+            masterprofileResult=cursor.fetchall()
+            masterprofileResult[0]['password'] = decryptPassword(globalconf['secret_key'], masterprofileResult[0]['password'])
+            url="system/vsf_members?attributes=id%2Crole%2Cstatus&depth=2"
+            response=getRESTcxIP(vsfmasterResult[0]['ipaddress'],credentialResult[0]['username'],credentialResult[0]['password'],url)
+            if items['vsfrole']=="Secondary":
+                # Additional check is to verify whether the secondary switch member id exists in the VSF. If it does, we can assign the secondary role to the member switch
+                # We should only push the secondary role to the master switch when the master switch has been completed and the VSF is ready (stage 61)
+                if vsfmasterResult[0]['enableztp']==61:
+                    # At the moment there is no API call for configuring the secondary role, therefore we have to set this using SSH. And for this we need to login to the master switch
+                    try:
+                        client=SSHClient()
+                        client.set_missing_host_key_policy(AutoAddPolicy)
+                        client.connect(vsfmasterResult[0]['ipaddress'],username=masterprofileResult[0]['username'],password=masterprofileResult[0]['password'])
+                        connection=client.invoke_shell()
+                        connection.send("\n")
+                        time.sleep(1)
+                        connection.send("configure terminal\n")
+                        time.sleep(1)
+                        vsfCmd="vsf secondary-member " + str(items['vsfmember']) + "\n"
+                        connection.send(vsfCmd)
+                        time.sleep(4)
+                        output = connection.recv(65532).decode(encoding='utf-8')
+                        # If the output is empty, the secondary switch has already been configured
+                        if "save the configuration" in output:
+                            ztpstatus="Member is designated secondary switch"
+                            queryStr="update ztpdevices set enableztp=42, ztpstatus='{}' where id='{}'".format(ztpstatus,items['id'])
+                            cursor.execute(queryStr)
+                            logEntry(vsfmasterResult[0]['id'],"Stage 41: Configured the secondary member", cursor)
+                            connection.send('y\n')
+                            time.sleep(3)
+                            connection.close()
+                            client.close()  
+                        else:
+                            # Secondary is already configured. Now check the VSF status again. If the member is up and running again, we can set the status to completed
+                            url="system/vsf_members/"+str(items['vsfmember'])
+                            response=getRESTcxIP(vsfmasterResult[0]['ipaddress'],masterprofileResult[0]['username'],masterprofileResult[0]['password'],url)
+                            if response['status']=="ready":
+                                # It is done. The member switch has been provisioned
+                                print("STAGE 100: ZTP COMPLETED")
+                                ztpstatus="ZTP completed"
+                                queryStr="update ztpdevices set enableztp=100, ztpstatus='{}' where id='{}'".format(ztpstatus,items['id'])
+                                cursor.execute(queryStr)
+                                logEntry(items['id'],"Stage 100: ZTP provisioning successful", cursor)
+                                connection.close()
+                                client.close()  
+                    except:
+                        pass
             else:
-                # There is no image attached to the device. No need to upgrade
-                logEntry (items['id'],"Stage 4: There is no software image attached, going to stage 8", cursor)
-                # print ("Stage 4: There is no software image attached, going to stage 8")
-                ztpstatus="Provisioning configuration template"
-                queryStr="update ztpdevices set enableztp=8, ztpstatus='{}' where id='{}'".format(ztpstatus,items['id'])
+                # Switch is a member switch and it has been provisioned
+                print("STAGE 100: ZTP COMPLETED")
+                ztpstatus="ZTP completed"
+                queryStr="update ztpdevices set enableztp=100, ztpstatus='{}' where id='{}'".format(ztpstatus,items['id'])
                 cursor.execute(queryStr)
-        elif items['enableztp']==5:
-            # Switch is upgrading. Need to check the status
-            logEntry(items['id'],"Stage 5: {} is upgrading, checking the status".format(items['ipaddress']), cursor)
-            # print("Stage 5: ",items['ipaddress']," is upgrading, checking the status")
-            url="firmware/status"
-            response=getRESTcxIP(items['ipaddress'],credentialResult[0]['username'],credentialResult[0]['password'],url)
-            if response['status']=="success":
-                # upgrade is successful to the primary image. We now have to reboot the switch on the primary image
-                url="boot?image=primary"
-                response=postRESTcxIP(items['ipaddress'],credentialResult[0]['username'],credentialResult[0]['password'],url,'')
-                ztpstatus="Upgrade successful, preparing for reboot"
-                queryStr="update ztpdevices set enableztp=6, ztpstatus='{}' where id='{}'".format(ztpstatus,items['id'])
-                cursor.execute(queryStr)
-            elif response['status']=="in_progress":
-                ztpstatus="Upgrade in progress"
+                logEntry(items['id'],"Stage 100: ZTP provisioning successful", cursor)
+        elif items['enableztp']==42:
+            # STAGE 42: SWITCH HAS BEEN CONFIGURED AS SECONDARY. CHECK WHEN SECONDARY IS BACK ONLINE AGAIN
+            queryStr="select * from ztpdevices where id='{}'".format(items['vsfmaster'])
+            cursor.execute(queryStr)
+            masterResult=cursor.fetchall()
+            url="system/vsf_members/" + str(items['vsfmember']) + "?depth=1"
+            response=getRESTcxIP(masterResult[0]['ipaddress'],credentialResult[0]['username'],credentialResult[0]['password'],url)
+            if response:
+                if response['role']=="standby":
+                    # The switch has been designated secondary. The switch is ready
+                    print("STAGE 100: ZTP COMPLETED")
+                    ztpstatus="ZTP completed"
+                    queryStr="update ztpdevices set enableztp=100, ztpstatus='{}' where id='{}'".format(ztpstatus,items['id'])
+                    cursor.execute(queryStr)
+                    logEntry(items['id'],"Stage 100: ZTP provisioning successful", cursor)
+            else:
+                # System is not ready yet
+                ztpstatus="Waiting for secondary switch"
                 queryStr="update ztpdevices set ztpstatus='{}' where id='{}'".format(ztpstatus,items['id'])
                 cursor.execute(queryStr)
+                logEntry(items['id'],"Stage 42: Waiting for secondary member to come online", cursor)
+
+        elif items['enableztp']==5:
+            # VSF MASTER TO WAIT WITH CONFIGURATION PUSH UNTIL ALL MEMBERS HAVE JOINED THE STACK
+            # We will do two checks. First check is to verify the '100' status for the VSF. If the numbers match the total number of switches configured for the VSF
+            # Then the next check is to verify whether the VSF if operational. If that is the case, we can go to stage 6, which is provisioning the master switch configuration
+            # Total successfully configured VSF members
+            print("STAGE 5: VSF MASTER TO WAIT WITH CONFIGURATION PUSH UNTIL ALL MEMBERS HAVE JOINED THE STACK")
+            queryStr="select count(*) as total from ztpdevices where vsfmaster='{}'".format(items['id'])
+            cursor.execute(queryStr)
+            totalinVSF=cursor.fetchall()
+            # Total members in VSF. We will check this with a REST call
+            # Check whether the VSF is completely operational
+            url="system/vsf_members?depth=1"
+            response=getRESTcxIP(items['ipaddress'],credentialResult[0]['username'],credentialResult[0]['password'],url)
+            # The number of entries (minus 1 for the master switch) identify the number of members in the VSF. If this is the same as the number of VSF switches
+            # And the status of all switches is "ready", then we are good to go for the provisioning of the VSF master configuration
+            if (len(response)-1)==totalinVSF[0]['total']:
+                # VSF seems to be completed, before provisioning, check whether the status of all members is "ready"
+                for statusItems in response:
+                    if (statusItems['status']!="ready"):
+                        notReady=1
+                    else:
+                        notReady=0
+                if notReady==0:
+                    ztpstatus="VSF Master setup completed. Provision switch configuration"
+                    queryStr="update ztpdevices set enableztp=6, ztpstatus='{}' where id='{}'".format(ztpstatus,items['id'])
+                    cursor.execute(queryStr)
+                    logEntry(items['id'],"Stage 5: VSF master has been setup. Provision the switch configuration", cursor)
+                else:
+                    ztpstatus="Waiting for VSF ready state"
+                    queryStr="update ztpdevices set ztpstatus='{}' where id='{}'".format(ztpstatus,items['id'])
+                    cursor.execute(queryStr)
+                    logEntry(items['id'],"Stage 5: VSF master has been setup. Waiting for VSF ready state", cursor)
+
         elif items['enableztp']==6:
-            logEntry(items['id'],"Stage 6: Waiting for {} to reboot".format(items['ipaddress']), cursor)
-            # print("Stage 6: Waiting for ",items['ipaddress']," to reboot")
-            # The switch does not reboot straight away. We have to wait until the switch reboots and then go to the next stage
-            url="firmware/status"
-            response=getRESTcxIP(items['ipaddress'],credentialResult[0]['username'],credentialResult[0]['password'],url)
-            if not bool(response):
-                ztpstatus="Rebooting switch"
-                queryStr="update ztpdevices set enableztp=7, ztpstatus='{}' where id='{}'".format(ztpstatus,items['id'])
-                cursor.execute(queryStr)
-        elif items['enableztp']==7:
-            logEntry (items['id'],"Stage 7: Switch is rebooting, check when {} is back online again".format(items['ipaddress']), cursor)
-            # print ("Stage 7: Switch is rebooting, check when ",items['ipaddress']," is back online again")
-            # Switch is rebooting. We need to perform rest calls to check whether the switch is back online
-            url="firmware"
-            response=getRESTcxIP(items['ipaddress'],credentialResult[0]['username'],credentialResult[0]['password'],url)
-            if response:
-                ztpstatus="Upgrade successful. Provisioning template."
-                queryStr="update ztpdevices set enableztp=8, ztpstatus='{}' where id='{}'".format(ztpstatus,items['id'])
-                cursor.execute(queryStr)
-        elif items['enableztp']==8:
-            # The switch is back online. We need to check whether there is a template with parameters, if there is construct the template and then push it to the switch
-            # This is an important stage. We first need to check whether VSF is enabled for this switch. If it is enabled, we need to check whether it is the master, secondary or member switch
-            # If it is the master, we need to provision, just like a standalone switch, but after configuration push we need to assign the VSF ports
-            # If it is a member or secondary switch, we only push the member id and VSF ports, then the switch should reboot and eventually join the stack
-            if (items['vsfenabled']==1 and items['vsfmaster']!=0):
-                logEntry(items['id'],"VSF is enabled and this is a member or secondary switch", cursor)
-                # print("VSF is enabled and this is a member or secondary switch")
-                # VSF Member or Secondary. We only push the member id, VSF ports and optionally the secondary role
-            else:
-                logEntry(items['id'],"Stage 8: Push configuration template to {}".format(items['ipaddress']), cursor)
-                # print("Stage 8: Push configuration template to ", items['ipaddress'])
-                if items['template']!=0:
-                    # there is a template. Get the template information
-                    queryStr="select template from ztptemplates where id='{}'".format(items['template'])
-                    templateResult=cursor.execute(queryStr)
-                    templateResult=cursor.fetchall()
-                    # Create the template
-                    jinjaTemplate=Template(templateResult[0]['template'])
-                    # Template is loaded successfully. Now try to push the parameters into the template
-                    templateOutput=jinjaTemplate.render(json.loads(items['templateparameters']))
-                    # Template parameters successfully assigned. Now store the configuration template onto the tftp server
-                    filename="/home/tftpboot/" + items['macaddress'] + "template.cfg"
-                    if os.path.exists(filename):
-                        try:
-                            os.remove(filename)
-                        except OSError as e:
-                            print (e.filename,e.strerror)
-                    outFileName="/home/tftpboot/" + items['macaddress'] + "template.cfg"
-                    outFile=open(outFileName, "w")
-                    outFile.write(templateOutput)
-                    outFile.close()
-                    url="fullconfigs/running-config?from=tftp%3A%2F%2F" + hostip + "%2F" + items['macaddress'] + "template.cfg&vrf=" + credentialResult[0]['vrf']
+            # STAGE 6: PROVISION THE CONFIGURATION
+            print("STAGE 6: PROVISION THE CONFIGURATION FOR {}".format(items['ipaddress']))
+            logEntry(items['id'],"Stage 6: Push configuration template to {}".format(items['ipaddress']), cursor)
+            if items['template']!=0:
+                # there is a template. Get the template information
+                queryStr="select template from ztptemplates where id='{}'".format(items['template'])
+                templateResult=cursor.execute(queryStr)
+                templateResult=cursor.fetchall()
+                # Create the template
+                jinjaTemplate=Template(templateResult[0]['template'])
+                # Template is loaded successfully. Now try to push the parameters into the template
+                templateOutput=jinjaTemplate.render(json.loads(items['templateparameters']))
+                # Template parameters successfully assigned. Now store the configuration template onto the tftp server
+                filename="/home/tftpboot/" + items['macaddress'] + "template.cfg"
+                if os.path.exists(filename):
                     try:
-                        response=putRESTcxIP(items['ipaddress'],credentialResult[0]['username'],credentialResult[0]['password'],url,'') 
+                        os.remove(filename)
+                    except OSError as e:
+                        print (e.filename,e.strerror)
+                outFileName="/home/tftpboot/" + items['macaddress'] + "template.cfg"
+                outFile=open(outFileName, "w")
+                outFile.write(templateOutput)
+                outFile.close()
+                url="fullconfigs/running-config?from=tftp%3A%2F%2F" + hostip + "%2F" + items['macaddress'] + "template.cfg&vrf=" + credentialResult[0]['vrf']
+                try:
+                    response=putRESTcxIP(items['ipaddress'],credentialResult[0]['username'],credentialResult[0]['password'],url,'') 
+                    if response==200:
+                        logEntry(items['id'],"Stage 6: The push to the running configuration was successful. Now put the configuration in the startup", cursor)
+                        # The push to the running configuration was successful. Now put the configuration in the startup
+                        url="fullconfigs/startup-config?from=%2Frest%2Fv1%2Ffullconfigs%2Frunning-config"
+                        # url="fullconfigs/startup-config?from=tftp%3A%2F%2F" + hostip + "%2F" + items['macaddress'] + "template.cfg&vrf=" + credentialResult[0]['vrf']
+                        # The push to the running configuration was successful. Now repeat the push and store the configuration to the startup-config
+                        response=putRESTcxIP(items['ipaddress'],credentialResult[0]['username'],credentialResult[0]['password'],url,'')
                         if response==200:
-                            logEntry(items['id'],"The push to the running configuration was successful. Now put the configuration in the startup", cursor)
-                            # print("The push to the running configuration was successful. Now put the configuration in the startup")
-                            url="fullconfigs/startup-config?from=%2Frest%2Fv1%2Ffullconfigs%2Frunning-config"
-                            # url="fullconfigs/startup-config?from=tftp%3A%2F%2F" + hostip + "%2F" + items['macaddress'] + "template.cfg&vrf=" + credentialResult[0]['vrf']
-                            # The push to the running configuration was successful. Now repeat the push and store the configuration to the startup-config
-                            response=putRESTcxIP(items['ipaddress'],credentialResult[0]['username'],credentialResult[0]['password'],url,'')
-                            if response==200:
-                                # The put to the startup config was successful
-                                url="system?attributes=platform_name"
-                                response=getRESTcxIP(items['ipaddress'],credentialResult[0]['username'],credentialResult[0]['password'],url)
-                                if response['platform_name']:
-                                    filename="/home/tftpboot/" + items['macaddress'] + "template.cfg"
-                                    if os.path.exists(filename):
-                                        try:
-                                            os.remove(filename)
-                                        except OSError as e:
-                                            print (e.filename,e.strerror)  
-                                    # ZTP was successful. Final check is to see whether this switch has VSF enabled and is master switch. If it is, we need to push the VSF ports
-                                    if items['vsfenabled']==1 and items['vsfmaster']==0:
-                                        # This is a VSF master
-                                        logEntry(items['id'],"Switch is VSF master. Provision the VSF ports", cursor)
-                                        # print("Switch is VSF master. Provision the VSF ports")
-                                        ztpstatus="Configure VSF Master"
-                                        queryStr="update ztpdevices set ztpstatus='{}' where id='{}'".format(ztpstatus,items['id'])
+                            # The put to the startup config was successful
+                            url="system?attributes=platform_name"
+                            response=getRESTcxIP(items['ipaddress'],credentialResult[0]['username'],credentialResult[0]['password'],url)
+                            if response['platform_name']:
+                                filename="/home/tftpboot/" + items['macaddress'] + "template.cfg"
+                                if os.path.exists(filename):
+                                    try:
+                                        os.remove(filename)
+                                    except OSError as e:
+                                        print (e.filename,e.strerror) 
+                                    # Switch is reachable. Final check is whether the switch is a VSF master. If stand alone switch, the ZTP is completed
+                                    # If VSF, we need to check whether there is a secondary switch designated. If this is the case, we have to wait until the designated secondary is back online
+                                    if items['vsfenabled']==1:
+                                        # This is a VSF Master. Go to stage 61
+                                        ztpstatus="Verify whether secondary exists"
+                                        queryStr="update ztpdevices set enableztp=61, ztpstatus='{}' where id='{}'".format(ztpstatus,items['id'])
                                         cursor.execute(queryStr)
-                                        # First, delete the links if they exist
-                                        response=deleteRESTcxIP(items['ipaddress'],credentialResult[0]['username'],credentialResult[0]['password'],"system/vsf_members/1/links/1")
-                                        response=deleteRESTcxIP(items['ipaddress'],credentialResult[0]['username'],credentialResult[0]['password'],"system/vsf_members/1/links/2")
-                                        # Now put the links, we need to generate the JSON
-                                        link1=json.loads(items['link1'])
-                                        link2=json.loads(items['link2']) 
-                                        if len(link1)>0:
-                                            link1Json="{\"id\": 1,\"interfaces\": ["
-                                            for l1Items in link1:
-                                                link1Json+="\"/rest/v1/system/interfaces/" + l1Items +"\","
-                                            link1Json=link1Json[:-1]+"]}"
-                                            logEntry(items['id'],"Stage 8: Store into running configuration", cursor)
-                                            # print("Stage 8: Store into running configuration")
-                                            response=postRESTcxIP(items['ipaddress'],credentialResult[0]['username'],credentialResult[0]['password'],"system/vsf_members/1/links",link1Json)
-                                        if len(link2)>0:
-                                            link2Json="{\"id\": 2,\"interfaces\": ["
-                                            for l2Items in link2:
-                                                link2Json+="\"/rest/v1/system/interfaces/" + l2Items + "\","
-                                            link2Json=link2Json[:-1]+"]}"
-                                            response=postRESTcxIP(items['ipaddress'],credentialResult[0]['username'],credentialResult[0]['password'],"system/vsf_members/2/links",link2Json)
-                                        logEntry(items['id'],"Stage 8: Store the VSF Master configuration in the startup config", cursor)
-                                        # print("Stage 8: Store the VSF Master configuration in the startup config")
-                                        url="fullconfigs/startup-config?from=%2Frest%2Fv1%2Ffullconfigs%2Frunning-config"
-                                        response=putRESTcxIP(items['ipaddress'],credentialResult[0]['username'],credentialResult[0]['password'],url,'')
-                                        if response==200:
-                                            ztpstatus="ZTP completed"
-                                            queryStr="update ztpdevices set enableztp=100, ztpstatus='{}' where id='{}'".format(ztpstatus,items['id'])
-                                            logEntry(items['id'],"ZTP provisioning successful", cursor)
-                                            # print("ZTP provisioning successful")
-                                            cursor.execute(queryStr)
+                                        logEntry(items['id'],"Stage 6: Check whether there is a designated secondary switch configured", cursor)
                                     else:
                                         ztpstatus="ZTP completed"
+                                        print("STAGE 100: ZTP COMPLETED")
                                         queryStr="update ztpdevices set enableztp=100, ztpstatus='{}' where id='{}'".format(ztpstatus,items['id'])
-                                        logEntry(items['id'],"ZTP provisioning successful", cursor)
-                                        # print("ZTP provisioning successful")
                                         cursor.execute(queryStr)
-                                else:
-                                    # Seems that the switch is not reachable anymore. Update the status.
-                                    ztpstatus="Switch is not reachable anymore, retrying.."
-                                    logEntry(items['id'],"Switch is not reachable anymore, retrying..", cursor)
-                                    queryStr="update ztpdevices set ztpstatus='{}' where id='{}'".format(ztpstatus,items['id'])
-                                    cursor.execute(queryStr)
+                                        logEntry(items['id'],"Stage 100: ZTP provisioning successful", cursor)
                             else:
-                                # Configuration not pushed to the switch, something went wrong with the push. We need to try again
-                                ztpstatus="Could not push the configuration template, retrying.."
-                                logEntry(items['id'],"Could not push the configuration template, retrying..", cursor)
+                                # Seems that the switch is not reachable anymore. Update the status.
+                                ztpstatus="Switch is not reachable anymore, retrying.."
+                                logEntry(items['id'],"Stage 6: Switch is not reachable anymore, retrying..", cursor)
                                 queryStr="update ztpdevices set ztpstatus='{}' where id='{}'".format(ztpstatus,items['id'])
-                                cursor.execute(queryStr) 
-                    except:
-                        logEntry(items['id'],"Stage 8: Error pushing configuration template to running configuration {}".format(items['ipaddress']), cursor)
+                                cursor.execute(queryStr)
+                        else:
+                            # Configuration not pushed to the switch, something went wrong with the push. We need to try again
+                            ztpstatus="Could not push the configuration template, retrying.."
+                            logEntry(items['id'],"Stage 6: Could not push the configuration template, retrying..", cursor)
+                            queryStr="update ztpdevices set ztpstatus='{}' where id='{}'".format(ztpstatus,items['id'])
+                            cursor.execute(queryStr) 
+                except:
+                    logEntry(items['id'],"Stage 6: Error pushing configuration template to running configuration {}".format(items['ipaddress']), cursor)
+        elif items['enableztp']==61:
+            # STAGE 61: VERIFY WHETHER A SECONDARY SWITCH HAS BEEN CONFIGURED IN ZTP
+            # If this is the case, we need to wait until the secondary switch has joined the VSF again and the VSF is completed. Only then the ZTP process is completed
+            # First check, is there a secondary member
+            queryStr="select * from ztpdevices where vsfenabled=1 and vsfrole='Secondary' and vsfmaster={}".format(items['id'])
+            cursor.execute(queryStr)
+            checkSecondary = cursor.fetchall()
+            if checkSecondary:
+                # There is a secondary switch in the VSF. We have to check whether the secondary switch has joined the VSF. If it has (status=ready and role=secondary), then ZTP is completed
+                url="system/vsf_members?depth=1"
+                response=getRESTcxIP(items['ipaddress'],credentialResult[0]['username'],credentialResult[0]['password'],url)
+                # First check, are all switches up and running (status ready)
+                notReady=1
+                for statusItems in response:
+                    if (statusItems['status']!="ready"):
+                        notReady=1
+                    else:
+                        # Switch is ready. Now check if the member ID is the same as the designated secondary. From the sql query we know the member id, so we can check against the member id
+                        if statusItems['id']==checkSecondary[0]['vsfmember']:
+                            # This is the designated secondary. What is the role? If it is not secondary, the system is not ready yet
+                            if statusItems['role']=="standby":
+                                notReady=0
+                            else:
+                                notReady=1
+                if notReady==0:
+                    # The VSF configuration is completed
+                    print("STAGE 100: ZTP COMPLETED")
+                    ztpstatus="ZTP completed"
+                    queryStr="update ztpdevices set enableztp=100, ztpstatus='{}' where id='{}'".format(ztpstatus,items['id'])
+                    cursor.execute(queryStr)
+                    logEntry(items['id'],"Stage 100: ZTP provisioning successful", cursor)
+                else:
+                    # System is not ready yet
+                    ztpstatus="Waiting for secondary switch"
+                    queryStr="update ztpdevices set ztpstatus='{}' where id='{}'".format(ztpstatus,items['id'])
+                    cursor.execute(queryStr)
+                    logEntry(items['id'],"Stage 61: Waiting for secondary member to come online", cursor)
+            else:
+                # The VSF configuration is completed
+                print("STAGE 100: ZTP COMPLETED")
+                ztpstatus="ZTP completed"
+                queryStr="update ztpdevices set enableztp=100, ztpstatus='{}' where id='{}'".format(ztpstatus,items['id'])
+                cursor.execute(queryStr)
+                logEntry(items['id'],"Stage 100: ZTP provisioning successful", cursor)
     
 def getRESTcxIP(ipaddress,username,password,url):
     global sessionid
@@ -601,5 +705,3 @@ def logEntry(ztpdevice,message, cursor):
             logging.append(logEntry)
             queryStr="update ztplog set logging='{}' where ztpdevice='{}'".format(json.dumps(logging),ztpdevice)
             cursor.execute(queryStr)
-
-        
