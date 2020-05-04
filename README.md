@@ -9,8 +9,13 @@ Supported Operating System is Ubuntu 18.x or 19.x
 
 Installation instructions:
 Have a default Ubuntu installation, 4 GB RAM, 2 CPU
+
 Login into your Ubuntu host as root
+
 Clone the repository into your home folder
+
 cd Aruba-FlaskwithNetworking
+
 Run the ./install.sh script
+
 
