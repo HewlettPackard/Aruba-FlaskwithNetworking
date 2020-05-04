@@ -12,9 +12,13 @@ Have a default Ubuntu installation, 4 GB RAM, 2 CPU
 
 Login into your Ubuntu host as root
 
-Clone the repository into your home folder
+Clone the repository into your home folder:
+
+git clone https://github.com/HewlettPackard/Aruba-FlaskwithNetworking.git
 
 cd Aruba-FlaskwithNetworking
+
+chmod 777 ./install.sh
 
 Run the ./install.sh script
 
