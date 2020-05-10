@@ -1,0 +1,25 @@
+DROP PROCEDURE IF EXISTS addztpdhcp;
+
+DELIMITER $$
+
+CREATE DEFINER=CURRENT_USER PROCEDURE addztpdhcp ( ) 
+BEGIN
+DECLARE colName TEXT;
+SELECT column_name INTO colName
+FROM information_schema.columns 
+WHERE table_schema = 'aruba'
+    AND table_name = 'ztpdevices'
+AND column_name = 'ztpdhcp';
+
+IF colName is null THEN 
+    ALTER TABLE `ztpdevices` ADD `ztpdhcp` INT NOT NULL AFTER `ztpstatus`;
+END IF; 
+END$$
+
+DELIMITER ;
+
+CALL addztpdhcp;
+
+DROP PROCEDURE addztpdhcp;
+
+ALTER TABLE `ztpdevices` CHANGE `profile` `profile` TEXT NOT NULL;

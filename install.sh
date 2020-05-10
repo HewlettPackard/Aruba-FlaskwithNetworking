@@ -117,7 +117,7 @@ service xinetd restart
 (pip3 install --default-timeout=100 pycryptodome > /dev/null) & spinner $! "Installing Python3 pycryptodome library....."
 (pip3 install --default-timeout=100 pymysql > /dev/null) & spinner $! "Installing Python3 pymysql library....."
 (pip3 install --default-timeout=100 schedule > /dev/null) & spinner $! "Installing Python3 schedule library....."
-(pip3 install --default-timeout=100 scapy > /dev/null) & spinner $! "Installing Python3 scapy library....."
+(pip3 install --default-timeout=100 pyshark > /dev/null) & spinner $! "Installing Python3 pyshark library....."
 (pip3 install --default-timeout=100 psutil > /dev/null) & spinner $! "Installing Python3 psutil library....."
 (pip3 install --default-timeout=100 paramiko > /dev/null) & spinner $! "Installing Python3 paramiko library....."
 (pip3 install --default-timeout=100 waitress > /dev/null) & spinner $! "Installing Python3 waitress library....."
@@ -146,6 +146,8 @@ cp ./static/ /var/www/html/ -r > /dev/null
 cp ./templates/ /var/www/html/ -r > /dev/null
 cp ./classes/ /var/www/html/ -r > /dev/null
 cp ./bash/ /var/www/html/ -r > /dev/null
+cp ./bash/ztpdhcp6k.cfg /home/tftpboot/ztpdhcp6k.cfg > /dev/null
+cp ./bash/ztpdhcp8k.cfg /home/tftpboot/ztpdhcp8k.cfg > /dev/null
 
 if [ ! -d "/var/www/html/images" ]; then
 mkdir /var/www/html/images
@@ -157,7 +159,7 @@ echo " Configuring the app"
 
 activeInterface=$(route | grep '^default' | grep -o '[^ ]*$')
 cat > /var/www/html/bash/globals.json  << ENDOFFILE
-{"idle_timeout": "3000", "pcap_location": "/var/www/html/bash/trace.pcap", "retain_dhcp": "30", "retain_snmp": "30", "retain_syslog": "30", "secret_key": "ArubaRocks!!!!!!", "appPath": "/var/www/html/", "softwareRelease": "1.2", "sysInfo": "","activeInterface":"$activeInterface"}
+{"idle_timeout": "3000", "pcap_location": "/var/www/html/bash/trace.pcap", "retain_dhcp": "30", "retain_snmp": "30", "retain_syslog": "30", "secret_key": "ArubaRocks!!!!!!", "appPath": "/var/www/html/", "softwareRelease": "1.3", "sysInfo": "","activeInterface":"$activeInterface","ztppassword":"ztpinit","landingpage":"/"}
 ENDOFFILE
 chmod 777 /var/www/html/bash/listener.sh
 chmod 777 /var/www/html/bash/cleanup.sh

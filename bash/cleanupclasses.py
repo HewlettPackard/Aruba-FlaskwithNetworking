@@ -1,9 +1,7 @@
 # (C) Copyright 2020 Hewlett Packard Enterprise Development LP.
 
-from scapy.all import *
 from datetime import datetime, time, timedelta
 import time
-from paramiko.client import SSHClient, AutoAddPolicy
 import json
 import pymysql.cursors
 import re
@@ -11,7 +9,6 @@ import sys
 import os
 import platform
 import requests
-from jinja2 import Template
 import urllib3
 from urllib.parse import quote, unquote
 urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)

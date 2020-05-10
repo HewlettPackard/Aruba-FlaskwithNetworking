@@ -1,6 +1,6 @@
 # (C) Copyright 2020 Hewlett Packard Enterprise Development LP.
 
-from scapy.all import *
+import pyshark
 from datetime import datetime, time, timedelta
 import time
 import json
@@ -20,11 +20,9 @@ from Crypto.Cipher import AES
 from Crypto.Util.Padding import pad, unpad
 
 def trackers():
+    trackerslog = open('/var/www/html/bash/trackers.log', 'a')
     pathname = os.path.dirname(sys.argv[0])
-    if platform.system()=="Windows":
-        appPath = os.path.abspath(pathname) + "\\globals.json"      
-    else:
-        appPath = os.path.abspath(pathname) + "/globals.json"
+    appPath = os.path.abspath(pathname) + "/globals.json"
     with open(appPath, 'r') as myfile:
         data=myfile.read()
     globalconf=json.loads(data)
@@ -65,144 +63,457 @@ def trackers():
         utctimesyslog=float(utctimesyslog)
     # Open the pcap file
     try:
-        if os.path.isfile(globalconf['pcap_location']):
-            pkts=rdpcap(globalconf['pcap_location'])
-        else:
-            pkts=""
+        pkts=pyshark.FileCapture('/var/www/html/bash/trace.pcap')
+        pkts.load_packets()
     except:
         pkts=""
-
     # Check for DHCP, Syslog and SNMP packets
     for i in range(len(pkts)):
+        # trackerslog.write('Analyze packets\n')
         try:
-            if pkts[i].dport==67 or pkts[i].dport==68 or pkts[i].dport=="bootps" or pkts[i].dport=="bootpc":
-                # Match DHCP Discover
-                if DHCP in pkts[i] and pkts[i]['DHCP'].options[0][1] == 1:
-                    hostname = getOption(pkts[i]['DHCP'].options, 'hostname')
-                    if pkts[i].time > utctimedhcp:
-                        information="Host " + str(hostname) + " (" + pkts[i][Ether].src + ") asked for an IP"
-                        options=""
-                        queryStr="insert into dhcptracker (utctime,dhcptype,information,options) values ('{}','DHCP Discover','{}','{}')".format(pkts[i].time,information,options)
-                        cursor.execute(queryStr)
-                # Match DHCP offer
-                elif DHCP in pkts[i] and pkts[i][DHCP].options[0][1] == 2:
-                    subnet_mask = getOption(pkts[i][DHCP].options, 'subnet_mask')
-                    lease_time = getOption(pkts[i][DHCP].options, 'lease_time')
-                    router = getOption(pkts[i][DHCP].options, 'router')
-                    name_server = getOption(pkts[i][DHCP].options, 'name_server')
-                    domain = getOption(pkts[i][DHCP].options, 'domain')
-                    if pkts[i].time > utctimedhcp:
-                        information="DHCP Server " + pkts[i][IP].src + "(" + pkts[i][Ether].src + ") offered " + pkts[i][BOOTP].yiaddr
-                        options="Subnet mask: " + subnet_mask + ", Lease time: " + str(lease_time) + ", Router: " + router + ", Name Server: " + name_server + ", domain: " + str(domain)
-                        queryStr="insert into dhcptracker (utctime,dhcptype,information,options) values ('{}','DHCP Offer','{}','{}')".format(pkts[i].time,information,options)
-                        cursor.execute(queryStr)
-                # Match DHCP request
-                elif DHCP in pkts[i] and pkts[i][DHCP].options[0][1] == 3:
-                    requested_addr = getOption(pkts[i][DHCP].options, 'requested_addr')
-                    hostname = getOption(pkts[i][DHCP].options, 'hostname')
-                    if pkts[i].time > utctimedhcp:
-                        information="Host " + str(hostname) + " (" + pkts[i][Ether].src + ") requested " + str(requested_addr)
-                        options=""
-                        queryStr="insert into dhcptracker (utctime,dhcptype,information,options) values ('{}','DHCP Request','{}','{}')".format(pkts[i].time,information,options)
-                        cursor.execute(queryStr)
-                # Match DHCP ack
-                elif DHCP in pkts[i] and pkts[i][DHCP].options[0][1] == 5:
-                    subnet_mask = getOption(pkts[i][DHCP].options, 'subnet_mask')
-                    lease_time = getOption(pkts[i][DHCP].options, 'lease_time')
-                    router = getOption(pkts[i][DHCP].options, 'router')
-                    name_server = getOption(pkts[i][DHCP].options, 'name_server')
-                    if pkts[i].time > utctimedhcp:
-                        information="DHCP Server " + pkts[i][IP].src + " (" + pkts[i][Ether].src + ") acked " + str(pkts[i][BOOTP].yiaddr)
-                        options="Subnet_mask: " + str(subnet_mask) + ", Lease time: " + str(lease_time) + ", Router: " + str(router) + ", Name Server: " + str(name_server)
-                        queryStr="insert into dhcptracker (utctime,dhcptype,information,options) values ('{}','DHCP Request','{}','{}')".format(pkts[i].time,information,options)
-                        cursor.execute(queryStr)
-                # Match DHCP inform
-                elif DHCP in pkts[i] and pkts[i][DHCP].options[0][1] == 8:
-                    hostname = getOption(pkts[i][DHCP].options, 'hostname')
-                    vendor_class_id = getOption(pkts[i][DHCP].options, 'vendor_class_id')
-                    if pkts[i].time > utctimedhcp:
-                        information="DHCP Inform from " + pkts[i][IP].src + " (" + pkts[i][Ether].src + ") Hostname: " + str(hostname) + ", Vendor Class ID: " + str(vendor_class_id)
-                        options=""
-                        queryStr="insert into dhcptracker (utctime,dhcptype,information,options) values ('{}','DHCP Request','{}','{}')".format(pkts[i].time,information,options)
-                        cursor.execute(queryStr)
-            elif pkts[i].dport==162 or pkts[i].dport=="snmp":
-                snmpInfo=getSNMPinfo(pkts[i][SNMP].show(dump=True))
-                # If there is SNMP information we should create a database entry. So snmpInfo[1] should contain information and the timestamp of the packet should be
-                # later than the latest timestamp in the database
-                if pkts[i].time > utctimesnmp and snmpInfo[0] and snmpInfo[1] and snmpInfo[2]:
-                    queryStr="insert into snmptracker (utctime,source,version,community,information) values ('{}','{}','{}','{}','{}')".format(pkts[i].time,pkts[i][IP].src,snmpInfo[0],snmpInfo[1],snmpInfo[2])
-                    cursor.execute(queryStr)
-            elif pkts[i].dport==514 or pkts[i].dport=="syslog":
-                # The first part between brackets <> shows the syslog type. This has to be converted to a binary value and then split.
-                # The syslogFacility and syslogSeverity values can then be applied
-                # In addition, a syslog entry can have single quotes. If this is the situation, the syslog message is enclosed by double quotes
-                if pkts[i]['Raw'].show(dump=True).count('\"')==2:
-                    syslogInfo=re.findall(r"\"(.*?)\"", pkts[i]['Raw'].show(dump=True), re.DOTALL)
+            if pkts[i].udp.dstport=="67" or pkts[i].udp.dstport=="68":
+                # Tshark returns different layer information for DHCP/bootp. It might be either "bootp" or "dhcp"
+                # Therefore we need to check whether the bootp or dhcp fieldnames exist and make the changed accordingly
+                if "BOOTP" in str(pkts[i].layers):
+                    bord="bootp"
                 else:
-                    syslogInfo=re.findall(r"'(.*?)'", pkts[i]['Raw'].show(dump=True), re.DOTALL)
+                    bord="dhcp"
+                # trackerslog.write('Analyze DHCP packet\n')
+                # Match DHCP Discover
+                if bord=="bootp":
+                    fieldnames=list(pkts[i].bootp.field_names)
+                else:
+                    fieldnames=list(pkts[i].dhcp.field_names)
+                if bord=="dhcp":
+                    if pkts[i].dhcp.option_value == "01":
+                        try:
+                            if float(pkts[i].sniff_timestamp) > utctimedhcp:
+                                information="Host " + pkts[i].dhcp.hw_mac_addr + " asked for an IP address"
+                                options=""
+                                queryStr="insert into dhcptracker (utctime,dhcptype,information,options) values ('{}','DHCP Discover','{}','{}')".format(pkts[i].sniff_timestamp,information,options)
+                                cursor.execute(queryStr)
+                        except:
+                            print("Could not analyze DHCP discover packet")
+                    # Match DHCP offer
+                    elif pkts[i].dhcp.option_value == "02":
+                        try:
+                            if float(pkts[i].sniff_timestamp) > utctimedhcp:
+                                if "ip_server" in fieldnames:
+                                    dhcpserver=pkts[i].dhcp.ip_server
+                                else:
+                                    dhcpserver="Unknown"
+                                if "ip_your" in fieldnames:
+                                    offeredip=pkts[i].dhcp.ip_your
+                                else:
+                                    offeredip="Unknown"
+                                if "option_subnet_mask" in fieldnames:
+                                    subnetmask=pkts[i].dhcp.option_subnet_mask
+                                else:
+                                    subnetmask="Unknown"
+                                if "option_ip_address_lease_time" in fieldnames:
+                                    leasetime=pkts[i].dhcp.option_ip_address_lease_time
+                                else:
+                                    leasetime="Unknown"
+                                if "option_router" in fieldnames:
+                                    router=pkts[i].dhcp.option_router
+                                else:
+                                    router="Unknown"
+                                if "option_domain_name_server" in fieldnames:
+                                    nameserver=pkts[i].dhcp.option_domain_name_server
+                                else:
+                                    nameserver="Unknown"
+                                if "option_domain_name" in fieldnames:
+                                    domainname=pkts[i].dhcp.option_domain_name
+                                else:
+                                    domainname="Unknown"
+                                if domainname!="Unknown" and nameserver!="Unknown" and router!="Unknown" and leasetime!="Unknown" and offeredip!="Unknown" and dhcpserver!="Unknown":
+                                    information="DHCP Server " + dhcpserver + " offered " + offeredip
+                                    options="Subnet mask: " + subnetmask + ", Lease time: " + leasetime + ", Router: " + router + ", Name Server: " + nameserver + ", domain: " + domainname
+                                    queryStr="insert into dhcptracker (utctime,dhcptype,information,options) values ('{}','DHCP Offer','{}','{}')".format(pkts[i].sniff_timestamp,information,options)
+                                    cursor.execute(queryStr)
+                        except:
+                            print("Could not analyze DHCP offer packet in packet {}".format[i])
+                    # Match DHCP request
+                    elif pkts[i].dhcp.option_value == "03":
+                        try:
+                            if float(pkts[i].sniff_timestamp) > utctimedhcp:
+                                if "hw_mac_addr" in fieldnames:
+                                    macaddress=pkts[i].dhcp.hw_mac_addr
+                                else:
+                                    macaddress="Unknown"
+                                if "option_requested_ip_address" in fieldnames:
+                                    requestedip=pkts[i].dhcp.option_requested_ip_address
+                                else:
+                                    requestedip="Unknown"
+                                information="Host " + macaddress + " requested " + requestedip
+                                options=""
+                                if macaddress!="Unknown" and requestedip!="Unknown":
+                                    queryStr="insert into dhcptracker (utctime,dhcptype,information,options) values ('{}','DHCP Request','{}','{}')".format(pkts[i].sniff_timestamp,information,options)
+                                    cursor.execute(queryStr)
+                        except:
+                            print("Could not analyze DHCP request in packet {}".format(i))
+                    # Match DHCP ack
+                    elif pkts[i].dhcp.option_value == "05":
+                        try:
+                            if float(pkts[i].sniff_timestamp) > utctimedhcp:
+    
+                                if "option_subnet_mask" in fieldnames:
+                                    netmask=pkts[i].dhcp.option_subnet_mask
+                                else:
+                                    netmask="Unknown"
+                                if "option_ip_address_lease_time" in fieldnames:
+                                    leasetime=pkts[i].dhcp.option_ip_address_lease_time
+                                else:
+                                    leasetime="Unknown"
+                                if "option_router" in fieldnames:
+                                    router=pkts[i].dhcp.option_router
+                                else:
+                                    router="Unknown"
+                                if "option_domain_name_server" in fieldnames:
+                                    dnsserver=pkts[i].dhcp.option_domain_name_server
+                                else:
+                                    dnsserver="Unknown"
+                                if "option_dhcp_server_id" in fieldnames:
+                                    dhcpserver=pkts[i].dhcp.option_dhcp_server_id
+                                else:
+                                    dhcpserver="Unknown"
+                                if "ip_your" in fieldnames:
+                                    clientip=pkts[i].dhcp.ip_your
+                                else:
+                                    clientip="Unknown"
+                                # The tracker class is also used for ZTP. Goal is to have the switch keep it's DHCP IP address. 
+                                try:
+                                    if "hw_mac_addr" in fieldnames and "ip_your" in fieldnames and netmask!="Unknown" and router!="Unknown":
+                                        ztpmacaddress=pkts[i].dhcp.hw_mac_addr
+                                        ztpmacaddress=ztpmacaddress.replace(":","")
+                                        ztpnetmask=sum(bin(int(x)).count('1') for x in netmask.split('.'))
+                                        queryStr="select * from ztpdevices where macaddress='{}'".format(ztpmacaddress)
+                                        cursor.execute(queryStr)
+                                        result=cursor.fetchall()
+                                        if result:
+                                            # We found a ZTP device entry and need to update the IP address information, but only if DHCP ZTP is enabled
+                                            timeStamp=float(pkts[i].sniff_timestamp)
+                                            trackerslog.write('{}: Found ZTP entry for {}\n'.format(datetime.fromtimestamp(int(timeStamp)),ztpmacaddress))
+                                            if result[0]['ztpdhcp']==1:
+                                                queryStr="update ztpdevices set ipaddress='{}', netmask='{}', gateway='{}' where id='{}'".format(clientip,ztpnetmask,router,result[0]['id'])
+                                                cursor.execute(queryStr)
+                                                trackerslog.write('{}: Updated ZTP Device with MAC Address {}: {}\n'.format(datetime.fromtimestamp(int(timeStamp)).strftime('%-m/%-d/%Y, %H:%M:%S %p'),ztpmacaddress, clientip))
+                                except:
+                                    print("Cannot analyze ZTP packet {}".format(i))
+                                information="DHCP Server " + dhcpserver + " acknowledged " + clientip
+                                options="Subnet_mask: " + netmask + ", Lease time: " + leasetime + ", Router: " + router + ", Name Server: " + dnsserver
+                                queryStr="insert into dhcptracker (utctime,dhcptype,information,options) values ('{}','DHCP Request','{}','{}')".format(pkts[i].sniff_timestamp,information,options)
+                                cursor.execute(queryStr)
+                        except:
+                            print("Could not analyze DHCP ack packet")
+                    # Match DHCP NAK
+                    elif pkts[i].dhcp.option_value == "06":
+                        try:
+                            if float(pkts[i].sniff_timestamp) > utctimedhcp:
+                                if "option_dhcp_server_id" in fieldnames:
+                                    dhcpserver=pkts[i].dhcp.option_dhcp_server_id
+                                else:
+                                    dhcpserver="Unknown"
+                                if "ip_your" in fieldnames:
+                                    ip_your=pkts[i].dhcp.ip_your
+                                else:
+                                    ip_your="Unknown"
+                                if "ip_client" in fieldnames:
+                                    clientip=pkts[i].dhcp.ip_client
+                                else:
+                                    clientip="Unknown"
+                                if "hw_mac_addr" in fieldnames:
+                                    hwmacaddr=pkts[i].dhcp.hw_mac_addr
+                                else:
+                                    hwmacaddr="Unknown"
+                                if "option_message" in fieldnames:
+                                    optionmessage=pkts[i].dhcp.option_message
+                                else:
+                                    optionmessage="Unknown"
+                                information="DHCP NAK: " + optionmessage + ". " + ip_your + "  not available on " + dhcpserver
+                                options="IP client: " + clientip + ", MAC address: " + hwmacaddr
+                                queryStr="insert into dhcptracker (utctime,dhcptype,information,options) values ('{}','DHCP NAK','{}','{}')".format(pkts[i].sniff_timestamp,information,options)
+                                cursor.execute(queryStr)
+                        except:
+                            print("Could not analyze DHCP NAK packet {}".format(i))
+                    # Match DHCP release
+                    elif pkts[i].dhcp.option_value == "07":
+                        try:
+                            if float(pkts[i].sniff_timestamp) > utctimedhcp:
+                                if "option_dhcp_server_id" in fieldnames:
+                                    dhcpserver=pkts[i].dhcp.option_dhcp_server_id
+                                else:
+                                    dhcpserver="Unknown"
+                                if "ip_your" in fieldnames:
+                                    ip_your=pkts[i].dhcp.ip_your
+                                else:
+                                    ip_your="Unknown"
+                                if "ip_client" in fieldnames:
+                                    clientip=pkts[i].dhcp.ip_client
+                                else:
+                                    clientip="Unknown"
+                                if "hw_mac_addr" in fieldnames:
+                                    hwmacaddr=pkts[i].dhcp.hw_mac_addr
+                                else:
+                                    hwmacaddr="Unknown"
+                                if "option_hostname" in fieldnames:
+                                    hostname=pkts[i].dhcp.option_hostname
+                                else:
+                                    hostname="Unknown"
+                                information="DHCP Server " + dhcpserver + "  released " + ip_your
+                                options="IP client: " + clientip + ", MAC address: " + hwmacaddr + ", Hostname: " + hostname
+                                queryStr="insert into dhcptracker (utctime,dhcptype,information,options) values ('{}','DHCP Release','{}','{}')".format(pkts[i].sniff_timestamp,information,options)
+                                cursor.execute(queryStr)
+                        except:
+                            print("Could not analyze DHCP release packet {}".format(i))
+                    # Match DHCP inform
+                    elif pkts[i].dhcp.option_value == "08":
+                        try:    
+                            if float(pkts[i].sniff_timestamp) > utctimedhcp:
+                                print(pkts[i].dhcp)
+                                print(pkts[i].dhcp.field_names)
+                                information="DHCP Inform from " + pkts[i][IP].src + " (" + pkts[i][Ether].src + ") Hostname: " + pkts[i].dhcp.option_hostname + ", Vendor Class ID: " + pkts[i].dhcp.option_vendor_class_id
+                                options=""
+                                queryStr="insert into dhcptracker (utctime,dhcptype,information,options) values ('{}','DHCP Request','{}','{}')".format(pkts[i].sniff_timestamp,information,options)
+                                cursor.execute(queryStr)
+                        except:
+                            print("Could not analyze DHCP Inform packet")
+                else:
+                    if pkts[i].bootp.option_value == "01":
+                        try:
+                            if float(pkts[i].sniff_timestamp) > utctimedhcp:
+                                information="Host " + pkts[i].bootp.hw_mac_addr + " asked for an IP address"
+                                options=""
+                                queryStr="insert into dhcptracker (utctime,dhcptype,information,options) values ('{}','DHCP Discover','{}','{}')".format(pkts[i].sniff_timestamp,information,options)
+                                cursor.execute(queryStr)
+                        except:
+                            print("Could not analyze DHCP discover packet")
+                    # Match DHCP offer
+                    elif pkts[i].bootp.option_value == "02":
+                        try:
+                            if float(pkts[i].sniff_timestamp) > utctimedhcp:
+                                if "ip_server" in fieldnames:
+                                    dhcpserver=pkts[i].bootp.ip_server
+                                else:
+                                    dhcpserver="Unknown"
+                                if "ip_your" in fieldnames:
+                                    offeredip=pkts[i].bootp.ip_your
+                                else:
+                                    offeredip="Unknown"
+                                if "option_subnet_mask" in fieldnames:
+                                    subnetmask=pkts[i].bootp.option_subnet_mask
+                                else:
+                                    subnetmask="Unknown"
+                                if "option_ip_address_lease_time" in fieldnames:
+                                    leasetime=pkts[i].bootp.option_ip_address_lease_time
+                                else:
+                                    leasetime="Unknown"
+                                if "option_router" in fieldnames:
+                                    router=pkts[i].bootp.option_router
+                                else:
+                                    router="Unknown"
+                                if "option_domain_name_server" in fieldnames:
+                                    nameserver=pkts[i].bootp.option_domain_name_server
+                                else:
+                                    nameserver="Unknown"
+                                if "option_domain_name" in fieldnames:
+                                    domainname=pkts[i].bootp.option_domain_name
+                                else:
+                                    domainname="Unknown"
+                                if domainname!="Unknown" and nameserver!="Unknown" and router!="Unknown" and leasetime!="Unknown" and offeredip!="Unknown" and dhcpserver!="Unknown":
+                                    information="DHCP Server " + dhcpserver + " offered " + offeredip
+                                    options="Subnet mask: " + subnetmask + ", Lease time: " + leasetime + ", Router: " + router + ", Name Server: " + nameserver + ", domain: " + domainname
+                                    queryStr="insert into dhcptracker (utctime,dhcptype,information,options) values ('{}','DHCP Offer','{}','{}')".format(pkts[i].sniff_timestamp,information,options)
+                                    cursor.execute(queryStr)
+                        except:
+                            print("Could not analyze DHCP offer packet in packet {}".format[i])
+                    # Match DHCP request
+                    elif pkts[i].bootp.option_value == "03":
+                        try:
+                            if float(pkts[i].sniff_timestamp) > utctimedhcp:
+                                if "hw_mac_addr" in fieldnames:
+                                    macaddress=pkts[i].bootp.hw_mac_addr
+                                else:
+                                    macaddress="Unknown"
+                                if "option_requested_ip_address" in fieldnames:
+                                    requestedip=pkts[i].bootp.option_requested_ip_address
+                                else:
+                                    requestedip="Unknown"
+                                information="Host " + macaddress + " requested " + requestedip
+                                options=""
+                                if macaddress!="Unknown" and requestedip!="Unknown":
+                                    queryStr="insert into dhcptracker (utctime,dhcptype,information,options) values ('{}','DHCP Request','{}','{}')".format(pkts[i].sniff_timestamp,information,options)
+                                    cursor.execute(queryStr)
+                        except:
+                            print("Could not analyze DHCP request in packet {}".format(i))
+                    # Match DHCP ack
+                    elif pkts[i].bootp.option_value == "05":  
+                        print("DHCP ACK")
+                        try:
+                            if float(pkts[i].sniff_timestamp) > utctimedhcp:
+    
+                                if "option_subnet_mask" in fieldnames:
+                                    netmask=pkts[i].bootp.option_subnet_mask
+                                else:
+                                    netmask="Unknown"
+                                if "option_ip_address_lease_time" in fieldnames:
+                                    leasetime=pkts[i].bootp.option_ip_address_lease_time
+                                else:
+                                    leasetime="Unknown"
+                                if "option_router" in fieldnames:
+                                    router=pkts[i].bootp.option_router
+                                else:
+                                    router="Unknown"
+                                if "option_domain_name_server" in fieldnames:
+                                    dnsserver=pkts[i].bootp.option_domain_name_server
+                                else:
+                                    dnsserver="Unknown"
+                                # The tracker class is also used for ZTP. Goal is to have the switch keep it's DHCP IP address. 
+                                try:
+                                    if "hw_mac_addr" in fieldnames and "ip_your" in fieldnames and netmask!="Unknown" and router!="Unknown":
+                                        ztpmacaddress=pkts[i].bootp.hw_mac_addr
+                                        ztpmacaddress=ztpmacaddress.replace(":","")
+                                        ztpnetmask=sum(bin(int(x)).count('1') for x in netmask.split('.'))
+                                        queryStr="select * from ztpdevices where macaddress='{}'".format(ztpmacaddress)
+                                        cursor.execute(queryStr)
+                                        result=cursor.fetchall()
+                                        if result:
+                                            timeStamp=float(pkts[i].sniff_timestamp)
+                                            trackerslog.write('{}: Found ZTP entry for {}\n'.format(datetime.fromtimestamp(int(timeStamp)),ztpmacaddress))
+                                            # We found a ZTP device entry and need to update the IP address information, but only if DHCP ZTP is enabled
+                                            if result[0]['ztpdhcp']==1:
+                                                queryStr="update ztpdevices set ipaddress='{}', netmask='{}', gateway='{}' where id='{}'".format(pkts[i].bootp.ip_your,ztpnetmask,router,result[0]['id'])
+                                                cursor.execute(queryStr)
+                                                trackerslog.write('{}: Updated ZTP Device with MAC Address {}: {}\n'.format(datetime.fromtimestamp(int(timeStamp)).strftime('%-m/%-d/%Y, %H:%M:%S %p'),ztpmacaddress, clientip))
+                                except:
+                                    print("Cannot analyze ZTP packet {}".format(i))
+                                information="DHCP Server " + pkts[i].bootp.option_dhcp_server_id + " acknowledged " + pkts[i].bootp.ip_your
+                                options="Subnet_mask: " + netmask + ", Lease time: " + leasetime + ", Router: " + router + ", Name Server: " + pkts[i].bootp.option_domain_name_server
+                                queryStr="insert into dhcptracker (utctime,dhcptype,information,options) values ('{}','DHCP Request','{}','{}')".format(pkts[i].sniff_timestamp,information,options)
+                                cursor.execute(queryStr)
+                        except:
+                            print("Could not analyze DHCP ack packet")
+                    # Match DHCP NAK
+                    elif pkts[i].bootp.option_value == "06":
+                        try:
+                            if float(pkts[i].sniff_timestamp) > utctimedhcp:
+                                if "option_dhcp_server_id" in fieldnames:
+                                    dhcpserver=pkts[i].bootp.option_dhcp_server_id
+                                else:
+                                    dhcpserver="Unknown"
+                                if "ip_your" in fieldnames:
+                                    ip_your=pkts[i].bootp.ip_your
+                                else:
+                                    ip_your="Unknown"
+                                if "ip_client" in fieldnames:
+                                    clientip=pkts[i].bootp.ip_client
+                                else:
+                                    clientip="Unknown"
+                                if "hw_mac_addr" in fieldnames:
+                                    hwmacaddr=pkts[i].bootp.hw_mac_addr
+                                else:
+                                    hwmacaddr="Unknown"
+                                if "option_message" in fieldnames:
+                                    optionmessage=pkts[i].bootp.option_message
+                                else:
+                                    optionmessage="Unknown"
+                                information="DHCP NAK: " + optionmessage + ". " + ip_your + "  not available on " + dhcpserver
+                                options="IP client: " + clientip + ", MAC address: " + hwmacaddr
+                                queryStr="insert into dhcptracker (utctime,dhcptype,information,options) values ('{}','DHCP NAK','{}','{}')".format(pkts[i].sniff_timestamp,information,options)
+                                cursor.execute(queryStr)
+                        except:
+                            print("Could not analyze DHCP NAK packet {}".format(i))
+                    # Match DHCP release
+                    elif pkts[i].bootp.option_value == "07":
+                        try:
+                            if float(pkts[i].sniff_timestamp) > utctimedhcp:
+                                if "option_dhcp_server_id" in fieldnames:
+                                    dhcpserver=pkts[i].bootp.option_dhcp_server_id
+                                else:
+                                    dhcpserver="Unknown"
+                                if "ip_your" in fieldnames:
+                                    ip_your=pkts[i].bootp.ip_your
+                                else:
+                                    ip_your="Unknown"
+                                if "ip_client" in fieldnames:
+                                    clientip=pkts[i].bootp.ip_client
+                                else:
+                                    clientip="Unknown"
+                                if "hw_mac_addr" in fieldnames:
+                                    hwmacaddr=pkts[i].bootp.hw_mac_addr
+                                else:
+                                    hwmacaddr="Unknown"
+                                if "option_hostname" in fieldnames:
+                                    hostname=pkts[i].bootp.option_hostname
+                                else:
+                                    hostname="Unknown"
+                                information="DHCP Server " + dhcpserver + "  released " + ip_your
+                                options="IP client: " + clientip + ", MAC address: " + hwmacaddr + ", Hostname: " + hostname
+                                queryStr="insert into dhcptracker (utctime,dhcptype,information,options) values ('{}','DHCP Release','{}','{}')".format(pkts[i].sniff_timestamp,information,options)
+                                cursor.execute(queryStr)
+                        except:
+                            print("Could not analyze DHCP release packet {}".format(i))
+                    # Match DHCP inform
+                    elif pkts[i].dhcp.option_value == "08":
+                        try:
+                            if float(pkts[i].sniff_timestamp) > utctimedhcp:
+                                print(pkts[i].bootp)
+                                print(pkts[i].bootp.field_names)
+                                information="DHCP Inform from " + pkts[i][IP].src + " (" + pkts[i][Ether].src + ") Hostname: " + pkts[i].bootp.option_hostname + ", Vendor Class ID: " + pkts[i].bootp.option_vendor_class_id
+                                options=""
+                                queryStr="insert into dhcptracker (utctime,dhcptype,information,options) values ('{}','DHCP Request','{}','{}')".format(pkts[i].sniff_timestamp,information,options)
+                                cursor.execute(queryStr)
+                        except:
+                            print("Could not analyze DHCP Inform packet")
+
+            elif pkts[i].udp.dstport=="161" or pkts[i].udp.dstport=="162":
+                    # trackerslog.write('Analyze SNMP packet\n')
+                fieldnames=list(pkts[i].snmp.field_names)
                 try:
-                    infoType=str(bin(int(syslogInfo[0][1:3])))
-                    # Now we need to split the binary. The last three bits represent the severity, the first bits represent the facility
-                    # For this, we have to convert to string again, and then split on the 5th character 
-                    infoType=infoType.replace("0b","")
-                    sevInfo=int(infoType[-3:],base=2)
-                    facInfo=int(infoType[:-3],base=2)
-                    information=syslogInfo[0][4:].replace('\'','')
-                    # If the first character in the information var is still >, then also remove that one
-                    if information[0:1]==">":
-                        information=information[1:]
-                    if pkts[i].time > utctimesyslog:
-                        queryStr="insert into syslog (utctime,source,facility,severity,information) values ('{}','{}','{}','{}','{}')".format(pkts[i].time,pkts[i][IP].src,syslogFacilities[facInfo],syslogSeverity[sevInfo],information)
+                    if float(pkts[i].sniff_timestamp) > utctimesnmp:
+                        generictraps=['Cold start','Warm start','Link down','Link up','Authentication failure','EGP Neighbor loss']
+                        snmpversions=['V1', 'V2c']
+                        if "generic_trap" in fieldnames:
+                            if pkts[i].snmp.generic_trap=="6":
+                                # This is an enterprise trap. Need to analyze a bit further
+                                trapMessage="Enterprise trap"
+                            else:
+                                trapMessage=generictraps[int(pkts[i].snmp.generic_trap)]
+                                trapMessage=trapMessage.replace("'","\\'")
+                        else:
+                            trapMessage=""
+                        if "version" in fieldnames:
+                            snmpversion=snmpversions[int(pkts[i].snmp.version)]
+                        else:
+                            snmpversion="Unknown"
+                        if trapMessage!="":
+                            queryStr="insert into snmptracker (utctime,source,version,community,information) values ('{}','{}','{}','{}','{}')".format(pkts[i].sniff_timestamp,pkts[i].ip.src_host,snmpversion,pkts[i].snmp.community,trapMessage)
+                            cursor.execute(queryStr)
+                except:
+                    print("Could not analyze SNMP packet {}".format(i))
+            elif pkts[i].udp.dstport=="514":
+                # trackerslog.write('Analyze Syslog packet\n')
+                try:
+                    if float(pkts[i].sniff_timestamp) > utctimesyslog:
+                        message=str(pkts[i].syslog.msg)
+                        message=message.replace("'","\\'")
+                        queryStr="insert into syslog (utctime,source,facility,severity,information) values ('{}','{}','{}','{}','{}')".format(pkts[i].sniff_timestamp,pkts[i].ip.src_host,syslogFacilities[int(pkts[i].syslog.facility)],syslogSeverity[int(pkts[i].syslog.level)],message)
                         cursor.execute(queryStr)
                 except:
-                    pass
+                    print("Could not analyze Syslog packet {}".format(i))
         except:
-            print("There is something wrong with the network trace process")
+            print("There is something wrong with the network trace process: {}".format(i))
+    trackerslog.close()
     dbconnection.close()
-    
-def getSNMPinfo(snmpinfo):
-    snmpList=snmpinfo.split("\\PDU")
-    snmpVars=snmpList[1].split("|")
-    trapInfo=""
-    additionalInfo=""
-    # Get generic trap info
-    for i in range(len(snmpVars)):
-        if "generic_trap" in snmpVars[i]:
-            trapInfo=re.search(r"(?<=').*?(?=')", snmpVars[i]).group(0)
-        elif "SNMPinform" in snmpVars[i]:
-            trapInfo="SNMP Inform"
-    # Get additional trap information. Only the entries that contain information are interesting. Need to search on [b'
-    if trapInfo!="enterprise_specific":
-        for i in range(len(snmpVars)):
-            if "[b" in snmpVars[i]:
-                addInfo=re.search(r"(?<=').*?(?=')", snmpVars[i]).group(0) 
-                if addInfo:
-                    additionalInfo += addInfo + ", "
-        if additionalInfo:
-            trapInfo=trapInfo + " (" + additionalInfo[:-2] + ")"
-        else:
-            trapInfo=""
-    else:
-        trapInfo=""
-    # snmpArr[0] contains version and community information. I only need that information so strip all the other info.
-    VersionAndCommunity=re.findall(r"'(.*?)'", snmpList[0], re.DOTALL)
-    # VersionAndCommunity[0] contains version, VersionAndCommunity[1] contains community
-    return [VersionAndCommunity[0],VersionAndCommunity[1], trapInfo]
-   
-def getOption(dhcpOptions, key):
-    mustDecode = ['hostname', 'domain', 'vendor_class_id']
-    try:
-        for i in dhcpOptions:
-            if i[0] == key:
-                # If DHCP Server Returned multiple name servers 
-                # return all as comma seperated string.
-                if key == 'name_server' and len(i) > 2:
-                    return ",".join(i[1:])
-                # domain and hostname are binary strings,
-                # decode to unicode string before returning
-                elif key in mustDecode:
-                    return i[1].decode()
-                else: 
-                    return i[1]        
-    except:
-        pass
+
+def ztpCheck(macaddress,ipaddress,netmask,gateway,dns,cursor):
+    macaddress=macaddress.replace(":","")
+    netmask=sum(bin(int(x)).count('1') for x in netmask.split('.'))
+    queryStr="select * from ztpdevices where macaddress='{}'".format(macaddress)
+    cursor.execute(queryStr)
+    result=cursor.fetchall()
+    if result:
+        # We found a ZTP device entry and need to update the IP address information
+        queryStr="update ztpdevices set ipaddress='{}', netmask='{}', gateway='{}' where id='{}'".format(ipaddress,netmask,gateway,result[0]['id'])
+        print("Update IP address of MAC address {} to {}".format(macaddress,ipaddress))
+        cursor.execute(queryStr)

@@ -11,65 +11,6 @@ import urllib3
 import json
 urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)
 
-    
-def ztpprofiledbAction(formresult):
-    # This definition is for all the profiles database actions for ZTP
-    globalsconf=classes.classes.globalvars()
-    searchAction="None"
-    constructQuery=""
-    if(bool(formresult)==True): 
-        try:
-            formresult['pageoffset']
-            pageoffset=formresult['pageoffset']
-        except:
-            pageoffset=0
-        if(formresult['action']=="Submit profile"):
-            queryStr="insert into ztpprofiles (name,username,password,vrf,dns) values \
-            ('{}','{}','{}','{}','{}')".format(formresult['name'],formresult['username'], \
-            classes.classes.encryptPassword(globalsconf['secret_key'], formresult['password']),formresult['vrf'],formresult['dns'])
-            profileid=classes.classes.sqlQuery(queryStr,"insert")
-        elif  (formresult['action']=="Submit changes"):
-            queryStr="update ztpprofiles set name='{}',username='{}',password='{}', vrf='{}', dns='{}' where id='{}' "\
-            .format(formresult['name'],formresult['username'],classes.classes.encryptPassword(globalsconf['secret_key'], formresult['password']),formresult['vrf'],formresult['dns'],formresult['profileid'])
-            classes.classes.sqlQuery(queryStr,"update")
-        elif (formresult['action']=="Delete"):
-            queryStr="delete from ztpprofiles where id='{}'".format(formresult['profileid'])
-            classes.classes.sqlQuery(queryStr,"delete")
-        try:
-            searchAction=formresult['searchAction']
-        except:
-            searchAction=""    
-        if formresult['searchName'] or formresult['searchVRF'] or formresult['searchDNS']:
-            constructQuery= " where "
-        if formresult['searchName']:
-            constructQuery += " name like'%" + formresult['searchName'] + "%' AND "
-        if formresult['searchVRF']:
-            constructQuery += " vrf like '%" + formresult['searchVRF'] + "%' AND "
-        if formresult['searchDNS']:
-            constructQuery += " dns like'%" + formresult['searchDNS'] + "%' AND "
-
-        # We have to construct the query based on the formresult information (entryperpage, totalpages, pageoffset)
-        queryStr="select COUNT(*) as totalentries from ztpprofiles " + constructQuery[:-4]
-        navResult=classes.classes.navigator(queryStr,formresult)
-
-        totalentries=navResult['totalentries']
-        entryperpage=formresult['entryperpage']
-        # If the entry per page value has changed, need to reset the pageoffset
-        if formresult['entryperpage']!=formresult['currententryperpage']:
-            pageoffset=0
-        else:
-            pageoffset=navResult['pageoffset']
-        # We have to construct the query based on the formresult information (entryperpage, totalpages, pageoffset)
-        queryStr = "select * from ztpprofiles " + constructQuery[:-4] + " LIMIT {} offset {}".format(entryperpage,pageoffset)
-        result=classes.classes.sqlQuery(queryStr,"select")
-    else:
-        queryStr="select COUNT(*) as totalentries from ztpprofiles"
-        navResult=classes.classes.sqlQuery(queryStr,"selectone")
-        entryperpage=25
-        pageoffset=0
-        queryStr="select * from ztpprofiles LIMIT {} offset {}".format(entryperpage,pageoffset)
-        result=classes.classes.sqlQuery(queryStr,"select")
-    return {'result':result, 'totalentries': navResult['totalentries'], 'pageoffset': pageoffset, 'entryperpage': entryperpage}
 
 def ztpdevicedbAction(formresult):
     # This definition is for all the devices database actions for ZTP
@@ -86,12 +27,23 @@ def ztpdevicedbAction(formresult):
         else:
             if 'gateway' in formresult:
                 gateway=formresult['gateway']
+            else:
+                gateway="0.0.0.0"
             if 'netmask' in formresult:
                 netmask=formresult['netmask']
+            else:
+                netmask="0"
         if 'softwareimage' in formresult:
             softwareimage=formresult['softwareimage']
         else:
             softwareimage=0
+        if "vrf" in formresult:
+            if formresult['vrf']=="":
+                vrf="0"
+            else:
+                vrf=formresult['vrf']
+        else:
+            vrf="0"
         if 'template' in formresult:
             template=formresult['template']
         else:
@@ -128,23 +80,36 @@ def ztpdevicedbAction(formresult):
             ipamsubnet=formresult['ipamsubnet']
         else:
             ipamsubnet=""
-        
+        if 'ztpdhcp' in formresult:
+            gateway="0.0.0.0"
+            netmask="0"
+            ipaddress="0.0.0.0"
+            vrf=""
+            ztpdhcp=1
+        else:
+            ztpdhcp=0
+            if "ipaddress" in formresult:
+                ipaddress=formresult['ipaddress']
+                if "vrf" in formresult:
+                    vrf=formresult['vrf']
+                else:
+                    vrf="0"
         try:
             formresult['pageoffset']
             pageoffset=formresult['pageoffset']
         except:
             pageoffset=0
         if(formresult['action']=="Submit device"):
-            queryStr="insert into ztpdevices (name,macaddress,ipamsubnet,ipaddress,netmask,gateway,profile,softwareimage,template,templateparameters,vsfenabled,vsfrole,vsfmember,vsfmaster,switchtype,link1,link2, \
-            enableztp, ztpstatus) values ('{}','{}','{}','{}','{}','{}','{}','{}','{}','{}','{}','{}','{}','{}','{}','{}','{}','{}','Disabled')".format(formresult['name'],formresult['macaddress'], \
-            ipamsubnet,formresult['ipaddress'],netmask,gateway,formresult['profile'],softwareimage,template,formresult['parameterValues'], \
-            vsfenabled,vsfrole,vsfmember,vsfmaster,switchtype,link1,link2,0,'Disabled')
+            queryStr="insert into ztpdevices (name,macaddress,ipamsubnet,ipaddress,netmask,gateway,vrf,softwareimage,template,templateparameters,vsfenabled,vsfrole,vsfmember,vsfmaster,switchtype,link1,link2, \
+            enableztp, ztpstatus,ztpdhcp,adminuser,adminpassword) values ('{}','{}','{}','{}','{}','{}','{}','{}','{}','{}','{}','{}','{}','{}','{}','{}','{}','{}','Disabled','{}','admin','{}')".format(formresult['name'],formresult['macaddress'], \
+            ipamsubnet,ipaddress,netmask,gateway,vrf,softwareimage,template,formresult['parameterValues'], vsfenabled,vsfrole,vsfmember,vsfmaster,switchtype,link1,link2,0,ztpdhcp,classes.classes.encryptPassword(globalsconf['secret_key'],globalsconf['ztppassword']))
+            print(queryStr)
             deviceid=classes.classes.sqlQuery(queryStr,"insert")
         elif  (formresult['action']=="Submit changes"):
-            queryStr="update ztpdevices set name='{}', macaddress='{}', ipamsubnet='{}',ipaddress='{}',netmask='{}', gateway='{}', profile='{}', softwareimage='{}', template='{}', templateparameters='{}', \
-            vsfenabled='{}', vsfrole='{}', vsfmember='{}',vsfmaster='{}',switchtype='{}', link1='{}', link2='{}' where id='{}' ".format(formresult['name'],formresult['macaddress'], ipamsubnet, formresult['ipaddress'], \
-            netmask,gateway,formresult['profile'],softwareimage,template,formresult['parameterValues'],vsfenabled,vsfrole, \
-            vsfmember,vsfmaster,int(switchtype),link1,link2,formresult['deviceid'])
+            queryStr="update ztpdevices set name='{}', macaddress='{}', ipamsubnet='{}',ipaddress='{}',netmask='{}', gateway='{}', vrf='{}', softwareimage='{}', template='{}', templateparameters='{}', \
+            vsfenabled='{}', vsfrole='{}', vsfmember='{}',vsfmaster='{}',switchtype='{}', link1='{}', link2='{}', ztpdhcp='{}' where id='{}' ".format(formresult['name'],formresult['macaddress'], ipamsubnet, ipaddress, \
+            netmask,gateway,vrf,softwareimage,template,formresult['parameterValues'],vsfenabled,vsfrole, \
+            vsfmember,vsfmaster,int(switchtype),link1,link2,ztpdhcp,formresult['deviceid'])
             classes.classes.sqlQuery(queryStr,"update")
         elif (formresult['action']=="Delete"):
             queryStr="delete from ztpdevices where id='{}'".format(formresult['deviceid'])
@@ -153,7 +118,7 @@ def ztpdevicedbAction(formresult):
             searchAction=formresult['searchAction']
         except:
             searchAction=""    
-        if formresult['searchName'] or formresult['searchMacaddress'] or formresult['searchIpaddress'] or formresult['searchGateway']  or formresult['searchProfile']  or formresult['searchImage']   or formresult['searchTemplate']:
+        if formresult['searchName'] or formresult['searchMacaddress'] or formresult['searchIpaddress'] or formresult['searchGateway']  or formresult['searchVrf']  or formresult['searchImage']   or formresult['searchTemplate']:
             constructQuery= " where "
         if formresult['searchName']:
             constructQuery += " name like'%" + formresult['searchName'] + "%' AND "
@@ -163,8 +128,8 @@ def ztpdevicedbAction(formresult):
             constructQuery += " ipaddress like '%" + formresult['searchIpaddress'] + "%' AND "
         if formresult['searchGateway']:
             constructQuery += " gateway like'%" + formresult['searchGateway'] + "%' AND "
-        if formresult['searchProfile']:
-            constructQuery += " profile='" + formresult['searchProfile'] + "' AND "
+        if formresult['searchVrf']:
+            constructQuery += " vrf='" + formresult['searchVrf'] + "' AND "
         if formresult['searchImage']:
             constructQuery += " softwareimage='" + formresult['searchImage'] + "' AND "
         if formresult['searchTemplate']:
@@ -191,10 +156,7 @@ def ztpdevicedbAction(formresult):
         pageoffset=0
         queryStr="select * from ztpdevices LIMIT {} offset {}".format(entryperpage,pageoffset)
         result=classes.classes.sqlQuery(queryStr,"select")
-    # Obtain ZTP profile information
-    queryStr="select id, name from ztpprofiles"
-    profileResult=classes.classes.sqlQuery(queryStr,"select")
-    return {'result':result, 'profileResult': profileResult, 'totalentries': navResult['totalentries'], 'pageoffset': pageoffset, 'entryperpage': entryperpage}
+    return {'result':result, 'totalentries': navResult['totalentries'], 'pageoffset': pageoffset, 'entryperpage': entryperpage}
 
 def ztpimagedbAction(formresult, filename, message):
     # This definition is for all the images database actions for ZTP
@@ -319,22 +281,25 @@ def ztpActivate(formresult):
     sysvars=classes.classes.globalvars()
     queryStr="select * from ztpdevices where id='{}'".format(formresult['id'])
     deviceResult=classes.classes.sqlQuery(queryStr,"selectone")
-    queryStr="select * from ztpprofiles where id='{}'".format(deviceResult['profile'])
-    profileResult=classes.classes.sqlQuery(queryStr,"selectone")
-    with open('bash/initztp.cfg', 'r') as myfile:
-        data = myfile.read()
-    profileResult['password']=classes.classes.decryptPassword(sysvars['secret_key'],profileResult['password'])
-    template = Template(data)
-    initConfig = template.render(username=profileResult['username'], password=profileResult['password'], vrf=profileResult['vrf'], ipaddress=deviceResult['ipaddress'], netmask=deviceResult['netmask'], gateway=deviceResult['gateway'])
-
-    outFileName="/home/tftpboot/" + deviceResult['macaddress'] + ".cfg"
-    outFile=open(outFileName, "w")
-    outFile.write(initConfig)
-    outFile.close()
-
-    queryStr="update ztpdevices set enableztp='1',ztpstatus='Enabled, start initialization' where id='{}'".format(formresult['id'])
+    # If ZTP DHCP is disabled, the init configuration file has to be generated. Else, the minimal initfile will be used.
+    if deviceResult['ztpdhcp']==0:
+        if deviceResult['vrf']=="default":
+            with open('bash/defaultztp.cfg', 'r') as myfile:
+                data = myfile.read()
+        else:
+            with open('bash/mgmtztp.cfg', 'r') as myfile:
+                data = myfile.read()         
+        template = Template(data)
+        initConfig = template.render(ipaddress=deviceResult['ipaddress'], netmask=deviceResult['netmask'], gateway=deviceResult['gateway'])  
+        outFileName="/home/tftpboot/" + deviceResult['macaddress'] + ".cfg"
+        outFile=open(outFileName, "w")
+        outFile.write(initConfig)
+        outFile.close()
+    # Also, initialize the adminpassword
+    queryStr="update ztpdevices set adminpassword='{}',enableztp='1',ztpstatus='Enabled, start initialization' where id='{}'".format(classes.classes.encryptPassword(sysvars['secret_key'],sysvars['ztppassword']),formresult['id'])
     classes.classes.sqlQuery(queryStr,"update")
-    return "ZTP Provisioning enabled"
+    response=["ZTP Provisioning enabled",formresult['id']]
+    return response
 
 def ztpDeactivate(formresult):
     queryStr="update ztpdevices set enableztp='0',ztpstatus='Disabled' where id='{}'".format(formresult['id'])
@@ -345,4 +310,41 @@ def ztpDeactivate(formresult):
             os.remove(filename)
         except OSError as e:
             print (e.filename,e.strerror)
-    return "ZTP Provisioning disabled"
+    response=["ZTP Provisioning disabled",formresult['id']]
+    return response
+
+def verifyCredentials(id,username,password, sysvars):
+    # Obtain the switch information, like IP address
+    sessionid=requests.Session()
+    queryStr="select * from ztpdevices where id='{}'".format(id)
+    deviceInfo=classes.classes.sqlQuery(queryStr,"selectone")
+    baseurl="https://{}/rest/v1/".format(deviceInfo['ipaddress'])
+    url="system/users?attributes=user_group&depth=2&filter=name%3A" + username
+    credentials={'username': username,'password': password }
+    encpassword=classes.classes.encryptPassword(sysvars['secret_key'], password)
+    try:
+        response=sessionid.post(baseurl + "login", params=credentials, verify=False, timeout=5)
+        if response.status_code==200:
+            try:
+                response = sessionid.get(baseurl + url, verify=False, timeout=5)
+                response=json.loads(response.content) 
+                # Check if the user belongs to the administrative user-group
+                if response[0]['user_group']['name']=="administrators":
+                    # We are good to go. Change the status of the ztpdevice to 91 (remove the ztp user)
+                    # In addition, add the admin user to the ztpdevice database so that we can continue accessing the switch
+                    queryStr="update ztpdevices set adminuser='{}', adminpassword='{}', enableztp='91', ztpstatus='Validation is successful, proceeding with process' where id='{}'".format(username,encpassword,id)
+                    classes.classes.sqlQuery(queryStr,"selectone")
+                    status=["Validation is successful, proceeding with process",id]
+                else:
+                    status=["Validation is not successful. Verify your credentials",id]
+            except:
+                sessionid.post(baseurl + "logout", verify=False, timeout=5)
+                # print("Error obtaining response from get call")
+                status=["Unable to validate, please verify your credentials",id]
+                return status
+            sessionid.post(baseurl + "logout", verify=False, timeout=5)
+            return status
+        else:
+            return ["Unable to verify credentials. Retrying",id]
+    except:
+        return ["Unable to verify credentials. Retrying",id]

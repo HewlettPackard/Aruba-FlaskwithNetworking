@@ -87,10 +87,29 @@ def submitsysConf(sysconf):
     globalsconf={}
     sysInfo=classes.classes.getSystemInfo()
     pathname = os.path.dirname(sys.argv[0]) 
-    if platform.system()=="Windows":
-        appPath = os.path.abspath(pathname) + "\\"
-    else:
-        appPath = os.path.abspath(pathname) + "/"
+    appPath = os.path.abspath(pathname) + "/"
+    sysconf=sysconf.to_dict(flat=True)
+    if sysconf['ztppassword']=="":
+        sysconf['ztppassword']=classes.classes.encryptPassword(sysconf['secret_key'], "ztpinit")
+    elif sysconf['orig_ztppassword']!=sysconf['ztppassword']:
+        # The ztppassword has changed, then all the admin user passwords in ztpdevice have to be hashed with the new secret key
+        queryStr="select id, adminpassword from ztpdevices"
+        result=classes.classes.sqlQuery(queryStr,"select")
+        for pwitems in result:
+            if pwitems['adminpassword']!="":
+                try:
+                    encpass=classes.classes.encryptPassword(sysconf['secret_key'], sysconf['ztppassword']) 
+                    queryStr="update ztpdevices set adminpassword='{}' where id='{}'".format(encpass,pwitems['id'])
+                    classes.classes.sqlQuery(queryStr,"selectone")
+                except:
+                    # Something went wrong with the password change.
+                    pass
+            else:
+                # Encrypt the password with the new secret
+                encpass=classes.classes.encryptPassword(sysconf['secret_key'], "ztpinit") 
+                queryStr="update ztpdevices set adminpassword='{}' where id='{}'".format(encpass,pwitems['id'])
+                classes.classes.sqlQuery(queryStr,"selectone")
+
     # First we have to check whether the secret has changed. If it has, then refresh all the user passwords in the sysuser table
     if sysconf['orig_secret_key']!=sysconf['secret_key']:
         # Secret keys are different. We have to change the passwords of all the users in the database
@@ -107,21 +126,22 @@ def submitsysConf(sysconf):
             except:
                 # Something went wrong with the password change.
                 pass
+        # If the shared secret has changed, then all the user passwords have to be hashed with the new secret key. This applies to all the passwords in the devices database
+        queryStr="select id, password from devices"
+        result=classes.classes.sqlQuery(queryStr,"select")
+        for pwitems in result:
+            try:
+                # Decrypt the password with the old secret
+                decpass=classes.classes.decryptPassword(sysconf['orig_secret_key'], pwitems['password']) 
+                # Encrypt the password with the new secret
+                encpass=classes.classes.encryptPassword(sysconf['secret_key'], decpass) 
+                queryStr="update devices set password='{}' where id='{}'".format(encpass,pwitems['id'])
+                classes.classes.sqlQuery(queryStr,"selectone")
+            except:
+                # Something went wrong with the password change.
+                pass
+        
 
-    # If the shared secret has changed, then all the user passwords have to be hashed with the new secret key. This applies to all the passwords in the devices database
-    queryStr="select id, password from devices"
-    result=classes.classes.sqlQuery(queryStr,"select")
-    for pwitems in result:
-        try:
-            # Decrypt the password with the old secret
-            decpass=classes.classes.decryptPassword(sysconf['orig_secret_key'], pwitems['password']) 
-            # Encrypt the password with the new secret
-            encpass=classes.classes.encryptPassword(sysconf['secret_key'], decpass) 
-            queryStr="update devices set password='{}' where id='{}'".format(encpass,pwitems['id'])
-            classes.classes.sqlQuery(queryStr,"selectone")
-        except:
-            # Something went wrong with the password change.
-            pass
     # Finally, update the globals configuration file
     for key, items in sysconf.items():
         # Store the values in a dictionary
@@ -237,79 +257,37 @@ def processAction(name, action):
     pathname = os.path.dirname(sys.argv[0])
     # First check the platform on which the app is running
     if action =="Stop":
-        if platform.system()=="Windows":
-            if name=="Cleanup" or name=="Topology" or name=="Trackers" or name=="ZTP":
-                #Now find the process id for the given process
-                for proc in psutil.process_iter():
-                   try:
-                       if proc.name().lower()=="python.exe":
-                           procinfo=psutil.Process(proc.pid)
-                           procname=procinfo.cmdline()[1]
-                           # Check if process name contains the given name string.
-                           if name.lower() in procname.lower():
-                               procinfo.kill() 
-                   except (psutil.NoSuchProcess, psutil.AccessDenied, psutil.ZombieProcess):
-                       pass
-            elif name=="Listener":
-                #Now find the process id for the given process
-                for proc in psutil.process_iter():
-                   try:
-                       if proc.name().lower()=="tshark.exe":
-                           procinfo=psutil.Process(proc.pid)
-                           procinfo.kill() 
-                   except (psutil.NoSuchProcess, psutil.AccessDenied, psutil.ZombieProcess):
-                       pass
-        elif platform.system()=="Linux":
-            # Need to check whether the listener process or the scheduler process is queried
-            if name=="Cleanup" or name=="Topology" or name=="Trackers" or name=="ZTP":
-                #Now find the process id for the given process
-                for proc in psutil.process_iter():
-                    try:
-                        if "python" in proc.name().lower():
-                            procinfo=psutil.Process(proc.pid)
-                            procname=procinfo.cmdline()[1]
-                            if name.lower() in procname.lower():
-                                print("Killing {}".format(name))
-                                procinfo.kill() 
-                    except (psutil.NoSuchProcess, psutil.AccessDenied, psutil.ZombieProcess):
-                        pass
-            elif name=="Listener":
-                for proc in psutil.process_iter():
-                    if any(procstr in proc.name() for procstr in ['dumpcap','listener.sh','tshark']):
+        # Need to check whether the listener process or the scheduler process is queried
+        if name=="Cleanup" or name=="Topology" or name=="Trackers" or name=="ZTP":
+            for proc in psutil.process_iter():
+                processname=globalsconf['appPath'] + "bash/" + name.lower()
+                cmdline=proc.cmdline()
+                if len(cmdline)>1:
+                    if processname in cmdline[1]:
+                        print(cmdline[1])
                         print(f"Killing  {proc.name()}")
                         proc.kill()
+        elif name=="Listener":
+            for proc in psutil.process_iter():
+                if any(procstr in proc.name() for procstr in ['dumpcap','listener.sh','tshark']):
+                    print(f"Killing  {proc.name()}")
+                    proc.kill()
     elif action == "Start":
-        if platform.system()=="Windows":
-            # Start the process. The script is found in the /bash folder
-            if name=="Cleanup" or name=="Topology" or name=="Trackers" or name=="ZTP":
-                scriptName=globalsconf['appPath'] + "bash\\" + name.lower() + ".py"
-                subprocess.call(['python', scriptName], shell=True)
-                print("Start {}".format(name))
-            elif name=="Listener":
-                tsharkCall = ["tshark", "-i", "Wi-Fi", "-c", "1000", "-t", "u", "-w", "c:\\SFTP_Root\\trace.pcap", "-f", "port 67 or port 162 or port 514"]
-                tsharkProc = subprocess.Popen(tsharkCall, bufsize=0, executable="C:\\Program Files\\Wireshark\\tshark.exe")
-                print("Start listener")
-        elif platform.system()=="Linux":
-            # Start the process. The script is found in the /bash folder
-            if sys.version_info<(3,6,0):
-                sys.stderr.write("You need python 3.6 or later to run this script\n")
-            else:
-                pythonexec="python" + str(sys.version_info[0]) + "." + str(sys.version_info[1])
-            if name=="Cleanup" or name=="Topology" or name=="Trackers" or name=="ZTP":
-                scriptName=pythonexec + " " + globalsconf['appPath'] + "bash/" + name.lower() + ".py"
-                print("Start {}".format(name))
-                proc = subprocess.Popen(scriptName, shell=True, stdout=subprocess.PIPE)
-            elif name=="Listener":
-                scriptName=globalsconf['appPath'] + "bash/listener.sh"
-                print("Start listener")
-                proc = subprocess.Popen(scriptName, shell=True, stdout=subprocess.PIPE)
+        if name=="Listener":
+            scriptName=globalsconf['appPath'] + "bash/" + name.lower() + ".sh"
+            print("Start {}".format(name))
+            proc = subprocess.Popen(scriptName, shell=True, stdout=subprocess.PIPE)
+        else:
+            scriptName="python3 " + globalsconf['appPath'] + "bash/" + name.lower() + ".py"
+            print("Start {}".format(name))
+            proc = subprocess.Popen(scriptName, shell=True, stdout=subprocess.PIPE)
 
 
 
 def checkPhpipam(info):
     try:
         url=info['phpipamauth'] + "://" + info['ipamipaddress'] + "/api/" + info['phpipamappid'] + "/user/"
-        result = requests.post(url, auth=(info['ipamuser'], info['ipampassword']), verify=False)
+        result = requests.post(url, auth=(info['ipamuser'], info['ipampassword']), verify=False, timeout=10)
         if result.status_code==200:
             return "Online"
         else:
@@ -319,7 +297,7 @@ def checkPhpipam(info):
 def checkInfoblox(info):
     try:
         url = 'https://' + info['ipamipaddress'] + "/wapi/v2.10/network"
-        result=requests.get(url, auth=HTTPBasicAuth(info['ipamuser'], info['ipampassword']), verify=False) 
+        result=requests.get(url, auth=HTTPBasicAuth(info['ipamuser'], info['ipampassword']), verify=False, timeout=10) 
         if result.status_code==200:
             return "Online"
         else:

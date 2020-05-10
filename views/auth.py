@@ -23,7 +23,7 @@ def submitlogin ():
     elif result==2:
         return render_template("changepassword.html",username=username)
     else:
-        redirect_to_index = redirect('/')
+        redirect_to_index = redirect(sysvars['landingpage'])
         response = make_response(redirect_to_index)  
         response.set_cookie('username',value=result['username'], max_age=int(sysvars['idle_timeout']))
         response.set_cookie('token',value=result['token'], max_age=int(sysvars['idle_timeout']))

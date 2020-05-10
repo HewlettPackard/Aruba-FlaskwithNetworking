@@ -126,18 +126,6 @@ CREATE TABLE IF NOT EXISTS `configmgr` (
 ) ENGINE=MyISAM AUTO_INCREMENT=4 DEFAULT CHARSET=latin1;
 
 
-DROP TABLE IF EXISTS `ztpprofiles`;
-CREATE TABLE `ztpprofiles` (
-  `id` bigint(20) UNSIGNED NOT NULL AUTO_INCREMENT,
-  `name` text NOT NULL,
-  `username` text NOT NULL,
-  `password` text NOT NULL,
-  `vrf` text NOT NULL,
-  `dns` text NOT NULL,
-  PRIMARY KEY (`id`)
-) ENGINE=InnoDB DEFAULT CHARSET=latin1;
-
-
 DROP TABLE IF EXISTS `ztpdevices`;
 CREATE TABLE `ztpdevices` (
   `id` bigint(20) UNSIGNED NOT NULL AUTO_INCREMENT,
@@ -147,7 +135,7 @@ CREATE TABLE `ztpdevices` (
   `ipaddress` text NOT NULL,
   `netmask` text NOT NULL,
   `gateway` text NOT NULL,
-  `profile` bigint(20) NOT NULL,
+  `vrf` text NOT NULL,
   `softwareimage` bigint(20) NOT NULL,
   `template` bigint(20) NOT NULL,
   `templateparameters` mediumtext NOT NULL,
@@ -160,6 +148,9 @@ CREATE TABLE `ztpdevices` (
   `link2` text NOT NULL,
   `enableztp` int(11) NOT NULL,
   `ztpstatus` text NOT NULL,
+  `ztpdhcp` int(11) NOT NULL,
+  `adminuser` text NOT NULL,
+  `adminpassword` text NOT NULL,
    PRIMARY KEY (`id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=latin1;
 

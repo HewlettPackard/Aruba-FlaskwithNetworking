@@ -10,7 +10,7 @@ from classes.trackers import dhcpdbAction, snmpdbAction, syslogdbAction
 from classes.dsservice import dsservicedbAction, getVLANinfo, getVLANint, getVLANidname, getRolesinfo, getRoleinfo, getACLinfo, getProfile, getService, provisionSwitch
 from classes.sysadmin import checkAuth, submitLogin, submitsysConf, userdbAction, changePassword, checkProcess, processAction, checkPhpipam, checkInfoblox
 from classes.configmgr import configdbAction, runningbackupSwitch, runningbackupCX, startupbackupSwitch, startupbackupCX, deleteBackup, branchBackup, changebranchBackup
-from classes.ztp import ztpprofiledbAction, ztpdevicedbAction, ztpimagedbAction, ztptemplatedbAction, ztpActivate, ztpDeactivate
+from classes.ztp import ztpdevicedbAction, ztpimagedbAction, ztptemplatedbAction, ztpActivate, ztpDeactivate, verifyCredentials
 from classes.phpipam import PHPipamtoken, PHPipamget
 from classes.topology import topodbAction, endpointInfo, checktopoDevice, topoInfo
 from classes.infoblox import getInfoblox

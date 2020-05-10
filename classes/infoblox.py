@@ -13,5 +13,5 @@ ibSession=requests.session()
 def getInfoblox(url):
     globalsconf=classes.classes.globalvars()
     url = 'https://' + globalsconf['ipamipaddress'] + "/wapi/v2.10/" + url
-    response=requests.get(url, auth=HTTPBasicAuth(globalsconf['ipamuser'], globalsconf['ipampassword']), verify=False)
+    response=requests.get(url, auth=HTTPBasicAuth(globalsconf['ipamuser'], globalsconf['ipampassword']), verify=False, timeout=10)
     return response.json()

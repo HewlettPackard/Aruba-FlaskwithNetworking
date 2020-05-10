@@ -23,18 +23,22 @@ netInfo is dictionary containing a list of variables:
     <table class="tablewithborder">
         <form method="post">
             <input type="hidden" name="orig_secret_key" value="{{ sysvars['secret_key'] }}" />
+            <input type="hidden" name="orig_ztppassword" value="{{ sysvars['ztppassword'] }}" />
             <tr style="background-color:grey;"><td colspan="6"><font class="font13pxwhite"><center>System configuration</center></font></td></tr>
             <tr>
                 <td><font class="font12pxwhite">Idle timeout (300-3600 seconds)</font></td>
                 <td class="whiteBG"><input type="number" name="idle_timeout" min="300" max="3600" value="{{sysvars['idle_timeout']}}" /><font class="font11px"> seconds</font></td>
-                <td><font class="font12pxwhite">PCAP Location</font></td>
+                <td><font class="font12pxwhite">Landing page</font></td>
                 <td class="whiteBG">
-                    {% if sysvars.sysInfo.platform=="Linux" %}
-                    <font class="font12px">Fixed</font>
-                    <input type="hidden" name="pcap_location" value="/var/www/html/bash/trace.pcap" />
-                    {% else %}
-                    <input type="text" name="pcap_location" value="{{sysvars['pcap_location']}}" />
-                    {% endif %}
+                    <select name='landingpage' id='landingpage'>
+                        <option value="/">Select</option>
+                        <option value='switches' {% if sysvars['landingpage']=='switches' %} selected {% endif %}>Switches</option>
+                        <option value='clearpass' {% if sysvars['landingpage']=='clearpass' %} selected {% endif %}>ClearPass</option>
+                        <option value='mobility' {% if sysvars['landingpage']=='mobility' %} selected {% endif %}>Mobility</option>
+                        <option value='topology' {% if sysvars['landingpage']=='topology' %} selected {% endif %}>Topology</option>
+                        <option value='ztpdevice' {% if sysvars['landingpage']=='ztpdevice' %} selected {% endif %}>ZTP devices</option>
+                        <option value='ztptemplate' {% if sysvars['landingpage']=='ztptemplate' %} selected {% endif %}>ZTP templates</option>
+                    </select>   
                 </td>
                 <td><font class="font12pxwhite">Secret Hashing Key (exactly 16 characters)</font></td>
                 <td class="whiteBG">
@@ -49,7 +53,6 @@ netInfo is dictionary containing a list of variables:
                 <td><font class="font12pxwhite">Purge Syslog information after</font></td>
                 <td class="whiteBG"><input type="number" name="retain_syslog" value="{{sysvars['retain_syslog']}}" /><font class="font11px"> days</font></td>
             </tr>
-            </tr>
             <tr>
                 <td><font class="font12pxwhite">IPAM System</font></td>
                 <td class="whiteBG">
@@ -63,7 +66,7 @@ netInfo is dictionary containing a list of variables:
                 <td colspan="2"><div id="ipamStatus"></div></td>
             </tr>
 
-            
+
             <tr id="ipamtr" {% if sysvars['ipamsystem']=="PHPIPAM" or sysvars['ipamsystem']=="Infoblox" %} style="display:table-row;" {% else %} style="display:none;" {% endif %}>
                 <td><font class='font12pxwhite'>IPAM IP address</font></td>
                 <td class="whiteBG"><input type="text" name="ipamipaddress" id="ipamipaddress" value="{{ sysvars['ipamipaddress'] }}" /></td>
@@ -84,6 +87,12 @@ netInfo is dictionary containing a list of variables:
                     </select>
                 </td>
                 <td colspan='2'></td>
+            </tr>
+            <tr>
+                <td><font class='font12pxwhite'>ZTP user password</font></td>
+                <td><input type='password' name='ztppassword' id="ztppassword" value='{{ sysvars['ztppassword'] }}' /></td>
+
+                <td colspan='4'></td>
             </tr>
 
             <tr>

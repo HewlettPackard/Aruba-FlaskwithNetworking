@@ -55,23 +55,25 @@ def discoverTopology():
                         result = cursor.fetchall()
                         if result:
                             # We should only store the remote IP address if the IP address of the remote system is the proper format
-                            if checkIpaddress(lldpitems['remote_management_address']['address'])==True: 
-                                queryStr="update topology set switchip='{}', systemmac='{}',hostname='{}',interface='{}',remoteswitchip='{}',remotesystemmac='{}',remotehostname='{}',remoteinterface='{}',lldpinfo='{}' where id='{}'" \
-                                .format(items['ipaddress'],sysmac,switchresult['name'],lldpitems['local_port'],lldpitems['remote_management_address']['address'],lldpitems['chassis_id'].replace(' ',':'),lldpitems['system_name'],lldpitems['port_description'],json.dumps(lldpresult),result[0]['id'])
-                            else:
-                                queryStr="update topology set switchip='{}', systemmac='{}',hostname='{}',interface='{}',remoteswitchip='{}',remotesystemmac='{}',remotehostname='{}',remoteinterface='{}',lldpinfo='{}' where id='{}'" \
-                                .format(items['ipaddress'],sysmac,switchresult['name'],lldpitems['local_port'],'',lldpitems['chassis_id'].replace(' ',':'),lldpitems['system_name'],lldpitems['port_description'],json.dumps(lldpresult),result[0]['id'])
-                            cursor.execute(queryStr)
-                            existingEntries.append(result[0]['id'])
+                            if "remote_management_address" in lldpitems:
+                                if checkIpaddress(lldpitems['remote_management_address']['address'])==True: 
+                                    queryStr="update topology set switchip='{}', systemmac='{}',hostname='{}',interface='{}',remoteswitchip='{}',remotesystemmac='{}',remotehostname='{}',remoteinterface='{}',lldpinfo='{}' where id='{}'" \
+                                    .format(items['ipaddress'],sysmac,switchresult['name'],lldpitems['local_port'],lldpitems['remote_management_address']['address'],lldpitems['chassis_id'].replace(' ',':'),lldpitems['system_name'],lldpitems['port_description'],json.dumps(lldpresult),result[0]['id'])
+                                else:
+                                    queryStr="update topology set switchip='{}', systemmac='{}',hostname='{}',interface='{}',remoteswitchip='{}',remotesystemmac='{}',remotehostname='{}',remoteinterface='{}',lldpinfo='{}' where id='{}'" \
+                                    .format(items['ipaddress'],sysmac,switchresult['name'],lldpitems['local_port'],'',lldpitems['chassis_id'].replace(' ',':'),lldpitems['system_name'],lldpitems['port_description'],json.dumps(lldpresult),result[0]['id'])
+                                cursor.execute(queryStr)
+                                existingEntries.append(result[0]['id'])
                         else:
                             # We should only store the remote IP address if the IP address of the remote system is the proper format
-                            if checkIpaddress(lldpitems['remote_management_address']['address'])==True: 
-                                queryStr="insert into topology (switchip,systemmac,hostname,interface,remoteswitchip,remotesystemmac,remotehostname,remoteinterface,lldpinfo) values ('{}','{}','{}','{}','{}','{}','{}','{}','{}')" \
-                                .format(items['ipaddress'],sysmac,switchresult['name'],lldpitems['local_port'],lldpitems['remote_management_address']['address'],lldpitems['chassis_id'].replace(' ',':'),lldpitems['system_name'],lldpitems['port_description'],json.dumps(lldpresult))
-                            else:
-                                queryStr="insert into topology (switchip,systemmac,hostname,interface,remoteswitchip,remotesystemmac,remotehostname,remoteinterface,lldpinfo) values ('{}','{}','{}','{}','{}','{}','{}','{}','{}')" \
-                                .format(items['ipaddress'],sysmac,switchresult['name'],lldpitems['local_port'],'',lldpitems['chassis_id'].replace(' ',':'),lldpitems['system_name'],lldpitems['port_description'],json.dumps(lldpresult))
-                            cursor.execute(queryStr)
+                            if "remote_management_address" in lldpitems:
+                                if checkIpaddress(lldpitems['remote_management_address']['address'])==True: 
+                                    queryStr="insert into topology (switchip,systemmac,hostname,interface,remoteswitchip,remotesystemmac,remotehostname,remoteinterface,lldpinfo) values ('{}','{}','{}','{}','{}','{}','{}','{}','{}')" \
+                                    .format(items['ipaddress'],sysmac,switchresult['name'],lldpitems['local_port'],lldpitems['remote_management_address']['address'],lldpitems['chassis_id'].replace(' ',':'),lldpitems['system_name'],lldpitems['port_description'],json.dumps(lldpresult))
+                                else:
+                                    queryStr="insert into topology (switchip,systemmac,hostname,interface,remoteswitchip,remotesystemmac,remotehostname,remoteinterface,lldpinfo) values ('{}','{}','{}','{}','{}','{}','{}','{}','{}')" \
+                                    .format(items['ipaddress'],sysmac,switchresult['name'],lldpitems['local_port'],'',lldpitems['chassis_id'].replace(' ',':'),lldpitems['system_name'],lldpitems['port_description'],json.dumps(lldpresult))
+                                cursor.execute(queryStr)
                 except:
                     print("Could not create or update topology for switch {}".format(items['ipaddress']))
                     pass

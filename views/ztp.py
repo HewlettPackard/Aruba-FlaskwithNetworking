@@ -3,7 +3,7 @@
 from flask import current_app, Blueprint, request, json, redirect, render_template
 import os
 from urllib.parse import quote
-from jinja2 import Environment, meta
+from jinja2 import Template, Environment, meta
 ztp = Blueprint('ztp', __name__)
 
 from datetime import datetime
@@ -15,18 +15,6 @@ def allowed_file(filename):
 	return '.' in filename and filename.rsplit('.', 1)[1].lower() in ALLOWED_EXTENSIONS
 
 import classes.classes as classes
-
-@ztp.route("/ztpprofile", methods=['GET', 'POST'])
-def ztpprofile ():
-    authOK=classes.checkAuth()
-    if authOK!=0:
-        sysvars=classes.globalvars()
-        formresult=request.form
-        # Obtain the relevant device information from the database
-        result=classes.ztpprofiledbAction(formresult)
-        return render_template("ztpprofile.html",result=result['result'], formresult=formresult, totalentries=int(result['totalentries']),pageoffset=int(result['pageoffset']),entryperpage=int(result['entryperpage']), authOK=authOK, sysvars=sysvars)
-    else:
-        return render_template("login.html")
 
 @ztp.route("/ztpdevice", methods=['GET','POST'])
 def ztpdevice ():
@@ -73,7 +61,7 @@ def ztpdevice ():
                 ipamstatus="Online"
         else:
             ipamstatus="Online"
-        return render_template("ztpdevice.html",result=result['result'],formresult=formresult,imageResult=imageResult, templateResult=templateResult, ipamstatus=ipamstatus, ztpstatusInfo=ztpstatusInfo,profileResult=result['profileResult'], totalentries=int(result['totalentries']),pageoffset=int(result['pageoffset']),entryperpage=int(result['entryperpage']), authOK=authOK, sysvars=sysvars)
+        return render_template("ztpdevice.html",result=result['result'],formresult=formresult,imageResult=imageResult, templateResult=templateResult, ipamstatus=ipamstatus, ztpstatusInfo=ztpstatusInfo, totalentries=int(result['totalentries']),pageoffset=int(result['pageoffset']),entryperpage=int(result['entryperpage']), authOK=authOK, sysvars=sysvars)
     else:
         return render_template("login.html")
 
@@ -118,16 +106,6 @@ def ztpimage ():
         return render_template("ztpimage.html",result=result['result'], formresult=formresult, totalentries=int(result['totalentries']),pageoffset=int(result['pageoffset']),entryperpage=int(result['entryperpage']), authOK=authOK, sysvars=sysvars)
     else:
         return render_template("login.html")
-
-@ztp.route("/ztpprofileInfo", methods=['GET','POST'])
-def ztpprofileInfo ():
-    formresult=request.form
-    sysvars=classes.globalvars()
-    queryStr="select * from ztpprofiles where id='{}'".format(formresult['id'])
-    # Obtain the relevant ZTP profile information from the database
-    result=classes.sqlQuery(queryStr,"selectone")
-    result['password']=classes.decryptPassword(sysvars['secret_key'],result['password'])
-    return json.dumps(result)
 
 @ztp.route("/ztpdeviceInfo", methods=['GET','POST'])
 def ztpdeviceInfo ():
@@ -184,7 +162,6 @@ def ipamgetSubnet ():
             ipamsubnet=classes.PHPipamget('subnets')
         elif sysvars['ipamsystem']=="Infoblox":
             ipamsubnet=classes.getInfoblox("network?_return_fields=network,comment")
-            print(ipamsubnet)
     else:
         ipamsubnet={}
     response={'sysvars':sysvars,'ipamsubnet':ipamsubnet }
@@ -247,27 +224,6 @@ def ztptemplateparameterInfo ():
         templatevariables.append({items:''})
     return json.dumps(templatevariables)
 
-@ztp.route("/checkztpProfile", methods=['GET','POST'])
-def checkztpProfile ():
-    formresult=request.form
-    sysvars=classes.globalvars()
-    queryStr="select * from ztpdevices where profile='{}'".format(formresult['profileid'])
-    # Obtain the relevant ZTP profile information from the database
-    result=classes.sqlQuery(queryStr,"select")
-    if result:
-        return "1"
-    else:
-        return "0"
-
-@ztp.route("/deleteztpProfile", methods=['GET','POST'])
-def deleteztpProfile ():
-    formresult=request.form
-    sysvars=classes.globalvars()
-    queryStr="delete from ztpprofiles where id='{}'".format(formresult['profileid'])
-    # Delete the profile
-    result=classes.sqlQuery(queryStr,"select")
-    return "1"
-
 @ztp.route("/ztpActivate", methods=['GET','POST'])
 def ztpActivate ():
     authOK=classes.checkAuth()
@@ -323,3 +279,79 @@ def ztplog ():
     else:
         logInfo=""
     return render_template("ztplog.html",deviceInfo=deviceInfo,logInfo=logInfo)
+
+@ztp.route("/clearztpLog", methods=['GET','POST'])
+def clearztpLog ():
+    sysvars=classes.globalvars()
+    formresult=request.form
+    queryStr="delete from ztplog where ztpdevice='{}'".format(formresult['deviceid'])
+    # Remove the ZTP log for this device
+    result=classes.sqlQuery(queryStr,"selectone")
+    return "ok"
+
+@ztp.route("/showdevice", methods=['GET','POST'])
+def showdevice ():
+    sysvars=classes.globalvars()
+    vsfmasterInfo={}
+    vsfInfo={}
+    softwareInfo={}
+    templateInfo={}
+    templateOutput=""
+    if "ipamsystem" in sysvars:
+        ipamsystem=sysvars['ipamsystem']
+    else:
+        ipamsystem=""
+    queryStr="select * from ztpdevices where id='{}'".format(request.args.get('deviceid'))
+    deviceInfo=classes.sqlQuery(queryStr,"selectone")
+    # If there is a software image attached, we need to obtain the image information
+    if deviceInfo['softwareimage']!=0:
+        queryStr="select * from ztpimages where id='{}'".format(deviceInfo['softwareimage'])
+        softwareInfo=classes.sqlQuery(queryStr,"selectone")
+    # If there is a template assigned to the device, obtain the template information
+    if deviceInfo['template']!=0:
+        queryStr="select * from ztptemplates where id='{}'".format(deviceInfo['template'])
+        templateInfo=classes.sqlQuery(queryStr,"selectone")
+        # Generate the configuration
+        jinjaTemplate=Template(templateInfo['template'])
+        # Template is loaded successfully. Now try to push the parameters into the template
+        templateOutput=jinjaTemplate.render(json.loads(deviceInfo['templateparameters']))
+    # If VSF is enabled for this device, we also have to obtain the information of all the other members in the VSF
+    if deviceInfo['vsfenabled']==1:
+        # If this is the master switch, we have to obtain all the member information
+        if deviceInfo['vsfmaster']==0:
+            # This is the master switch, obtain the member information
+            queryStr="select * from ztpdevices where vsfmaster='{}' or id='{}' order by vsfmember".format(deviceInfo['id'], deviceInfo['id'])
+            vsfInfo=classes.sqlQuery(queryStr,"select")
+            vsfmasterInfo=deviceInfo
+        else:
+            # This is not the master switch, we need to obtain the master switch information, and other VSF members, if they exist
+            queryStr="select * from ztpdevices where id='{}'".format(deviceInfo['vsfmaster'])
+            vsfmasterInfo=classes.sqlQuery(queryStr,"selectone")
+            # Obtain the other member switch information
+            queryStr="select * from ztpdevices where vsfmaster='{}' or id='{}' order by vsfmember".format(deviceInfo['vsfmaster'],deviceInfo['vsfmaster'])
+            vsfInfo=classes.sqlQuery(queryStr,"select")
+            if vsfmasterInfo['softwareimage']!=0:
+                queryStr="select * from ztpimages where id='{}'".format(vsfmasterInfo['softwareimage'])
+                softwareInfo=classes.sqlQuery(queryStr,"selectone")
+            # If there is a template assigned to the device, obtain the template information
+            if vsfmasterInfo['template']!=0:
+                queryStr="select * from ztptemplates where id='{}'".format(vsfmasterInfo['template'])
+                templateInfo=classes.sqlQuery(queryStr,"selectone")
+                # Generate the configuration
+                jinjaTemplate=Template(templateInfo['template'])
+                # Template is loaded successfully. Now try to push the parameters into the template
+                templateOutput=jinjaTemplate.render(json.loads(vsfmasterInfo['templateparameters']))
+    return render_template("showztpdevice.html",deviceInfo=deviceInfo, vsfInfo=vsfInfo, vsfmasterInfo=vsfmasterInfo,softwareInfo=softwareInfo, templateInfo=templateInfo, ipam=ipamsystem, templateOutput=templateOutput)
+
+@ztp.route("/showdeviceStatus", methods=['GET','POST'])
+def showdeviceStatus ():
+    queryStr="select ipaddress,netmask,gateway,ztpstatus, vrf from ztpdevices where id='{}'".format(request.form['id'])
+    deviceInfo=classes.sqlQuery(queryStr,"selectone")
+    return json.dumps(deviceInfo)
+
+@ztp.route("/ztpCredentials", methods=['GET','POST'])
+def ztpCredentials ():
+    sysvars=classes.globalvars()
+    formresult=request.form
+    response=classes.verifyCredentials(formresult['deviceid'],formresult['username'],formresult['password'],sysvars)
+    return json.dumps(response)

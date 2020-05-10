@@ -11,7 +11,7 @@ urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)
 def PHPipamtoken():
     globalsconf=classes.classes.globalvars()
     url=globalsconf['phpipamauth'] + "://" + globalsconf['ipamipaddress'] + "/api/" + globalsconf['phpipamappid'] + "/user/"
-    res = requests.post(url, auth=(globalsconf['ipamuser'], globalsconf['ipampassword']), verify=False)
+    res = requests.post(url, auth=(globalsconf['ipamuser'], globalsconf['ipampassword']), verify=False, timeout=10)
     result=json.loads(res.content.decode("utf-8"))
     return result['data']['token']
 
@@ -19,7 +19,7 @@ def PHPipamget(url):
     globalsconf=classes.classes.globalvars()
     header={'token':PHPipamtoken()}
     url=globalsconf['phpipamauth'] + "://" + globalsconf['ipamipaddress'] + "/api/" + globalsconf['phpipamappid'] + "/" + url + "/"
-    res = requests.get(url,headers=header, verify=False)
+    res = requests.get(url,headers=header, verify=False, timeout=10)
     response=res.content.decode("utf-8")
     # PHPipam can return some HTML information (errors) so we need to check on that, strip that information and then convert the response to json
     if "<b>Warning</b>" in response:

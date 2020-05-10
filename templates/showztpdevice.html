@@ -1,0 +1,88 @@
+<!-- (C) Copyright 2020 Hewlett Packard Enterprise Development LP. -->
+{% block content %}
+    <div id="maincontainer">
+
+        <table class='tablewithborder' id="showdevicetable">
+            <tr><td colspan='10'><font class='font13pxwhite'><center>Device {{deviceInfo['name']}} ({{deviceInfo['ipaddress']}}) information</center></font></td></tr>
+            <tr>
+                <td nowrap><font class='font12pxwhite'>Device name</font></td>
+                <td style="background-color:#ffffff;" nowrap><font class='font11px'>{{ deviceInfo['name'] }}</font></td>
+                <td nowrap><font class='font12pxwhite'>MAC address</font></td>
+                <td style="background-color:#ffffff;" nowrap><font class='font11px'>{{ deviceInfo['macaddress'] }}</font></td>
+                <td nowrap><font class='font12pxwhite'>IP address/Netmask</font></td>
+                <td style="background-color:#ffffff;" nowrap><font class='font11px'><div id="showIpaddress">{{ deviceInfo['ipaddress'] }}/{{ deviceInfo['netmask'] }}</div></font></td>
+                <td nowrap><font class='font12pxwhite'>Default gateway</font></td>
+                <td style="background-color:#ffffff;" nowrap><font class='font11px'><div id="showGateway">{{ deviceInfo['gateway'] }}</div></font></td>
+                <td nowrap><font class='font12pxwhite'>VRF</font></td>
+                <td style="background-color:#ffffff;" nowrap><font class='font11px'><div id="showVRF">{% if deviceInfo['vrf']=="" or deviceInfo['vrf']=="swns" or deviceInfo['vrf']=="0" %} Not set {% else %}{{ deviceInfo['vrf'] }}{% endif %}</div></font></td>
+            </tr>
+            <tr>
+                <td nowrap><font class='font12pxwhite'>Software image</font></td>
+                <td style="background-color:#ffffff;" nowrap><font class='font11px'>{% if "filename" in softwareInfo %}{{ softwareInfo['filename'] }}{% else %} - {% endif %}</font></td>
+                <td nowrap><font class='font12pxwhite'>Configuration template</font></td>
+                <td style="background-color:#ffffff;" nowrap><font class='font11px'>{% if "name" in templateInfo %}{{templateInfo['name']}}{% else %} No template{% endif %} </font></td>
+                <td nowrap><font class='font12pxwhite'>IP address assignment</font></td>
+                <td style="background-color:#ffffff;" nowrap>
+                    <font class='font11px'>
+                        {% if deviceInfo['ztpdhcp']==1%}DHCP{% elif ipam!="" %}{{ipam}}{% else %}Static{% endif %}
+                    </font>
+                </td>
+                <td nowrap><font class='font12pxwhite'>ZTP status</font></td>
+                <td style="background-color:#ffffff;" nowrap colspan="3" width="30%"><font class='font11px'><div id="showztpstatus">{{deviceInfo['ztpstatus']}}</div></font></td>
+            </tr>
+
+        </table>
+        {% if deviceInfo['vsfenabled']==1 %}
+
+        <table class='tablewithborder' id="showvsftable">
+            <tr><td colspan='10'><font class='font13pxwhite'><center>VSF configuration</center></font></td></tr>
+            {% for items in vsfInfo %}
+            <tr>
+                <td nowrap><font class='font12pxwhite'>Member ID</font></td>
+                <td {% if items['vsfmember']==deviceInfo['vsfmember'] %} style="background-color:darkorange;" {% else %} style="background-color:#ffffff;" {% endif %} nowrap><font class='font11px'>{% if items['vsfmember']==0%}1{% else %}{{ items['vsfmember'] }}{% endif %}</font></td>
+                <td nowrap><font class='font12pxwhite'>VSF role</font></td>
+                <td {% if items['vsfmember']==deviceInfo['vsfmember'] %} style="background-color:darkorange;" {% else %} style="background-color:#ffffff;" {% endif %}nowrap><font class='font11px'>{{ items['vsfrole'] }}</font></td>
+                <td nowrap><font class='font12pxwhite'>Switch port density</font></td>
+                <td {% if items['vsfmember']==deviceInfo['vsfmember'] %} style="background-color:darkorange;" {% else %} style="background-color:#ffffff;" {% endif %} nowrap><font class='font11px'>{{ items['switchtype'] }} ports</font></td>
+                <td nowrap><font class='font12pxwhite'>VSF link 1</font></td>
+                <td {% if items['vsfmember']==deviceInfo['vsfmember'] %} style="background-color:darkorange;" {% else %} style="background-color:#ffffff;" {% endif %} nowrap>
+                    <font class='font11px'>
+                        {% for linkitems in converttoJSON(items['link1']) %}
+                        {{linkitems|replace("%2F", "/") }}&nbsp;
+                        {% endfor %}
+                    </font>
+                </td>
+                <td nowrap><font class='font12pxwhite'>VSF link 2</font></td>
+                <td {% if items['vsfmember']==deviceInfo['vsfmember'] %} style="background-color:darkorange;" {% else %} style="background-color:#ffffff;" {% endif %} nowrap>
+                    <font class='font11px'>
+                        {% for linkitems in converttoJSON(items['link2']) %}
+                        {{linkitems|replace("%2F", "/") }}&nbsp;
+                        {% endfor %}
+                    </font>
+                </td>
+            </tr>
+            {% endfor %}
+        </table>
+
+        {% endif %}
+
+        {% if templateOutput!="" %}
+
+        <table class='tablewithborder' id="showtemplatetable">
+            <tr><td colspan='4'><font class='font13pxwhite'><center>Template configuration</center></font></td></tr>
+            <tr>
+                <td nowrap><font class='font12pxwhite'>Name</font></td>
+                <td style="background-color:#ffffff;" nowrap><font class='font11px'>{{ templateInfo['name'] }}</font></td>
+                <td nowrap><font class='font12pxwhite'>VSF role</font></td>
+                <td style="background-color:#ffffff;" nowrap><font class='font11px'>{{ templateInfo['description'] }}</font></td>
+            </tr>
+            <tr>
+                <td colspan="4" style="background-color:#ffffff;"><font class='font11px'><textarea rows="20" style="width: 100%;overflow-y: scroll;">{{ templateOutput }}</textarea></font></td>
+            </tr>
+
+
+        </table>
+
+        {% endif %}
+    </div>
+        {% endblock %}
