@@ -22,4 +22,10 @@ chmod 777 ./install.sh
 
 Run the ./install.sh script
 
+If you are already running version 1.2, you can upgrade the app:
+
+chmod 777 ./upgrade.ch
+
+Run the ./upgrade.sh script
+
 
