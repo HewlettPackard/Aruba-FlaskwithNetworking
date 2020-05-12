@@ -99,7 +99,7 @@ cp ./classes/arubaoscx.py /var/www/html/classes/arubaoscx.py > /dev/null
 cp ./classes/classes.py /var/www/html/classes/classes.py > /dev/null
 cp ./classes/switch.py /var/www/html/classes/switch.py > /dev/null
 cp ./templates/showcxdevice.html /var/www/html/templates/showcxdevice.html > /dev/null
-cp ./__init__.py /var/www/html/__init__.py > /dev/null
+cp ./__init__.py /var/www/html/__init__.py > /dev/null 
 
 chmod 777 /var/www/html/bash/listener.sh
 chmod 777 /var/www/html/bash/trackers.sh
