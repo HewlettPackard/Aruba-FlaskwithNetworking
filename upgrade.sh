@@ -65,6 +65,8 @@ python3 ./bash/upgrade.py
 echo ""
 echo " Upgrade the app"
 
+service carius stop
+
 rm -f /var/www/html/bash/initztp.cfg > /dev/null
 cp ./bash/listener.sh /var/www/html/bash/listener.sh > /dev/null
 rm -f /var/www/html/bash/trace.pcap > /dev/null
@@ -92,7 +94,12 @@ cp ./bash/upgrade.py /var/www/html/bash/upgrade.py > /dev/null
 cp ./bash/ztpdhcp6k.cfg /home/tftpboot/ztpdhcp6k.cfg > /dev/null
 cp ./bash/ztpdhcp8k.cfg /home/tftpboot/ztpdhcp8k.cfg > /dev/null
 cp ./templates/showztpdevice.html /var/www/html/templates/showztpdevice.html > /dev/null
-
+cp ./bash/topologyclasses.py /var/www/html/bash/topologyclasses.py > /dev/null
+cp ./classes/arubaoscx.py /var/www/html/classes/arubaoscx.py > /dev/null
+cp ./classes/classes.py /var/www/html/classes/classes.py > /dev/null
+cp ./classes/switch.py /var/www/html/classes/switch.py > /dev/null
+cp ./templates/showcxdevice.html /var/www/html/templates/showcxdevice.html > /dev/null
+cp ./__init__.py /var/www/html/__init__.py > /dev/null
 
 chmod 777 /var/www/html/bash/listener.sh
 chmod 777 /var/www/html/bash/trackers.sh
@@ -102,7 +109,7 @@ dos2unix -q /var/www/html/bash/listener.sh >/dev/null
 dos2unix -q /var/www/html/bash/trackers.sh >/dev/null
 dos2unix -q /var/www/html/bash/ztp.sh >/dev/null
 
-service carius restart
+service carius start
 
 echo " ######### Carius upgrade to version 1.3 completed ##########"
 echo " Navigate with your browser to http://a.b.c.d:8080   where a.b.c.d is the IP address of the Carius server"

@@ -28,7 +28,7 @@ from Crypto.Cipher import AES
 from Crypto.Util.Padding import pad, unpad
 
 import datetime
-from time import gmtime, strftime, time
+import time
 
 import pymysql.cursors
 
@@ -36,6 +36,20 @@ import ssl
 
 def convertTime(timestamp):
     return datetime.datetime.fromtimestamp(int(timestamp)).strftime('%-m/%-d/%Y, %H:%M:%S %p') 
+
+def timeDelta(timestamp):
+    timeNow=time.time()
+    timeDiff=timeNow-timestamp
+    td=datetime.timedelta(seconds=timeDiff)
+    days=td.days
+    hms=int((timeDiff-(days*84600)))
+    hours=int(hms//3600)
+    minutes=int((hms-(hours*3600))//60)
+    seconds=int((hms- (hours*3600) - (minutes* 60)))
+    uptime="Days: {}, hours: {}, minutes: {}, seconds: {}".format(days,hours,minutes,seconds)
+    return uptime
+
+    
 
 def sysTime():
     sTime=datetime.datetime.now()

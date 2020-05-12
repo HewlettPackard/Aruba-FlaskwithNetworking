@@ -43,16 +43,7 @@
                 <td><font class="font12pxwhite">Build Date</font></td>
                 <td class="whiteBG"><font face="arial" size="1"> {{ sysinfo['software_info']['build_date'] }} </font></td>
                 <td><font class="font12pxwhite">Up time</font></td>
-                <td class="whiteBG">
-                    <font face="arial" size="1">
-                        {% for items in sysinfo.subsystems |sort(attribute='type') %}
-                        {% if items['type'] == "line_card" %}
-                        {% if 'last_run_timestamp' in items['selftest'] %}
-                        {{ ctime (items['selftest']['last_run_timestamp']) }}
-                        {% endif %}
-                        {% endif %}
-                        {% endfor %}
-                    </font>
+                <td class="whiteBG"><font face="arial" size="1">{{ timeDelta(sysinfo['boot_time']) }}</font>
                 </td>
             </tr>
             <tr>

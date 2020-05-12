@@ -66,7 +66,7 @@ def showDevice():
     
 @deviceview.route("/showGraph", methods=['GET', 'POST'])
 def showGraph ():
-    queryStr="select sysinfo,ostype,ports,vsx,vsxlags,vrf,vsf,bps from devices where id='{}'".format(request.args.get('deviceid'))
+    queryStr="select id,sysinfo,ostype,ports,vsx,vsxlags,vrf,vsf,bps from devices where id='{}'".format(request.args.get('deviceid'))
     deviceinfo=classes.sqlQuery(queryStr,"selectone")
     sysinfo=json.loads(deviceinfo['sysinfo'])
 
@@ -89,7 +89,7 @@ def showGraph ():
                 title="Memory Utilization"
             else:
                 title="Available Memory"
-
+   
     line_chart=classes.showLinechart(request.args.get('deviceid'),request.args.get('entity'),deviceinfo['ostype'],stacktype,title)
     return line_chart.render_response()
 

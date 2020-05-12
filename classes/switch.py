@@ -269,7 +269,8 @@ def showLinechart(deviceid,entity,ostype,stacktype,title):
     # Obtaining the relevant data (CPU or Memory) from the database as dataset value.
     queryStr="select {} as dataset from devices where id={}".format(entity,deviceid)
     result=classes.classes.sqlQuery(queryStr,"selectone")
-    dataset=json.loads(result['dataset'])
+    if result['dataset']:
+        dataset=json.loads(result['dataset'])
     # Based on the ostype value, the Y-title has to be different for the memory. In ArubaOS-CX the memory usage is displayed and in ArubaOS-Switch the available memory
     if ostype=="arubaos-cx":
         y_title="%"

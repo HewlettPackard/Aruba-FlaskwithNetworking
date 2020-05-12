@@ -62,6 +62,7 @@ app.jinja_env.globals.update(showdataType=classes.showdataType)
 app.jinja_env.globals.update(getService=classes.getService)
 app.jinja_env.globals.update(provisionSwitch=classes.provisionSwitch)
 app.jinja_env.globals.update(sysTime=classes.sysTime)
+app.jinja_env.globals.update(timeDelta=classes.timeDelta)
 
 from views.anycli import anycli
 app.register_blueprint(anycli)
