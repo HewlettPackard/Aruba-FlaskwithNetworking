@@ -26,7 +26,7 @@
                 <td width="10%" align="left" nowrap><font class="font13pxgrey">Timestamp</font></td>
                 <td width="10%" align="left" nowrap><font class="font13pxgrey">DHCP type</font></td>
                 <td width="20%"><font class="font13pxgrey">Information</font></td>
-                <td width="60%" align="right">
+                <td colspan="2" width="60%" align="right">
                     <font class="font13pxgrey">
                         Show <select name="entryperpage" onchange="this.form.submit()">
                             <option value="10" {% if formresult.entryperpage=="10" %} selected {% endif %}>10</option>
@@ -51,7 +51,7 @@
                         {% endfor %}
                     </select>
                 </td>
-                <td align="left" valign="top">
+                <td colspan="2" align="left" valign="top">
                     <input type="text" name="searchInfo" value="{{ formresult.searchInfo }}" size="30">
                 </td>
                 <td width="10%" align="right"><input type="submit" name="searchAction" value="Search" class="button"></td>
@@ -64,7 +64,7 @@
                 <tr>
                     <td><font class="font12px">{{ ctime(info['utctime']) }}</font></td>
                     <td><font class="font12px">{{ info['dhcptype'] }}</font></td>
-                    <td><font class="font12px">{{ info['information'] }}</font></td>
+                    <td colspan="2" nowrap><font class="font12px">{{ info['information'] }}</font></td>
                     <td align="right">
                         <input type="submit" name="action" value="Delete" class="button" onclick="return confirm('Are you sure you want to delete this item?')">
                     </td>

@@ -35,7 +35,6 @@ def logoutswitch(header,deviceid):
     url="http://{}/rest/v7/login-sessions".format(deviceCreds['ipaddress'])
     try:
         response = requests.delete(url,headers=header,timeout=5)
-        print(response.status_code)
         #print("Logged out from Arubaos-Switch")
     except:
         print("Error logging out of Arubaos-Switch")

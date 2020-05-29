@@ -16,18 +16,18 @@
             <input type="hidden" name="currentseEntryperpage" id="currentseEntryperpage" value="{{ seEntryperpage }}"/>
             <tr style="background-color: grey;" class="tableTitle">
                 <td nowrap></td>
-                <td nowrap><font class='font12pxwhite'><input type="text" name="searchName" value="" /></font></td>
-                <td nowrap><font class='font12pxwhite'><input type="text" name="searchType" value="" /></font></td>
-                <td nowrap><font class='font12pxwhite'><input type="text" name="searchTemplate" value="" /></font></td>
+                <td nowrap><font class='font12pxwhite'><input type="text" name="searchName" value="" id="searchName"/></font></td>
+                <td nowrap><font class='font12pxwhite'><input type="text" name="searchType" value="" id="searchType"/></font></td>
+                <td nowrap><font class='font12pxwhite'><input type="text" name="searchTemplate" value="" id="searchTemplate"/></font></td>
                 <td nowrap>
-                    <select name="searchStatus">
+                    <select name="searchStatus" onchange="showServices({{ deviceInfo['id'] }})" id="searchStatus">
                         <option value="">Select</option>
-                        <option value="False">Disabled</option>
-                        <option value="True">Enabled</option>
+                        <option value="false">Disabled</option>
+                        <option value="true">Enabled</option>
                     </select>
                 </td>
                 <td colspan="2" align="right">
-                    <font class="font13px">
+                    <font class="font12pxwhite">
                         Show <select name="seEntryperpage" id="seEntryperpage" class="showServices" onchange="showServices({{ deviceInfo['id'] }})">
                             <option value="10" {% if seEntryperpage==10 %} selected {% endif %}>10</option>
                             <option value="25" {% if seEntryperpage==25 or seEntryperpage is not defined %} selected {% endif %}>25</option>
@@ -38,7 +38,7 @@
                             <option value="{{ i }}" {% if sePageoffset==i %}selected{% endif %}>{{ i+1 }}</option>
                             {% endfor %}
                         </select> of {{ (seTotalentries/seEntryperpage)|round(0,'ceil')|int }} pages)
-                    </font><input type="button" name="searchAction" value="Search" class="button" id="searchServices" />
+                    </font><input type="button" name="searchAction" value="Search" class="button" id="searchServices" onclick="showServices({{ deviceInfo['id'] }})" />
                 </td>
             </tr>
         </form>

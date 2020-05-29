@@ -20,13 +20,11 @@ from Crypto.Cipher import AES
 from Crypto.Util.Padding import pad, unpad
 
 def cleanup():
+    # Cleaning up the trackers
     dbconnection=pymysql.connect(host='localhost',user='aruba',password='ArubaRocks',db='aruba', autocommit=True)
     cursor=dbconnection.cursor(pymysql.cursors.DictCursor)
     pathname = os.path.dirname(sys.argv[0])
-    if platform.system()=="Windows":
-        appPath = os.path.abspath(pathname) + "\\globals.json"      
-    else:
-        appPath = os.path.abspath(pathname) + "/globals.json"
+    appPath = os.path.abspath(pathname) + "/globals.json"
     # Purge entries from DHCP, Syslog and SNMP which are older than configured values
     with open(appPath, 'r') as myfile:
         data=myfile.read()
@@ -37,3 +35,6 @@ def cleanup():
     cursor.execute(queryStr)
     queryStr="DELETE FROM `syslog` WHERE `utctime` < {}".format(datetime.timestamp(datetime.now() - timedelta(days=int(globalconf['retain_syslog']))))
     cursor.execute(queryStr)
+    # Cleaning up the logs
+    currentTime=int(time.time())
+

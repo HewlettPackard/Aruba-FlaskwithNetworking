@@ -37,7 +37,7 @@ def checkifOnline(deviceid,ostype):
                 classes.classes.logoutcx(sessionid,deviceid)
                 return "Online"
         except:
-            pass
+            return "Offline"
     if ostype=="arubaos-switch":
         try:
             header=classes.classes.loginswitch(deviceid)
@@ -47,7 +47,7 @@ def checkifOnline(deviceid,ostype):
                 classes.classes.logoutswitch(header,deviceid)
                 return "Online"
         except:
-            pass
+            return "Offline"
     return
 
 def discoverModel(deviceid):
@@ -101,10 +101,12 @@ def discoverModel(deviceid):
             url="system?attributes=platform_name%2Csoftware_version%2Csubsystems&depth=1"
             response =classes.classes.getRESTcx(deviceid,url)
             if 'platform_name' in response:
-                print("This is an AOS-CX switch")
-                # It is an ArubaOS-CX device. Obtain the interface information and then update the database
+                # It is an ArubaOS-CX device. Check whether it's running in VSF, obtain the interface information and then update the database
+                url="system/vsf_members?attributes=id%2Clinks%2Crole%2Cstatus&depth=2"
+                vsfInfo={}
+                vsfInfo=classes.classes.getRESTcx(deviceid,url)
                 try:
-                    queryStr="update devices set ostype='arubaos-cx', platform='{}', osversion='{}', sysinfo='{}' where id='{}'".format(response['platform_name'], response['software_version'], json.dumps(response['subsystems']),deviceid)
+                    queryStr="update devices set ostype='arubaos-cx', platform='{}', osversion='{}', sysinfo='{}', vsf='{}' where id='{}'".format(response['platform_name'], response['software_version'], json.dumps(response['subsystems']),json.dumps(vsfInfo),deviceid)
                     result=classes.classes.sqlQuery(queryStr,"update")
                     discoverSuccess=1
                 except:
@@ -158,17 +160,26 @@ def devicedbAction(formresult):
                 else:
                     queryStr="update devices set description='{}',ipaddress='{}',username='{}',password='{}', topology='{}' where id='{}' "\
                     .format(formresult['description'],formresult['ipaddress'],formresult['username'],classes.classes.encryptPassword(globalsconf['secret_key'], formresult['password']),topology,formresult['deviceid'])
-                    print(queryStr)
                     classes.classes.sqlQuery(queryStr,"update")
                     # Discover what type of device this is and update the database with the obtained information
                     discoverModel(formresult['deviceid'])
+                    # If there is an entry in the topology table, we also have to update the IP address, if the IP address has changed
+                    if formresult['orgIPaddress']!=formresult['ipaddress']:
+                        #IP address has changed, update the topology
+                        queryStr="update topology set switchip='{}' where switchip='{}'".format(formresult['ipaddress'],formresult['orgIPaddress'])
+                        classes.classes.sqlQuery(queryStr,"update")
             else:
                 queryStr="update devices set description='{}',ipaddress='{}',username='{}',password='{}', topology='{}' where id='{}' "\
                 .format(formresult['description'],formresult['ipaddress'],formresult['username'],classes.classes.encryptPassword(globalsconf['secret_key'], formresult['password']),topology,formresult['deviceid'])
-                print(queryStr)
                 classes.classes.sqlQuery(queryStr,"update")
                 # Discover what type of device this is and update the database with the obtained information
                 discoverModel(formresult['deviceid'])
+                # If there is an entry in the topology table, we also have to update the IP address, if the IP address has changed
+                if formresult['orgIPaddress']!=formresult['ipaddress']:
+                    #IP address has changed, update the topology
+                    queryStr="update topology set switchip='{}' where switchip='{}'".format(formresult['ipaddress'],formresult['orgIPaddress'])
+                    classes.classes.sqlQuery(queryStr,"update")
+
         elif (formresult['action']=="Delete"):
             # Delete from the topology table, if entries exist
             queryStr="select ipaddress from devices where id='{}'".format(formresult['deviceid'])

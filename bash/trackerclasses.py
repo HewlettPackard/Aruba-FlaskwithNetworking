@@ -18,9 +18,10 @@ urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)
 from base64 import b64encode, b64decode
 from Crypto.Cipher import AES
 from Crypto.Util.Padding import pad, unpad
+print("Tracker classes")
 
 def trackers():
-    trackerslog = open('/var/www/html/bash/trackers.log', 'a')
+    trackerslog = open('/var/www/html/log/trackers.log', 'a')
     pathname = os.path.dirname(sys.argv[0])
     appPath = os.path.abspath(pathname) + "/globals.json"
     with open(appPath, 'r') as myfile:
@@ -68,7 +69,9 @@ def trackers():
     except:
         pkts=""
     # Check for DHCP, Syslog and SNMP packets
+    
     for i in range(len(pkts)):
+        print("Packet {} destination port {}".format(i,pkts[i].udp.dstport))
         # trackerslog.write('Analyze packets\n')
         try:
             if pkts[i].udp.dstport=="67" or pkts[i].udp.dstport=="68":
@@ -197,10 +200,10 @@ def trackers():
                                             if result[0]['ztpdhcp']==1:
                                                 queryStr="update ztpdevices set ipaddress='{}', netmask='{}', gateway='{}' where id='{}'".format(clientip,ztpnetmask,router,result[0]['id'])
                                                 cursor.execute(queryStr)
-                                                trackerslog.write('{}: Updated ZTP Device with MAC Address {}: {}\n'.format(datetime.fromtimestamp(int(timeStamp)).strftime('%-m/%-d/%Y, %H:%M:%S %p'),ztpmacaddress, clientip))
+                                                trackerslog.write('{}: {} Updated ZTP Device with MAC Address {}: {}\n'.format(bord,datetime.fromtimestamp(int(timeStamp)).strftime('%-m/%-d/%Y, %H:%M:%S %p'),ztpmacaddress, clientip))
                                 except:
                                     print("Cannot analyze ZTP packet {}".format(i))
-                                information="DHCP Server " + dhcpserver + " acknowledged " + clientip
+                                information="DHCP Server " + dhcpserver + " acknowledged " + clientip                         
                                 options="Subnet_mask: " + netmask + ", Lease time: " + leasetime + ", Router: " + router + ", Name Server: " + dnsserver
                                 queryStr="insert into dhcptracker (utctime,dhcptype,information,options) values ('{}','DHCP Request','{}','{}')".format(pkts[i].sniff_timestamp,information,options)
                                 cursor.execute(queryStr)
@@ -270,11 +273,9 @@ def trackers():
                     elif pkts[i].dhcp.option_value == "08":
                         try:    
                             if float(pkts[i].sniff_timestamp) > utctimedhcp:
-                                print(pkts[i].dhcp)
-                                print(pkts[i].dhcp.field_names)
-                                information="DHCP Inform from " + pkts[i][IP].src + " (" + pkts[i][Ether].src + ") Hostname: " + pkts[i].dhcp.option_hostname + ", Vendor Class ID: " + pkts[i].dhcp.option_vendor_class_id
+                                information="DHCP Inform from " + pkts[i].ip.src + " (" + pkts[i].eth.src + ") Hostname: " + pkts[i].dhcp.option_hostname + ", Vendor Class ID: " + pkts[i].dhcp.option_vendor_class_id
                                 options=""
-                                queryStr="insert into dhcptracker (utctime,dhcptype,information,options) values ('{}','DHCP Request','{}','{}')".format(pkts[i].sniff_timestamp,information,options)
+                                queryStr="insert into dhcptracker (utctime,dhcptype,information,options) values ('{}','DHCP Inform','{}','{}')".format(pkts[i].sniff_timestamp,information,options)
                                 cursor.execute(queryStr)
                         except:
                             print("Could not analyze DHCP Inform packet")
@@ -348,10 +349,8 @@ def trackers():
                             print("Could not analyze DHCP request in packet {}".format(i))
                     # Match DHCP ack
                     elif pkts[i].bootp.option_value == "05":  
-                        print("DHCP ACK")
                         try:
                             if float(pkts[i].sniff_timestamp) > utctimedhcp:
-    
                                 if "option_subnet_mask" in fieldnames:
                                     netmask=pkts[i].bootp.option_subnet_mask
                                 else:
@@ -379,7 +378,7 @@ def trackers():
                                         result=cursor.fetchall()
                                         if result:
                                             timeStamp=float(pkts[i].sniff_timestamp)
-                                            trackerslog.write('{}: Found ZTP entry for {}\n'.format(datetime.fromtimestamp(int(timeStamp)),ztpmacaddress))
+                                            trackerslog.write('{}: {} Found ZTP entry for {}\n'.format(bord,datetime.fromtimestamp(int(timeStamp)),ztpmacaddress))
                                             # We found a ZTP device entry and need to update the IP address information, but only if DHCP ZTP is enabled
                                             if result[0]['ztpdhcp']==1:
                                                 queryStr="update ztpdevices set ipaddress='{}', netmask='{}', gateway='{}' where id='{}'".format(pkts[i].bootp.ip_your,ztpnetmask,router,result[0]['id'])
@@ -388,7 +387,7 @@ def trackers():
                                 except:
                                     print("Cannot analyze ZTP packet {}".format(i))
                                 information="DHCP Server " + pkts[i].bootp.option_dhcp_server_id + " acknowledged " + pkts[i].bootp.ip_your
-                                options="Subnet_mask: " + netmask + ", Lease time: " + leasetime + ", Router: " + router + ", Name Server: " + pkts[i].bootp.option_domain_name_server
+                                options="Subnet_mask: " + netmask + ", Lease time: " + leasetime + ", Router: " + router + ", Name Server: " + dnsserver
                                 queryStr="insert into dhcptracker (utctime,dhcptype,information,options) values ('{}','DHCP Request','{}','{}')".format(pkts[i].sniff_timestamp,information,options)
                                 cursor.execute(queryStr)
                         except:
@@ -457,9 +456,7 @@ def trackers():
                     elif pkts[i].dhcp.option_value == "08":
                         try:
                             if float(pkts[i].sniff_timestamp) > utctimedhcp:
-                                print(pkts[i].bootp)
-                                print(pkts[i].bootp.field_names)
-                                information="DHCP Inform from " + pkts[i][IP].src + " (" + pkts[i][Ether].src + ") Hostname: " + pkts[i].bootp.option_hostname + ", Vendor Class ID: " + pkts[i].bootp.option_vendor_class_id
+                                information="DHCP Inform from " + pkts[i].ip.src + " (" + pkts[i].eth.src + ") Hostname: " + pkts[i].bootp.option_hostname + ", Vendor Class ID: " + pkts[i].bootp.option_vendor_class_id
                                 options=""
                                 queryStr="insert into dhcptracker (utctime,dhcptype,information,options) values ('{}','DHCP Request','{}','{}')".format(pkts[i].sniff_timestamp,information,options)
                                 cursor.execute(queryStr)
@@ -515,5 +512,4 @@ def ztpCheck(macaddress,ipaddress,netmask,gateway,dns,cursor):
     if result:
         # We found a ZTP device entry and need to update the IP address information
         queryStr="update ztpdevices set ipaddress='{}', netmask='{}', gateway='{}' where id='{}'".format(ipaddress,netmask,gateway,result[0]['id'])
-        print("Update IP address of MAC address {} to {}".format(macaddress,ipaddress))
         cursor.execute(queryStr)

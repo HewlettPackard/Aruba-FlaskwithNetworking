@@ -20,6 +20,7 @@ from Crypto.Cipher import AES
 from Crypto.Util.Padding import pad, unpad
 
 def discoverTopology():
+    topolog = open('/var/www/html/log/topology.log', 'a')
     pathname = os.path.dirname(sys.argv[0])
     appPath = os.path.abspath(pathname) + "/globals.json"
     existingEntries=[]
@@ -74,6 +75,7 @@ def discoverTopology():
                                     queryStr="insert into topology (switchip,systemmac,hostname,interface,remoteswitchip,remotesystemmac,remotehostname,remoteinterface,lldpinfo) values ('{}','{}','{}','{}','{}','{}','{}','{}','{}')" \
                                     .format(items['ipaddress'],sysmac,switchresult['name'],lldpitems['local_port'],'',lldpitems['chassis_id'].replace(' ',':'),lldpitems['system_name'],lldpitems['port_description'],json.dumps(lldpresult))
                                 cursor.execute(queryStr)
+                                topolog.write('{}: Created new topology for {} ({}). \n'.format(datetime.now(),items['ipaddress'],switchresult['name']))
                 except:
                     print("Could not create or update topology for switch {}".format(items['ipaddress']))
                     pass
@@ -98,21 +100,24 @@ def discoverTopology():
                     queryStr="select id from topology where switchip='{}' and interface='{}'".format(items['ipaddress'],intitems['name'])
                     cursor.execute(queryStr)
                     result = cursor.fetchall()
-                    if switchresult['system_mac']:
-                        if result:
-                            queryStr="update topology set switchip='{}', systemmac='{}',hostname='{}',interface='{}',remoteswitchip='{}',remotesystemmac='{}',remotehostname='{}',remoteinterface='{}',lldpinfo='{}' where id='{}'" \
-                            .format(items['ipaddress'],switchresult['system_mac'],switchresult['hostname'],intitems['name'],lldpresult[0]['neighbor_info']['mgmt_ip_list'],lldpresult[0]['mac_addr'],lldpresult[0]['neighbor_info']['chassis_name'],lldpresult[0]['port_id'] ,json.dumps(lldpresult[0]),result[0]['id'])
-                            cursor.execute(queryStr)
-                            existingEntries.append(result[0]['id'])
-                        else:
-                            queryStr="insert into topology (switchip,systemmac,hostname,interface,remoteswitchip,remotesystemmac,remotehostname,remoteinterface,lldpinfo) values ('{}','{}','{}','{}','{}','{}','{}','{}','{}')" \
-                            .format(items['ipaddress'],switchresult['system_mac'],switchresult['hostname'],intitems['name'],lldpresult[0]['neighbor_info']['mgmt_ip_list'],lldpresult[0]['mac_addr'],lldpresult[0]['neighbor_info']['chassis_name'],lldpresult[0]['port_id'] ,json.dumps(lldpresult[0]))
-                            cursor.execute(queryStr)                  
+                    if switchresult:
+                        if switchresult['system_mac'] and "mgmt_ip_list" in lldpresult[0]['neighbor_info']:
+                            if result:
+                                queryStr="update topology set switchip='{}', systemmac='{}',hostname='{}',interface='{}',remoteswitchip='{}',remotesystemmac='{}',remotehostname='{}',remoteinterface='{}',lldpinfo='{}' where id='{}'" \
+                                .format(items['ipaddress'],switchresult['system_mac'],switchresult['hostname'],intitems['name'],lldpresult[0]['neighbor_info']['mgmt_ip_list'],lldpresult[0]['mac_addr'],lldpresult[0]['neighbor_info']['chassis_name'],lldpresult[0]['port_id'] ,json.dumps(lldpresult[0]),result[0]['id'])
+                                cursor.execute(queryStr)
+                                existingEntries.append(result[0]['id'])
+                            else:
+                                queryStr="insert into topology (switchip,systemmac,hostname,interface,remoteswitchip,remotesystemmac,remotehostname,remoteinterface,lldpinfo) values ('{}','{}','{}','{}','{}','{}','{}','{}','{}')" \
+                                .format(items['ipaddress'],switchresult['system_mac'],switchresult['hostname'],intitems['name'],lldpresult[0]['neighbor_info']['mgmt_ip_list'],lldpresult[0]['mac_addr'],lldpresult[0]['neighbor_info']['chassis_name'],lldpresult[0]['port_id'] ,json.dumps(lldpresult[0]))
+                                cursor.execute(queryStr)
+                                topolog.write('{}: Created new topology for {} ({}). \n'.format(datetime.now(),items['ipaddress'],switchresult['hostname']))
         else:
             pass
     if existingEntries:
         queryStr="update topology set remoteswitchip='',remotesystemmac='',remoteinterface='',lldpinfo='' where id NOT IN ({})".format(json.dumps(existingEntries)[1:-1])
         result=cursor.execute(queryStr)
+    topolog.close()
 
 def getRESTcx(ipaddress,username,password,url):
     global sessionid

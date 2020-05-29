@@ -78,34 +78,34 @@ $(document).ready(function () {
 
 
 
-    $(".showTrust").on('click change', function () {
+    $(".showTrust").on('click', function () {
         deviceid = $(this).attr('data-deviceid');
         document.getElementById("showTrust").style.display = "block";
         document.getElementById("showEndpoints").style.display = "none";
         document.getElementById("showServices").style.display = "none";
         document.getElementById("adddeviceForm").style.display = "none";
         document.getElementById("editdeviceForm").style.display = "none";
-        $('#showTrust').load('cpTrusts?deviceid=' + deviceid + "&trEntryperpage=25&trPageoffset=0");
+        $('#showTrust').load('cpTrusts?deviceid=' + deviceid + "&trEntryperpage=25&trPageoffset=0&searchSubject=&searchValid=&searchStatus=");
     });
 
-    $(".showServices").on('click change', function () {
+    $(".showServices").on('click', function () {
         deviceid = $(this).attr('data-deviceid');
         document.getElementById("showTrust").style.display = "none";
         document.getElementById("showEndpoints").style.display = "none";
         document.getElementById("showServices").style.display = "block";
         document.getElementById("adddeviceForm").style.display = "none";
         document.getElementById("editdeviceForm").style.display = "none";
-        $('#showServices').load('cpServices?deviceid=' + deviceid + "&seEntryperpage=25&sePageoffset=0");
+        $('#showServices').load('cpServices?deviceid=' + deviceid + "&seEntryperpage=25&sePageoffset=0&searchName=&searchType=&searchTemplate=&searchStatus=");
     });
 
-    $(".showEndpoints").on('click change', function (event) {
+    $(".showEndpoints").on('click', function (event) {
         deviceid = $(this).attr('data-deviceid');
         document.getElementById("showTrust").style.display = "none";
         document.getElementById("showEndpoints").style.display = "block";
         document.getElementById("showServices").style.display = "none";
         document.getElementById("adddeviceForm").style.display = "none";
         document.getElementById("editdeviceForm").style.display = "none";
-        $('#showEndpoints').load('cpEndpoints?deviceid=' + deviceid + "&epEntryperpage=25&epPageoffset=0");
+        $('#showEndpoints').load('cpEndpoints?deviceid=' + deviceid + "&epEntryperpage=25&epPageoffset=0&searchMacaddress=&searchDescription=&searchStatus=");
     });
 
 });
@@ -114,6 +114,10 @@ function showEndpoints(deviceid) {
     var epp_select = document.getElementById('epEntryperpage');
     var epEntryperpage = epp_select.options[epp_select.selectedIndex].value;
     var currentepEntryperpage = document.getElementById('currentepEntryperpage').value;
+    var epstatus_select = document.getElementById('searchStatus');
+    var searchStatus = epstatus_select.options[epstatus_select.selectedIndex].value;
+    var searchMacaddress = document.getElementById('searchMacaddress').value;
+    var searchDescription = document.getElementById('searchDescription').value;
     if (epEntryperpage == currentepEntryperpage) {
         var po_select = document.getElementById('epPageoffset');
         var epPageoffset = po_select.options[po_select.selectedIndex].value;
@@ -126,13 +130,18 @@ function showEndpoints(deviceid) {
     document.getElementById("showServices").style.display = "none";
     document.getElementById("adddeviceForm").style.display = "none";
     document.getElementById("editdeviceForm").style.display = "none";
-    $('#showEndpoints').load('cpEndpoints?deviceid=' + deviceid + "&epEntryperpage=" + epEntryperpage + "&epPageoffset=" + epPageoffset);
+    $('#showEndpoints').load('cpEndpoints?deviceid=' + deviceid + "&epEntryperpage=" + epEntryperpage + "&epPageoffset=" + epPageoffset + "&searchMacaddress=" + searchMacaddress + "&searchDescription=" + searchDescription + "&searchStatus=" + searchStatus);
 }
 
 function showTrusts(deviceid) {
     var epp_select = document.getElementById('trEntryperpage');
     var trEntryperpage = epp_select.options[epp_select.selectedIndex].value;
     var currenttrEntryperpage = document.getElementById('currenttrEntryperpage').value;
+    var trstatus_select = document.getElementById('searchStatus');
+    var searchStatus = trstatus_select.options[trstatus_select.selectedIndex].value;
+    var vlstatus_select = document.getElementById('searchValid');
+    var searchValid = vlstatus_select.options[vlstatus_select.selectedIndex].value;
+    var searchSubject = document.getElementById('searchSubject').value;
     if (trEntryperpage == currenttrEntryperpage) {
         var po_select = document.getElementById('trPageoffset');
         var trPageoffset = po_select.options[po_select.selectedIndex].value;
@@ -145,13 +154,18 @@ function showTrusts(deviceid) {
     document.getElementById("showServices").style.display = "none";
     document.getElementById("adddeviceForm").style.display = "none";
     document.getElementById("editdeviceForm").style.display = "none";
-    $('#showTrust').load('cpTrusts?deviceid=' + deviceid + "&trEntryperpage=" + trEntryperpage + "&trPageoffset=" + trPageoffset);
+    $('#showTrust').load('cpTrusts?deviceid=' + deviceid + "&trEntryperpage=" + trEntryperpage + "&trPageoffset=" + trPageoffset + "&searchStatus=" + searchStatus + "&searchValid=" + searchValid + "&searchSubject=" + searchSubject);
 }
 
 function showServices(deviceid) {
     var epp_select = document.getElementById('seEntryperpage');
     var seEntryperpage = epp_select.options[epp_select.selectedIndex].value;
     var currentseEntryperpage = document.getElementById('currentseEntryperpage').value;
+    var sestatus_select = document.getElementById('searchStatus');
+    var searchStatus = sestatus_select.options[sestatus_select.selectedIndex].value;
+    var searchName = document.getElementById('searchName').value;
+    var searchType = document.getElementById('searchType').value;
+    var searchTemplate = document.getElementById('searchTemplate').value;
     if (seEntryperpage == currentseEntryperpage) {
         var po_select = document.getElementById('sePageoffset');
         var sePageoffset = po_select.options[po_select.selectedIndex].value;
@@ -164,7 +178,7 @@ function showServices(deviceid) {
     document.getElementById("showServices").style.display = "block";
     document.getElementById("adddeviceForm").style.display = "none";
     document.getElementById("editdeviceForm").style.display = "none";
-    $('#showServices').load('cpServices?deviceid=' + deviceid + "&seEntryperpage=" + seEntryperpage + "&sePageoffset=" + sePageoffset);
+    $('#showServices').load('cpServices?deviceid=' + deviceid + "&seEntryperpage=" + seEntryperpage + "&sePageoffset=" + sePageoffset + "&searchName=" + searchName + "&searchType=" + searchType + "&searchTemplate=" + searchTemplate + "&searchStatus=" + searchStatus);
 }
 
 function highlightdeviceRow(e) {
@@ -219,9 +233,7 @@ $(document).ready(function () {
 });
 
 $('.cpStatus').ready(function () {
-
     var refresh = async function () {
-
         cpStatus = document.getElementsByClassName('cpStatus');
         for (var i = 0; i < cpStatus.length; i++) {
             deviceid = cpStatus.item(i).getAttribute('data-deviceid');

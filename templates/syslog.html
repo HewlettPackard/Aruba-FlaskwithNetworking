@@ -48,7 +48,7 @@
                 <td align="left" nowrap>&nbsp;</td>
                 <td align="left" valign="top"><input type="text" name="searchSource" value="{{ formresult.searchSource }}" size="12"></td>
                 <td align="left" valign="top">
-                    <select name="searchFacility">
+                    <select name="searchFacility" onchange="this.form.submit()">
                         <option value="">Select</option>
                         {% for facilities in facilityInfo %}
                         <option value="{{ facilities['facility'] }}" {% if formresult.searchFacility==facilities['facility'] %} selected {% endif %}>{{ facilities['facility'] }}</option>
@@ -56,7 +56,7 @@
                     </select>
                 </td>
                 <td align="left" valign="top">
-                    <select name="searchSeverity">
+                    <select name="searchSeverity" onchange="this.form.submit()">
                         <option value="">Select</option>
                         {% for severities in severityInfo %}
                         <option value="{{ severities['severity'] }}" {% if formresult.searchSeverity==severities['severity'] %} selected {% endif %}>{{ severities['severity'] }}</option>

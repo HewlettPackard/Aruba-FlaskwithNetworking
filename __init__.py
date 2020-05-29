@@ -86,6 +86,7 @@ from views.topo import topo
 app.register_blueprint(topo)
 
 if (__name__) == "carius": 
-    serve(app,host='0.0.0.0',port=8080,ident="Carius")
+    #serve(app,host='0.0.0.0',port=8080,ident="Carius")
+    serve(app,listen="*:8080 [::]:8080", ident="Carius", threads=8)
     #app.run(host=hostip, port=8080, debug=True)
     

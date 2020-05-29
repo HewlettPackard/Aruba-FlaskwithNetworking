@@ -10,6 +10,6 @@ $('.deviceInfo').ready(function () {
             $("div[data-chart='deviceinfo']").load('showDevice?deviceid=' + deviceid + '&ostype=' + ostype + '&stacktype=' + stacktype);
         }
     }
-    setInterval(refresh, 5000);
+    setInterval(refresh, 15000);
     refresh();
 });

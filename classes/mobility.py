@@ -19,7 +19,6 @@ def mobilitydbAction(formresult):
             deviceid=classes.classes.sqlQuery(queryStr,"insert")
             # Update the database with the platform information
             try:
-                print("Login mobility controller")
                 cookie=loginmc(deviceid)
                 mcresult=getMCinfo(cookie,deviceid) 
                 logoutmc(cookie,deviceid)
@@ -126,7 +125,6 @@ def loginmc (deviceid):
         # Login to the mobility controller. The cookie value is returned to the calling definition. It is not stored in the cookie jar.
         response = requests.post(url, verify=False, data=credentials, timeout=5)
         cookie=response.json()['_global_result']['UIDARUBA']
-        print("Logged into Mobility Controller")
         return cookie
     except:
         print("Error logging into Mobility Controller")
@@ -138,7 +136,6 @@ def logoutmc(cookie,deviceid):
     url="https://{}:4343/v1/api/logout".format(deviceCreds['ipaddress'])
     try:
         response = requests.post(url,timeout=5, verify=False)
-        print("Logged out from Mobility Controller")
     except:
         print("Error logging out of Mobility Controller")
 

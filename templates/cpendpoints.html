@@ -15,14 +15,14 @@
                 <input type="hidden" name="currentepEntryperpage" id="currentepEntryperpage" value="{{ epEntryperpage }}" />
                 <tr style="background-color: grey;" class="tableTitle">
                     <td nowrap></td>
-                    <td nowrap><font class='font13px'><input type="text" name="searchMacaddress" value="" /></font></td>
-                    <td nowrap><font class='font13px'><input type="text" name="searchDescription" value="" /></font></td>
+                    <td nowrap><font class='font13px'><input type="text" name="searchMacaddress" id="searchMacaddress" value="{{ searchMacaddress }}" /></font></td>
+                    <td nowrap><font class='font13px'><input type="text" name="searchDescription" id="searchDescription" value="{{ searchDescription }}" /></font></td>
                     <td nowrap>
-                        <select name="searchStatus">
-                            <option value="">Select</option>
-                            <option value="Known">Known</option>
-                            <option value="Unknown">Unknown</option>
-                            <option value="Disabled">Disabled</option>
+                        <select name="searchStatus" onchange="showEndpoints({{ deviceInfo['id'] }})" id="searchStatus">
+                            <option value="" {% if searchStatus=="" %} selected {% endif %}>Select</option>
+                            <option value="Known" {% if searchStatus=="Known" %} selected {% endif %}>Known</option>
+                            <option value="Unknown" {% if searchStatus=="Unknown" %} selected {% endif %}>Unknown</option>
+                            <option value="Disabled" {% if searchStatus=="Disabled" %} selected {% endif %}>Disabled</option>
                         </select>
                     </td>
                     <td colspan="2" align="right">
@@ -37,7 +37,7 @@
                                 <option value="{{ i }}" {% if epPageoffset==i %}selected{% endif %}>{{ i+1 }}</option>
                                 {% endfor %}
                             </select> of {{ (epTotalentries/epEntryperpage)|round(0,'ceil')|int }} pages)
-                        </font><input type="button" name="searchAction" value="Search" class="button" id="searchEndpoint" />
+                        </font><input type="button" name="searchAction" value="Search" class="button" id="searchEndpoint" onclick="showEndpoints({{ deviceInfo['id'] }})"/>
                     </td>
                 </tr>
             </form>

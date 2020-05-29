@@ -90,26 +90,7 @@ def submitsysConf(sysconf):
     appPath = os.path.abspath(pathname) + "/"
     sysconf=sysconf.to_dict(flat=True)
     if sysconf['ztppassword']=="":
-        sysconf['ztppassword']=classes.classes.encryptPassword(sysconf['secret_key'], "ztpinit")
-    elif sysconf['orig_ztppassword']!=sysconf['ztppassword']:
-        # The ztppassword has changed, then all the admin user passwords in ztpdevice have to be hashed with the new secret key
-        queryStr="select id, adminpassword from ztpdevices"
-        result=classes.classes.sqlQuery(queryStr,"select")
-        for pwitems in result:
-            if pwitems['adminpassword']!="":
-                try:
-                    encpass=classes.classes.encryptPassword(sysconf['secret_key'], sysconf['ztppassword']) 
-                    queryStr="update ztpdevices set adminpassword='{}' where id='{}'".format(encpass,pwitems['id'])
-                    classes.classes.sqlQuery(queryStr,"selectone")
-                except:
-                    # Something went wrong with the password change.
-                    pass
-            else:
-                # Encrypt the password with the new secret
-                encpass=classes.classes.encryptPassword(sysconf['secret_key'], "ztpinit") 
-                queryStr="update ztpdevices set adminpassword='{}' where id='{}'".format(encpass,pwitems['id'])
-                classes.classes.sqlQuery(queryStr,"selectone")
-
+        sysconf['ztppassword']="ztpinit"
     # First we have to check whether the secret has changed. If it has, then refresh all the user passwords in the sysuser table
     if sysconf['orig_secret_key']!=sysconf['secret_key']:
         # Secret keys are different. We have to change the passwords of all the users in the database
@@ -140,17 +121,30 @@ def submitsysConf(sysconf):
             except:
                 # Something went wrong with the password change.
                 pass
-        
-
+        # If the shared secret has failed, also change the admin user accounts in ZTP devices
+        queryStr="select id, adminpassword from ztpdevices"
+        result=classes.classes.sqlQuery(queryStr,"select")
+        for pwitems in result:
+            if pwitems['adminpassword']!="":
+                try:
+                    # Decrypt the password with the old secret
+                    decpass=classes.classes.decryptPassword(sysconf['orig_secret_key'], pwitems['adminpassword']) 
+                    # Encrypt the password with the new secret
+                    encpass=classes.classes.encryptPassword(sysconf['secret_key'], decpass) 
+                    queryStr="update ztpdevices set adminpassword='{}' where id='{}'".format(encpass,pwitems['id'])
+                    classes.classes.sqlQuery(queryStr,"selectone")
+                except:
+                    # Something went wrong with the password change.
+                    pass    
     # Finally, update the globals configuration file
     for key, items in sysconf.items():
         # Store the values in a dictionary
-        if key=="action" or key=="orig_secret_key":
+        if key=="action" or key=="orig_secret_key" or key=="orig_ztppassword":
             continue
         else:
             globalsconf.update( { key : items} )
     globalsconf.update({"appPath":appPath})
-    globalsconf.update({"softwareRelease":"1.1"})
+    globalsconf.update({"softwareRelease":"1.3"})
     globalsconf.update({"sysInfo":json.loads(sysInfo)})
     globalsconf.update({"netInfo":psutil.net_if_addrs()})
     with open('bash/globals.json', 'w') as systemconfig:
@@ -200,65 +194,40 @@ def checkdbExist(queryStr):
 def checkProcess(name):
     globalsconf=classes.classes.globalvars()
     for proc in psutil.process_iter():
-        if platform.system()=="Windows":
-            if name=="Cleanup" or name=="Topology" or name=="Trackers" or name=="ZTP":
-                try:
-                    if proc.name().lower()=="python.exe":
-                        procinfo=psutil.Process(proc.pid)
+        # Need to check whether the listener process or the scheduler process is queried
+        if name=="Cleanup" or name=="Topology" or name=="ZTP":
+            try:
+                if "python" in proc.name().lower():
+                    procinfo=psutil.Process(proc.pid)
+                    try:
                         procname=procinfo.cmdline()[1]
-                        # Check if process name contains the given name string.
                         if name.lower() in procname.lower():
                             procMem="%.3f" % procinfo.memory_percent()
                             processInfo={"status":True,"cpu":procinfo.cpu_percent(),"memory":procMem}
                             return processInfo
-                except (psutil.NoSuchProcess, psutil.AccessDenied, psutil.ZombieProcess):
-                    pass
-            elif name=="Listener":
-                try: 
-                    if(proc.name().lower()=="tshark.exe"):
-                        procinfo=psutil.Process(proc.pid)
+                    except:
+                        return {"status":False,"cpu":0,"memory":0}
+            except (psutil.NoSuchProcess, psutil.AccessDenied, psutil.ZombieProcess):
+                pass
+        elif name=="Listener":
+            try:
+                if "listener" in proc.name().lower():
+                    procinfo=psutil.Process(proc.pid)
+                    procname=json.dumps(procinfo.open_files())
+                    if name.lower() in procname.lower():
                         procMem="%.3f" % procinfo.memory_percent()
                         processInfo={"status":True,"cpu":procinfo.cpu_percent(),"memory":procMem}
                         return processInfo
-                except (psutil.NoSuchProcess, psutil.AccessDenied, psutil.ZombieProcess):
-                    pass
-        elif platform.system()=="Linux":
-            # Need to check whether the listener process or the scheduler process is queried
-            if name=="Cleanup" or name=="Topology" or name=="Trackers" or name=="ZTP":
-                try:
-                    if "python" in proc.name().lower():
-                        procinfo=psutil.Process(proc.pid)
-                        try:
-                            procname=procinfo.cmdline()[1]
-                            if name.lower() in procname.lower():
-                                procMem="%.3f" % procinfo.memory_percent()
-                                processInfo={"status":True,"cpu":procinfo.cpu_percent(),"memory":procMem}
-                                return processInfo
-                        except:
-                            return {"status":False,"cpu":0,"memory":0}
-                except (psutil.NoSuchProcess, psutil.AccessDenied, psutil.ZombieProcess):
-                    pass
-            elif name=="Listener":
-                try:
-                    if "listener" in proc.name().lower():
-                        procinfo=psutil.Process(proc.pid)
-                        procname=json.dumps(procinfo.open_files())
-
-                        if name.lower() in procname.lower():
-                            procMem="%.3f" % procinfo.memory_percent()
-                            processInfo={"status":True,"cpu":procinfo.cpu_percent(),"memory":procMem}
-                            return processInfo
-                except (psutil.NoSuchProcess, psutil.AccessDenied, psutil.ZombieProcess):
-                    pass
+            except (psutil.NoSuchProcess, psutil.AccessDenied, psutil.ZombieProcess):
+                pass
     return {"status":False,"cpu":0,"memory":0}
 
 def processAction(name, action):
     globalsconf=classes.classes.globalvars()
     pathname = os.path.dirname(sys.argv[0])
-    # First check the platform on which the app is running
     if action =="Stop":
         # Need to check whether the listener process or the scheduler process is queried
-        if name=="Cleanup" or name=="Topology" or name=="Trackers" or name=="ZTP":
+        if name=="Cleanup" or name=="Topology" or name=="ZTP":
             for proc in psutil.process_iter():
                 processname=globalsconf['appPath'] + "bash/" + name.lower()
                 cmdline=proc.cmdline()
@@ -282,8 +251,6 @@ def processAction(name, action):
             print("Start {}".format(name))
             proc = subprocess.Popen(scriptName, shell=True, stdout=subprocess.PIPE)
 
-
-
 def checkPhpipam(info):
     try:
         url=info['phpipamauth'] + "://" + info['ipamipaddress'] + "/api/" + info['phpipamappid'] + "/user/"
@@ -294,6 +261,7 @@ def checkPhpipam(info):
             return "Offline"
     except:
         return "Offline"
+
 def checkInfoblox(info):
     try:
         url = 'https://' + info['ipamipaddress'] + "/wapi/v2.10/network"

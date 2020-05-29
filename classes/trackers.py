@@ -31,7 +31,7 @@ def dhcpdbAction(formresult):
         totalentries=navResult['totalentries']
         entryperpage=navResult['entryperpage']
         pageoffset=navResult['pageoffset']
-        queryStr="select * from dhcptracker " + constructQuery[:-4] + " LIMIT {} offset {}".format(entryperpage,pageoffset)
+        queryStr="select * from dhcptracker " + constructQuery[:-4] + " ORDER BY utctime DESC LIMIT {} offset {} ".format(entryperpage,pageoffset)
         result=classes.classes.sqlQuery(queryStr,"select")
     except:
         # There is no formresult, start with default query
@@ -70,7 +70,7 @@ def snmpdbAction(formresult):
         totalentries=navResult['totalentries']
         entryperpage=navResult['entryperpage']
         pageoffset=navResult['pageoffset']
-        queryStr="select * from snmptracker " + constructQuery[:-4] + " LIMIT {} offset {}".format(entryperpage,pageoffset)
+        queryStr="select * from snmptracker " + constructQuery[:-4] + " ORDER BY utctime DESC LIMIT {} offset {} ".format(entryperpage,pageoffset)
         result=classes.classes.sqlQuery(queryStr,"select")
     except:
         # There is no formresult, start with default query
@@ -109,7 +109,7 @@ def syslogdbAction(formresult):
         totalentries=navResult['totalentries']
         entryperpage=navResult['entryperpage']
         pageoffset=navResult['pageoffset']
-        queryStr="select * from syslog " + constructQuery[:-4] + " LIMIT {} offset {}".format(entryperpage,pageoffset)
+        queryStr="select * from syslog " + constructQuery[:-4] + " ORDER BY utctime DESC LIMIT {} offset {}".format(entryperpage,pageoffset)
         result=classes.classes.sqlQuery(queryStr,"select")
     except:
         # There is no formresult, start with default query

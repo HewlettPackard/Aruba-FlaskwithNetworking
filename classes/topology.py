@@ -75,7 +75,14 @@ def checktopoDevice(deviceid):
     queryStr="select id,ostype from devices where ipaddress='{}'".format(result['switchip'])
     result=classes.classes.sqlQuery(queryStr,"selectone")
     # Based on the switch type, check if the device is online
-    return classes.classes.checkifOnline(result['id'],result['ostype'])
+    if result['ostype']!="Unknown":
+        result=classes.classes.checkifOnline(result['id'],result['ostype'])
+        if result:
+            return "Online" 
+        else:
+            return "Online"
+    else:
+        return "Offline"
 
 def topoInfo(deviceid):
     # Obtain IP address from the topology table first

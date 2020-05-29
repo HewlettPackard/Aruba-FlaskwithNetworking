@@ -101,7 +101,7 @@ $(document).ready(function () {
             $("div[data-memchart='graphData-Memory']").load('showGraph?entity=memory&deviceid=' + document.getElementById('monitordevice').getAttribute('data-deviceid') );
             $("div[data-chart='deviceinfo']").load('showDevice?deviceid=' + document.getElementById('monitordevice').getAttribute('data-deviceid'));
          }
-        setInterval(refresh, 5000);
+        setInterval(refresh, 15000);
         refresh();
     });
 
@@ -152,6 +152,7 @@ $(document).ready(function () {
         document.getElementById('titleeditDescription').innerHTML = deviceInfo['description'];
         document.getElementById('editUsername').value = deviceInfo['username'];
         document.getElementById('editPassword').value = deviceInfo['password'];
+        document.getElementById('orgIPaddress').value = deviceInfo['ipaddress'];
         document.getElementById('deviceid').value = deviceid;
         if (deviceInfo['topology'] == 1) {
             document.getElementById("editTopology").checked = true;

@@ -28,14 +28,6 @@ $('.topologyProcess').ready(function () {
     refresh();
 });
 
-$('.trackersProcess').ready(function () {
-    var refresh = function () {
-        $("div[data-chart='trackersProcess']").load('monitorProcess?name=Trackers');
-    }
-    setInterval(refresh, 5000);
-    refresh();
-});
-
 $('.ztpProcess').ready(function () {
     var refresh = function () {
         $("div[data-chart='ztpProcess']").load('monitorProcess?name=ZTP');
@@ -68,7 +60,6 @@ $('#systemTime').ready(function () {
     setInterval(refresh, 1000);
     refresh();
 });
-
 
 $('#ipamstatus').ready(function () {
     var refresh = async function () {
@@ -114,6 +105,39 @@ $('#ipamstatus').ready(function () {
     }
     setInterval(refresh, 5000);
     refresh();
+});
+
+$(document).on('click', '.downloadLog', function () {
+    response = $.ajax({
+        url: "/downloadLog",
+        type: "POST",
+        data: { processName: $(this).attr("data-processname") },
+        success: function (response) {
+            response = JSON.parse(response);
+            var logInfo = document.createElement('a');
+            logFile = response[0] + ".txt";
+            logInfo.setAttribute('href', 'data:text/plain;charset=utf-8,' + encodeURIComponent(response[1]));
+            logInfo.setAttribute("download", logFile);
+            if (document.createEvent) {
+                var event = document.createEvent('MouseEvents');
+                event.initEvent('click', true, true);
+                logInfo.dispatchEvent(event);
+            }
+            else {
+                logInfo.click();
+            }          
+        }
+    });
+});
+
+$(document).on('click', '.clearLog', function () {
+    response = $.ajax({
+        url: "/clearprocessLog",
+        type: "POST",
+        data: { processName: $(this).attr("data-processname") },
+        success: function (response) {
+        }
+    });
 });
 
 function minTwoDigits(n) {

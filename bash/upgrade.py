@@ -69,9 +69,13 @@ if ztpprofileExist[0]['ztpprofile']==1:
 sysvars = open("/var/www/html/bash/globals.json", "r")
 data = json.load(sysvars) 
 sysvars.close()
-data["softwareRelease"] = "1.3"
+data["softwareRelease"] = "1.4"
 data["landingpage"]="/"
 data['ztppassword']="ztpinit"
+data['retain_ztplog']="5"
+data['retain_cleanuplog']="5"
+data['retain_listenerlog']="5"
+data['retain_topologylog']="5"
 sysvars = open("/var/www/html/bash/globals.json", "w+")
 sysvars.write(json.dumps(data))
 sysvars.close()

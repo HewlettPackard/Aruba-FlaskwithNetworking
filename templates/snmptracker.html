@@ -46,7 +46,7 @@
                 <td align="left" nowrap>&nbsp;</td>
                 <td align="left" valign="top"><input type="text" name="searchSource" value="{{ formresult.searchSource }}" size="15"></td>
                 <td align="left" valign="top">
-                    <select name="searchVersion">
+                    <select name="searchVersion" onchange="this.form.submit()">
                         <option value="">Select</option>
                         {% for snmpversion in versionInfo %}
                         <option value="{{ snmpversion['version'] }}" {% if formresult.searchVersion==snmpversion['version'] %} selected {% endif %}>{{ snmpversion['version'] }}</option>
@@ -54,7 +54,7 @@
                     </select>
                 </td>
                 <td align="left" valign="top">
-                    <select name="searchCommunity">
+                    <select name="searchCommunity" onchange="this.form.submit()">
                         <option value="">Select</option>
                         {% for community in communityInfo %}
                         <option value="{{ community['community'] }}" {% if formresult.searchCommunity==community['community'] %} selected {% endif %}>{{ community['community'] }}</option>

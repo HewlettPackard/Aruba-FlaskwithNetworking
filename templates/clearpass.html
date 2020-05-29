@@ -106,15 +106,15 @@
 
     <div id="adddeviceForm" style="display:none;">
         <table class="tablenoborder">
-            <tr style="background-color: black;line-height:20px;">
-                <td colspan="6" style="color: darkorange;"><center>Add device</center></td>
+            <tr style="background-color: grey;" class="tableTitle">
+                <td colspan="6"><font class='font13pxwhite'><center>Add ClearPass device</center></font></td>
             </tr>
             <tr>
-                <td><font class="font13px">IP address</font></td>
-                <td><font class="font13px">Description</font></td>
-                <td><font class="font13px">Username</font></td>
-                <td><font class="font13px">Password</font></td>
-                <td><font class="font13px">Shared secret</font></td>
+                <td><font class="font13pxgrey">IP address</font></td>
+                <td><font class="font13pxgrey">Description</font></td>
+                <td><font class="font13pxgrey">Username</font></td>
+                <td><font class="font13pxgrey">Password</font></td>
+                <td><font class="font13pxgrey">Shared secret</font></td>
             </tr>
             <tr>
                 <form method="post">
@@ -143,18 +143,18 @@
 
     <div id="editdeviceForm" style="display:none;">
         <table class="tablenoborder">
-            <tr style="background-color: black;line-height:20px;">
-                <td colspan="6" style="color: darkorange;"><center>Edit device <span name="titleeditDescription" id="titleeditDescription"></span> (<span name="titleeditIpaddress" id="titleeditIpaddress"></span>)</center></td>
+            <tr style="background-color: grey;" class="tableTitle">
+                <td colspan="6"><font class='font13pxwhite'><center>Edit device <span name="titleeditDescription" id="titleeditDescription"></span> (<span name="titleeditIpaddress" id="titleeditIpaddress"></span>)</center></font></td>
             </tr>
             <tr>
-                <td><font class="font13px">IP address</font></td>
-                <td><font class="font13px">Description</font></td>
-                <td><font class="font13px">Username</font></td>
-                <td><font class="font13px">Password</font></td>
-                <td><font class="font13px">Shared secret</font></td>
+                <td><font class="font13pxgrey">IP address</font></td>
+                <td><font class="font13pxgrey">Description</font></td>
+                <td><font class="font13pxgrey">Username</font></td>
+                <td><font class="font13pxgrey">Password</font></td>
+                <td><font class="font13pxgrey">Shared secret</font></td>
             </tr>
             <tr>
-                <form method=post">
+                <form method="post">
                     <input type="hidden" name="id" id="editdeviceid" value="">
                     <input name='currentpageoffset' type='hidden' data-currentpageoffset="{{pageoffset}}" />
                     <input name="totalpages" type="hidden" data-totalpages="{{ totalpages }}" />

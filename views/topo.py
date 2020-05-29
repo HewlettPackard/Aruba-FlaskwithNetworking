@@ -34,7 +34,8 @@ def topodeviceStatus ():
     sysvars=classes.globalvars()
     formresult=request.form
     # Obtain the device status from the database
-    return classes.checktopoDevice(formresult['deviceid'])
+    result=classes.checktopoDevice(formresult['deviceid'])
+    return result
 
 @topo.route("/topoInfo", methods=['GET', 'POST'])
 def topoInfo ():

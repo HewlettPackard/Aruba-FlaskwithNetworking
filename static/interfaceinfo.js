@@ -9,6 +9,6 @@ $('.monitor-interface').ready(function () {
         $("div[data-chart='interfaceinfo']").load('showInterface?deviceid=' + deviceid + '&interface=' + interface + '&ostype=' + ostype);
         }
     }
-    setInterval(refresh, 5000);
+    setInterval(refresh, 15000);
     refresh();
 });

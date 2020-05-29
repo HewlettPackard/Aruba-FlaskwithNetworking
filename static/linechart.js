@@ -18,6 +18,6 @@ $('.monitorGraph').ready(function () {
             $("div[data-memchart='graphData-Memory']").load('showGraph?entity=memory&title=' + memTitle + '&deviceid=' + deviceid + '&ostype=' + ostype + '&stacktype=' + stacktype);
         }
     }
-    setInterval(refresh, 5000);
+    setInterval(refresh, 15000);
     refresh();
 });

@@ -38,7 +38,7 @@ netInfo is dictionary containing a list of variables:
                         <option value='topology' {% if sysvars['landingpage']=='topology' %} selected {% endif %}>Topology</option>
                         <option value='ztpdevice' {% if sysvars['landingpage']=='ztpdevice' %} selected {% endif %}>ZTP devices</option>
                         <option value='ztptemplate' {% if sysvars['landingpage']=='ztptemplate' %} selected {% endif %}>ZTP templates</option>
-                    </select>   
+                    </select>
                 </td>
                 <td><font class="font12pxwhite">Secret Hashing Key (exactly 16 characters)</font></td>
                 <td class="whiteBG">
@@ -52,6 +52,14 @@ netInfo is dictionary containing a list of variables:
                 <td class="whiteBG"><input type="number" name="retain_snmp" value="{{sysvars['retain_snmp']}}" /><font class="font11px"> days</font></td>
                 <td><font class="font12pxwhite">Purge Syslog information after</font></td>
                 <td class="whiteBG"><input type="number" name="retain_syslog" value="{{sysvars['retain_syslog']}}" /><font class="font11px"> days</font></td>
+            </tr>
+            <tr>
+                <td><font class="font12pxwhite">Purge ZTP log information after</font></td>
+                <td class="whiteBG"><input type="number" name="retain_ztplog" value="{{sysvars['retain_ztplog']}}" /><font class="font11px"> days</font></td>
+                <td><font class="font12pxwhite">Purge Listener log information after</font></td>
+                <td class="whiteBG"><input type="number" name="retain_listenerlog" value="{{sysvars['retain_listenerlog']}}" /><font class="font11px"> days</font></td>
+                <td><font class="font12pxwhite">Purge Topology log information after</font></td>
+                <td class="whiteBG"><input type="number" name="retain_topologylog" value="{{sysvars['retain_topologylog']}}" /><font class="font11px"> days</font></td>
             </tr>
             <tr>
                 <td><font class="font12pxwhite">IPAM System</font></td>

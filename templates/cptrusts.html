@@ -8,7 +8,7 @@
             <td nowrap><font class='font12pxwhite'>Subject DN</font></td>
             <td nowrap><font class='font12pxwhite'>Issue date</font></td>
             <td nowrap><font class='font12pxwhite'>Expiry date</font></td>
-            <td nowrap><font class='font12pxwhite'>Valid</font></td>
+            <td nowrap><font class='font12pxwhite'>Validity</font></td>
             <td nowrap><font class='font12pxwhite'>Status</font></td>
             <td nowrap colspan="2"><font class='font12pxwhite'>Certificate usage</font></td>
         </tr>
@@ -16,19 +16,19 @@
             <input type="hidden" name="currenttrEntryperpage" id="currenttrEntryperpage" value="{{ trEntryperpage }}" />
             <tr style="background-color: grey;" class="tableTitle">
                 <td nowrap></td>
-                <td nowrap><input type="text" name="searchSubjectdn" value="" /></td>
+                <td nowrap><input type="text" name="searchSubject" value="{{ searchSubject }}" id="searchSubject"></td>
                 <td></td>
                 <td></td>
-                <td><select name="searchValid">
-    <option value="">Select</option>
-    <option value="valid">Valid</option>
-    <option value="invalid">Invalid</option>
+                <td><select name="searchValid" onchange="showTrusts({{ deviceInfo['id'] }})" id="searchValid">
+    <option value="" {% if searchValid=="" %} selected {% endif %}>Select</option>
+    <option value="valid" {% if searchValid=="valid" %} selected {% endif %}>Valid</option>
+    <option value="invalid" {% if searchValid=="invalid" %} selected {% endif %}>Invalid</option>
 </select></td>
                 <td nowrap>
-                    <select name="searchStatus">
-                        <option value="">Select</option>
-                        <option value="False">Disabled</option>
-                        <option value="True">Enabled</option>
+                    <select name="searchStatus" onchange="showTrusts({{ deviceInfo['id'] }})" id="searchStatus">
+                        <option value="" {% if searchStatus=="" %} selected {% endif %}>Select</option>
+                        <option value="false" {% if searchStatus=="false" %} selected {% endif %}>Disabled</option>
+                        <option value="true" {% if searchStatus=="true" %} selected {% endif %}>Enabled</option>
                     </select>
                 </td>
                 <td colspan="2" align="right">
@@ -43,7 +43,7 @@
                             <option value="{{ i }}" {% if trPageoffset==i %}selected{% endif %}>{{ i+1 }}</option>
                             {% endfor %}
                         </select> of {{ (trTotalentries/trEntryperpage)|round(0,'ceil')|int }} pages)
-                    </font><input type="button" name="searchAction" value="Search" class="button" id="searchTrusts" />
+                    </font><input type="button" name="searchAction" value="Search" class="button" id="searchTrusts" onclick="showTrusts({{ deviceInfo['id'] }})"/>
                 </td>
             </tr>
         </form>

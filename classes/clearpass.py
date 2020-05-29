@@ -11,6 +11,7 @@ def clearpassdbAction(formresult):
     # This definition is for all the database actions for ClearPass, based on the user click on the pages
     globalsconf=classes.classes.globalvars()
     if(bool(formresult)==True):
+        print(formresult)
         if(formresult['action']=="Submit device"):
             queryStr="insert into devices (description,ipaddress,username,password,secinfo, ostype) values ('{}','{}','{}','{}','{}','{}')"\
             .format(formresult['description'],formresult['ipaddress'],formresult['username'],classes.classes.encryptPassword(globalsconf['secret_key'], formresult['password']),formresult['usersecret'],"ClearPass")
@@ -34,7 +35,9 @@ def clearpassdbAction(formresult):
             classes.classes.sqlQuery(queryStr,"update")
             # Obtain the ClearPass server information
             osresult=getRESTcp(formresult['id'],"server/version")
+            print("OS Result is: {}".format(osresult))
             platformresult=getRESTcp(formresult['id'],"cppm-version")
+            print("Platform result is {}".format(platformresult))
             # If there is a result, then obtaining the token was successful, otherwise we should 
             if type(platformresult) is dict:
                 #Get this information stored in the database
@@ -97,24 +100,27 @@ def getRESTcp (deviceid,geturl):
     globalsconf=classes.classes.globalvars()
     queryStr="select ipaddress, username, password, secinfo from devices where id='{}'".format(deviceid)
     deviceCreds=classes.classes.sqlQuery(queryStr,"selectone")
-    baseurl="https://{}:443/api/".format(deviceCreds['ipaddress'])
-    url="oauth"
-    credentials={"grant_type": "password","client_id": deviceCreds['username'], "client_secret": deviceCreds['secinfo'],"username": deviceCreds['username'],"password": classes.classes.decryptPassword(globalsconf['secret_key'], deviceCreds['password'])}
-    header={'Content-Type':'application/json'}
-    try:
-        # Obtain the new token.
-        response = requests.post(baseurl+url, verify=False, data=json.dumps(credentials),headers=header, timeout=2)
-        # if the status code equals 200, then the call was successful, so we can use the token in the header.
-        if response.status_code==200:
-            # Now, obtain the information from ClearPass
-            authtoken="Bearer " + response.json()['access_token']
-            header={'Content-Type':'application/json','Authorization': authtoken }
-            response = requests.get(baseurl+geturl, verify=False, data=json.dumps(credentials),headers=header, timeout=2)
-            return response.json()
-        else:
+    if deviceCreds:
+        baseurl="https://{}:443/api/".format(deviceCreds['ipaddress'])
+        url="oauth"
+        credentials={"grant_type": "password","client_id": deviceCreds['username'], "client_secret": deviceCreds['secinfo'],"username": deviceCreds['username'],"password": classes.classes.decryptPassword(globalsconf['secret_key'], deviceCreds['password'])}
+        header={'Content-Type':'application/json'}
+        try:
+            # Obtain the new token.
+            response = requests.post(baseurl+url, verify=False, data=json.dumps(credentials),headers=header, timeout=2)
+            # if the status code equals 200, then the call was successful, so we can use the token in the header.
+            if response.status_code==200:
+                # Now, obtain the information from ClearPass
+                authtoken="Bearer " + response.json()['access_token']
+                header={'Content-Type':'application/json','Authorization': authtoken }
+                response = requests.get(baseurl+geturl, verify=False, data=json.dumps(credentials),headers=header, timeout=2)
+                return response.json()
+            else:
+                return 401
+        except:
+            print("Error Renewing the ClearPass token")
             return 401
-    except:
-        print("Error Renewing the ClearPass token")
+    else:
         return 401
 
 
@@ -126,7 +132,7 @@ def checkcpOnline(deviceid):
     else:
         return "Online"
 
-def getendpointInfo(deviceid,epEntryperpage,epPageoffset):
+def getendpointInfo(deviceid,epEntryperpage,epPageoffset, searchMacaddress, searchDescription, searchStatus):
     if not epEntryperpage:
         epEntryperpage=25
     if not epPageoffset:
@@ -135,12 +141,25 @@ def getendpointInfo(deviceid,epEntryperpage,epPageoffset):
         pageOffset=int(epPageoffset)*int(epEntryperpage)
     queryStr="select id, ipaddress, description from devices where id='{}'".format(deviceid)
     deviceInfo=classes.classes.sqlQuery(queryStr,"selectone")
+    # Check out whether there are any filters
+    if searchMacaddress or searchDescription or searchStatus:
+        searchFilter="{\"$and\":["
+        if searchMacaddress:
+            searchFilter+="{\"mac_address\":{\"$contains\":\"" + searchMacaddress + "\"}},"
+        if searchDescription:
+            searchFilter+="{\"description\":{\"$contains\":\"" + searchDescription + "\"}},"
+        if searchStatus:
+            searchFilter+="{\"status\":{\"$eq\":\"" + searchStatus + "\"}},"
+        searchFilter=searchFilter[:-1]
+        searchFilter+="]}"
+    else:
+        searchFilter="{}"
     # Obtain the ClearPass endpoint information from ClearPass
-    url="endpoint?sort=%2Bid&offset=" + str(pageOffset) + "&limit=" + str(epEntryperpage) + "&calculate_count=true"
+    url="endpoint?filter=" + searchFilter + "&sort=%2Bid&offset=" + str(pageOffset) + "&limit=" + str(epEntryperpage) + "&calculate_count=true"
     endpointInfo=classes.classes.getRESTcp(deviceid,url)
-    return {'endpointInfo': endpointInfo,'deviceInfo': deviceInfo, 'epTotalentries': endpointInfo['count'], 'epEntryperpage': epEntryperpage, 'epPageoffset': epPageoffset }
+    return {'endpointInfo': endpointInfo,'deviceInfo': deviceInfo, 'epTotalentries': endpointInfo['count'], 'epEntryperpage': epEntryperpage, 'epPageoffset': epPageoffset , 'searchMacaddress': searchMacaddress, 'searchDescription': searchDescription, 'searchStatus': searchStatus }
 
-def gettrustInfo(deviceid,trEntryperpage,trPageoffset):
+def gettrustInfo(deviceid,trEntryperpage,trPageoffset, searchSubject, searchValid, searchStatus):
     if not trEntryperpage:
         trEntryperpage=25
     if not trPageoffset:
@@ -149,12 +168,26 @@ def gettrustInfo(deviceid,trEntryperpage,trPageoffset):
         pageOffset=int(trPageoffset)*int(trEntryperpage)
     queryStr="select id, ipaddress, description from devices where id='{}'".format(deviceid)
     deviceInfo=classes.classes.sqlQuery(queryStr,"selectone")
+    # Check out whether there are any filters
+    if searchSubject or searchValid or searchStatus:
+        searchFilter="{\"$and\":["
+        if searchSubject:
+            searchFilter+="{\"subject_DN\":{\"$contains\":\"" + searchSubject + "\"}},"
+        if searchValid:
+            searchFilter+="{\"valid\":{\"$eq\":" + searchValid + "}},"
+        if searchStatus:
+            searchFilter+="{\"enabled\":{\"$eq\":" + searchStatus + "}},"
+        searchFilter=searchFilter[:-1]
+        searchFilter+="]}"
+    else:
+        searchFilter="{}"
+    print(searchFilter)
     # Obtain the ClearPass trusted certificates information from ClearPass
-    url="cert-trust-list-details?sort=%2Bid&offset=" + str(pageOffset) + "&limit=" + str(trEntryperpage) + "&calculate_count=true"
+    url="cert-trust-list-details?filter=" + searchFilter + "&sort=%2Bid&offset=" + str(pageOffset) + "&limit=" + str(trEntryperpage) + "&calculate_count=true"
     trustInfo=classes.classes.getRESTcp(deviceid,url)
-    return {'trustInfo': trustInfo,'deviceInfo': deviceInfo, 'trTotalentries': trustInfo['count'], 'trEntryperpage': trEntryperpage, 'trPageoffset': trPageoffset }
+    return {'trustInfo': trustInfo,'deviceInfo': deviceInfo, 'trTotalentries': trustInfo['count'], 'trEntryperpage': trEntryperpage, 'trPageoffset': trPageoffset , 'searchSubject': searchSubject, 'searchValid': searchValid, 'searchStatus': searchStatus }
 
-def getservicesInfo(deviceid,seEntryperpage,sePageoffset):
+def getservicesInfo(deviceid,seEntryperpage,sePageoffset, searchName, searchType, searchTemplate, searchStatus):
     if not seEntryperpage:
         seEntryperpage=25
     if not sePageoffset:
@@ -163,8 +196,23 @@ def getservicesInfo(deviceid,seEntryperpage,sePageoffset):
         pageOffset=int(sePageoffset)*int(seEntryperpage)
     queryStr="select id, ipaddress, description from devices where id='{}'".format(deviceid)
     deviceInfo=classes.classes.sqlQuery(queryStr,"selectone")
+     # Check out whether there are any filters
+    if searchName or searchType or searchTemplate or searchStatus:
+        searchFilter="{\"$and\":["
+        if searchName:
+            searchFilter+="{\"name\":{\"$contains\":\"" + searchName + "\"}},"
+        if searchType:
+            searchFilter+="{\"type\":{\"$contains\":\"" + searchType + "\"}},"
+        if searchTemplate:
+            searchFilter+="{\"template\":{\"$contains\":\"" + searchTemplate + "\"}},"
+        if searchStatus:
+            searchFilter+="{\"enabled\":{\"$eq\":" + searchStatus + "}},"
+        searchFilter=searchFilter[:-1]
+        searchFilter+="]}"
+    else:
+        searchFilter="{}"
+    print(searchFilter)
     # Obtain the ClearPass services information from ClearPass
-    url="config/service?sort=%2Bid&offset=" + str(pageOffset) + "&limit=" + str(seEntryperpage) + "&calculate_count=true"
+    url="config/service?filter=" + searchFilter + "&sort=%2Bid&offset=" + str(pageOffset) + "&limit=" + str(seEntryperpage) + "&calculate_count=true"
     servicesInfo=classes.classes.getRESTcp(deviceid,url)
-    print(servicesInfo)
-    return {'servicesInfo': servicesInfo,'deviceInfo': deviceInfo, 'seTotalentries': servicesInfo['count'], 'seEntryperpage': seEntryperpage, 'sePageoffset': sePageoffset }
+    return {'servicesInfo': servicesInfo,'deviceInfo': deviceInfo, 'seTotalentries': servicesInfo['count'], 'seEntryperpage': seEntryperpage, 'sePageoffset': sePageoffset, 'searchName':searchName, 'searchType': searchType,'searchTemplate': searchTemplate,'searchStatus':searchStatus }

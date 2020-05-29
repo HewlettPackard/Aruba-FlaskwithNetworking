@@ -9,6 +9,6 @@ $('.updatedeviceinfo').ready(function () {
             $("div[data-updateinfo='updatedeviceinfo']").load('updatedeviceinfo?deviceid=' + deviceid + '&ostype=' + ostype + '&stacktype=' + stacktype);
         }
     }
-    setInterval(refresh, 10000);
+    setInterval(refresh, 15000);
     refresh();
 });

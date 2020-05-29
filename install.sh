@@ -66,8 +66,7 @@ add-apt-repository universe -y  > /dev/null
 (DEBIAN_FRONTEND=noninteractive apt-get -qq -y -o=Dpkg::Use-Pty=0 install dos2unix  &>/dev/null) & spinner $! "Installing Dos2Unix....."
 (DEBIAN_FRONTEND=noninteractive apt-get -qq -y -o=Dpkg::Use-Pty=0 install tshark  &>/dev/null) & spinner $! "Installing Tshark....."
 (DEBIAN_FRONTEND=noninteractive apt-get -qq -y -o=Dpkg::Use-Pty=0 install apache2 &> /dev/null) & spinner $! "Installing Apache2....."
-(DEBIAN_FRONTEND=noninteractive apt-get -qq -y -o=Dpkg::Use-Pty=0 install tftpd &> /dev/null) & spinner $! "Installing TFTP Daemon....."
-(DEBIAN_FRONTEND=noninteractive apt-get -qq -y -o=Dpkg::Use-Pty=0 install tftp  &> /dev/null) & spinner $! "Installing TFTP Client....."
+(DEBIAN_FRONTEND=noninteractive apt-get -qq -y -o=Dpkg::Use-Pty=0 install tftpd-hpa &> /dev/null) & spinner $! "Installing TFTP Daemon....."
 (DEBIAN_FRONTEND=noninteractive apt-get -qq -y -o=Dpkg::Use-Pty=0 install mysql-server &> /dev/null) & spinner $! "Installing Mysql Server....."
 (DEBIAN_FRONTEND=noninteractive apt-get -qq -y -o=Dpkg::Use-Pty=0 install mysql-client &> /dev/null) & spinner $! "Installing Mysql Client....."
 
@@ -83,27 +82,21 @@ mkdir /home/tftpboot
 fi
 
 chmod -R 777 /home/tftpboot
-chown -R nobody /home/tftpboot
+chown -R tftp /home/tftpboot
 
 # Create the configuration file for TFTP
 
-cat > /etc/xinetd.d/tftp  << ENDOFFILE
-service tftp
-{
-protocol        = udp
-port            = 69
-socket_type     = dgram
-wait            = yes
-user            = nobody
-server          = /usr/sbin/in.tftpd
-server_args     = /home/tftpboot
-disable         = no
-}
+cat > /etc/default/tftpd-hpa  << ENDOFFILE
+# /etc/default/tftpd-hpa
+TFTP_USERNAME="tftp"
+TFTP_DIRECTORY="/home/tftpboot"
+TFTP_ADDRESS=":69"
+TFTP_OPTIONS="--secure"
 ENDOFFILE
 
 # Restart TFTP daemon
 
-service xinetd restart
+service tftpd-hpa restart
 
 # Install the Python modules
 
@@ -159,7 +152,7 @@ echo " Configuring the app"
 
 activeInterface=$(route | grep '^default' | grep -o '[^ ]*$')
 cat > /var/www/html/bash/globals.json  << ENDOFFILE
-{"idle_timeout": "3000", "pcap_location": "/var/www/html/bash/trace.pcap", "retain_dhcp": "30", "retain_snmp": "30", "retain_syslog": "30", "secret_key": "ArubaRocks!!!!!!", "appPath": "/var/www/html/", "softwareRelease": "1.3", "sysInfo": "","activeInterface":"$activeInterface","ztppassword":"ztpinit","landingpage":"/"}
+{"idle_timeout": "3000", "pcap_location": "/var/www/html/bash/trace.pcap", "retain_dhcp": "30", "retain_snmp": "30", "retain_ztplog": "5", "retain_listenerlog": "5", "retain_cleanuplog": "5", "retain_topologylog": "5","retain_syslog": "30","secret_key": "ArubaRocks!!!!!!", "appPath": "/var/www/html/", "softwareRelease": "1.3", "sysInfo": "","activeInterface":"$activeInterface","ztppassword":"ztpinit","landingpage":"/"}
 ENDOFFILE
 chmod 777 /var/www/html/bash/listener.sh
 chmod 777 /var/www/html/bash/cleanup.sh

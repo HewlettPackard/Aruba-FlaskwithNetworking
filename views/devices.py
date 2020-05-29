@@ -219,15 +219,15 @@ def mcStatus ():
 
 @devices.route("/cpEndpoints", methods=['GET','POST'])
 def cpEndpoints ():
-    result=classes.getendpointInfo(request.args.get('deviceid'),request.args.get('epEntryperpage'),request.args.get('epPageoffset'))
-    return render_template("cpendpoints.html", endpointInfo=result['endpointInfo'], deviceInfo=result['deviceInfo'], epTotalentries=int(result['epTotalentries']), epEntryperpage=int(result['epEntryperpage']),epPageoffset=int(result['epPageoffset']))
+    result=classes.getendpointInfo(request.args.get('deviceid'),request.args.get('epEntryperpage'),request.args.get('epPageoffset'),request.args.get('searchMacaddress'),request.args.get('searchDescription'),request.args.get('searchStatus'))
+    return render_template("cpendpoints.html", endpointInfo=result['endpointInfo'], deviceInfo=result['deviceInfo'], epTotalentries=int(result['epTotalentries']), epEntryperpage=int(result['epEntryperpage']),epPageoffset=int(result['epPageoffset']), searchMacaddress=result['searchMacaddress'],searchDescription=result['searchDescription'], searchStatus=result['searchStatus'])
 
 @devices.route("/cpTrusts", methods=['GET','POST'])
 def cpTrusts ():
-    result=classes.gettrustInfo(request.args.get('deviceid'),request.args.get('trEntryperpage'),request.args.get('trPageoffset'))
-    return render_template("cptrusts.html", trustInfo=result['trustInfo'], deviceInfo=result['deviceInfo'], trTotalentries=int(result['trTotalentries']), trEntryperpage=int(result['trEntryperpage']),trPageoffset=int(result['trPageoffset']))
+    result=classes.gettrustInfo(request.args.get('deviceid'),request.args.get('trEntryperpage'),request.args.get('trPageoffset'),request.args.get('searchSubject'),request.args.get('searchValid'),request.args.get('searchStatus'))
+    return render_template("cptrusts.html", trustInfo=result['trustInfo'], deviceInfo=result['deviceInfo'], trTotalentries=int(result['trTotalentries']), trEntryperpage=int(result['trEntryperpage']),trPageoffset=int(result['trPageoffset']), searchSubject=result['searchSubject'],searchValid=result['searchValid'], searchStatus=result['searchStatus'])
 
 @devices.route("/cpServices", methods=['GET','POST'])
 def cpServices ():
-    result=classes.getservicesInfo(request.args.get('deviceid'),request.args.get('seEntryperpage'),request.args.get('sePageoffset'))
-    return render_template("cpservices.html", servicesInfo=result['servicesInfo'], deviceInfo=result['deviceInfo'], seTotalentries=int(result['seTotalentries']), seEntryperpage=int(result['seEntryperpage']),sePageoffset=int(result['sePageoffset']))
+    result=classes.getservicesInfo(request.args.get('deviceid'),request.args.get('seEntryperpage'),request.args.get('sePageoffset'),request.args.get('searchName'),request.args.get('searchType'),request.args.get('searchTemplate'),request.args.get('searchStatus'))
+    return render_template("cpservices.html", servicesInfo=result['servicesInfo'], deviceInfo=result['deviceInfo'], seTotalentries=int(result['seTotalentries']), seEntryperpage=int(result['seEntryperpage']),sePageoffset=int(result['sePageoffset']),searchName=result['searchName'],searchType=result['searchType'],searchTemplate=result['searchTemplate'],searchStatus=result['searchStatus'])

@@ -226,7 +226,7 @@ def ztpupdate():
                     ztpstatus="Upgrade in progress"
                     queryStr="update ztpdevices set ztpstatus='{}' where id='{}'".format(ztpstatus,items['id'])
                     cursor.execute(queryStr)
-                elif response['status']=="failure":
+                elif response['status']=="failure" or response['status']=="none":
                     ztpstatus="Failed to upgrade switch, retrying.."
                     queryStr="update ztpdevices set enableztp=2, ztpstatus='{}' where id='{}'".format(ztpstatus,items['id'])
                     cursor.execute(queryStr)
@@ -477,7 +477,7 @@ def ztpupdate():
                     try:
                         client=SSHClient()
                         client.set_missing_host_key_policy(AutoAddPolicy)
-                        client.connect(vsfmasterResult[0]['ipaddress'],username="ztpuser",password=decryptPassword(globalconf['secret_key'], vsfmasterResult[0]['adminpassword']))
+                        client.connect(vsfmasterResult[0]['ipaddress'],username="ztpuser",password=globalconf['ztppassword'])
                         connection=client.invoke_shell()
                         connection.send("\n")
                         time.sleep(1)
@@ -500,7 +500,7 @@ def ztpupdate():
                         else:
                             # Secondary is already configured. Now check the VSF status again. If the member is up and running again, we can set the status to completed
                             url="system/vsf_members/"+str(items['vsfmember'])
-                            response=getRESTcxIP(vsfmasterResult[0]['ipaddress'],"ztpuser",decryptPassword(globalconf['secret_key'], vsfmasterResult[0]['adminpassword']),url)
+                            response=getRESTcxIP(vsfmasterResult[0]['ipaddress'],"ztpuser",globalconf['ztppassword'],url)
                             if response['status']=="ready":
                                 # It is done. The member switch has been provisioned
                                 print("STAGE 100: ZTP HAS BEEN COMPLETED")
@@ -524,7 +524,7 @@ def ztpupdate():
             queryStr="select * from ztpdevices where id='{}'".format(items['vsfmaster'])
             cursor.execute(queryStr)
             masterResult=cursor.fetchall()
-            masterResult[0]['adminpassword']=decryptPassword(globalconf['secret_key'], masterResult[0]['adminpassword'])
+            masterResult[0]['adminpassword']=globalconf['ztppassword']
             url="system/vsf_members/"+ str(items['vsfmember'])+"?attributes=role&depth=1"
             if masterResult[0]['enableztp']==100:
                 # ZTP has been completed, we have to use the configured admin user. If not completed, we can use the ztpinit user account
@@ -594,7 +594,7 @@ def ztpupdate():
                 templateResult=cursor.fetchall()
                 # Create the template
                 # Because the template overwrites the complete configuration, we have to add the initial user
-                addUser="user ztpuser group administrators password plaintext {}".format(decryptPassword(globalconf['secret_key'], items['adminpassword']))
+                addUser="user ztpuser group administrators password plaintext {}".format(globalconf['ztppassword'])
                 jinjaTemplate=Template(templateResult[0]['template'])
                 # Template is loaded successfully. Now try to push the parameters into the template
                 templateOutput=jinjaTemplate.render(json.loads(items['templateparameters']))
@@ -621,6 +621,9 @@ def ztpupdate():
                 deviceIP=checkztpIPaddress(items['ipaddress'],items['netmask'],items['macaddress'],cursor)
                 # If the configuration has already been pushed but something went wrong and the IP address and or username has not changed in the database, we have to make that change
                 configChange=checkifChanged(deviceIP,items['ipaddress'],password,items['id'],cursor)
+                print("Configuration change is {}".format(configChange))
+                if configChange==0:
+                    username="admin"
                 if configChange==1:
                     # The configuration has been pushed and the admin user has changed. IP address is unchanged
                     username="ztpuser"
@@ -634,24 +637,30 @@ def ztpupdate():
                     # It implies that the configuration has already been pushed but something went wrong
                     username="ztpuser"
                     items['ipaddress']=deviceIP
+                    vrf=checkVRF(items['ipaddress'],username,password)
                     queryStr="update ztpdevices set ipaddress='{}', vrf='{}' where ipaddress='{}' and macaddress='{}'".format(deviceIP,vrf,items['ipaddress'],items['macaddress']) 
+                    print(queryStr)
                     cursor.execute(queryStr)
                 url="fullconfigs/running-config?from=tftp%3A%2F%2F" + hostip + "%2F" + items['macaddress'] + "template.cfg&vrf=" + vrf
                 try:
+                    print(items['ipaddress'],username,password,url)
                     response=putRESTcxIP(items['ipaddress'],username,password,url,'') 
+                    print("Response push to running is {}".format(response))
                     if response==200:
                         logEntry(items['id'],"Stage 6: The push to the running configuration was successful. Now put the configuration in the startup", cursor)
                         # Now that the push has been successful, if there was a change in IP address of the management interface, or VLAN 1 interface, we have to update 
                         # the device IP address in the database
                         # The push to the running configuration was successful. Now put the configuration in the startup
                         # And from here, we have to use the ztpuser account that was added to the configuration template
-                        url="fullconfigs/startup-config?from=%2Frest%2Fv1%2Ffullconfigs%2Frunning-config"
+                        if deviceIP!=items['ipaddress']:
+                            items['ipaddress']=deviceIP
                         # The push to the running configuration was successful. Now repeat the push and store the configuration to the startup-config
-                        response=putRESTcxIP(items['ipaddress'],"ztpuser",decryptPassword(globalconf['secret_key'], items['adminpassword']),url,'')
+                        response=putRESTcxIP(items['ipaddress'],"ztpuser",globalconf['ztppassword'],url,'')
+                        print("Response push to startup is {}".format(response))
                         if response==200:
                             # The put to the startup config was successful
                             url="system?attributes=platform_name"
-                            response=getRESTcxIP(items['ipaddress'],"ztpuser",decryptPassword(globalconf['secret_key'], items['adminpassword']),url)
+                            response=getRESTcxIP(items['ipaddress'],"ztpuser",globalconf['ztppassword'],url)
                             if response['platform_name']:
                                 queryStr="update ztpdevices set ipaddress='{}' where macaddress='{}'".format(items['ipaddress'],items['macaddress']) 
                                 cursor.execute(queryStr)
@@ -707,7 +716,7 @@ def ztpupdate():
             if checkSecondary:
                 # There is a secondary switch in the VSF. We have to check whether the secondary switch has joined the VSF. If it has (status=ready and role=secondary), then ZTP is completed
                 url="system/vsf_members?depth=1"
-                response=getRESTcxIP(items['ipaddress'],"ztpuser",decryptPassword(globalconf['secret_key'], items['adminpassword']),url)
+                response=getRESTcxIP(items['ipaddress'],"ztpuser",globalconf['ztppassword'],url)
                 # First check, are all switches up and running (status ready)
                 notReady=1
                 for statusItems in response:
@@ -903,6 +912,7 @@ def checkVRF(ip,username,password):
     # Check the management VRF IP address against the configured IP address. If there is a match we need to return the mgmt VRF, else the default VRF
     url="system?attributes=mgmt_intf%2Cmgmt_intf_status&depth=2"
     response=getRESTcxIP(ip,username,password,url)
+    print("response in check vrf is {}".format(response))
     if response:
         if "ip" in response['mgmt_intf_status']:
             if response['mgmt_intf_status']['ip']==ip:
@@ -957,26 +967,44 @@ def checkztpUser(ip,password):
 def checkifChanged(deviceIP,ztpip,password,id,cursor):
     url="system?attributes=platform_name"
     # First check if the IP address has changed
+    print("Device IP is: {}".format(deviceIP))
+    print("ZTP IP is: {}".format(ztpip))
+    print("Password is: {}".format(password))
     if (deviceIP==ztpip):
         adminResult=getRESTcxIP(ztpip,"admin",password,url)
         ztpResult=getRESTcxIP(ztpip,"ztpuser",password,url)
         if adminResult:
             # Nothing has changed
+            print("Nothing has changed")
             return 0
         elif ztpResult:
             # The configuration has been pushed and the admin user has changed
+            print("Configuration has been pushed and the admin user has changed")
             return 1
         else:
            return 0
     else:
         adminResult=getRESTcxIP(deviceIP,"admin",password,url)
         ztpResult=getRESTcxIP(deviceIP,"ztpuser",password,url) 
-        if adminResult:
+        # There is a third situation, where the configuration has not been pushed, so the IP address of the device has not changed
+        # This means that we also have to check admin access on the ztp ip address
+        ztpinitResult=getRESTcxIP(ztpip,"admin",password,url)
+        print("Admin result is {}".format(adminResult))
+        print("Ztpuser result is {}".format(ztpResult))
+        print("ztp init result is {}".format(ztpinitResult))
+        if ztpinitResult:
+            # Nothing has changed
+            print("Nothing has changed")
+            return 0
+        elif adminResult:
             # IP address has changed, but admin still has access
+            print("IP address has changed but admin still has access")
             return 2
         elif ztpResult:
             # IP address and admin access has changed
+            print("IP address and admin access has changed")
             return 3
         else:
-           return 0
+            print("Something went wrong checking there has to be a change of IP address, option 2 or 3 have to be returned")
+            return 4
     return 0

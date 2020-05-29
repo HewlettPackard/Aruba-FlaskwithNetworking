@@ -9,6 +9,8 @@
             <td width="10%" align="left" nowrap><font class="font11px">{{ cpu }}%</font></td>
             <td width="10%" align="left" nowrap><font class="font11px">{{ memory }}%</font></td>
             <td width="10%" align="left" nowrap>
+                <input type="button" name="Clear log" id="clearLogclick" data-processname="{{ name|lower }}" value="Clear log" class="button clearLog" />
+                <input type="button" name="Download log" value="Download log" class="button downloadLog" id="{{ name|lower}}showLog" data-processname="{{ name|lower }}">           
                 {% if status==True %}
                 <input type="submit" name="action" value="Stop" />
                 {% else %}
@@ -18,4 +20,6 @@
         </tr>
     </table>
 </form>
+
+<div id="showLog" style="display:none;">Show Log</div>
 {% endblock %}

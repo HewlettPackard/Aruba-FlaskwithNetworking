@@ -80,3 +80,19 @@ def ipamStatus():
     elif formresult['ipamsystem']=="Infoblox":
         result=classes.checkInfoblox(formresult)
     return result
+
+@sysadmin.route("/clearprocessLog",methods=['GET','POST'])
+def clearprocessLog():
+    formresult=request.form
+    with open("/var/www/html/log/{}.log".format(formresult['processName']), 'w') as logFile:
+        logFile.write(str(int(time.time()))+"\n")
+    logFile.close()
+    return "{} Log is cleared".format(formresult['processName'])
+
+@sysadmin.route("/downloadLog",methods=['GET','POST'])
+def downloadLog():
+    formresult=request.form
+    logFile=open("/var/www/html/log/{}.log".format(formresult['processName'],"r"))
+    logContent=logFile.read()
+    logFile.close()
+    return json.dumps([formresult['processName'],logContent])
