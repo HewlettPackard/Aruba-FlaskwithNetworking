@@ -4,6 +4,8 @@
 import classes.classes
 import requests
 import base64
+from netmiko import ConnectHandler
+
 
 import urllib3
 import json
@@ -11,6 +13,18 @@ urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)
 
 import datetime
 from time import gmtime, strftime, time
+
+def resetRest(deviceid):
+    globalsconf=classes.classes.globalvars()
+    queryStr="select ipaddress, username, password from devices where id='{}'".format(deviceid)
+    deviceCreds=classes.classes.sqlQuery(queryStr,"selectone")
+    params={'device_type':'hp_procurve','ip':deviceCreds['ipaddress'],'username':deviceCreds['username'],'password':classes.classes.decryptPassword(globalsconf['secret_key'], deviceCreds['password'])}
+    net_connect=ConnectHandler(**params)
+    net_connect.config_mode()
+    commands = ["no rest-interface","rest-interface","end"]
+    net_connect.send_config_set(commands)
+    net_connect.disconnect()
+
 
 def loginswitch (deviceid):
     globalsconf=classes.classes.globalvars()
@@ -20,13 +34,23 @@ def loginswitch (deviceid):
     credentials = {"userName": deviceCreds['username'], "password": classes.classes.decryptPassword(globalsconf['secret_key'], deviceCreds['password']) }
     try:
         # Login to the switch. The cookie value is returned to the calling definition. It is not stored in the cookie jar.
-        response = requests.post(url, verify=False, data=json.dumps(credentials), timeout=2)
-        sessioninfo = response.json()
-        header={'cookie': sessioninfo['cookie']}
-        #print("Logged into Arubaos-Switch")
-        return header
+        response = requests.post(url, verify=False, data=json.dumps(credentials), timeout=5)
+        # If the response is 503, then the switch is out of REST sessions. This means that we need to reset the REST sessions
+        if response.status_code==503:
+            resetRest(deviceid)
+            response = requests.post(url, verify=False, data=json.dumps(credentials), timeout=5)
+            sessioninfo = response.json()
+            header={'cookie': sessioninfo['cookie']}
+            print("Logged into Arubaos-Switch")
+            return header
+
+        else:
+            sessioninfo = response.json()
+            header={'cookie': sessioninfo['cookie']}
+            print("Logged into Arubaos-Switch")
+            return header
     except:
-        #print("Error logging into Arubaos-Switch")
+        print("Error logging into Arubaos-Switch")
         return 401
 
 def logoutswitch(header,deviceid):
@@ -35,7 +59,7 @@ def logoutswitch(header,deviceid):
     url="http://{}/rest/v7/login-sessions".format(deviceCreds['ipaddress'])
     try:
         response = requests.delete(url,headers=header,timeout=5)
-        #print("Logged out from Arubaos-Switch")
+        print("Logged out from Arubaos-Switch")
     except:
         print("Error logging out of Arubaos-Switch")
 
@@ -113,7 +137,6 @@ def getswitchInfo(deviceid, stacktype):
         pass
     # If operating in a VSF stack, obtain all VSF information from the stack based on the urllist
     if stacktype=="vsf":
-        bpsinfo={}
         urllist=["stacking/vsf/global_config","stacking/vsf/info","stacking/vsf/members","stacking/vsf/members/system_info","stacking/vsf/members_links_ports","system/status/members"]
         for vsfitems in urllist:
             try:
@@ -122,13 +145,14 @@ def getswitchInfo(deviceid, stacktype):
             except:
                 pass
         # Now for CPU and Memory. First obtain the commander device id
-        for items in vsfinfo['vsf_member_element']:
-            if items['status']=="VMS_COMMANDER":
-                # Commander found. Need to get the CPU utilization and available memory
-                for cpumemitems in vsfinfo['vsf_member_system_info_element']:
-                    if cpumemitems['member_id']==items['member_id']:
-                        cpuValappend=cpumemitems['cpu_util']
-                        memValappend=cpumemitems['free_mem']
+        if "vsf_member_element" in vsfinfo:
+            for items in vsfinfo['vsf_member_element']:
+                if items['status']=="VMS_COMMANDER":
+                    # Commander found. Need to get the CPU utilization and available memory
+                    for cpumemitems in vsfinfo['vsf_member_system_info_element']:
+                        if cpumemitems['member_id']==items['member_id']:
+                            cpuValappend=cpumemitems['cpu_util']
+                            memValappend=cpumemitems['free_mem']
         # Now obtain the CPU and memory values from the database and append the latest CPU and memory value to the database
         queryStr="select cpu, memory from devices where id='{}'".format(deviceid)
         cpumemVal=classes.classes.sqlQuery(queryStr,"selectone")
@@ -147,7 +171,6 @@ def getswitchInfo(deviceid, stacktype):
         memVallist=json.dumps(memVallist[-30:])   
     # If operating in a BPS stack, obtain all BPS information from the stack based on the urllist
     elif stacktype=="bps":
-        vsfinfo={}
         urllist=["stacking/bps/info","stacking/bps/members","stacking/bps/members/system_info","stacking/bps/stack_ports","system/status/members"]
         for bpsitems in urllist:
             try:

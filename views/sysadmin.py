@@ -4,7 +4,7 @@ from flask import current_app, Blueprint, json, request
 import time
 sysadmin = Blueprint('sysadmin', __name__)
 
-from datetime import datetime
+from datetime import datetime, time
 from flask import render_template
 
 import classes.classes as classes
@@ -85,7 +85,9 @@ def ipamStatus():
 def clearprocessLog():
     formresult=request.form
     with open("/var/www/html/log/{}.log".format(formresult['processName']), 'w') as logFile:
-        logFile.write(str(int(time.time()))+"\n")
+        # Write the timestamp
+        timestamp=int(datetime.combine(datetime.today(), time.min).timestamp())
+        logFile.write("{'timestamp':'"+str(timestamp)+"'}\n")
     logFile.close()
     return "{} Log is cleared".format(formresult['processName'])
 

@@ -18,7 +18,6 @@ urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)
 from base64 import b64encode, b64decode
 from Crypto.Cipher import AES
 from Crypto.Util.Padding import pad, unpad
-print("Tracker classes")
 
 def trackers():
     trackerslog = open('/var/www/html/log/trackers.log', 'a')

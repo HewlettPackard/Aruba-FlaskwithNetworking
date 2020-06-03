@@ -113,6 +113,7 @@ service tftpd-hpa restart
 (pip3 install --default-timeout=100 pyshark > /dev/null) & spinner $! "Installing Python3 pyshark library....."
 (pip3 install --default-timeout=100 psutil > /dev/null) & spinner $! "Installing Python3 psutil library....."
 (pip3 install --default-timeout=100 paramiko > /dev/null) & spinner $! "Installing Python3 paramiko library....."
+(pip3 install --default-timeout=100 netmiko > /dev/null) & spinner $! "Installing Python3 netmiko library....."
 (pip3 install --default-timeout=100 waitress > /dev/null) & spinner $! "Installing Python3 waitress library....."
 
 # Mysql user, database and table structure creation

@@ -61,6 +61,7 @@ add-apt-repository universe -y  > /dev/null
 python3 ./bash/upgrade.py
 
 (pip3 install --default-timeout=100 pyshark > /dev/null) & spinner $! "Installing Pyshark....."
+(pip3 install --default-timeout=100 netmiko > /dev/null) & spinner $! "Installing Python3 netmiko library....."
 
 echo ""
 echo " Upgrade the app"
@@ -140,9 +141,13 @@ cp ./templates/switch.html /var/www/html/templates/switch.html > /dev/null
 cp ./templates/syslog.html /var/www/html/templates/syslog.html > /dev/null
 cp ./templates/sysmon.html /var/www/html/templates/sysmon.html > /dev/null
 cp ./templates/ztpdevice.html /var/www/html/templates/ztpdevice.html > /dev/null
+cp ./templates/cpendpoints.html /var/www/html/templates/cpendpoints.html > /dev/null
+cp ./templates/cpservices.html /var/www/html/templates/cpservices.html > /dev/null
+cp ./templates/cptrusts.html /var/www/html/templates/cptrusts.html > /dev/null
 cp ./views/deviceview.py /var/www/html/views/deviceview.py > /dev/null
 cp ./views/sysadmin.py /var/www/html/views/sysadmin.py > /dev/null
 cp ./views/topo.py /var/www/html/views/topo.py > /dev/null
+cp ./views/devices.py /var/www/html/views/devices.py > /dev/null
 
 chmod 777 /var/www/html/bash/listener.sh
 chmod 777 /var/www/html/bash/trackers.sh

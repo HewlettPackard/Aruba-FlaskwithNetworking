@@ -30,15 +30,23 @@ def discoverTopology():
     dbconnection=pymysql.connect(host='localhost',user='aruba',password='ArubaRocks',db='aruba', autocommit=True)
     cursor=dbconnection.cursor(pymysql.cursors.DictCursor)
     # First step is to get all the devices from the database that have topology discovery enabled
-    queryStr="select ipaddress,username,password,ostype from devices where topology='1'"
+    queryStr="select ipaddress,username,password,ostype, sysinfo from devices where topology='1'"
     cursor.execute(queryStr)
     result = cursor.fetchall()
     for items in result:
         password=decryptPassword(globalconf['secret_key'], items['password']) 
         # First check whether it is an ArubaOS-Switch or an AOS-CX switch
         if items['ostype']=="arubaos-switch":
-            # Get the system name and system MAC address
-            url="system/status"
+            # Now determine whether the switch is running as standalone or in VSF
+            sysinfo=json.loads(result[0]['sysinfo'])
+            if "switch_type" in sysinfo:
+                if sysinfo['switch_type']=="ST_STACKED":
+                    # It's a VSF switch
+                    url="system/status/global_info"
+            else:
+                # It's a stand alone switch
+                url="system/status"
+                # Get the system name and system MAC address        
             try:
                 header=loginswitch(items['ipaddress'],items['username'],password)
                 switchresult=getRESTswitch(items['ipaddress'],header,url)
@@ -80,7 +88,8 @@ def discoverTopology():
                     print("Could not create or update topology for switch {}".format(items['ipaddress']))
                     pass
             except:
-                #print ("could not obtain information from Arubaos-switch")
+                print ("could not obtain information from Arubaos-switch")
+                logoutswitch(items['ipaddress'], header)
                 pass
             
         elif items['ostype']=="arubaos-cx":
@@ -142,10 +151,11 @@ def loginswitch(ipaddress,username,password):
     credentials = {"userName": username, "password": password }
     try:
         # Login to the switch. The cookie value is returned to the calling definition. It is not stored in the cookie jar.
-        response = requests.post("http://{}/rest/v7/login-sessions".format(ipaddress), verify=False, data=json.dumps(credentials), timeout=2)
+        response = requests.post("http://{}/rest/v7/login-sessions".format(ipaddress), verify=False, data=json.dumps(credentials), timeout=5)
+        print(response.status_code)
         sessioninfo = response.json()
         header={'cookie': sessioninfo['cookie']}
-        #print("Logged into Arubaos-Switch")
+        print("Logged into Arubaos-Switch")
         return header
     except:
         #print("Error logging into Arubaos-Switch")
@@ -154,9 +164,9 @@ def loginswitch(ipaddress,username,password):
 def logoutswitch(ipaddress, header):
     try:
         requests.delete("http://{}/rest/v7/login-sessions".format(ipaddress),headers=header,timeout=5)
-        #print("Logged out of {}".format(ipaddress))
+        print("Logged out of {}".format(ipaddress))
     except:
-        #print("Error logging out of Arubaos-Switch")
+        print("Error logging out of Arubaos-Switch")
         pass
 
 def getRESTswitch(ipaddress,header,url):

@@ -95,7 +95,7 @@ def showGraph ():
 
 @deviceview.route("/updatedeviceinfo", methods=['GET', 'POST'])
 def updatedeviceinfo ():
-    #Obtain all relevant information from a selected device
+    #Obtain all relevant information from a device
     deviceid=int(request.args.get('deviceid'))
     queryStr="select sysinfo,ostype from devices where id='{}'".format(request.args.get('deviceid'))
     deviceinfo=classes.sqlQuery(queryStr,"selectone")

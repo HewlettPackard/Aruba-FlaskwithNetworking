@@ -11,7 +11,6 @@ def clearpassdbAction(formresult):
     # This definition is for all the database actions for ClearPass, based on the user click on the pages
     globalsconf=classes.classes.globalvars()
     if(bool(formresult)==True):
-        print(formresult)
         if(formresult['action']=="Submit device"):
             queryStr="insert into devices (description,ipaddress,username,password,secinfo, ostype) values ('{}','{}','{}','{}','{}','{}')"\
             .format(formresult['description'],formresult['ipaddress'],formresult['username'],classes.classes.encryptPassword(globalsconf['secret_key'], formresult['password']),formresult['usersecret'],"ClearPass")
@@ -35,9 +34,7 @@ def clearpassdbAction(formresult):
             classes.classes.sqlQuery(queryStr,"update")
             # Obtain the ClearPass server information
             osresult=getRESTcp(formresult['id'],"server/version")
-            print("OS Result is: {}".format(osresult))
             platformresult=getRESTcp(formresult['id'],"cppm-version")
-            print("Platform result is {}".format(platformresult))
             # If there is a result, then obtaining the token was successful, otherwise we should 
             if type(platformresult) is dict:
                 #Get this information stored in the database
@@ -118,7 +115,7 @@ def getRESTcp (deviceid,geturl):
             else:
                 return 401
         except:
-            print("Error Renewing the ClearPass token")
+            print("Cannot obtain information from ClearPass")
             return 401
     else:
         return 401
@@ -157,7 +154,13 @@ def getendpointInfo(deviceid,epEntryperpage,epPageoffset, searchMacaddress, sear
     # Obtain the ClearPass endpoint information from ClearPass
     url="endpoint?filter=" + searchFilter + "&sort=%2Bid&offset=" + str(pageOffset) + "&limit=" + str(epEntryperpage) + "&calculate_count=true"
     endpointInfo=classes.classes.getRESTcp(deviceid,url)
-    return {'endpointInfo': endpointInfo,'deviceInfo': deviceInfo, 'epTotalentries': endpointInfo['count'], 'epEntryperpage': epEntryperpage, 'epPageoffset': epPageoffset , 'searchMacaddress': searchMacaddress, 'searchDescription': searchDescription, 'searchStatus': searchStatus }
+    if endpointInfo==401:
+        # Something went wrong with the query. Obtain the information without search criteria
+        url="endpoint?sort=%2Bid&offset=" + str(pageOffset) + "&limit=" + str(epEntryperpage) + "&calculate_count=true"
+        endpointInfo=classes.classes.getRESTcp(deviceid,url)
+        return {'endpointInfo': endpointInfo,'deviceInfo': deviceInfo, 'epTotalentries': endpointInfo['count'], 'epEntryperpage': epEntryperpage, 'epPageoffset': epPageoffset , 'searchMacaddress': searchMacaddress, 'searchDescription': searchDescription, 'searchStatus': searchStatus }
+    else:
+        return {'endpointInfo': endpointInfo,'deviceInfo': deviceInfo, 'epTotalentries': endpointInfo['count'], 'epEntryperpage': epEntryperpage, 'epPageoffset': epPageoffset , 'searchMacaddress': searchMacaddress, 'searchDescription': searchDescription, 'searchStatus': searchStatus }
 
 def gettrustInfo(deviceid,trEntryperpage,trPageoffset, searchSubject, searchValid, searchStatus):
     if not trEntryperpage:
@@ -181,11 +184,16 @@ def gettrustInfo(deviceid,trEntryperpage,trPageoffset, searchSubject, searchVali
         searchFilter+="]}"
     else:
         searchFilter="{}"
-    print(searchFilter)
     # Obtain the ClearPass trusted certificates information from ClearPass
     url="cert-trust-list-details?filter=" + searchFilter + "&sort=%2Bid&offset=" + str(pageOffset) + "&limit=" + str(trEntryperpage) + "&calculate_count=true"
     trustInfo=classes.classes.getRESTcp(deviceid,url)
-    return {'trustInfo': trustInfo,'deviceInfo': deviceInfo, 'trTotalentries': trustInfo['count'], 'trEntryperpage': trEntryperpage, 'trPageoffset': trPageoffset , 'searchSubject': searchSubject, 'searchValid': searchValid, 'searchStatus': searchStatus }
+    if trustInfo==401:
+        # Something went wrong with the query. Obtain the information without search criteria
+        url="cert-trust-list-details?sort=%2Bid&offset=" + str(pageOffset) + "&limit=" + str(trEntryperpage) + "&calculate_count=true"
+        trustInfo=classes.classes.getRESTcp(deviceid,url)
+        return {'trustInfo': trustInfo,'deviceInfo': deviceInfo, 'trTotalentries': trustInfo['count'], 'trEntryperpage': trEntryperpage, 'trPageoffset': trPageoffset , 'searchSubject': searchSubject, 'searchValid': searchValid, 'searchStatus': searchStatus }
+    else:
+        return {'trustInfo': trustInfo,'deviceInfo': deviceInfo, 'trTotalentries': trustInfo['count'], 'trEntryperpage': trEntryperpage, 'trPageoffset': trPageoffset , 'searchSubject': searchSubject, 'searchValid': searchValid, 'searchStatus': searchStatus }
 
 def getservicesInfo(deviceid,seEntryperpage,sePageoffset, searchName, searchType, searchTemplate, searchStatus):
     if not seEntryperpage:
@@ -211,8 +219,13 @@ def getservicesInfo(deviceid,seEntryperpage,sePageoffset, searchName, searchType
         searchFilter+="]}"
     else:
         searchFilter="{}"
-    print(searchFilter)
     # Obtain the ClearPass services information from ClearPass
     url="config/service?filter=" + searchFilter + "&sort=%2Bid&offset=" + str(pageOffset) + "&limit=" + str(seEntryperpage) + "&calculate_count=true"
     servicesInfo=classes.classes.getRESTcp(deviceid,url)
-    return {'servicesInfo': servicesInfo,'deviceInfo': deviceInfo, 'seTotalentries': servicesInfo['count'], 'seEntryperpage': seEntryperpage, 'sePageoffset': sePageoffset, 'searchName':searchName, 'searchType': searchType,'searchTemplate': searchTemplate,'searchStatus':searchStatus }
+    if servicesInfo==401:
+        # Something went wrong with the query. Obtain the information without search criteria
+        url="config/service?sort=%2Bid&offset=" + str(pageOffset) + "&limit=" + str(seEntryperpage) + "&calculate_count=true"
+        servicesInfo=classes.classes.getRESTcp(deviceid,url)
+        return {'servicesInfo': servicesInfo,'deviceInfo': deviceInfo, 'seTotalentries': servicesInfo['count'], 'seEntryperpage': seEntryperpage, 'sePageoffset': sePageoffset, 'searchName':searchName, 'searchType': searchType,'searchTemplate': searchTemplate,'searchStatus':searchStatus }
+    else:
+        return {'servicesInfo': servicesInfo,'deviceInfo': deviceInfo, 'seTotalentries': servicesInfo['count'], 'seEntryperpage': seEntryperpage, 'sePageoffset': sePageoffset, 'searchName':searchName, 'searchType': searchType,'searchTemplate': searchTemplate,'searchStatus':searchStatus }

@@ -6,13 +6,13 @@
     <div id="maincontainer">
         <table class="tablewithborder">
             <tr>
-                <td><font class="font13pxwhite"><center>{{ ipaddress }} ({{ description }}) Device information</center></font></td>
+                <td colspan="8"><font class="font13pxwhite"><center>{{ ipaddress }} ({{ description }}) Device information</center></font></td>
             </tr>
             <tr>
                 <td width="9%"><font class="font12pxwhite">Switch type (Domain)</font></td>
                 <td class="whiteBG"><font face="arial" size="1">VSF ({{ vsfinfo['domain_id'] }})</font></td>
                 <td width="9%"><font class="font12pxwhite">Topology (Status)</font></td>
-                <td class="whiteBG"><font face="arial" size="1">{{ vsfinfo['topology'][3:] }} ({{ vsfinfo['status'][3:] }})</font></td>
+                <td class="whiteBG"><font face="arial" size="1">{% if vsfinfo['topology'] %} {{ vsfinfo['topology'][3:] }} ({{ vsfinfo['status'][3:] }}) {% endif %}</font></td>
                 <td width="9%"><font class="font12pxwhite">Name</font></td>
                 <td class="whiteBG"><font face="arial" size="1">{{ vsfinfo['name'] }}</font></td>
                 <td width="9%"><font class="font12pxwhite">Firmware</font></td>
@@ -30,7 +30,7 @@
                 <td><font class="font12pxwhite">Part number</font></td>
                 <td class="whiteBG"><font face="arial" size="1">{{ items['type'][3:] }}</font></td>
             </tr>
-            {% for vsfelementInfo in sysinfo.vsf_member_system_info_element %}
+            {% for vsfelementInfo in vsfinfo.vsf_member_system_info_element %}
             {% if vsfelementInfo['member_id']==items['member_id'] %}
 
             <tr>
@@ -39,9 +39,13 @@
                 <td><font class="font12pxwhite">ROM Version</font></td>
                 <td class="whiteBG"><font face="arial" size="1">{{ vsfelementInfo['rom_version'] }}</font></td>
                 <td><font class="font12pxwhite">Uptime</font></td>
-                <td colspan="3"><font face="arial" size="1">Days: {{ vsfelementInfo['up_time']['days'] }}, Hours: {{ vsfelementInfo['up_time']['hours'] }}, Minutes: {{ vsfelementInfo['up_time']['minutes'] }}</font></td>
+                <td class="whiteBG"><font face="arial" size="1">Days: {{ vsfelementInfo['up_time']['days'] }}, Hours: {{ vsfelementInfo['up_time']['hours'] }}, Minutes: {{ vsfelementInfo['up_time']['minutes'] }}</font></td>
+                <td><font class="font12pxwhite"></font></td>
+                <td class="whiteBG"><font face="arial" size="1">&nbsp;</font></td>
             </tr>
             {% endif %}
+
+
             {% endfor %}
             {% for psitems in sysinfo.system_power_supply %}
             {% if psitems['member_id'] == items['member_id'] %}
@@ -51,7 +55,7 @@
                 <td><font class="font12pxwhite">Input voltage</font></td>
                 <td class="whiteBG"><font face="arial" size="1">{{psitems['voltage_description']}}</font></td>
                 <td><font class="font12pxwhite">PoE capable (Used)</font></td>
-                <td class="whiteBG">>
+                <td class="whiteBG">
                     <font face="arial" size="1">
                         {% for poeitems in sysinfo.blades %}
                         {% if poeitems['stack_member']== items['member_id'] %}
@@ -119,7 +123,9 @@
                 <td><font class="font12pxwhite">Access type</font></td>
                 <td class="whiteBG"><font face="arial" size="1">{{ items['access_type'][3:] }}</font></td>
                 <td><font class="font12pxwhite">Access mode</font></td>
-                <td colspan="3"><font face="arial" size="1">{% if items['restricted']==True %} ReadWrite  {% else %} ReadOnly {% endif %}</font></td>
+                <td class="whiteBG"><font face="arial" size="1">{% if items['restricted']==True %} ReadWrite  {% else %} ReadOnly {% endif %}</font></td>
+                <td><font class="font12pxwhite"></font></td>
+                <td class="whiteBG"><font face="arial" size="1">&nbsp;</font></td>
             </tr>
             {% endfor %}
             {% for items in sysinfo.snmpv3_user_element %}
@@ -130,6 +136,8 @@
                 <td class="whiteBG"><font face="arial" size="1">{{ items['snmpv3_authentication_protocol'][4:] }}</font></td>
                 <td><font class="font12pxwhite">Encryption protocol</font></td>
                 <td class="whiteBG"><font face="arial" size="1">{{ items['snmpv3_authentication_privacy_protocol'][5:] }}</font></td>
+                <td><font class="font12pxwhite"></font></td>
+                <td class="whiteBG"><font face="arial" size="1">&nbsp;</font></td>
             </tr>
             {% endfor %}
             {% for items in sysinfo.radius_server_element %}
