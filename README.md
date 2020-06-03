@@ -5,7 +5,7 @@
 - SNMP, Syslog and DHCP tracker
 - And more...
 
-Supported Operating System is Ubuntu 18.x or 19.x
+Supported Operating System is Ubuntu LTS 18.x, 19.x or 20.x
 
 Installation instructions:
 Have a default Ubuntu installation, 4 GB RAM, 2 CPU
@@ -22,10 +22,8 @@ chmod 777 ./install.sh
 
 Run the ./install.sh script
 
-If you are already running version 1.2, you can upgrade the app:
+If you are already running version 1.2 or 1.3, you can upgrade the app:
 
 chmod 777 ./upgrade.ch
 
 Run the ./upgrade.sh script
-
-
