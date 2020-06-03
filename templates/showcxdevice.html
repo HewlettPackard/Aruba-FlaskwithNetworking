@@ -44,13 +44,13 @@
                 <td><font class="font12pxwhite">Serial Number(s)</font></td>
                 <td class="whiteBG">
                     <font face="arial" size="1">
-                        {% if vsfinfo|length %}
-                        VSF
-                        {% else %}
-                        {% for sn in serialnumber|unique %}
-                        {{ sn }}<br />
-                        {% endfor %}
-                        {% endif %}
+                            {% if vsfinfo|length %}
+                            VSF
+                            {% else %}
+                            {% for sn in serialnumber|unique %}
+                            {{ sn }}<br />
+                            {% endfor %}
+                            {% endif %}
                     </font>
                 </td>
                 <td><font class="font12pxwhite">Interface Count</font></td>
@@ -219,10 +219,12 @@
         <p></p>
 
         {% if vsfinfo|length %}
+
         <!-- VSF information -->
         <table class="tablewithborder">
             <tr>
                 <td colspan="9"><font class="font13pxwhite"><center>Virtual Switching Framework (VSF) information</center></font></td>
+            </tr>
             <tr>
                 <td nowrap width="2%"><font class="font12pxwhite">Device Role</font></td>
                 <td nowrap width="2%"><font class="font12pxwhite">Status</font></td>
@@ -234,16 +236,16 @@
                 <td nowrap width="2%"><font class="font12pxwhite">Link 1</font></td>
                 <td nowrap width="2%"><font class="font12pxwhite">Link 2</font></td>
             </tr>
-
+            {% for vsfitems in vsfinfo %}
             <tr>
-                <td class="whiteBG" nowrap><font face="arial" size="1"> {{ vsfinfo[0]['role'] }} </font></td>
-                <td class="whiteBG" nowrap><font face="arial" size="1"> {{ vsfinfo[0]['status'] }} </font></td>
-                <td class="whiteBG" nowrap><font face="arial" size="1"> {{ vsfinfo[0]['id'] }} </font></td>
+                <td class="whiteBG" nowrap><font face="arial" size="1"> {{ vsfitems['role'] }} </font></td>
+                <td class="whiteBG" nowrap><font face="arial" size="1"> {{ vsfitems['status'] }} </font></td>
+                <td class="whiteBG" nowrap><font face="arial" size="1"> {{ vsfitems['id'] }} </font></td>
                 <td class="whiteBG" nowrap>
                     <font face="arial" size="1">
                         <div style="display:none;">
                             {% set vsfmpn=[] %}
-                            {% for dict_item in vsfinfo[0]['subsystems'] %}
+                            {% for dict_item in vsfitems['subsystems'] %}
                             {% for key, value in dict_item.product_info.items() %}
                             {% if key=="part_number" %}
                             {% if value!="" %}
@@ -262,7 +264,7 @@
                     <font face="arial" size="1">
                         <div style="display:none;">
                             {% set vsfmpn=[] %}
-                            {% for dict_item in vsfinfo[0]['subsystems'] %}
+                            {% for dict_item in vsfitems['subsystems'] %}
                             {% for key, value in dict_item.product_info.items() %}
                             {% if key=="product_description" %}
                             {% if value!="" %}
@@ -281,7 +283,7 @@
                     <font face="arial" size="1">
                         <div style="display:none;">
                             {% set vsfmsn=[] %}
-                            {% for dict_item in vsfinfo[0]['subsystems'] %}
+                            {% for dict_item in vsfitems['subsystems'] %}
                             {% for key, value in dict_item.product_info.items() %}
                             {% if key=="serial_number" %}
                             {% if value!="" %}
@@ -300,7 +302,7 @@
                     <font face="arial" size="1">
                         <div style="display:none;">
                             {% set vsfmic=[] %}
-                            {% for dict_item in vsfinfo[0]['subsystems'] %}
+                            {% for dict_item in vsfitems['subsystems'] %}
                             {% for key, value in dict_item.product_info.items() %}
                             {% if key=="interface_count" %}
                             {% if value!="" %}
@@ -313,13 +315,29 @@
                         {% for ic in vsfmic|unique %}
                         {{ ic }}
                         {% endfor %}
-                    </font></td>
-                <td class="whiteBG" nowrap><font face="arial" size="1"> </font></td>
-                {% for items in vsfinfo[0]['links'] %}
-                {{items}}
-                {% endfor %}
-                <td class="whiteBG" nowrap><font face="arial" size="1"> </font></td>
+                    </font>
+                </td>
+                <td class="whiteBG" nowrap>
+                    <font face="arial" size="1">
+                        {% if vsfitems['links']['1'] %}
+                        {% for link1items in vsfitems['links']['1']['interfaces'] %}
+                        {% set tmpval = link1items.split('/rest/v1/system/interfaces/') %}
+                        {{ tmpval[1]|replace("%2F","/")  }}&nbsp;
+                        {% endfor %}
+                        {% endif %}
+                <td class="whiteBG" nowrap>
+                    <font face="arial" size="1">
+                        {% if vsfitems['links']['2'] %}
+                        {% for link2items in vsfitems['links']['2']['interfaces'] %}
+                        {% set tmpval = link2items.split('/rest/v1/system/interfaces/') %}
+                        {{ tmpval[1]|replace("%2F","/")  }}&nbsp;
+                        {% endfor %}
+                        {% endif %}
+                    </font>
+                </td>
+                </font></td>
             </tr>
+            {% endfor %}
         </table>
 
             {% endif %}

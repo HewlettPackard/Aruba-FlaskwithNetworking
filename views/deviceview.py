@@ -48,13 +48,14 @@ def showDevice():
     queryStr="select id, description, ipaddress, sysinfo, ostype, ports, vsx, vsxlags, vrf, vsf, bps, routeinfo from devices where id='{}'".format(request.args.get('deviceid'))
     deviceinfo=classes.sqlQuery(queryStr,"selectone")
     if deviceinfo['ostype']=="arubaos-cx":
-        return render_template("showcxdevice.html", ipaddress=deviceinfo['ipaddress'],description=deviceinfo['description'],sysinfo=json.loads(deviceinfo['sysinfo']),portinfo=json.loads(deviceinfo['ports']), vsxinfo=json.loads(deviceinfo['vsx']), vsxlags=json.loads(deviceinfo['vsxlags']),vrfinfo=json.loads(deviceinfo['vrf']),vsfinfo=json.loads(deviceinfo['vsf']), routeinfo=json.loads(deviceinfo['routeinfo']),sysvars=sysvars)
+        vsfinfo=json.loads(deviceinfo['vsf'])
+        vsfinfo=sorted(vsfinfo, key = lambda i: i['id'])
+        return render_template("showcxdevice.html", ipaddress=deviceinfo['ipaddress'],description=deviceinfo['description'],sysinfo=json.loads(deviceinfo['sysinfo']),portinfo=json.loads(deviceinfo['ports']), vsxinfo=json.loads(deviceinfo['vsx']), vsxlags=json.loads(deviceinfo['vsxlags']),vrfinfo=json.loads(deviceinfo['vrf']),vsfinfo=vsfinfo, routeinfo=json.loads(deviceinfo['routeinfo']),sysvars=sysvars)
     elif deviceinfo['ostype']=="arubaos-switch":
         # Check whether the device is a stackable or standalone device. The json structure is different so rendering different scripts
         sysinfo=json.loads(deviceinfo['sysinfo'])
-        vsfinfo=json.loads(deviceinfo['vsf'])
+        vsfinfo=json.loads(deviceinfo['vsf'])       
         bpsinfo=json.loads(deviceinfo['bps'])
-
         if 'vsf_member_element' in sysinfo:
             return render_template("showdevicevsf.html", ipaddress=deviceinfo['ipaddress'], description=deviceinfo['description'], sysinfo=sysinfo, vsfinfo=vsfinfo)
         elif 'bps_member_element' in sysinfo:
