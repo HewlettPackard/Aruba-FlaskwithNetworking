@@ -1,1 +1,0 @@
-python3 /var/www/html/bash/trackers.py

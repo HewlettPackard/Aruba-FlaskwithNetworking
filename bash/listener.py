@@ -151,7 +151,7 @@ def analyzeDHCP(packet,listenerlog,cursor):
                     macaddress=macaddress.replace(":","")                 
                 else:
                     macaddress="000000000000"
-                # The tracker class is also used for ZTP. Goal is to have the switch keep it's DHCP IP address.
+                # The listener class is also used for ZTP. Goal is to have the switch keep it's DHCP IP address.
                 try:
                     if macaddress!="000000000000" and clientip!="Unknown" and netmask!="Unknown" and router!="Unknown":
                         ztpnetmask=sum(bin(int(x)).count('1') for x in netmask.split('.'))
@@ -350,7 +350,7 @@ def analyzeDHCP(packet,listenerlog,cursor):
                     macaddress=macaddress.replace(":","")  
                 else:
                     macaddress="000000000000"
-                # The tracker class is also used for ZTP. Goal is to have the switch keep it's DHCP IP address. 
+                # The listener class is also used for ZTP. Goal is to have the switch keep it's DHCP IP address. 
                 try:
                     if "hw_mac_addr" in fieldnames and "ip_your" in fieldnames and netmask!="Unknown" and router!="Unknown":
                         ztpnetmask=sum(bin(int(x)).count('1') for x in netmask.split('.'))

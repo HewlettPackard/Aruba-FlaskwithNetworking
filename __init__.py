@@ -26,23 +26,18 @@ sys.path.append('../')
 
 globalsconf=classes.globalvars()
 
-if platform.system()=="Windows":
-    print("Start the services manually!!!")
-if platform.system()=="Linux":
-    # Start the processes. The scripts are found in the /bash folder
-    if sys.version_info<(3,6,0):
-        sys.stderr.write("You need python 3.6 or later to run this script\n")
-    else:
-        scriptName=globalsconf['appPath'] +"bash/cleanup.sh"
-        proc = subprocess.Popen(scriptName, shell=True, stdout=subprocess.PIPE)
-        scriptName=globalsconf['appPath'] +"bash/topology.sh"
-        proc = subprocess.Popen(scriptName, shell=True, stdout=subprocess.PIPE)
-        scriptName=globalsconf['appPath'] +"bash/trackers.sh"
-        proc = subprocess.Popen(scriptName, shell=True, stdout=subprocess.PIPE)
-        scriptName=globalsconf['appPath'] +"bash/ztp.sh"
-        proc = subprocess.Popen(scriptName, shell=True, stdout=subprocess.PIPE)
-        scriptName=globalsconf['appPath'] +"bash/listener.sh"
-        proc = subprocess.Popen(scriptName, shell=True, stdout=subprocess.PIPE)
+# Start the processes. The scripts are found in the /bash folder
+if sys.version_info<(3,6,0):
+    sys.stderr.write("You need python 3.6 or later to run this script\n")
+else:
+    scriptName=globalsconf['appPath'] +"bash/cleanup.sh"
+    proc = subprocess.Popen(scriptName, shell=True, stdout=subprocess.PIPE)
+    scriptName=globalsconf['appPath'] +"bash/topology.sh"
+    proc = subprocess.Popen(scriptName, shell=True, stdout=subprocess.PIPE)
+    scriptName=globalsconf['appPath'] +"bash/ztp.sh"
+    proc = subprocess.Popen(scriptName, shell=True, stdout=subprocess.PIPE)
+    scriptName=globalsconf['appPath'] +"bash/listener.sh"
+    proc = subprocess.Popen(scriptName, shell=True, stdout=subprocess.PIPE)
 
 # Check whether something has changed in the hardware and update the globalvars config if that's the case
 sysadmin.checksysConf()

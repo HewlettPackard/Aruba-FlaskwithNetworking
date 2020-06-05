@@ -87,7 +87,7 @@ def clearprocessLog():
     with open("/var/www/html/log/{}.log".format(formresult['processName']), 'w') as logFile:
         # Write the timestamp
         timestamp=int(datetime.combine(datetime.today(), time.min).timestamp())
-        logFile.write("{'timestamp':'"+str(timestamp)+"'}\n")
+        logFile.write("---"+str(timestamp)+"---")
     logFile.close()
     return "{} Log is cleared".format(formresult['processName'])
 

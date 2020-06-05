@@ -19,7 +19,7 @@ printf "    \b\b\b\b"
 tput reset
 tput civis
 
-echo "########## Carius release 1.4 upgrade ##########"
+echo "########## Carius release 1.41 upgrade ##########"
 echo "Ensure that you have an active Internet connection with an acceptable speed (at least 10Mbps recommended)"
 # First step is to check whether you are logged in as root
 # and which Ubuntu version is running. Carius requires 18.04 or later
@@ -45,7 +45,7 @@ echo "System requirement is Ubuntu LTS 18.04 or higher"
 exit
 else
 IFS=':' read -r var1 var2 <<< "$(lsb_release -d)"
-echo "Upgrading to Carius version 1.4 on $var2"
+echo "Upgrading to Carius version 1.41 on $var2"
 fi
 
 # Second step is to upgrade and update Ubuntu
@@ -71,7 +71,7 @@ if [ ! -d "/var/www/html/log" ]; then
 mkdir /var/www/html/log
 fi
 
-touch /var/www/html/log/trackers.log
+touch /var/www/html/log/cleanup.log
 touch /var/www/html/log/topology.log
 touch /var/www/html/log/ztp.log
 touch /var/www/html/log/listener.log
@@ -150,14 +150,12 @@ cp ./views/topo.py /var/www/html/views/topo.py > /dev/null
 cp ./views/devices.py /var/www/html/views/devices.py > /dev/null
 
 chmod 777 /var/www/html/bash/listener.sh
-chmod 777 /var/www/html/bash/trackers.sh
 chmod 777 /var/www/html/bash/ztp.sh
 
 dos2unix -q /var/www/html/bash/listener.sh >/dev/null
-dos2unix -q /var/www/html/bash/trackers.sh >/dev/null
 dos2unix -q /var/www/html/bash/ztp.sh >/dev/null
 
 service carius start
 
-echo " ######### Carius upgrade to version 1.4 completed ##########"
+echo " ######### Carius upgrade to version 1.41 completed ##########"
 echo " Navigate with your browser to http://a.b.c.d:8080   where a.b.c.d is the IP address of the Carius server"

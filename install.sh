@@ -158,14 +158,24 @@ ENDOFFILE
 chmod 777 /var/www/html/bash/listener.sh
 chmod 777 /var/www/html/bash/cleanup.sh
 chmod 777 /var/www/html/bash/topology.sh
-chmod 777 /var/www/html/bash/trackers.sh
 chmod 777 /var/www/html/bash/ztp.sh
+
+
+if [ ! -d "/var/www/html/log" ]; then
+mkdir /var/www/html/log
+fi
+
+touch /var/www/html/log/cleanup.log
+touch /var/www/html/log/topology.log
+touch /var/www/html/log/ztp.log
+touch /var/www/html/log/listener.log
+
+chmod 777 /var/www/html/log/
 
 dos2unix -q /var/www/html/startapp.sh >/dev/null
 dos2unix -q /var/www/html/bash/listener.sh >/dev/null
 dos2unix -q /var/www/html/bash/cleanup.sh >/dev/null
 dos2unix -q /var/www/html/bash/topology.sh >/dev/null
-dos2unix -q /var/www/html/bash/trackers.sh >/dev/null
 dos2unix -q /var/www/html/bash/ztp.sh >/dev/null
 chmod 777 /var/www/html/startapp.sh
 chmod +x /var/www/html/startapp.sh
