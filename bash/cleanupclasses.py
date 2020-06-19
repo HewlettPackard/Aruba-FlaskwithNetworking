@@ -21,6 +21,9 @@ from Crypto.Util.Padding import pad, unpad
 
 def cleanupTrackers():
     # Cleaning up the trackers
+    cleanuplog = open('/var/www/html/log/cleanup.log', 'a')
+    cleanuplog.write('{}: Running trackers cleanup process. \n'.format(datetime.now()))
+    cleanuplog.close()
     dbconnection=pymysql.connect(host='localhost',user='aruba',password='ArubaRocks',db='aruba', autocommit=True)
     cursor=dbconnection.cursor(pymysql.cursors.DictCursor)
     pathname = os.path.dirname(sys.argv[0])
@@ -39,8 +42,11 @@ def cleanupTrackers():
     currentTime=int(time.time())
 
 def cleanupLogging():
-    #Get the timestamp of the current day (midnight)
-    midnight=int(datetime.combine(date.today(), datetime.min.time()).timestamp())
+    cleanuplog = open('/var/www/html/log/cleanup.log', 'a')
+    cleanuplog.write('{}: Running logfile cleanup process. \n'.format(datetime.now()))
+    cleanuplog.close()
+    #Get the timestamp of minus 24 hours 
+    oneday=int((datetime.now() - timedelta(hours=24)).timestamp())
     pathname = os.path.dirname(sys.argv[0])
     appPath = os.path.abspath(pathname) + "/globals.json"
     # Purge entries from DHCP, Syslog and SNMP which are older than configured values
@@ -67,13 +73,37 @@ def cleanupLogging():
                     timestampList.append(int(ts))
         # Close the file
         checklog.close()
-        # Now that we have all the timestamps, we need to get the last entry and check if there is more than 86400 seconds difference
-        if timestampList[len(timestampList)-1]>midnight:
+        # Now that we have all the timestamps, we need to get the last entry and check if there is more than 24 hours difference
+        # But first check if the log has a timestamp entry at all
+        if len(timestampList)==0:
+            # The logfile is completely empty. We need to add the timestamp
+            checklog=open(logFile,'w')
+            checklog.write('\n---'+str(int(datetime.now().timestamp()))+'---\n')
+            clecklog.close()
+        elif oneday>timestampList[len(timestampList)-1]:
             # Another day has gone by. Add the new timestamp
             checklog=open(logFile,'a')
-            checklog.write('\n---'+str(midnight)+'---\n')
+            checklog.write('\n---'+str(int(datetime.now().timestamp()))+'---\n')
             # Close the file
             checklog.close()
+        # Next is to verify the retain days for the log and remove the information that should not be retained
+        # We only have to do this when the number of timestamp entries in the log is bigger than the retain value
+        retain=items.split(".")
+        retain="retain_"+retain[0]+"log"
+        if len(timestampList)>int(globalconf[retain]):
+            splitTimestamp="---"+str(timestampList[len(timestampList)-int(globalconf[retain])-1])+"---"
+            # First open the file and split on the splitTimestamp
+            checklog=open(logFile,'r')
+            logInfo=checklog.read()
+            tsData=logInfo.split(splitTimestamp)
+            checklog.close()
+            # Now Open the file again for write, and only write the last section
+            checklog=open(logFile,'w')
+            checklog.write(tsData[1])
+            checklog.close()
+
+
+
 
 
 

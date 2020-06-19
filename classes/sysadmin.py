@@ -1,7 +1,8 @@
-# (C) Copyright 2019 Hewlett Packard Enterprise Development LP.
+# (C) Copyright 2020 Hewlett Packard Enterprise Development LP.
 # System Administration classes
 
 import classes.classes
+from datetime import date, datetime, time, timedelta
 import requests
 import time
 from requests.auth import HTTPBasicAuth
@@ -233,23 +234,26 @@ def processAction(name, action):
                 cmdline=proc.cmdline()
                 if len(cmdline)>1:
                     if processname in cmdline[1]:
-                        print(cmdline[1])
-                        print(f"Killing  {proc.name()}")
                         proc.kill()
         elif name=="Listener":
             for proc in psutil.process_iter():
                 if any(procstr in proc.name() for procstr in ['dumpcap','listener.sh','tshark']):
-                    print(f"Killing  {proc.name()}")
                     proc.kill()
+        logfileName="/var/www/html/log/"+name.lower()+".log"
+        logInfo = open(logfileName, 'a')
+        logInfo.write("{}: {} process stopped manually.\n".format(datetime.now(),name))
+        logInfo.close()
     elif action == "Start":
         if name=="Listener":
             scriptName=globalsconf['appPath'] + "bash/" + name.lower() + ".sh"
-            print("Start {}".format(name))
             proc = subprocess.Popen(scriptName, shell=True, stdout=subprocess.PIPE)
         else:
             scriptName="python3 " + globalsconf['appPath'] + "bash/" + name.lower() + ".py"
-            print("Start {}".format(name))
             proc = subprocess.Popen(scriptName, shell=True, stdout=subprocess.PIPE)
+        logfileName="/var/www/html/log/"+name.lower()+".log"
+        logInfo = open(logfileName, 'a')
+        logInfo.write("{}: {} process started manually.\n".format(datetime.now(),name))
+        logInfo.close()
 
 def checkPhpipam(info):
     try:

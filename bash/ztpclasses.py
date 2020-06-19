@@ -51,13 +51,11 @@ def ztpupdate():
     STAGE 91: The administrative account works. Remove the initial ZTP user and save the running configuration to the startup configuration
     100 = Successfully pushed the configuration template
     '''
+    ztplog = open('/var/www/html/log/ztp.log', 'a')
     dbconnection=pymysql.connect(host='localhost',user='aruba',password='ArubaRocks',db='aruba', autocommit=True)
     cursor=dbconnection.cursor(pymysql.cursors.DictCursor)
     pathname = os.path.dirname(sys.argv[0])
-    if platform.system()=="Windows":
-        appPath = os.path.abspath(pathname) + "\\globals.json"      
-    else:
-        appPath = os.path.abspath(pathname) + "/globals.json"
+    appPath = os.path.abspath(pathname) + "/globals.json"
     with open(appPath, 'r') as myfile:
         data=myfile.read()
     globalconf=json.loads(data)
@@ -81,13 +79,16 @@ def ztpupdate():
                     queryStr="update ztpdevices set vrf='{}', enableztp=2, ztpstatus='{}' where id='{}'".format(response['ztp']['vrf'],ztpstatus,items['id'])
                     cursor.execute(queryStr)
                     logEntry(items['id'],"Stage 1: Initial template downloaded successful", cursor)
+                    ztplog.write('{}: Stage 1: Initial template downloaded successfully to {} ({}). \n'.format(datetime.now(),items['ipaddress'],items['name']))
                 elif response['ztp']['failure_reason']=="non_default_startup_config" and  response['ztp']['state']=="aborted":
                     ztpstatus="Initial configuration is present"
                     queryStr="update ztpdevices set enableztp=8, ztpstatus='{}' where id='{}'".format(ztpstatus,items['id'])
                     cursor.execute(queryStr)
                     logEntry(items['id'],"Stage 1: Initial configuration for {} already exists".format(items['name']),cursor)
+                    ztplog.write('{}: Stage 1: Initial configuration for {} ({}) already exists. \n'.format(datetime.now(),items['ipaddress'],items['name']))
             except:
                 logEntry(items['id'],"Stage 1: Provision initial configuration for {}".format(items['name']),cursor)
+                ztplog.write('{}: Stage 1: Provision initial configuration for {} ({}). \n'.format(datetime.now(),items['ipaddress'],items['name']))
                 pass
         # The initial configuration file has been successfully downloaded and saved to the startup-configuration. We now need to check whether the device requires a software upgrade
         elif items['enableztp']==2:
@@ -104,6 +105,7 @@ def ztpupdate():
                 softwareimage=items['softwareimage']
             if softwareimage:
                 logEntry(items['id'],"Stage 2: There is a software image configured for this device", cursor)
+                ztplog.write('{}: Stage 2: There is a software image configured for {} ({}). \n'.format(datetime.now(),items['ipaddress'],items['name']))
                 url="firmware"
                 response=getRESTcxIP(items['ipaddress'],username,password,url)
                 # Only continue if there is a response. If there is no response, the switch might be offline
@@ -117,6 +119,7 @@ def ztpupdate():
                     if imagename==response['current_version']:
                         # There is no need to upgrade the switch. Switch is already running on the right software
                         logEntry(items['id'],"Stage 2: {} already on the right software".format(items['ipaddress']), cursor)
+                        ztplog.write('{}: Stage 2: {} ({}) is already on the right software. \n'.format(datetime.now(),items['ipaddress'],items['name']))
                         ztpstatus="Switch running on " + imagename + ". Verify VSF configuration"
                         queryStr="update ztpdevices set enableztp=3, ztpstatus='{}' where id='{}'".format(ztpstatus,items['id'])
                         cursor.execute(queryStr)
@@ -134,16 +137,19 @@ def ztpupdate():
                                 queryStr="update ztpdevices set enableztp=21, ztpstatus='{}' where id='{}'".format(ztpstatus,items['id'])
                                 cursor.execute(queryStr)
                                 logEntry (items['id'],"Stage 2: Upgrade the switch to {}".format(imagename), cursor)
+                                ztplog.write('{}: Stage 2: Upgrade {} ({}) to {}. \n'.format(datetime.now(),imagename,items['ipaddress'],items['name']))
                         else:
                             # Switch is not reachable
                                 ztpstatus="Switch is not reachable"
                                 queryStr="update ztpdevices set ztpstatus='{}' where id='{}'".format(ztpstatus,items['id'])
                                 cursor.execute(queryStr)
                                 logEntry (items['id'],"Stage 2: Switch is not reachable", cursor)
+                                ztplog.write('{}: Stage 2: {} ({}) is not reachable. \n'.format(datetime.now(),items['ipaddress'],items['name']))
 
             else:
                 # There is no image attached to the device. No need to upgrade. Next stage is to verify whether switch operates in VSF or standalone (stage 3)
                 logEntry (items['id'],"Stage 2: There is no software image attached. Verify VSF configuration", cursor)
+                ztplog.write('{}: Stage 2: No software update required for {} ({}). \n'.format(datetime.now(),items['ipaddress'],items['name']))
                 ztpstatus="Verify VSF configuration"
                 queryStr="update ztpdevices set enableztp=3, ztpstatus='{}' where id='{}'".format(ztpstatus,items['id'])
                 cursor.execute(queryStr)
@@ -151,6 +157,7 @@ def ztpupdate():
             # STAGE 21: SWITCH IS UPGRADING. CHECK STATUS
             print("STAGE 21: {} IS UPGRADING. CHECK STATUS".format(items['ipaddress']))
             logEntry(items['id'],"Stage 21: {} is upgrading, checking the status".format(items['ipaddress']), cursor)
+            # ztplog.write('{}: Stage 21: {} ({}) is upgrading, checking status. \n'.format(datetime.now(),items['ipaddress'],items['name']))
             url="firmware/status"
             response=getRESTcxIP(items['ipaddress'],username,password,url)
             if response:
@@ -191,6 +198,7 @@ def ztpupdate():
                                     queryStr="update ztpdevices set enableztp=22, ztpstatus='{}' where id='{}'".format(ztpstatus,items['id'])
                                     cursor.execute(queryStr)
                                     logEntry(items['id'],"Stage 21: {} has been upgraded to {}. Rebooting".format(items['ipaddress'],imagename), cursor)
+                                    ztplog.write('{}: Stage 21: {} ({}) has been upgraded to {}. Rebooting... \n'.format(datetime.now(),items['ipaddress'],items['name'], imagename))
                                 else:   
                                     # This is the master switch
                                     queryStr="select enableztp from ztpdevices where vsfmaster='{}'".format(items['id'])
@@ -212,6 +220,7 @@ def ztpupdate():
                                         queryStr="update ztpdevices set enableztp=23, ztpstatus='{}' where id='{}'".format(ztpstatus,items['id'])
                                         cursor.execute(queryStr)
                                         logEntry(items['id'],"Stage 21: {} has been upgraded to {}. Rebooting".format(items['ipaddress'],imagename), cursor)
+                                        ztplog.write('{}: Stage 21: {} ({}) has been upgraded to {}. Rebooting... \n'.format(datetime.now(),items['ipaddress'],items['name'], imagename))
                             else: 
                                 # It's not a VSF, so we can reboot the switch straight away
                                 url="boot?image=primary"
@@ -220,6 +229,7 @@ def ztpupdate():
                                 queryStr="update ztpdevices set enableztp=28, ztpstatus='{}' where id='{}'".format(ztpstatus,items['id'])
                                 cursor.execute(queryStr)
                                 logEntry(items['id'],"Stage 21: {} has been upgraded to {}. Rebooting".format(items['ipaddress'],imagename), cursor)
+                                ztplog.write('{}: Stage 21: {} ({}) has been upgraded to {}. Rebooting... \n'.format(datetime.now(),items['ipaddress'],items['name'], imagename))
                         else:
                             pass           
                 elif response['status']=="in_progress":
@@ -231,6 +241,7 @@ def ztpupdate():
                     queryStr="update ztpdevices set enableztp=2, ztpstatus='{}' where id='{}'".format(ztpstatus,items['id'])
                     cursor.execute(queryStr)
                     logEntry(items['id'],"Stage 21: Failed to upgrade {}, retrying..".format(items['ipaddress']), cursor)
+                    ztplog.write('{}: Stage 21: {} ({}) failed to upgrade to {}. Retrying... \n'.format(datetime.now(),items['ipaddress'],items['name'], imagename))
         elif items['enableztp']==22:
             #STAGE 22: VSF MEMBER REBOOTED. CHECK WHETHER VSF MEMBER IS BACK ONLINE
             url="firmware"
@@ -260,6 +271,7 @@ def ztpupdate():
                         queryStr="update ztpdevices set enableztp=24, ztpstatus='{}' where id='{}'".format(ztpstatus,items['id'])
                         cursor.execute(queryStr)
                         logEntry(items['id'],"Stage 22: Member is back online", cursor)
+                        ztplog.write('{}: Stage 2: {} ({}) member switch is back online. \n'.format(datetime.now(),items['ipaddress'],items['name']))
         elif items['enableztp']==23:
             # STAGE 23: VSF MASTER REBOOTED. CHECK WHETHER VSF MASTER IS BACK ONLINE. IF BACK ONLINE, GOTO STAGE 4 FOR THE VSF CONFIGURATION
             queryStr="select filename from ztpimages where id='{}'".format(items['softwareimage'])
@@ -280,6 +292,7 @@ def ztpupdate():
                 queryStr="update ztpdevices set enableztp=4, ztpstatus='{}' where id='{}'".format(ztpstatus,items['id'])
                 cursor.execute(queryStr)
                 logEntry(items['id'],"Stage 23: Switch is back online. Provision VSF to the master switch", cursor)
+                ztplog.write('{}: Stage 23: {} ({}) Master switch is back online. Provision VSF. \n'.format(datetime.now(),items['ipaddress'],items['name']))
         elif items['enableztp']==24:
             # STAGE 24: VSF MEMBER IS BACK ONLINE. ONLY PROVISION VSF WHEN THE MASTER IS BACK ONLINE (stage 4)
             ztpstatus="Member switch is back online. Check if master is online"
@@ -294,6 +307,7 @@ def ztpupdate():
                 queryStr="update ztpdevices set enableztp=4, ztpstatus='{}' where id='{}'".format(ztpstatus,items['id'])
                 cursor.execute(queryStr)
                 logEntry(items['id'],"Stage 22: Master Switch is back online. Provision VSF to the member switch", cursor)
+                ztplog.write('{}: Stage 22: {} ({}) master switch is back online. Provision VSF to the member switch. \n'.format(datetime.now(),items['ipaddress'],items['name']))
             else:
                 # Master switch is not back online yet
                 # The master is back online, members can be provisioned for VSF
@@ -302,8 +316,8 @@ def ztpupdate():
                 cursor.execute(queryStr)
         elif items['enableztp']==28:
             # STAGE 28: STANDALONE SWITCH HAS BEEN UPGRADED AND IS REBOOTING
-            print("STAGE 28: STANDALONE SWITCH HAS REBOOTED. WAITING FOR THE SWITCH TO COME BACK ONLINE")
             logEntry(items['id'],"Stage 28: {} is rebooting".format(items['ipaddress']), cursor)
+            ztplog.write('{}: Stage 28: {} ({}) is rebooting. \n'.format(datetime.now(),items['ipaddress'],items['name']))
             url="firmware/status"
             response=getRESTcxIP(items['ipaddress'],username,password,url)
             if not bool(response):
@@ -341,10 +355,10 @@ def ztpupdate():
                         queryStr="update ztpdevices set enableztp=6, ztpstatus='{}' where id='{}'".format(ztpstatus,items['id'])
                         cursor.execute(queryStr)
                         logEntry(items['id'],"Stage 28: Upgrade has been successful, provision configuration", cursor)
+                        ztplog.write('{}: Stage 28: Upgrade of {} ({}) has been successful, provision configuration. \n'.format(datetime.now(),items['ipaddress'],items['name']))
         elif items['enableztp']==3:
             # STAGE 3: CHECK WHETHER VSF IS CONFIGURED. IF YES, GOTO STAGE 4 (PROVISION VSF), IF NOT, GOTO STAGE 6 (PROVISION CONFIGURATION)
             # This stage runs if there was no software image attached
-            print("STAGE 3: CHECK IF SWITCH IS CONFIGURED FOR VSF")
             if items['vsfenabled']==1:
                 ztpstatus="Switch is configured for VSF"
                 queryStr="update ztpdevices set enableztp=4, ztpstatus='{}' where id='{}'".format(ztpstatus,items['id'])
@@ -356,7 +370,6 @@ def ztpupdate():
         elif items['enableztp']==4:
             # STAGE 4: VSF CONFIGURATION REQUIRED.
             # We have to push the ID and VSF port information to the switch. At the moment this can only be done through SSH.
-            print("STAGE 4: CONFIGURE VSF PORTS AND RENUMBER MEMBER SWITCH")
             try:
                 client=SSHClient()
                 client.set_missing_host_key_policy(AutoAddPolicy)
@@ -368,6 +381,7 @@ def ztpupdate():
                 connection.send("configure terminal\n")
                 time.sleep(3)
                 logEntry(items['id'],"Stage 4: Configure the VSF ports", cursor)
+                ztplog.write('{}: Stage 4: Configure VSF ports for {} ({}). \n'.format(datetime.now(),items['ipaddress'],items['name']))
                 if items['vsfmember']==0:
                     vsfmember="1"
                 else:
@@ -401,6 +415,7 @@ def ztpupdate():
                 # IF THE SWITCH IS NOT MASTER, WE HAVE TO RENUMBER THE SWITCH
                 if items['vsfmaster']!=0:
                     logEntry(items['id'],"Stage 4: Renumber the VSF member", cursor)
+                    ztplog.write('{}: Stage 4: Renumber VSF member switch {} ({}). \n'.format(datetime.now(),items['ipaddress'],items['name']))
                     ztpstatus="Renumber the VSF switch to {}".format(items['vsfmember'])
                     queryStr="update ztpdevices set ztpstatus='{}' where id='{}'".format(ztpstatus,items['id'])
                     cursor.execute(queryStr)
@@ -419,6 +434,7 @@ def ztpupdate():
                     # Setting the ZTP status to , this is a substage, waiting until the switch comes back. When the switch is back online, we need to verify the VSF status and optionally configure for secondary
                     if "transaction success" in output:
                         logEntry(items['id'],"Stage 4: VSF has been deployed to the member switch, rebooting switch", cursor)
+                        ztplog.write('{}: Stage 4: VSF has been deployed to member switch {} ({}), rebooting the switch. \n'.format(datetime.now(),items['ipaddress'],items['name']))
                         ztpstatus="VSF has been deployed to the member switch, rebooting switch"
                         queryStr="update ztpdevices set enableztp=41, ztpstatus='{}' where id='{}'".format(ztpstatus,items['id'])
                         cursor.execute(queryStr)
@@ -430,6 +446,7 @@ def ztpupdate():
                     if checkVSF:
                         # We can go into the next stage, which is for the master switch to wait until all members have joined the stack
                         logEntry(items['id'],"Stage 4: VSF has been deployed to the master switch. Waiting for member switches", cursor)
+                        ztplog.write('{}: Stage 4: VSF has been deployed to master switch {} ({}). Waiting for all member switches to be back online. \n'.format(datetime.now(),items['ipaddress'],items['name']))
                         ztpstatus="VSF has been deployed. Waiting for member switches"
                         queryStr="update ztpdevices set enableztp=5, ztpstatus='{}' where id='{}'".format(ztpstatus,items['id'])
                         cursor.execute(queryStr)
@@ -455,6 +472,7 @@ def ztpupdate():
                         memberInfo=next(item for item in roleResponse if item["id"] == items['vsfmember'])
                         if memberInfo['id']==items['vsfmember'] and memberInfo['status']=="ready":
                             logEntry(items['id'],"Stage 4: VSF has been deployed to the member switch", cursor)
+                            ztplog.write('{}: Stage 4: VSF has been deployed to member switch {} ({}). \n'.format(datetime.now(),items['ipaddress'],items['name']))
                             ztpstatus="VSF has been deployed to the member switch"
                             queryStr="update ztpdevices set enableztp=41, ztpstatus='{}' where id='{}'".format(ztpstatus,items['id'])
                             cursor.execute(queryStr)
@@ -493,6 +511,7 @@ def ztpupdate():
                             queryStr="update ztpdevices set enableztp=42, ztpstatus='{}' where id='{}'".format(ztpstatus,items['id'])
                             cursor.execute(queryStr)
                             logEntry(vsfmasterResult[0]['id'],"Stage 41: Configured the secondary member", cursor)
+                            ztplog.write('{}: Stage 41: {} ({}) has been configured as secondary member. \n'.format(datetime.now(),items['ipaddress'],items['name']))
                             connection.send('y\n')
                             time.sleep(3)
                             connection.close()
@@ -503,11 +522,11 @@ def ztpupdate():
                             response=getRESTcxIP(vsfmasterResult[0]['ipaddress'],"ztpuser",globalconf['ztppassword'],url)
                             if response['status']=="ready":
                                 # It is done. The member switch has been provisioned
-                                print("STAGE 100: ZTP HAS BEEN COMPLETED")
                                 ztpstatus="ZTP has been completed"
                                 queryStr="update ztpdevices set ipaddress='0.0.0.0',netmask='0',gateway='0.0.0.0',enableztp=100, ztpstatus='{}' where id='{}'".format(ztpstatus,items['id'])
                                 cursor.execute(queryStr)
-                                logEntry(items['id'],"Stage 100: ZTP provisioning successful", cursor)
+                                logEntry(items['id'],"Stage 100: ZTP is successful", cursor)
+                                ztplog.write('{}: Stage 100: ZTP is successful for {} ({}). \n'.format(datetime.now(),items['ipaddress'],items['name']))
                                 connection.close()
                                 client.close()  
                     except:
@@ -518,7 +537,8 @@ def ztpupdate():
                 ztpstatus="ZTP has been completed"
                 queryStr="update ztpdevices set enableztp=100, ztpstatus='{}' where id='{}'".format(ztpstatus,items['id'])
                 cursor.execute(queryStr)
-                logEntry(items['id'],"Stage 100: ZTP provisioning successful", cursor)
+                logEntry(items['id'],"Stage 100: ZTP is successful", cursor)
+                ztplog.write('{}: Stage 100: ZTP is successful for {} ({}). \n'.format(datetime.now(),items['ipaddress'],items['name']))
         elif items['enableztp']==42:
             # STAGE 42: SWITCH HAS BEEN CONFIGURED AS SECONDARY. CHECK WHEN SECONDARY IS BACK ONLINE AGAIN
             queryStr="select * from ztpdevices where id='{}'".format(items['vsfmaster'])
@@ -534,24 +554,24 @@ def ztpupdate():
             if "role" in response:
                 if response['role']=="standby":
                     # The switch has been designated secondary. The switch is ready
-                    print("STAGE 42: SECONDARY IS BACK ONLINE")
                     ztpstatus="Secondary switch is back online"
                     queryStr="update ztpdevices set enableztp=92, ztpstatus='{}' where id='{}'".format(ztpstatus,items['id'])
                     cursor.execute(queryStr)
                     logEntry(items['id'],"Stage 42: Secondary switch is back online", cursor)
+                    ztplog.write('{}: Stage 42: Secondaru switch {} ({}) is back online. \n'.format(datetime.now(),items['ipaddress'],items['name']))
             else:
                 # System is not ready yet
                 ztpstatus="Secondary switch is rebooting"
                 queryStr="update ztpdevices set ztpstatus='{}' where id='{}'".format(ztpstatus,items['id'])
                 cursor.execute(queryStr)
                 logEntry(items['id'],"Stage 42: Waiting for secondary member to come online", cursor)
+                ztplog.write('{}: Stage 42: Waiting for secondary switch {} ({}) to come back online. \n'.format(datetime.now(),items['ipaddress'],items['name']))
 
         elif items['enableztp']==5:
             # VSF MASTER TO WAIT WITH CONFIGURATION PUSH UNTIL ALL MEMBERS HAVE JOINED THE STACK
             # We will do two checks. First check is to verify the '100' status for the VSF. If the numbers match the total number of switches configured for the VSF
             # Then the next check is to verify whether the VSF if operational. If that is the case, we can go to stage 6, which is provisioning the master switch configuration
             # Total successfully configured VSF members
-            print("STAGE 5: VSF MASTER TO WAIT WITH CONFIGURATION PUSH UNTIL ALL MEMBERS HAVE JOINED THE STACK")
             queryStr="select count(*) as total from ztpdevices where vsfmaster='{}'".format(items['id'])
             cursor.execute(queryStr)
             totalinVSF=cursor.fetchall()
@@ -573,16 +593,18 @@ def ztpupdate():
                     queryStr="update ztpdevices set enableztp=6, ztpstatus='{}' where id='{}'".format(ztpstatus,items['id'])
                     cursor.execute(queryStr)
                     logEntry(items['id'],"Stage 5: VSF master has been setup. Provision the switch configuration", cursor)
+                    ztplog.write('{}: Stage 5: VSF Master {} ({}) has been setup. Provision the switch configuration. \n'.format(datetime.now(),items['ipaddress'],items['name']))
                 else:
                     ztpstatus="Waiting for VSF ready state"
                     queryStr="update ztpdevices set ztpstatus='{}' where id='{}'".format(ztpstatus,items['id'])
                     cursor.execute(queryStr)
                     logEntry(items['id'],"Stage 5: VSF master has been setup. Waiting for VSF ready state", cursor)
+                    ztplog.write('{}: Stage 5: VSF master {} ({}) has been setup. Waiting for VSF ready state. \n'.format(datetime.now(),items['ipaddress'],items['name']))
 
         elif items['enableztp']==6:
             # STAGE 6: PROVISION THE CONFIGURATION
-            print("STAGE 6: PROVISION THE CONFIGURATION FOR {}".format(items['ipaddress']))
             logEntry(items['id'],"Stage 6: Push configuration template to {}".format(items['ipaddress']), cursor)
+            ztplog.write('{}: Stage 6: Push configuration template to {} ({}). \n'.format(datetime.now(),items['ipaddress'],items['name']))
             if items['template']!=0:
                 # It could be possible that the configuration was pushed successfully, however the initial request timed out.
                 # If that is the case, we still want to provision again, but we have to use the ztpuser account
@@ -621,7 +643,6 @@ def ztpupdate():
                 deviceIP=checkztpIPaddress(items['ipaddress'],items['netmask'],items['macaddress'],cursor)
                 # If the configuration has already been pushed but something went wrong and the IP address and or username has not changed in the database, we have to make that change
                 configChange=checkifChanged(deviceIP,items['ipaddress'],password,items['id'],cursor)
-                print("Configuration change is {}".format(configChange))
                 if configChange==0:
                     username="admin"
                 if configChange==1:
@@ -639,15 +660,13 @@ def ztpupdate():
                     items['ipaddress']=deviceIP
                     vrf=checkVRF(items['ipaddress'],username,password)
                     queryStr="update ztpdevices set ipaddress='{}', vrf='{}' where ipaddress='{}' and macaddress='{}'".format(deviceIP,vrf,items['ipaddress'],items['macaddress']) 
-                    print(queryStr)
                     cursor.execute(queryStr)
                 url="fullconfigs/running-config?from=tftp%3A%2F%2F" + hostip + "%2F" + items['macaddress'] + "template.cfg&vrf=" + vrf
                 try:
-                    print(items['ipaddress'],username,password,url)
                     response=putRESTcxIP(items['ipaddress'],username,password,url,'') 
-                    print("Response push to running is {}".format(response))
                     if response==200:
                         logEntry(items['id'],"Stage 6: The push to the running configuration was successful. Now put the configuration in the startup", cursor)
+                        ztplog.write('{}: Stage 6: Configuration has been pushed to {} ({}) successfully. Copy the running configuration to the startup configuration. \n'.format(datetime.now(),items['ipaddress'],items['name']))
                         # Now that the push has been successful, if there was a change in IP address of the management interface, or VLAN 1 interface, we have to update 
                         # the device IP address in the database
                         # The push to the running configuration was successful. Now put the configuration in the startup
@@ -656,7 +675,6 @@ def ztpupdate():
                             items['ipaddress']=deviceIP
                         # The push to the running configuration was successful. Now repeat the push and store the configuration to the startup-config
                         response=putRESTcxIP(items['ipaddress'],"ztpuser",globalconf['ztppassword'],url,'')
-                        print("Response push to startup is {}".format(response))
                         if response==200:
                             # The put to the startup config was successful
                             url="system?attributes=platform_name"
@@ -678,34 +696,41 @@ def ztpupdate():
                                         queryStr="update ztpdevices set enableztp=61, ztpstatus='{}' where id='{}'".format(ztpstatus,items['id'])
                                         cursor.execute(queryStr)
                                         logEntry(items['id'],"Stage 6: Check whether there is a designated secondary switch configured", cursor)
+                                        ztplog.write('{}: Stage 6: Verify whether there is a secondary designated switch for {} ({}). \n'.format(datetime.now(),items['ipaddress'],items['name']))
                                     else:
                                         # ZTP was done through the default DHCP ZTP username password credentials. We need to remove that user from the switch
                                         ztpstatus="Configuration provisioned, finalize ZTP"
                                         queryStr="update ztpdevices set enableztp=9, ztpstatus='{}' where id='{}'".format(ztpstatus,items['id'])
                                         cursor.execute(queryStr)
                                         logEntry(items['id'],"Stage 6: Configuration stored, finalizing ZTP", cursor)
+                                        ztplog.write('{}: Stage 6: Configuration stored to {} ({}). Finalizing ZTP. \n'.format(datetime.now(),items['ipaddress'],items['name']))
                             else:
                                 # Seems that the switch is not reachable anymore. Update the status.
                                 ztpstatus="Switch is not reachable anymore, retrying.."
                                 logEntry(items['id'],"Stage 6: Switch is not reachable anymore, retrying..", cursor)
+                                ztplog.write('{}: Stage 6: {} ({}) is not reachable anymore. Retrying... \n'.format(datetime.now(),items['ipaddress'],items['name']))
                                 queryStr="update ztpdevices set ztpstatus='{}' where id='{}'".format(ztpstatus,items['id'])
                                 cursor.execute(queryStr)
                         else:
                             # Configuration not pushed to the switch, something went wrong with the push. We need to try again
                             ztpstatus="Could not push the configuration template, retrying.."
                             logEntry(items['id'],"Stage 6: Could not push the configuration template, retrying..", cursor)
+                            ztplog.write('{}: Stage 6: Unable to push the configuration to {} ({}). Retrying... \n'.format(datetime.now(),items['ipaddress'],items['name']))
                             queryStr="update ztpdevices set ztpstatus='{}' where id='{}'".format(ztpstatus,items['id'])
                             cursor.execute(queryStr)
                     else:
                         # We received a response that was not 200
                         ztpstatus="Could not push the configuration template, retrying.."
                         logEntry(items['id'],"Stage 6: Could not push the configuration template, retrying..", cursor)
+                        ztplog.write('{}: Stage 6: Unable to push the configuration to {} ({}). Retrying... \n'.format(datetime.now(),items['ipaddress'],items['name']))
                         queryStr="update ztpdevices set ztpstatus='{}' where id='{}'".format(ztpstatus,items['id'])
                         cursor.execute(queryStr)
                 except:
                     logEntry(items['id'],"Stage 6: Error pushing configuration template to running configuration {}".format(items['ipaddress']), cursor)
+                    ztplog.write('{}: Stage 6: Unable to push the configuration template to the running configuration of {} ({}). \n'.format(datetime.now(),items['ipaddress'],items['name']))
             else:
                 logEntry(items['id'],"Stage 6: There is no template configured for {}".format(items['ipaddress']), cursor)
+                ztplog.write('{}: Stage 6: There is no template configured for {} ({}). \n'.format(datetime.now(),items['ipaddress'],items['name']))
         elif items['enableztp']==61:
             # STAGE 61: VERIFY WHETHER A SECONDARY SWITCH HAS BEEN CONFIGURED IN ZTP
             # If this is the case, we need to wait until the secondary switch has joined the VSF again and the VSF is completed. Only then the ZTP process is completed
@@ -736,18 +761,21 @@ def ztpupdate():
                     queryStr="update ztpdevices set enableztp=9, ztpstatus='{}' where id='{}'".format(ztpstatus,items['id'])
                     cursor.execute(queryStr)
                     logEntry(items['id'],"Stage 61: Configuration stored, finalizing ZTP", cursor)
+                    ztplog.write('{}: Stage 61: Configuration stored to {} ({}), finalizing ZTP. \n'.format(datetime.now(),items['ipaddress'],items['name']))
                 else:
                     # System is not ready yet
                     ztpstatus="Waiting for secondary switch"
                     queryStr="update ztpdevices set ztpstatus='{}' where id='{}'".format(ztpstatus,items['id'])
                     cursor.execute(queryStr)
                     logEntry(items['id'],"Stage 61: Waiting for secondary member to come online", cursor)
+                    ztplog.write('{}: Stage 61: Waiting for secondary member to come online for {} ({}). \n'.format(datetime.now(),items['ipaddress'],items['name']))
             else:
                 # ZTP was done through the default DHCP ZTP username password credentials. We need to remove that user from the switch
                 ztpstatus="Configuration stored. Finalizing ZTP"
                 queryStr="update ztpdevices set enableztp=9, ztpstatus='{}' where id='{}'".format(ztpstatus,items['id'])
                 cursor.execute(queryStr)
                 logEntry(items['id'],"Stage 61: Configuration stored, finalizing ZTP", cursor)
+                ztplog.write('{}: Stage 61: Configuration stored to {} ({}), finalizing ZTP. \n'.format(datetime.now(),items['ipaddress'],items['name']))
         elif items['enableztp']==8:
             # STAGE 8: THERE IS ALREADY AN INITIAL CONFIGURATION ON THE SWITCH
             print("STAGE 8: INITIAL CONFIGURATION ALREADY EXISTS")
@@ -755,10 +783,11 @@ def ztpupdate():
             queryStr="update ztpdevices set ztpstatus='{}' where id='{}'".format(ztpstatus,items['id'])
             cursor.execute(queryStr)
             logEntry(items['id'],"Stage 8: Try to access the {} through SSH or HTTPS".format(items['ipaddress']), cursor)
+            ztplog.write('{}: Stage 8: Trying to access {} ({}) through SSH or HTTPS. \n'.format(datetime.now(),items['ipaddress'],items['name']))
         elif items['enableztp']==9:
             # STAGE 9: ZTP PERFORMED. NEED TO REMOVE THE ZTP USER
             # Admin has to verify the admin user credentials first through the app. If the credentials are ok, the app will set the stage to 91, and then we can remove the ztp user
-            print("STAGE 9: FINALIZE ZTP CONFIGURATION")
+            pass
         elif items['enableztp']==91:
             # STAGE 91: ADMIN USER VERIFICATION WAS SUCCESSFUL. REMOVE THE ZTP USER
             # The administrative user account should have been stored in the database (encrypted password), so we should delete the ztp user with the admin account credentials
@@ -779,7 +808,7 @@ def ztpupdate():
                 queryStr="update ztpdevices set enableztp=100, ztpstatus='{}' where id='{}'".format(ztpstatus,items['id'])
                 cursor.execute(queryStr)
                 logEntry(items['id'],"Stage 100: ZTP user removed, ZTP has been completed", cursor)
-                print("STAGE 100: ZTP HAS BEEN COMPLETED")
+                ztplog.write('{}: Stage 100: ZTP user removed from {} ({}), ZTP has been completed. \n'.format(datetime.now(),items['ipaddress'],items['name']))
             elif result==404:
                 # It seems that the ztpuser does not exist anymore, so we are also good here. Now copy the running configuration to the startup configuration
                 url="fullconfigs/startup-config?from=%2Frest%2Fv1%2Ffullconfigs%2Frunning-config"
@@ -789,7 +818,7 @@ def ztpupdate():
                 queryStr="update ztpdevices set enableztp=100,ztpstatus='{}' where id='{}'".format(ztpstatus,items['id'])
                 cursor.execute(queryStr)
                 logEntry(items['id'],"Stage 100: Non existent ZTP user, ZTP has been completed", cursor)
-                print("STAGE 100: ZTP HAS BEEN COMPLETED")
+                ztplog.write('{}: Stage 100: ZTP user does not exist on {} ({}), ZTP has been completed. \n'.format(datetime.now(),items['ipaddress'],items['name']))
         elif items['enableztp']==92:
             # STAGE 9: ZTP PERFORMED FOR THE SECONDARY SWITCH
             # Only update the database if the master switch ZTP has been completed
@@ -802,9 +831,9 @@ def ztpupdate():
                 queryStr="update ztpdevices set ipaddress='0.0.0.0', netmask='0', gateway='0.0.0.0', enableztp=100,ztpstatus='{}' where id='{}'".format(ztpstatus,items['id'])
                 cursor.execute(queryStr)
                 logEntry(items['id'],"Stage 100: ZTP has been completed", cursor)
+                ztplog.write('{}: Stage 100: ZTP of {} ({}) has been completed. \n'.format(datetime.now(),items['ipaddress'],items['name']))
                 print("STAGE 100: ZTP HAS BEEN COMPLETED")
-
-
+    ztplog.close()
     
 def getRESTcxIP(ip,username,password,url):
     global sessionid

@@ -52,7 +52,6 @@ $(".mobilityInterfaces").click(async function () {
     interfaceHTML += "<td nowrap><font class='font12pxwhite'>VRRP IP Address</font></td>";
     interfaceHTML += "<td nowrap><font class='font12pxwhite'>DHCP Pool</font></td>";
     interfaceHTML += "<td nowrap><font class='font12pxwhite'>Inside NAT</font></td></tr>";
-    console.log(interfaceInfo);
 
     if (interfaceInfo[1]['vlan_name_id']) {
         for (counter = 0; counter < interfaceInfo[1]['vlan_name_id'].length; counter++) {

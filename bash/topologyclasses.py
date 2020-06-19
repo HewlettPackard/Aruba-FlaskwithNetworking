@@ -72,6 +72,7 @@ def discoverTopology():
                                     queryStr="update topology set switchip='{}', systemmac='{}',hostname='{}',interface='{}',remoteswitchip='{}',remotesystemmac='{}',remotehostname='{}',remoteinterface='{}',lldpinfo='{}' where id='{}'" \
                                     .format(items['ipaddress'],sysmac,switchresult['name'],lldpitems['local_port'],'',lldpitems['chassis_id'].replace(' ',':'),lldpitems['system_name'],lldpitems['port_description'],json.dumps(lldpresult),result[0]['id'])
                                 cursor.execute(queryStr)
+                                #topolog.write('{}: Updated topology for {} ({}). \n'.format(datetime.now(),items['ipaddress'],switchresult['name']))
                                 existingEntries.append(result[0]['id'])
                         else:
                             # We should only store the remote IP address if the IP address of the remote system is the proper format
@@ -115,6 +116,7 @@ def discoverTopology():
                                 queryStr="update topology set switchip='{}', systemmac='{}',hostname='{}',interface='{}',remoteswitchip='{}',remotesystemmac='{}',remotehostname='{}',remoteinterface='{}',lldpinfo='{}' where id='{}'" \
                                 .format(items['ipaddress'],switchresult['system_mac'],switchresult['hostname'],intitems['name'],lldpresult[0]['neighbor_info']['mgmt_ip_list'],lldpresult[0]['mac_addr'],lldpresult[0]['neighbor_info']['chassis_name'],lldpresult[0]['port_id'] ,json.dumps(lldpresult[0]),result[0]['id'])
                                 cursor.execute(queryStr)
+                                #topolog.write('{}: Updated topology for {} ({}). \n'.format(datetime.now(),items['ipaddress'],switchresult['hostname']))
                                 existingEntries.append(result[0]['id'])
                             else:
                                 queryStr="insert into topology (switchip,systemmac,hostname,interface,remoteswitchip,remotesystemmac,remotehostname,remoteinterface,lldpinfo) values ('{}','{}','{}','{}','{}','{}','{}','{}','{}')" \

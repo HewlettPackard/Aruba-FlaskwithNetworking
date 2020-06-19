@@ -8,8 +8,8 @@ from cleanupclasses import cleanupTrackers as cleanupTrackers
 from cleanupclasses import cleanupLogging as cleanupLogging
 
 
-schedule.every(5).seconds.do(cleanupTrackers)
-schedule.every(5).seconds.do(cleanupLogging)
+schedule.every(5).minutes.do(cleanupTrackers)
+schedule.every(5).minutes.do(cleanupLogging)
 
 while 1:
     schedule.run_pending()
