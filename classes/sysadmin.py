@@ -181,7 +181,7 @@ def submitsysConf(sysconf):
         else:
             globalsconf.update( { key : items} )
     globalsconf.update({"appPath":appPath})
-    globalsconf.update({"softwareRelease":"1.3"})
+    globalsconf.update({"softwareRelease":"2.0"})
     globalsconf.update({"sysInfo":json.loads(sysInfo)})
     globalsconf.update({"netInfo":psutil.net_if_addrs()})
     with open('bash/globals.json', 'w') as systemconfig:
