@@ -1,8 +1,8 @@
-# (C) Copyright 2019 Hewlett Packard Enterprise Development LP.
+# (C) Copyright 2020 Hewlett Packard Enterprise Development LP.
 # Generic ArubaOS-CX classes
 import classes.classes
 import requests
-sessionid = requests.Session()
+import paramiko
 
 import urllib3
 import json
@@ -11,48 +11,130 @@ urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)
 import datetime
 from time import gmtime, strftime, time, sleep
 
-def logincx (deviceid):
-    global sessionid
+def checkcxCookie(deviceid):
+    # Definition that checks whether the cookie that is stored in the database is still valid. If it is, then ok
+    # If not ok, we need to login, and store the new cookie value
+    # If login fails, this needs to be reflected in the database as well with the statuscode
     globalsconf=classes.classes.globalvars()
-    queryStr="select ipaddress, username, password from devices where id='{}'".format(deviceid)
+    queryStr="select ipaddress, username, password, secinfo, switchstatus from devices where id='{}'".format(deviceid)
     deviceCreds=classes.classes.sqlQuery(queryStr,"selectone")
     baseurl="https://{}/rest/v1/".format(deviceCreds['ipaddress'])
-    credentials={'username': deviceCreds['username'],'password': classes.classes.decryptPassword(globalsconf['secret_key'], deviceCreds['password']) }
-    # First, check whether there is an existing sessionid. If there is, there is no need to login to the switch
-    # This can easily be verified by issuing a get response
-    try:
-        # Login to the switch. The cookie value is stored in the session cookie jar
-        response = sessionid.post(baseurl + "login", params=credentials, verify=False, timeout=10)
-        return sessionid
-    except:
-        return 401
-
-def logoutcx(sessionid,deviceid):
-    queryStr="select ipaddress, username, password from devices where id='{}'".format(deviceid)
-    deviceCreds=classes.classes.sqlQuery(queryStr,"selectone")
-    baseurl="https://{}/rest/v1/".format(deviceCreds['ipaddress'])
-    try:
-        response = sessionid.post(baseurl + "logout", verify=False, timeout=10)
-    except:
-        print("Logout failure")
-        return "Logout failure"
-
-def getRESTcx(deviceid,url):
-    queryStr="select ipaddress, username, password from devices where id='{}'".format(deviceid)
-    deviceCreds=classes.classes.sqlQuery(queryStr,"selectone")
-    baseurl="https://{}/rest/v1/".format(deviceCreds['ipaddress'])
-    try:
-        sessionid=logincx(deviceid)
-        response=sessionid.get(baseurl + url, verify=False, timeout=10)
+    # First, let's check if we can perform a REST call and get a response 200
+    if deviceCreds['secinfo'] is None:
+        # There is no cookie in the secinfo field, we HAVE to login
+        credentials={'username': deviceCreds['username'],'password': classes.classes.decryptPassword(globalsconf['secret_key'], deviceCreds['password']) }
         try:
-            # If the response contains information, the content is converted to json format
-            response=json.loads(response.content.decode('utf-8'))
+            # Login to the switch. The cookie value is stored in the session cookie jar
+            response = requests.post(baseurl + "login", params=credentials, verify=False, timeout=5)
+            if "set-cookie" in response.headers:
+                # There is a cookie, so the login was successful. We don't have to logout because we will be using this cookie for subsequent calls
+                cookie_header = {'Cookie': response.headers['set-cookie']}
+            elif "session limit reached" in response.text:
+                cs=clearSessions(deviceCreds['ipaddress'], deviceCreds['username'],classes.classes.decryptPassword(globalsconf['secret_key'], deviceCreds['password']))
+                if cs=="ok":
+                    response = requests.post(baseurl + "login", params=credentials, verify=False, timeout=5)
+                    if "set-cookie" in response.headers:
+                        cookie_header = {'Cookie': response.headers['set-cookie']}
+                    else:
+                        cookie_header=""
+            else:
+                queryStr="update devices set switchstatus='{}' where id='{}'".format(response.status_code,deviceid)
+                classes.classes.sqlQuery(queryStr,"update")
+                return            
+            queryStr="update devices set secinfo='{}', switchstatus='{}' where id='{}'".format(json.dumps(cookie_header),response.status_code,deviceid)
+            classes.classes.sqlQuery(queryStr,"update")
+            return cookie_header
         except:
-            response={}
-        logoutcx(sessionid,deviceid)
-    except:
-        return {}
-    return response
+            # Something went wrong with the login
+            queryStr="update devices set switchstatus=100 where id='{}'".format(deviceid)
+            classes.classes.sqlQuery(queryStr,"update")
+            return
+    else :
+        try:
+            if type(deviceCreds['secinfo']) is dict:
+                header=deviceCreds['secinfo']
+            else:
+                header=json.loads(deviceCreds['secinfo'])
+            try:
+                response=requests.get(baseurl+"system?attributes=software_info&depth=2",headers=header,verify=False,timeout=5)
+                if response.status_code==200:
+                    # The cookie is still valid, return the cookie that is stored in the database
+                    queryStr="update devices set switchstatus='{}' where id='{}'".format(response.status_code,deviceid)
+                    classes.classes.sqlQuery(queryStr,"update")
+                    return deviceCreds['secinfo']
+                else:
+                    # There is something wrong with the cookie, might be expired or the switch may be out of sessions
+                    # If the latter is the case, we need to SSH into the switch and reset the sessions, then try to login again and get the cookie
+                    # There could also be an authentication failure, if that is the case, we should return that result code
+                    if "Authorization Required" in response.text:
+                        # Need to login and store the cookie
+                        credentials={'username': deviceCreds['username'],'password': classes.classes.decryptPassword(globalsconf['secret_key'], deviceCreds['password']) }
+                        response = requests.post(baseurl + "login", params=credentials, verify=False, timeout=5)
+                        if "set-cookie" in response.headers:
+                            cookie_header = {'Cookie': response.headers['set-cookie']}
+                        else:
+                            cookie_header=""                       
+                        queryStr="update devices set secinfo='{}', switchstatus=200 where id='{}'".format(json.dumps(cookie_header),deviceid)
+                        classes.classes.sqlQuery(queryStr,"update")
+                        return cookie_header
+                    elif "session limit reached" in response.text:
+                        cs=clearSessions(deviceCreds['ipaddress'], deviceCreds['username'],classes.classes.decryptPassword(globalsconf['secret_key'], deviceCreds['password']))
+                        if cs=="ok":
+                            response = requests.post(baseurl + "login", params=credentials, verify=False, timeout=5)
+                            if "set-cookie" in response.headers:
+                                cookie_header = {'Cookie': response.headers['set-cookie']}
+                            else:
+                                cookie_header=""                       
+                            queryStr="update devices set secinfo='{}', switchstatus=200 where id='{}'".format(json.dumps(cookie_header),deviceid)
+                            classes.classes.sqlQuery(queryStr,"update")
+                            return cookie_header
+                        else:
+                            queryStr="update devices set switchstatus=120 where id='{}'".format(deviceid)
+                            classes.classes.sqlQuery(queryStr,"update")
+                            return 120
+                    else:
+                        return deviceCreds['switchstatus']
+            except:
+                if deviceCreds['switchstatus']>100 and deviceCreds['switchstatus']<103:
+                    switchstatus=deviceCreds['switchstatus']-1
+                else:
+                    switchstatus=100
+                queryStr="update devices set switchstatus={} where id='{}'".format(switchstatus,deviceid)
+                classes.classes.sqlQuery(queryStr,"update")
+                return switchstatus
+        except:
+            if deviceCreds['switchstatus']>100 and deviceCreds['switchstatus']<103:
+                switchstatus=deviceCreds['switchstatus']-1
+            else:
+                switchstatus=100
+            queryStr="update devices set switchstatus={} where id='{}'".format(switchstatus,deviceid)
+            classes.classes.sqlQuery(queryStr,"update")
+            return switchstatus   
+    # 100 means that the switch is not reachable at all
+    return 100
+
+def getcxREST(deviceid,url):
+    response={}
+    cookie_header=checkcxCookie(deviceid)
+    if type(cookie_header) is dict:
+        header=cookie_header
+    else:
+        header=json.loads(cookie_header)
+    if cookie_header!="":
+        queryStr="select ipaddress from devices where id='{}'".format(deviceid)
+        deviceCreds=classes.classes.sqlQuery(queryStr,"selectone")
+        baseurl="https://{}/rest/v1/".format(deviceCreds['ipaddress'])
+        try:
+            response=requests.get(baseurl + url,headers=header,verify=False, timeout=10)
+            try:
+                # If the response contains information, the content is converted to json format
+                response=json.loads(response.content.decode('utf-8'))
+                return response
+            except:
+                return
+        except:
+            return
+    return
 
 def getcxInfo(deviceid):
     sysinfo={}
@@ -62,37 +144,24 @@ def getcxInfo(deviceid):
     vrfinfo={}
     vsxlags={}
     vsfinfo={}
-    s=requests.Session()
-    globalsconf=classes.classes.globalvars()
-    queryStr="select ipaddress, username, password from devices where id='{}'".format(deviceid)
-    deviceCreds=classes.classes.sqlQuery(queryStr,"selectone")
-    baseurl="https://{}/rest/v1/".format(deviceCreds['ipaddress'])
-    credentials={'username': deviceCreds['username'],'password': classes.classes.decryptPassword(globalsconf['secret_key'], deviceCreds['password']) }
+    cpuValappend=""
+    memValappend=""
     try:
-        response = s.post(baseurl + "login", params=credentials, verify=False, timeout=5)
         #This definition obtains all the relevant information from the cx device and then stores this in the database
-        #urllist=["system/interfaces?attributes=admin_state%2Cduplex%2Chw_intf_info%2Clink_speed%2Clink_state%2Clink_state_hw%2Clldp_statistics%2Cmtu%2Cname%2Cstatistics&depth=2","system/ports?depth=1","system/subsystems?attributes=resource_utilization&depth=2","system?attributes=capabilities%2Ccapacities%2Ccapacities_status%2Chostname%2Cmgmt_intf%2Cmgmt_intf_status%2Cplatform_name%2Csoftware_images%2Csoftware_info%2Csoftware_version%2Csubsystems&depth=2","system/vsx?depth=3","system/vrfs?depth=2","system/vsx_remote_lags?depth=2"]
-        urllist=["system/interfaces?attributes=admin_state%2Cduplex%2Chw_intf_info%2Clink_speed%2Clink_state%2Clink_state_hw%2Clldp_statistics%2Cmtu%2Cname%2Cstatistics&depth=2","system/ports?attributes=applied_vlan_trunks%2Cip4_address%2Cip4_address_secondary%2Cip6_addresses%2Cname&depth=1","system/subsystems?attributes=resource_utilization&depth=2","system?attributes=capabilities%2Ccapacities%2Ccapacities_status%2Cboot_time%2Chostname%2Cmgmt_intf%2Cmgmt_intf_status%2Cplatform_name%2Csoftware_images%2Csoftware_info%2Csoftware_version%2Csubsystems&depth=2","system/vsx?depth=3","system/vrfs?depth=2","system/vsx_remote_lags?depth=2","system/vrfs/default/routes?depth=1","system/vsf_members?depth=2"]
+        urllist=["system/interfaces?attributes=admin_state%2Cduplex%2Chw_intf_info%2Clink_speed%2Clink_state%2Clink_state_hw%2Clldp_statistics%2Cmtu%2Cname%2Cstatistics&depth=2","system/ports?attributes=applied_vlan_trunks%2Cip4_address%2Cip4_address_secondary%2Cip6_addresses%2Cname%2Cvrf&depth=1","system/subsystems?attributes=resource_utilization&depth=2","system?attributes=capabilities%2Ccapacities%2Ccapacities_status%2Cboot_time%2Chostname%2Cmgmt_intf%2Cmgmt_intf_status%2Cplatform_name%2Csoftware_images%2Csoftware_info%2Csoftware_version%2Csubsystems&depth=2","system/vsx?depth=3","system/vrfs?depth=2","system/vsx_remote_lags?depth=2","system/vrfs/default/routes?depth=1"]
         for items in urllist:
             try:
-                result=s.get(baseurl + items, verify=False, timeout=5)
-                try:
-                    # If the response contains information, the content is converted to json format
-                    result=json.loads(result.content.decode('utf-8'))
-                except:
-                    result={}
+                result=getcxREST(deviceid,items)
             except:
-                pass
+                result={}
             # Update the database with relevant information based on the url
-            if items=="system/vsf_members?depth=2":
-                vsfinfo=json.dumps(result, separators=(',',':'))
-            elif items=="system/vsx?depth=3":         
+            if items=="system/vsx?depth=3":         
                 vsxinfo=json.dumps(result, separators=(',',':'))
             elif items=="system/vrfs?depth=2":
                 vrfinfo=json.dumps(result, separators=(',',':'))
             elif items=="system/vsx_remote_lags?depth=2":
                 vsxlags=json.dumps(result, separators=(',',':'))
-            elif items=="system/ports?attributes=applied_vlan_trunks%2Cip4_address%2Cip4_address_secondary%2Cip6_addresses%2Cname&depth=1":
+            elif items=="system/ports?attributes=applied_vlan_trunks%2Cip4_address%2Cip4_address_secondary%2Cip6_addresses%2Cname%2Cvrf&depth=1":
                 portinfo=json.dumps(result, separators=(',',':'))
             elif items=="system/vrfs/default/routes?depth=1":
                 routeinfo=json.dumps(result, separators=(',',':'))
@@ -157,19 +226,18 @@ def getcxInfo(deviceid):
             try:
                 classes.classes.sqlQuery(queryStr,"update")
             except:
-                print("Something went wrong with the query")
                 pass
         # If this switch is running VSF, we also need to obtain the VSF information, only update if there is VSF information
         try:
             url="system?attributes=vsf_config%2Cvsf_status&depth=3"
-            vsfstatus=s.get(baseurl + items, verify=False, timeout=5)
+            vsfstatus=getcxREST(deviceid,url)
             try:
                 # If the response contains information, the content is converted to json format
                 vsfstatus=json.loads(vsfstatus.content.decode('utf-8'))
             except:
                 vsfstatus=""
             url="system/vsf_members?depth=2"
-            vsfmember=s.get(baseurl + url, verify=False, timeout=5)
+            vsfmember=getcxREST(deviceid,url)
             try:
                 # If the response contains information, the content is converted to json format
                 vsfmember=json.loads(vsfmember.content.decode('utf-8'))
@@ -181,8 +249,24 @@ def getcxInfo(deviceid):
                 queryStr="update devices set vsf='{}' where id='{}'".format(vsfinfo,str(deviceid))
                 classes.sqlQuery(queryStr,"update")
         except:
-            print("Something went wrong obtaining the VSF information")
+            pass
     except:
-        print("Error logging in. Status code {}".format(response.status_code))
-    finally:
-        response = s.post(baseurl + "logout", verify=False, timeout=5)
+        pass
+
+def clearSessions(ipaddr, username,password):
+    try:
+        remoteclient=paramiko.SSHClient()
+        remoteclient.set_missing_host_key_policy(paramiko.AutoAddPolicy())
+        remoteclient.connect(ipaddr,username=username,password=password, timeout=5)
+        # Logging in could take some time. Pause a bit
+        sleep(5)
+        connection=remoteclient.invoke_shell()
+        connection.send("\n")
+        sleep(3)
+        connection.send("https session close all\n")
+        sleep(3)
+        connection.close()
+        remoteclient.close()
+        return "ok"
+    except:
+        return "nok"

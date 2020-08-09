@@ -10,25 +10,31 @@ import classes.classes as classes
 
 @devices.route("/", methods=['GET', 'POST'])
 def index ():
-    authOK=classes.checkAuth()
+    authOK=classes.checkAuth("switchaccess","submenu")
     if authOK!=0:
         sysvars=classes.globalvars()
         formresult=request.form
         # Obtain the relevant device information from the database
         result=classes.devicedbAction(formresult)
-        return render_template("switch.html",result=result['result'],switchos=result['switchos'], platforms=result['platforms'], formresult=formresult, totalentries=int(result['totalentries']),pageoffset=int(result['pageoffset']),entryperpage=int(result['entryperpage']), authOK=authOK, sysvars=sysvars)
+        if authOK['hasaccess']==True:
+            return render_template("switch.html",result=result['result'],switchos=result['switchos'], platforms=result['platforms'], formresult=formresult, totalentries=int(result['totalentries']),pageoffset=int(result['pageoffset']),entryperpage=int(result['entryperpage']), authOK=authOK, sysvars=sysvars)
+        else:
+            return render_template("noaccess.html",authOK=authOK, sysvars=sysvars)
     else:
         return render_template("login.html")
 
 @devices.route("/switches", methods=['GET', 'POST'])
 def switches ():
-    authOK=classes.checkAuth()
+    authOK=classes.checkAuth("switchaccess","submenu")
     if authOK!=0:
         sysvars=classes.globalvars()
         formresult=request.form
         # Obtain the relevant device information from the database
         result=classes.devicedbAction(formresult)
-        return render_template("switch.html",result=result['result'], switchos=result['switchos'], platforms=result['platforms'], formresult=formresult, totalentries=int(result['totalentries']),pageoffset=int(result['pageoffset']),entryperpage=int(result['entryperpage']), authOK=authOK, sysvars=sysvars, entryExists=result['entryExists'])
+        if authOK['hasaccess']==True:
+            return render_template("switch.html",result=result['result'], switchos=result['switchos'], platforms=result['platforms'], formresult=formresult, totalentries=int(result['totalentries']),pageoffset=int(result['pageoffset']),entryperpage=int(result['entryperpage']), authOK=authOK, sysvars=sysvars, entryExists=result['entryExists'])
+        else:
+            return render_template("noaccess.html",authOK=authOK, sysvars=sysvars)
     else:
         return render_template("login.html")
 
@@ -51,21 +57,41 @@ def backupInfo ():
     result=classes.sqlQuery(queryStr,"selectone")
     return json.dumps(result)
 
-@devices.route("/branchBackup", methods=['GET','POST'])
-def branchBackup ():
+@devices.route("/createbranchBackup", methods=['GET','POST'])
+def createbranchBackup ():
+    sysvars=classes.globalvars()
+    formresult=request.form
+    #Obtain the master backup information
+    if formresult:
+        queryStr="select * from configmgr where id='{}'".format(formresult['masterbackup'])
+        result=classes.sqlQuery(queryStr,"selectone")
+        return json.dumps(result)
+    else:
+        return
+
+
+@devices.route("/submitbranchBackup", methods=['GET','POST'])
+def submitbranchBackup ():
+    sysvars=classes.globalvars()
+    formresult=request.form
+    try:
+        id= classes.branchBackup(formresult['deviceid'], formresult['masterbackup'],formresult['backupdescription'], formresult['backuptype'],formresult['backupcontent'],formresult['sysuser'])
+        queryStr="select * from configmgr where id='{}'".format(id)
+        # Obtain the relevant device information from the database
+        result=classes.sqlQuery(queryStr,"selectone")
+        return json.dumps(result)
+    except:
+        pass
+    return {}
+
+@devices.route("/changebranchBackup", methods=['GET','POST'])
+def changebranchBackup ():
     sysvars=classes.globalvars()
     formresult=request.form
     # Based on the action, perform a branch backup submit, or edit submit
-    if formresult['action']=="submitBranch":
-        try:
-            id= classes.branchBackup(formresult['deviceid'], formresult['masterbackup'], formresult['sysuser'], formresult['backupContent'], formresult['backuptype'], formresult['backupDescription'])  
-            # Result is the newly created ID
-        except:
-            print("Branch backup not created")
-    elif formresult['action']=="submitbackupChanges":
-        classes.changebranchBackup(formresult['id'], formresult['deviceid'], formresult['masterbackup'], formresult['sysuser'], formresult['backupContent'], formresult['backuptype'], formresult['backupDescription'])  
-        id=formresult['id']
-    queryStr="select * from configmgr where id='{}'".format(id)
+    classes.changebranchBackup(formresult['id'],formresult['sysuser'], formresult['backupContent'], formresult['backupDescription'])  
+    id=formresult['id']
+    queryStr="select * from configmgr where id='{}'".format(formresult['id'])
     # Obtain the relevant device information from the database
     result=classes.sqlQuery(queryStr,"selectone")
     return json.dumps(result)
@@ -73,10 +99,10 @@ def branchBackup ():
 @devices.route("/configmgr", methods=['GET','POST'])
 def configmgr ():
     sysvars=classes.globalvars()
-    if request.args.get('searchconfigDescription') is None:
-        searchconfigDescription=""
+    if request.args.get('searchdescription') is None:
+        searchdescription=""
     else:
-        searchconfigDescription=request.args.get('searchconfigDescription')
+        searchdescription=request.args.get('searchdescription')
     queryStr="select id,ipaddress,description from devices where id='{}'".format(request.args.get('deviceid'))
     deviceinfo=classes.sqlQuery(queryStr,'selectone')
     # Action: running Backup, startup Backup, view backup
@@ -94,8 +120,8 @@ def configmgr ():
             classes.startupbackupSwitch(request.args.get('deviceid'),request.args.get('sysuser'))
         else:
             classes.startupbackupCX(request.args.get('deviceid'),request.args.get('sysuser'))
-    configresult=classes.configdbAction(request.args.get('deviceid'),request.args.get('masterbackup'),request.args.get('backuptype'),request.args.get('owner'),searchconfigDescription,request.args.get('action'),request.args.get('configentryperpage'),request.args.get('configpageoffset'))
-    return render_template("switchconfig.html", result=configresult['result'], searchOwner=request.args.get('owner'), masterbackup=request.args.get('masterbackup'), backuptype=request.args.get('backuptype'), searchconfigDescription=searchconfigDescription, deviceinfo=deviceinfo, ownerinfo=configresult['ownerinfo'], configtotalentries=configresult['configtotalentries'],configpageoffset=configresult['configpageoffset'],configentryperpage=configresult['configentryperpage'])
+    configresult=classes.configdbAction(request.args.get('deviceid'),request.args.get('searchmasterbackup'),request.args.get('searchbackuptype'),request.args.get('searchowner'),searchdescription,request.args.get('action'),request.args.get('configentryperpage'),request.args.get('configpageoffset'))
+    return render_template("switchconfig.html", result=configresult['result'], searchOwner=request.args.get('searchowner'), searchmasterbackup=request.args.get('searchmasterbackup'), searchbackuptype=request.args.get('searchbackuptype'), searchdescription=searchdescription, deviceinfo=deviceinfo, ownerinfo=configresult['ownerinfo'], configtotalentries=configresult['configtotalentries'],configpageoffset=configresult['configpageoffset'],configentryperpage=configresult['configentryperpage'])
 
 @devices.route("/resetClient", methods=['GET','POST'])
 def resetClient ():
@@ -117,32 +143,39 @@ def deviceInfo ():
 
 @devices.route("/clearpass", methods=['GET', 'POST'])
 def clearpass ():
-    authOK=classes.checkAuth()
+    authOK=classes.checkAuth("clearpassaccess","submenu")
     if authOK!=0:
         sysvars=classes.globalvars()
         formresult=request.form
         # Obtain the relevant ClearPass information from the database
         result=classes.clearpassdbAction(formresult)
-        return render_template("clearpass.html",result=result['result'], platformResult=result['platformResult'],osversionResult=result['osversionResult'], formresult=formresult, totalentries=int(result['totalentries']),pageoffset=int(result['pageoffset']),entryperpage=int(result['entryperpage']), authOK=authOK, sysvars=sysvars)
+        if authOK['hasaccess']==True:
+            return render_template("clearpass.html",result=result['result'], platformResult=result['platformResult'],osversionResult=result['osversionResult'], formresult=formresult, totalentries=int(result['totalentries']),pageoffset=int(result['pageoffset']),entryperpage=int(result['entryperpage']), authOK=authOK, sysvars=sysvars)
+        else:
+            return render_template("noaccess.html",authOK=authOK, sysvars=sysvars)
     else:
         return render_template("login.html")
 
 @devices.route("/mobility", methods=['GET', 'POST'])
 def mobility ():
-    authOK=classes.checkAuth()
+    authOK=classes.checkAuth("mobilityaccess","submenu")
+    print(authOK)
     if authOK!=0:
         sysvars=classes.globalvars()
         formresult=request.form
         # Obtain the relevant Mobility Controller information from the database
         result=classes.mobilitydbAction(formresult)
-        return render_template("mobility.html",result=result['result'], platformResult=result['platformResult'],osversionResult=result['osversionResult'], formresult=formresult, totalentries=int(result['totalentries']),pageoffset=int(result['pageoffset']),entryperpage=int(result['entryperpage']), authOK=authOK, sysvars=sysvars)
+        if authOK['hasaccess']==True:
+            return render_template("mobility.html",result=result['result'], platformResult=result['platformResult'],osversionResult=result['osversionResult'], formresult=formresult, totalentries=int(result['totalentries']),pageoffset=int(result['pageoffset']),entryperpage=int(result['entryperpage']), authOK=authOK, sysvars=sysvars)
+        else:
+            return render_template("noaccess.html",authOK=authOK, sysvars=sysvars)
     else:
         return render_template("login.html")
 
 @devices.route("/deviceinfo", methods=['GET','POST'])
 def deviceinfo ():
     sysvars=classes.globalvars()
-    authOK=classes.checkAuth()
+    authOK=classes.checkAuth("switchaccess","feature")
     if authOK!=0:
         # Definition for the main device monitoring page. If no switch has been selected, only the select form is rendered (deviceinfo.html). 
         # Based on the information that is returned from the deviceInformation definition, a cx or switch page is rendered
@@ -202,8 +235,10 @@ def mcinterfaceInfo ():
 @devices.route("/deviceStatus", methods=['GET','POST'])
 def deviceStatus ():
     # Obtain the online/offline status of the device
-    result={"status":classes.checkifOnline(request.form['deviceid'],request.form['ostype'])}
-    return json.dumps(result)
+    response={}
+    response['deviceid']=request.form['deviceid']
+    response['status']=classes.checkifOnline(request.form['deviceid'],request.form['ostype'])
+    return json.dumps(response)
 
 @devices.route("/cpStatus", methods=['GET','POST'])
 def cpStatus ():

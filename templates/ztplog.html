@@ -2,7 +2,7 @@
 {% block content %}
     <div id="maincontainer">
         <table class='tablewithborder' id="ztplogtable">
-            <tr><td colspan='2'><font class='font13pxwhite'><center>ZTP log information for device {{deviceInfo['ipaddress']}} ({{deviceInfo['name']}})</center></font></td><td width="2%"><input type="button" name="clearLog" id="clearLog" data-deviceid="{{ deviceInfo['id'] }}"value="Clear"/></td></tr>
+            <tr><td colspan='2'><font class='font13pxwhite'><center>ZTP log information for device {{deviceInfo['ipaddress']}} ({{deviceInfo['name']}})</center></font></td><td width="2%"><input type="button" name="clearLog" id="clearLog" data-deviceid="{{ deviceInfo['id'] }}"value="Clear" {% if va("ztpdeviceaccess","feature")==False %} style="opacity:0.2;pointer-events:none;" {% endif %}/></td></tr>
             <tr>
                 <td nowrap><font class='font12pxwhite'>Date</font></td>
                 <td nowrap><font class='font12pxwhite'>Information</font></td>

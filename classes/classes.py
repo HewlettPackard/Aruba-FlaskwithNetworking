@@ -1,19 +1,19 @@
 # (C) Copyright 2019 Hewlett Packard Enterprise Development LP.
 from classes.clearpass import clearpassdbAction, getRESTcp, checkcpOnline, getendpointInfo, getservicesInfo, gettrustInfo
-from classes.arubaoscx import logincx, logoutcx, getRESTcx, getcxInfo
-from classes.arubaosswitch import loginswitch, logoutswitch, getRESTswitch, getswitchInfo,anycli,anycliProvision
+from classes.arubaoscx import getcxInfo, getcxREST, checkcxCookie
+from classes.arubaosswitch import getswitchInfo,anycli,anycliProvision,checkswitchCookie, getswitchREST
 from classes.switch import checkifOnline, discoverModel, devicedbAction, interfacedbAction, showLinechart, portAccess, clearClient
 from classes.mobility import mobilitydbAction, loginmc, logoutmc, getRESTmc, mcinterfaceInfo, mcroleInfo,mcpolicyInfo, checkmcOnline
-from classes.websockets import getSubscriptions
 from classes.dsprofile import dsprofiledbAction,dsprofileInfo
 from classes.trackers import dhcpdbAction, snmpdbAction, syslogdbAction
 from classes.dsservice import dsservicedbAction, getVLANinfo, getVLANint, getVLANidname, getRolesinfo, getRoleinfo, getACLinfo, getProfile, getService, provisionSwitch
-from classes.sysadmin import checkAuth, submitLogin, submitsysConf, userdbAction, changePassword, checkProcess, processAction, checkPhpipam, checkInfoblox
+from classes.sysadmin import verifyAccess, checkAuth, submitLogin, submitsysConf, userdbAction, roledbAction, changePassword, checkProcess, processAction, checkPhpipam, checkInfoblox
 from classes.configmgr import configdbAction, runningbackupSwitch, runningbackupCX, startupbackupSwitch, startupbackupCX, deleteBackup, branchBackup, changebranchBackup
 from classes.ztp import ztpdevicedbAction, ztpimagedbAction, ztptemplatedbAction, ztpActivate, ztpDeactivate, verifyCredentials
 from classes.phpipam import PHPipamtoken, PHPipamget
 from classes.topology import topodbAction, endpointInfo, checktopoDevice, topoInfo
 from classes.infoblox import getInfoblox
+from classes.telemetry import telemetrydbAction, subscriptionAction, checkRunningws, checkSubscriptions
 
 import requests, os, sys, platform, psutil, subprocess, socket
 sessionid = requests.Session()

@@ -1,0 +1,21 @@
+<!-- (C) Copyright 2020 Hewlett Packard Enterprise Development LP. -->
+{% block scripts %}
+<script src="static/scripts/jquery-1.10.2.min.js"></script>
+<link href="static/stylesheet.css" rel="stylesheet" />
+<script type="text/javascript" src="static/main.js"></script>
+{% endblock %}
+
+{% block content %}
+{% set pagename = "No access" %}
+
+
+{% include 'navbar.html' %}
+
+<div id="maincontainer">
+    <br /><br />
+    <table class="table" width="100%">
+       <tr><td align="center"><font color="red"><b>You don't have access to this page</b></font></td></tr>
+    </table>
+ </div>
+
+{% endblock %}

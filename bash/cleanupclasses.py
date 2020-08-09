@@ -5,13 +5,13 @@ import time
 import json
 import pymysql.cursors
 import re
-import sys
-import os
-import platform
 import requests
 import urllib3
 from urllib.parse import quote, unquote
 urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)
+
+import psutil, sys, os, platform, subprocess, socket
+from subprocess import Popen, PIPE
 
 sessionid = requests.Session()
 
@@ -54,7 +54,7 @@ def cleanupLogging():
         data=myfile.read()
     globalconf=json.loads(data)
     # Log files list
-    logFiles=["cleanup.log","topology.log","ztp.log","listener.log"]
+    logFiles=["cleanup.log","topology.log","ztp.log","listener.log", "telemetry.log"]
     for items in logFiles:
         timestampList=[]
         # Go through the logfiles and perform 2 actions:
@@ -79,7 +79,7 @@ def cleanupLogging():
             # The logfile is completely empty. We need to add the timestamp
             checklog=open(logFile,'w')
             checklog.write('\n---'+str(int(datetime.now().timestamp()))+'---\n')
-            clecklog.close()
+            checklog.close()
         elif oneday>timestampList[len(timestampList)-1]:
             # Another day has gone by. Add the new timestamp
             checklog=open(logFile,'a')
@@ -101,6 +101,30 @@ def cleanupLogging():
             checklog=open(logFile,'w')
             checklog.write(tsData[1])
             checklog.close()
+
+def checkSocketserver():
+    status=""
+    # Check if the websocket server is running. If it is not running, we need to stop all the ws clients.
+    # Once the websocket server is running again, the checkws definition should restart the sessions as well
+    for proc in psutil.process_iter():
+        # Need to check whether the listener process or the scheduler process is queried
+            if "python" in proc.name().lower():
+                procinfo=psutil.Process(proc.pid)
+                if len(procinfo.cmdline())>1:
+                    if "telemetry.py" in procinfo.cmdline()[1]:
+                        # We are ok
+                        status = "ok"
+    # If the for next loop has returned nok, we have to kill all the websocket sessions because the socket server has stopped for some reason
+    if status=="":
+        for proc in psutil.process_iter():
+            if "python" in proc.name().lower():
+                procinfo=psutil.Process(proc.pid)
+                if len(procinfo.cmdline())>1:
+                    if procinfo.cmdline()[1]=="/var/www/html/bash/wsclient.py":
+                        proc.kill()
+        cleanuplog = open('/var/www/html/log/cleanup.log', 'a')
+        cleanuplog.write('{}: Web Socket server is stopped. All websocket clients have been stopped. \n'.format(datetime.now()))
+        cleanuplog.close()
 
 
 

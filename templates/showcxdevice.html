@@ -1,4 +1,4 @@
-<!-- (C) Copyright 2019 Hewlett Packard Enterprise Development LP. -->
+<!-- (C) Copyright 2020 Hewlett Packard Enterprise Development LP. -->
 {% block content %}
 {% set partnumber=[] %}
 {% set serialnumber=[] %}
@@ -26,7 +26,7 @@
             </tr>
             <tr>
                 <td><font class="font12pxwhite">Hostname</font></td>
-                <td class="whiteBG"><font face="arial" size="1"> {{ sysinfo['hostname'] }} </font></td>
+                <td class="whiteBG"><font face="arial" size="1"> {% if sysinfo['hostname'] %}{{ sysinfo['hostname'] }} {% elif sysinfo['mgmt_intf_status']['hostname'] %} {{ sysinfo['mgmt_intf_status']['hostname'] }} {% else %} {{ sysinfo['platform_name'] }} {% endif %}  </font></td>
                 <td><font class="font12pxwhite">Part number(s)</font></td>
                 <td class="whiteBG">
                     <font face="arial" size="1">
@@ -68,13 +68,13 @@
                     </font>
                 </td>
                 <td><font class="font12pxwhite">Platform</font></td>
-                <td class="whiteBG"><font face="arial" size="1"> {{ sysinfo['platform_name'] }} </font></td>
+                <td class="whiteBG"><font face="arial" size="1"> {% if sysinfo['platform_name'] %} {{ sysinfo['platform_name'] }} {% endif %} </font></td>
                 <td><font class="font12pxwhite">Operating System</font></td>
-                <td class="whiteBG"><font face="arial" size="1"> {{ sysinfo['software_info']['os_name'] }} </font></td>
+                <td class="whiteBG"><font face="arial" size="1"> {% if 'software_info' in sysinfo %}{{ sysinfo['software_info']['os_name'] }} {% endif %} </font></td>
             </tr>
             <tr>
                 <td><font class="font12pxwhite">Primary Image</font></td>
-                <td class="whiteBG"><font face="arial" size="1"> {{ sysinfo['software_images']['primary_image_version'] }} ({{ sysinfo['software_images']['primary_image_size'] }}) </font></td>
+                <td class="whiteBG"><font face="arial" size="1"> {{ sysinfo['software_images']['primary_image_version'] }} ({{ sysinfo['software_images']['primary_image_size'] }})  </font></td>
                 <td><font class="font12pxwhite">Secondary Image</font></td>
                 <td class="whiteBG"><font face="arial" size="1"> {{ sysinfo['software_images']['secondary_image_version'] }} ({{ sysinfo['software_images']['secondary_image_size'] }}) </font></td>
                 <td><font class="font12pxwhite">Default Image</font></td>
@@ -82,10 +82,10 @@
                 <td><font class="font12pxwhite">Operational Software</font></td>
                 <td class="whiteBG"><font face="arial" size="1"> {{ sysinfo['software_version'] }} </font></td>
                 <td><font class="font12pxwhite">Build Date</font></td>
-                <td class="whiteBG"><font face="arial" size="1"> {{ sysinfo['software_info']['build_date'] }} </font></td>
+                <td class="whiteBG"><font face="arial" size="1"> {% if 'software_info' in sysinfo %}{{ sysinfo['software_info']['build_date'] }} {% endif %}  </font></td>
                 <td><font class="font12pxwhite">Up time</font></td>
                 <td class="whiteBG">
-                    <font face="arial" size="1">{{ timeDelta(sysinfo['boot_time']) }}</font>
+                    <font face="arial" size="1">{% if 'boot_time' in sysinfo %}{{ timeDelta(sysinfo['boot_time']) }} {% endif %}</font>
                 </td>
             </tr>
             <tr>
@@ -111,13 +111,13 @@
                 <td><font class="font12pxwhite">Power Supply Status</font></td>
                 <td class="whiteBG"><font face="arial" size="1"> {{ items['power_supplies'][0]['status'] }} </font></td>
                 <td><font class="font12pxwhite">Description</font></td>
-                <td class="whiteBG"><font face="arial" size="1"> {{ items['power_supplies'][0]['identity']['description'] }} </font></td>
+                <td class="whiteBG"><font face="arial" size="1"> {% if items['power_supplies'][0]['identity'] %} {{ items['power_supplies'][0]['identity']['description'] }} {% endif %}</font></td>
                 <td><font class="font12pxwhite">Maximum power</font></td>
-                <td class="whiteBG"><font face="arial" size="1"> {{ items['power_supplies'][0]['characteristics']['maximum_power'] }} </font></td>
+                <td class="whiteBG"><font face="arial" size="1"> {% if items['power_supplies'][0]['characteristics'] %} {{ items['power_supplies'][0]['characteristics']['maximum_power'] }} {% endif %} </font></td>
                 <td><font class="font12pxwhite">Failures</font></td>
-                <td class="whiteBG"><font face="arial" size="1"> {{ items['power_supplies'][0]['statistics']['failures'] }} </font></td>
+                <td class="whiteBG"><font face="arial" size="1"> {% if items['power_supplies'][0]['statistics'] %}  {{ items['power_supplies'][0]['statistics']['failures'] }} {% endif %} </font></td>
                 <td><font class="font12pxwhite">Warnings</font></td>
-                <td class="whiteBG"><font face="arial" size="1"> {{ items['power_supplies'][0]['statistics']['warnings'] }} </font></td>
+                <td class="whiteBG"><font face="arial" size="1">{% if items['power_supplies'][0]['statistics'] %}  {{ items['power_supplies'][0]['statistics']['warnings'] }} {% endif %} </font></td>
                 <td colspan="2"</td>
             </tr>
             {% endif %}
@@ -126,15 +126,15 @@
                 <td><font class="font12pxwhite">Power Supply 1 Status</font></td>
                 <td class="whiteBG"><font face="arial" size="1"> {{ items['power_supplies'][0]['status'] }} </font></td>
                 <td><font class="font12pxwhite">Part Number</font></td>
-                <td class="whiteBG"><font face="arial" size="1"> {{ items['power_supplies'][0]['identity']['product_name'] }} </font></td>
+                <td class="whiteBG"><font face="arial" size="1"> {% if items['power_supplies'][0]['identity'] %} {{ items['power_supplies'][0]['identity']['product_name'] }} {% endif %} </font></td>
                 <td><font class="font12pxwhite">Serial Number</font></td>
-                <td class="whiteBG"><font face="arial" size="1"> {{ items['power_supplies'][0]['identity']['serial_number'] }} </font></td>
+                <td class="whiteBG"><font face="arial" size="1"> {% if items['power_supplies'][0]['identity'] %}{{ items['power_supplies'][0]['identity']['serial_number'] }} {% endif %} </font></td>
                 <td><font class="font12pxwhite">Power Supply 2 Status</font></td>
                 <td class="whiteBG"><font face="arial" size="1"> {{ items['power_supplies'][1]['status'] }} </font></td>
                 <td><font class="font12pxwhite">Part Number</font></td>
-                <td class="whiteBG"><font face="arial" size="1"> {{ items['power_supplies'][1]['identity']['product_name'] }} </font></td>
+                <td class="whiteBG"><font face="arial" size="1"> {% if items['power_supplies'][0]['identity'] %}{{ items['power_supplies'][1]['identity']['product_name'] }} {% endif %} </font></td>
                 <td><font class="font12pxwhite">Serial Number</font></td>
-                <td class="whiteBG"><font face="arial" size="1"> {{ items['power_supplies'][1]['identity']['serial_number'] }} </font></td>
+                <td class="whiteBG"><font face="arial" size="1"> {% if items['power_supplies'][0]['identity'] %}{{ items['power_supplies'][1]['identity']['serial_number'] }} {% endif %} </font></td>
             </tr>
             {% endif %}
             {% endif %}
@@ -148,11 +148,11 @@
             {% if items['fans'] %}
             <tr>
                 <td><font class="font12pxwhite">Fan status</font></td>
-                <td colspan="2"><font face="arial" size="1">Fan 1: L: {{ items['fans'][0]['status'] }} ({{ items['fans'][0]['rpm'] }} rpm) R: {{ items['fans'][1]['status'] }} ({{ items['fans'][1]['rpm'] }} rpm) </font></td>
-                <td colspan="2"><font face="arial" size="1">Fan 2: L: {{ items['fans'][2]['status'] }} ({{ items['fans'][2]['rpm'] }} rpm) R: {{ items['fans'][3]['status'] }} ({{ items['fans'][3]['rpm'] }} rpm) </font></td>
-                <td colspan="2"><font face="arial" size="1">Fan 3: L: {{ items['fans'][4]['status'] }} ({{ items['fans'][4]['rpm'] }} rpm) R: {{ items['fans'][5]['status'] }} ({{ items['fans'][5]['rpm'] }} rpm) </font></td>
-                <td colspan="2"><font face="arial" size="1">Fan 4: L: {{ items['fans'][6]['status'] }} ({{ items['fans'][6]['rpm'] }} rpm) R: {{ items['fans'][7]['status'] }} ({{ items['fans'][7]['rpm'] }} rpm) </font></td>
-                <td colspan="2"><font face="arial" size="1">Fan 5: L: {{ items['fans'][8]['status'] }} ({{ items['fans'][8]['rpm'] }} rpm) R: {{ items['fans'][9]['status'] }} ({{ items['fans'][9]['rpm'] }} rpm) </font></td>
+                <td colspan="2" class="whiteBG"><font face="arial" size="1">Fan 1: L: {{ items['fans'][0]['status'] }} ({{ items['fans'][0]['rpm'] }} rpm) R: {{ items['fans'][1]['status'] }} ({{ items['fans'][1]['rpm'] }} rpm) </font></td>
+                <td colspan="2" class="whiteBG"><font face="arial" size="1">Fan 2: L: {{ items['fans'][2]['status'] }} ({{ items['fans'][2]['rpm'] }} rpm) R: {{ items['fans'][3]['status'] }} ({{ items['fans'][3]['rpm'] }} rpm) </font></td>
+                <td colspan="2" class="whiteBG"><font face="arial" size="1">Fan 3: L: {{ items['fans'][4]['status'] }} ({{ items['fans'][4]['rpm'] }} rpm) R: {{ items['fans'][5]['status'] }} ({{ items['fans'][5]['rpm'] }} rpm) </font></td>
+                <td colspan="2" class="whiteBG"><font face="arial" size="1">Fan 4: L: {{ items['fans'][6]['status'] }} ({{ items['fans'][6]['rpm'] }} rpm) R: {{ items['fans'][7]['status'] }} ({{ items['fans'][7]['rpm'] }} rpm) </font></td>
+                <td colspan="2" class="whiteBG"><font face="arial" size="1">Fan 5: L: {{ items['fans'][8]['status'] }} ({{ items['fans'][8]['rpm'] }} rpm) R: {{ items['fans'][9]['status'] }} ({{ items['fans'][9]['rpm'] }} rpm) </font></td>
                 <td class="whiteBG"><font face="arial" size="1"> &nbsp; </font></td>
             </tr>
             {% endif %}
@@ -349,27 +349,27 @@
                     <td colspan="12"><font class="font13pxwhite"><center>Virtual Switching Exchange (VSX) information</center></font></td>
                 </tr>
                 <tr>
-                    <td class="whiteBG"><font class="font12pxwhite">Device Role</font></td>
-                    <td nowrap><font face="arial" size="1"> {{ vsxinfo['device_role'] }} </font></td>
-                    <td class="whiteBG"><font class="font12pxwhite">Device System ID</font></td>
-                    <td nowrap><font face="arial" size="1"> {{ vsxinfo['oper_status']['oper_system_id'] }} </font></td>
-                    <td class="whiteBG"><font class="font12pxwhite">Configuration Sync State</font></td>
-                    <td nowrap><font face="arial" size="1"> {{ vsxinfo['oper_status']['config_sync_state'] }} </font></td>
-                    <td class="whiteBG"><font class="font12pxwhite">ISL Management State</font></td>
-                    <td nowrap><font face="arial" size="1"> {{ vsxinfo['oper_status']['isl_mgmt_state'] }} </font></td>
-                    <td class="whiteBG"><font class="font12pxwhite">ISL Protocol Version (State)</font></td>
-                    <td nowrap><font face="arial" size="1">  {{ vsxinfo['oper_status']['islp_version'] }} ({{ vsxinfo['oper_status']['islp_state'] }})</font></td>
+                    <td><font class="font12pxwhite">Device Role</font></td>
+                    <td nowrap class="whiteBG"><font face="arial" size="1"> {{ vsxinfo['device_role'] }} </font></td>
+                    <td><font class="font12pxwhite">Device System ID</font></td>
+                    <td nowrap class="whiteBG"><font face="arial" size="1"> {{ vsxinfo['oper_status']['oper_system_id'] }} </font></td>
+                    <td><font class="font12pxwhite">Configuration Sync State</font></td>
+                    <td nowrap class="whiteBG"><font face="arial" size="1"> {{ vsxinfo['oper_status']['config_sync_state'] }} </font></td>
+                    <td><font class="font12pxwhite">ISL Management State</font></td>
+                    <td nowrap class="whiteBG"><font face="arial" size="1"> {{ vsxinfo['oper_status']['isl_mgmt_state'] }} </font></td>
+                    <td><font class="font12pxwhite">ISL Protocol Version (State)</font></td>
+                    <td nowrap class="whiteBG"><font face="arial" size="1">  {{ vsxinfo['oper_status']['islp_version'] }} ({{ vsxinfo['oper_status']['islp_state'] }})</font></td>
                 </tr>
                 <tr>
-                    <td class="whiteBG"><font class="font12pxwhite">Peer Device Role</font></td>
+                    <td><font class="font12pxwhite">Peer Device Role</font></td>
                     <td class="whiteBG"><font face="arial" size="1"> {{ vsxinfo['peer_status']['peer_device_role'] }} </font></td>
-                    <td class="whiteBG"><font class="font12pxwhite">Peer ISL Interface</font></td>
+                    <td><font class="font12pxwhite">Peer ISL Interface</font></td>
                     <td class="whiteBG"><font face="arial" size="1"> {{ vsxinfo['peer_status']['peer_isl_port'] }} </font></td>
-                    <td class="whiteBG"><font class="font12pxwhite">Peer Device System ID</font></td>
+                    <td><font class="font12pxwhite">Peer Device System ID</font></td>
                     <td class="whiteBG"><font face="arial" size="1"> {{ vsxinfo['peer_status']['peer_system_id'] }} </font></td>
-                    <td class="whiteBG"><font class="font12pxwhite">Peer ISL Protocol Version</font></td>
+                    <td><font class="font12pxwhite">Peer ISL Protocol Version</font></td>
                     <td class="whiteBG"><font face="arial" size="1"> {{ vsxinfo['peer_status']['peer_islp_version'] }} </font></td>
-                    <td class="whiteBG"><font class="font12pxwhite">ISL Interfaces</font></td>
+                    <td><font class="font12pxwhite">ISL Interfaces</font></td>
                     <td class="whiteBG">
                         <font face="arial" size="1">
                             {% for items in vsxinfo['isl_port']['interfaces'] %}
@@ -379,42 +379,42 @@
                     </td>
                 </tr>
                 <tr>
-                    <td class="whiteBG"><font class="font12pxwhite">ISL Received Packets</font></td>
+                    <td><font class="font12pxwhite">ISL Received Packets</font></td>
                     <td class="whiteBG"><font face="arial" size="1"> {{ vsxinfo['isl_mgmt_statistics']['rx_pkts'] }} </font></td>
-                    <td class="whiteBG"><font class="font12pxwhite">ISL Transmitted Packets</font></td>
+                    <td><font class="font12pxwhite">ISL Transmitted Packets</font></td>
                     <td class="whiteBG"><font face="arial" size="1"> {{ vsxinfo['isl_mgmt_statistics']['tx_pkts'] }} </font></td>
-                    <td class="whiteBG"><font class="font12pxwhite">ISL Dropped Packets</font></td>
+                    <td><font class="font12pxwhite">ISL Dropped Packets</font></td>
                     <td class="whiteBG"><font face="arial" size="1"> {{ vsxinfo['isl_mgmt_statistics']['rx_drops'] }} </font></td>
-                    <td class="whiteBG"><font class="font12pxwhite">Keep Alive Source IP Address</font></td>
+                    <td><font class="font12pxwhite">Keep Alive Source IP Address</font></td>
                     <td class="whiteBG"><font face="arial" size="1">  {{ vsxinfo['keepalive_src_ip'] }}  </font></td>
-                    <td class="whiteBG"><font class="font12pxwhite">Keep Alive Peer IP Address</font></td>
+                    <td><font class="font12pxwhite">Keep Alive Peer IP Address</font></td>
                     <td class="whiteBG"><font face="arial" size="1">   {{ vsxinfo['keepalive_peer_ip'] }}   </font></td>
                 </tr>
                 {% if vsxinfo['keepalive_port'] is defined %}
                 <tr>
-                    <td class="whiteBG"><font class="font12pxwhite">Keep Alive Received Packets</font></td>
+                    <td><font class="font12pxwhite">Keep Alive Received Packets</font></td>
                     <td class="whiteBG"><font face="arial" size="1"> {{ vsxinfo['keepalive_statistics']['rx'] }} </font></td>
-                    <td class="whiteBG"><font class="font12pxwhite">Keep Alive Transmitted Packets</font></td>
+                    <td><font class="font12pxwhite">Keep Alive Transmitted Packets</font></td>
                     <td class="whiteBG"><font face="arial" size="1"> {{ vsxinfo['keepalive_statistics']['tx'] }} </font></td>
-                    <td class="whiteBG"><font class="font12pxwhite">Keep Alive Dropped Packets</font></td>
+                    <td><font class="font12pxwhite">Keep Alive Dropped Packets</font></td>
                     <td class="whiteBG"><font face="arial" size="1"> {{ vsxinfo['keepalive_statistics']['dropped'] }} </font></td>
-                    <td class="whiteBG"><font class="font12pxwhite">Keep Alive Local Interface</font></td>
+                    <td><font class="font12pxwhite">Keep Alive Local Interface</font></td>
                     <td class="whiteBG"><font face="arial" size="1"> {{ vsxinfo['keepalive_port']['name'] }} </font></td>
-                    <td class="whiteBG"><font class="font12pxwhite">Administrative Status</font></td>
+                    <td><font class="font12pxwhite">Administrative Status</font></td>
                     <td class="whiteBG"><font face="arial" size="1"> {{ vsxinfo['keepalive_port']['admin'] }} </font></td>
                 </tr>
                 {% endif %}
                 {% if vsxinfo['keepalive_vrf'] is defined %}
                 <tr>
-                    <td class="whiteBG"><font class="font12pxwhite">Keep Alive State</font></td>
+                    <td><font class="font12pxwhite">Keep Alive State</font></td>
                     <td class="whiteBG"><font face="arial" size="1"> {{ vsxinfo['keepalive_status']['state'] }} </font></td>
-                    <td class="whiteBG"><font class="font12pxwhite">Keep Alive Status</font></td>
-                    <td class="whiteBG"><font face="arial" size="1"> {{ vsxinfo['keepalive_status']['vsx_keepalive_state'] }} </font></td>
-                    <td class="whiteBG"><font class="font12pxwhite">Keep Alive VRF</font></td>
+                    <td><font class="font12pxwhite">Keep Alive Peer Status</font></td>
+                    <td class="whiteBG"><font face="arial" size="1"> {{ vsxinfo['keepalive_peer_status']['peer_islp_state'] }} </font></td>
+                    <td><font class="font12pxwhite">Keep Alive VRF</font></td>
                     <td class="whiteBG"><font face="arial" size="1">{% if vsxinfo['keepalive_vrf']['name'] is defined %} {{ vsxinfo['keepalive_vrf']['name'] }} {% endif %} </font></td>
-                    <td class="whiteBG"><font class="font12pxwhite">Hello Interval Timer (seconds)</font></td>
+                    <td><font class="font12pxwhite">Hello Interval Timer (seconds)</font></td>
                     <td class="whiteBG"><font face="arial" size="1">  {{ vsxinfo['keepalive_timers']['hello_interval'] }}  </font></td>
-                    <td class="whiteBG"><font class="font12pxwhite">Dead Interval Timer (seconds)</font></td>
+                    <td><font class="font12pxwhite">Dead Interval Timer (seconds)</font></td>
                     <td class="whiteBG"><font face="arial" size="1">  {{ vsxinfo['keepalive_timers']['dead_interval'] }}  </font></td>
                 </tr>
                 {% endif %}

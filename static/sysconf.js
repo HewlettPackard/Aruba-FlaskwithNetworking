@@ -44,6 +44,14 @@ $('.listenerProcess').ready(function () {
     refresh();
 });
 
+$('.telemetryProcess').ready(function () {
+    var refresh = function () {
+        $("div[data-chart='telemetryProcess']").load('monitorProcess?name=Telemetry');
+    }
+    setInterval(refresh, 5000);
+    refresh();
+});
+
 $('#systemTime').ready(function () {
     var refresh = function () {
         $.ajax({

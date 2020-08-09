@@ -19,62 +19,115 @@ def resetRest(deviceid):
     queryStr="select ipaddress, username, password from devices where id='{}'".format(deviceid)
     deviceCreds=classes.classes.sqlQuery(queryStr,"selectone")
     params={'device_type':'hp_procurve','ip':deviceCreds['ipaddress'],'username':deviceCreds['username'],'password':classes.classes.decryptPassword(globalsconf['secret_key'], deviceCreds['password'])}
-    net_connect=ConnectHandler(**params)
-    net_connect.config_mode()
-    commands = ["no rest-interface","rest-interface","end"]
-    net_connect.send_config_set(commands)
-    net_connect.disconnect()
+    try:
+        net_connect=ConnectHandler(**params)
+        net_connect.config_mode()
+        commands = ["no rest-interface","rest-interface","end"]
+        net_connect.send_config_set(commands)
+        net_connect.disconnect()
+        return "ok"
+    except:
+        return "nok"
 
-
-def loginswitch (deviceid):
+def checkswitchCookie(deviceid):
+    # Definition to check whether the cookie for the switch is still valid
+    # If not ok, we need to login, and store the new cookie value
+    # If login fails, this needs to be reflected in the database as well with the statuscode
     globalsconf=classes.classes.globalvars()
-    queryStr="select ipaddress, username, password from devices where id='{}'".format(deviceid)
+    queryStr="select ipaddress, username, password, secinfo, switchstatus from devices where id='{}'".format(deviceid)
     deviceCreds=classes.classes.sqlQuery(queryStr,"selectone")
-    url="http://{}/rest/v7/login-sessions".format(deviceCreds['ipaddress'])
+    baseurl="http://{}/rest/v7/".format(deviceCreds['ipaddress'])
     credentials = {"userName": deviceCreds['username'], "password": classes.classes.decryptPassword(globalsconf['secret_key'], deviceCreds['password']) }
-    try:
-        # Login to the switch. The cookie value is returned to the calling definition. It is not stored in the cookie jar.
-        response = requests.post(url, verify=False, data=json.dumps(credentials), timeout=5)
-        # If the response is 503, then the switch is out of REST sessions. This means that we need to reset the REST sessions
-        if response.status_code==503:
-            resetRest(deviceid)
-            response = requests.post(url, verify=False, data=json.dumps(credentials), timeout=5)
+    url="login-sessions"
+    # First, let's check if we can perform a REST call and get a response 200
+    if deviceCreds['secinfo'] is None:
+        # There is no cookie in the secinfo field, we HAVE to login
+        try:
+            # Login to the switch. The cookie value is stored in the session cookie jar
+            response = requests.post(baseurl+url, verify=False, data=json.dumps(credentials), timeout=5)
             sessioninfo = response.json()
-            header={'cookie': sessioninfo['cookie']}
-            print("Logged into Arubaos-Switch")
-            return header
+            if "Set-Cookie" in response.headers:
+                # There is a cookie, so the login was successful. We don't have to logout because we will be using this cookie for subsequent calls
+                cookie_header={'Cookie': sessioninfo['cookie']}
+                queryStr="update devices set secinfo='{}', switchstatus='{}' where id='{}'".format(json.dumps(cookie_header),response.status_code,deviceid)
+                classes.classes.sqlQuery(queryStr,"update")
+                return json.loads(cookie_header)
+            else:
+                return                 
+        except:
+            # Something went wrong with the login
+            return
+    else :
+        try:
+            response=requests.get(baseurl+"system",headers=json.loads(deviceCreds['secinfo']),verify=False,timeout=5)
+            if response.status_code==200:
+                # The cookie is still valid, return the cookie that is stored in the database
+                queryStr="update devices set switchstatus='{}' where id='{}'".format(response.status_code,deviceid)
+                classes.classes.sqlQuery(queryStr,"update")
+                return json.loads(deviceCreds['secinfo'])
+            else:
+                # There is something wrong with the cookie, might be expired or the switch may be out of sessions
+                # If the latter is the case, we need to SSH into the switch and reset the sessions, then try to login again and get the cookie
+                # There could also be an authentication failure, if that is the case, we should return that result code
+                if response.status_code==400:
+                    # Need to login and store the cookie
+                    response = requests.post(baseurl+url, verify=False, data=json.dumps(credentials), timeout=5)
+                    sessioninfo = response.json()
+                    if "Set-Cookie" in response.headers:
+                        # There is a cookie, so the login was successful. We don't have to logout because we will be using this cookie for subsequent calls
+                        cookie_header={'Cookie': sessioninfo['cookie']}
+                        queryStr="update devices set secinfo='{}', switchstatus='{}' where id='{}'".format(json.dumps(cookie_header),response.status_code,deviceid)
+                        classes.classes.sqlQuery(queryStr,"update")
+                        return cookie_header
+                    else:
+                        queryStr="update devices set switchstatus='{}' where id='{}'".format(response.status_code,deviceid)
+                        classes.classes.sqlQuery(queryStr,"update")
+                        return                               
+                elif "session limit reached" in response.text:
+                    sr=resetRest(deviceid)
+                    if sr=="ok":
+                        response = requests.post(baseurl+url, verify=False, data=json.dumps(credentials), timeout=5)
+                        sessioninfo = response.json()
+                        if "Set-Cookie" in response.headers:
+                            # There is a cookie, so the login was successful. We don't have to logout because we will be using this cookie for subsequent calls
+                            cookie_header={'Cookie': sessioninfo['cookie']}
+                            queryStr="update devices set secinfo='{}' where id='{}'".format(json.dumps(cookie_header),deviceid)
+                            classes.classes.sqlQuery(queryStr,"update")
+                            return cookie_header
+                        else:
+                            queryStr="update devices set switchstatus='{}' where id='{}'".format(response.status_code,deviceid)
+                            classes.classes.sqlQuery(queryStr,"update")
+                            return
+                    else:
+                        queryStr="update devices set switchstatus=120 where id='{}'".format(deviceid)
+                        classes.classes.sqlQuery(queryStr,"update")
+                        return 120
+                else:
+                    return deviceCreds['switchstatus']
+        except:
+            if deviceCreds['switchstatus']>100:
+                switchstatus=deviceCreds['switchstatus']-1
+            else:
+                switchstatus=100
+            queryStr="update devices set switchstatus={} where id='{}'".format(switchstatus,deviceid)
+            classes.classes.sqlQuery(queryStr,"update")
+            return switchstatus 
+    # 100 means that the switch is not reachable at all
+    return 100
 
-        else:
-            sessioninfo = response.json()
-            header={'cookie': sessioninfo['cookie']}
-            print("Logged into Arubaos-Switch")
-            return header
-    except:
-        print("Error logging into Arubaos-Switch")
-        return 401
-
-def logoutswitch(header,deviceid):
-    queryStr="select ipaddress, username, password from devices where id='{}'".format(deviceid)
-    deviceCreds=classes.classes.sqlQuery(queryStr,"selectone")
-    url="http://{}/rest/v7/login-sessions".format(deviceCreds['ipaddress'])
-    try:
-        response = requests.delete(url,headers=header,timeout=5)
-        print("Logged out from Arubaos-Switch")
-    except:
-        print("Error logging out of Arubaos-Switch")
-
-def getRESTswitch(header,url,deviceid):
+def getswitchREST(url,deviceid):
     # Obtain device information from the database
-    queryStr="select ipaddress, username, password from devices where id='{}'".format(deviceid)
+    queryStr="select ipaddress, secinfo from devices where id='{}'".format(deviceid)
     deviceCreds=classes.classes.sqlQuery(queryStr,"selectone")
     url="http://{}/rest/v7/".format(deviceCreds['ipaddress']) + url
+    header=checkswitchCookie(deviceid)
     try:
         response=requests.get(url, verify=False, headers=header)
         # If the response contains information, the content is converted to json format
         response=json.loads(response.content.decode('utf-8'))
+        return response
     except:
-        response="No data"
-    return response
+        return
 
 def getswitchInfo(deviceid, stacktype):
     # This definition obtains all the relevant information from the arubaos-switch device and then stores this in the database
@@ -85,12 +138,15 @@ def getswitchInfo(deviceid, stacktype):
     bpsinfo={}
     vsfinfo={}
     lldpinfo={}
-    header=loginswitch(deviceid)
+    cpuValappend=""
+    memValappend=""
     # First, get the system information
-    urllist=["system/status/power/supply","system/status/switch","system/status","vlans","vlans-ports","dot1x","ipaddresses","lldp","radius_servers","system/time","lacp/port","snmp-server/communities","snmpv3/users","stp","telnet/server","monitoring/ntp/status"]
+    urllist=["system","system/status/power/supply","system/status/switch","system/status","vlans","vlans-ports","dot1x","ipaddresses","lldp","radius_servers","system/time","lacp/port","snmp-server/communities","snmpv3/users","stp","telnet/server","monitoring/ntp/status"]
     for sysitems in urllist:
         try:
-            result=getRESTswitch(header,sysitems,deviceid)
+            result=getswitchREST(sysitems,deviceid)
+            if sysitems=="system":
+                hostname=result['name']
             # Join the dictionaries
             sysinfo= {**sysinfo,**result} 
             url="system/status/switch"
@@ -99,7 +155,7 @@ def getswitchInfo(deviceid, stacktype):
                 if sysinfo['switch_type']=="ST_STACKED":
                     url="stacking/vsf/members"
                     try:
-                        vsfinfo=getRESTswitch(header,url,deviceid)
+                        vsfinfo=getswitchREST(url,deviceid)
                         # If the result does not contain the message key, which means that there is an error, this means that there is actually information in the result
                         # And this implies that the switch is running VSF
                         if not 'message' in vsfinfo:
@@ -108,7 +164,7 @@ def getswitchInfo(deviceid, stacktype):
                         pass
                     url="stacking/bps/members"
                     try:
-                        bpsinfo=getRESTswitch(header,url,deviceid)
+                        bpsinfo=getswitchREST(url,deviceid)
                         # If the result does not contain the message key, which means that there is an error, this means that there is actually information in the result
                         # And this implies that the switch is running VSF
                         if not 'message' in bpsinfo:
@@ -122,14 +178,14 @@ def getswitchInfo(deviceid, stacktype):
     urllist=["port-statistics","poe/ports/stats"]
     for interfaceitems in urllist:
         try:
-            result=getRESTswitch(header,interfaceitems,deviceid)
+            result=getswitchREST(interfaceitems,deviceid)
             interfaces= {**interfaces,**result}
         except:
             pass
     # Obtain lldp information
     url="lldp/remote-device"
     try:
-        lldpinfo=getRESTswitch(header,url,deviceid)
+        lldpinfo=getswitchREST(url,deviceid)
         lldpinfo=json.dumps(lldpinfo)
         # It is possible that the json contains double quotes with backslashes. Replace those.
         lldpinfo=lldpinfo.replace('\\"','')
@@ -140,7 +196,7 @@ def getswitchInfo(deviceid, stacktype):
         urllist=["stacking/vsf/global_config","stacking/vsf/info","stacking/vsf/members","stacking/vsf/members/system_info","stacking/vsf/members_links_ports","system/status/members"]
         for vsfitems in urllist:
             try:
-                result=getRESTswitch(header,vsfitems,deviceid)
+                result=getswitchREST(vsfitems,deviceid)
                 vsfinfo= {**vsfinfo,**result} 
             except:
                 pass
@@ -174,7 +230,7 @@ def getswitchInfo(deviceid, stacktype):
         urllist=["stacking/bps/info","stacking/bps/members","stacking/bps/members/system_info","stacking/bps/stack_ports","system/status/members"]
         for bpsitems in urllist:
             try:
-                result=getRESTswitch(header,bpsitems,deviceid)
+                result=getswitchREST(bpsitems,deviceid)
                 bpsinfo= {**bpsinfo,**result} 
             except:
                 bpsinfo={}
@@ -215,48 +271,49 @@ def getswitchInfo(deviceid, stacktype):
             memVallist = list()
         # Obtain the CPU value, there is no known REST call for this so we have to use anycli for this and obtain the unstructured data
         response=anycli("show cpu", deviceid)
-        payload_str = base64.b64decode(response['result_base64_encoded']).decode('utf-8')
-        # Need to get the CPU value for the 5 second interval
-        cpuVal=payload_str[payload_str.find('5 sec ave')+11:]
-        cpuVal=int(cpuVal[0:2])
-        cpuVallist.append(tuple((strftime("%d-%m-%Y %H:%M:%S", gmtime()),cpuVal))) 
-        memVallist.append(tuple((strftime("%d-%m-%Y %H:%M:%S", gmtime()),sysinfo['total_memory_in_bytes'])))
-        #Store the last 30 values in the database, this value contains timestamp as key value and CPU or memory as value
+        if response:
+            payload_str = base64.b64decode(response['result_base64_encoded']).decode('utf-8')
+            # Need to get the CPU value for the 5 second interval
+            cpuVal=payload_str[payload_str.find('5 sec ave')+11:]
+            cpuVal=int(cpuVal[0:2])
+            cpuVallist.append(tuple((strftime("%d-%m-%Y %H:%M:%S", gmtime()),cpuVal)))
+            if "total_memory_in_bytes" in sysinfo:
+                memVallist.append(tuple((strftime("%d-%m-%Y %H:%M:%S", gmtime()),sysinfo['total_memory_in_bytes'])))
+            #Store the last 30 values in the database, this value contains timestamp as key value and CPU or memory as value
         cpuVallist=json.dumps(cpuVallist[-30:])
         memVallist=json.dumps(memVallist[-30:]) 
     if bool(sysinfo)==True:
-        queryStr="update devices set sysinfo='{}', cpu='{}', memory='{}', interfaces='{}', vsf='{}', bps='{}', lldp='{}' where id='{}'". format(json.dumps(sysinfo),cpuVallist,memVallist,json.dumps(interfaces), json.dumps(vsfinfo), json.dumps(bpsinfo), lldpinfo, deviceid)
+        queryStr="update devices set description='{}',sysinfo='{}', cpu='{}', memory='{}', interfaces='{}', vsf='{}', bps='{}', lldp='{}' where id='{}'". format(hostname,json.dumps(sysinfo),cpuVallist,memVallist,json.dumps(interfaces), json.dumps(vsfinfo), json.dumps(bpsinfo), lldpinfo, deviceid)
         try:
             classes.classes.sqlQuery(queryStr,"update")
         except:
-            print("error in query")
-    logoutswitch(header,deviceid)
+            pass
 
 def anycli(cmd,deviceid):
-    queryStr="select ipaddress, username, password from devices where id='{}'".format(deviceid)
+    # Obtain device information from the database
+    header=checkswitchCookie(deviceid)
+    queryStr="select ipaddress from devices where id='{}'".format(deviceid)
     deviceCreds=classes.classes.sqlQuery(queryStr,"selectone")
-    try:
-        header=loginswitch(deviceid)
-        url="http://{}/rest/v7/cli".format(deviceCreds['ipaddress'])
-        sendcmd={'cmd':cmd}
-        try:
-            response=requests.post(url, verify=False, headers=header, data=json.dumps(sendcmd))
-            # If the response contains information, the content is converted to json format
-            response=json.loads(response.content)
-            #response=(b64decode(response['result_base64_encoded']).decode('utf_8'))
-        except:
-            response="No data"
-        logoutswitch(header,deviceid)
-    except:
-        print("login failure")
-        response="Login failure"
-    return response
-
-def anycliProvision(cmd,ipaddress,header):
-    url="http://{}/rest/v7/cli".format(ipaddress)
+    url="http://{}/rest/v7/cli".format(deviceCreds['ipaddress'])
     sendcmd={'cmd':cmd}
     try:
-        response=requests.post(url, verify=False, headers=header, data=json.dumps(sendcmd))
+        response=requests.post(url, verify=False, headers=header, data=json.dumps(sendcmd), timeout=20)
+        # If the response contains information, the content is converted to json format
+        return json.loads(response.content)
+    except requests.exceptions.HTTPError as err:
+        print(err)
+        return
+    except:
+        return
+
+def anycliProvision(cmd,ipaddress,header):
+    queryStr="select id from devices where ipaddress='{}'".format(ipaddress)
+    deviceCreds=classes.classes.sqlQuery(queryStr,"selectone")
+    url="http://{}/rest/v7/cli".format(ipaddress)
+    sendcmd={'cmd':cmd}
+    header=checkswitchCookie(deviceCreds['id'])
+    try:
+        response=requests.post(url, verify=False, headers=header, data=json.dumps(sendcmd), timeout=20)
         # If the response contains information, the content is converted to json format
         response=json.loads(response.content)
     except:

@@ -21,7 +21,7 @@ tput civis
 
 
 
-echo "########## Carius Installation ##########"
+echo "########## Carius 2.0 Installation ##########"
 echo "Ensure that you have an active Internet connection with an acceptable speed (at least 10Mbps recommended)"
 # First step is to check whether you are logged in as root
 # and which Ubuntu version is running. Carius requires 18.04 or later
@@ -63,6 +63,8 @@ add-apt-repository universe -y  > /dev/null
 # Next is to install all the dependencies
 
 (DEBIAN_FRONTEND=noninteractive apt-get -qq -y -o=Dpkg::Use-Pty=0 install net-tools  &>/dev/null) & spinner $! "Installing Net tools....."
+# (DEBIAN_FRONTEND=noninteractive apt-get -qq -y -o=Dpkg::Use-Pty=0 install nodejs  &>/dev/null) & spinner $! "Installing node.js....."
+# (DEBIAN_FRONTEND=noninteractive apt-get -qq -y -o=Dpkg::Use-Pty=0 install npm  &>/dev/null) & spinner $! "Installing node.js package manager....."
 (DEBIAN_FRONTEND=noninteractive apt-get -qq -y -o=Dpkg::Use-Pty=0 install dos2unix  &>/dev/null) & spinner $! "Installing Dos2Unix....."
 (DEBIAN_FRONTEND=noninteractive apt-get -qq -y -o=Dpkg::Use-Pty=0 install tshark  &>/dev/null) & spinner $! "Installing Tshark....."
 (DEBIAN_FRONTEND=noninteractive apt-get -qq -y -o=Dpkg::Use-Pty=0 install apache2 &> /dev/null) & spinner $! "Installing Apache2....."
@@ -115,6 +117,7 @@ service tftpd-hpa restart
 (pip3 install --default-timeout=100 paramiko > /dev/null) & spinner $! "Installing Python3 paramiko library....."
 (pip3 install --default-timeout=100 netmiko > /dev/null) & spinner $! "Installing Python3 netmiko library....."
 (pip3 install --default-timeout=100 waitress > /dev/null) & spinner $! "Installing Python3 waitress library....."
+(pip3 install --default-timeout=100 websockets > /dev/null) & spinner $! "Installing Python3 websockets library....."
 
 # Mysql user, database and table structure creation
 # Depending on the Mysql version, the structure is different
@@ -124,6 +127,9 @@ varB=($(echo "${varA[1]}" | tr '-' '\n'))
 varC=($(echo "${varB[0]}" | tr '.' '\n'))
 mysqlversion=${varC[0]}${varC[1]}
 
+echo ""
+echo ""
+echo " Configure the database"
 if [[ "$mysqlversion" < "80" ]] ;
 then
  mysql -uroot < ./doc/mysqltable57.txt
@@ -131,7 +137,6 @@ else
  mysql -uroot < ./doc/mysqltable80.txt
 fi
 
-echo ""
 echo " Installing the app"
 cp ./__init__.py /var/www/html/__init__.py  > /dev/null
 cp ./startapp.sh /var/www/html/startapp.sh  > /dev/null
@@ -153,12 +158,13 @@ echo " Configuring the app"
 
 activeInterface=$(route | grep '^default' | grep -o '[^ ]*$')
 cat > /var/www/html/bash/globals.json  << ENDOFFILE
-{"idle_timeout": "3000", "pcap_location": "/var/www/html/bash/trace.pcap", "retain_dhcp": "30", "retain_snmp": "30", "retain_ztplog": "5", "retain_listenerlog": "5", "retain_cleanuplog": "5", "retain_topologylog": "5","retain_syslog": "30","secret_key": "ArubaRocks!!!!!!", "appPath": "/var/www/html/", "softwareRelease": "1.3", "sysInfo": "","activeInterface":"$activeInterface","ztppassword":"ztpinit","landingpage":"/"}
+{"idle_timeout": "3000", "pcap_location": "/var/www/html/bash/trace.pcap", "retain_dhcp": "15", "retain_snmp": "15", "retain_ztplog": "5", "retain_listenerlog": "5", "retain_cleanuplog": "5", "retain_topologylog": "5","retain_syslog": "15","retain_telemetrylog": "5","secret_key": "ArubaRocks!!!!!!", "appPath": "/var/www/html/", "softwareRelease": "2.0", "sysInfo": "","activeInterface":"$activeInterface","ztppassword":"ztpinit","landingpage":"/"}
 ENDOFFILE
 chmod 777 /var/www/html/bash/listener.sh
 chmod 777 /var/www/html/bash/cleanup.sh
 chmod 777 /var/www/html/bash/topology.sh
 chmod 777 /var/www/html/bash/ztp.sh
+chmod 777 /var/www/html/bash/telemetry.sh
 
 
 if [ ! -d "/var/www/html/log" ]; then
@@ -169,6 +175,7 @@ touch /var/www/html/log/cleanup.log
 touch /var/www/html/log/topology.log
 touch /var/www/html/log/ztp.log
 touch /var/www/html/log/listener.log
+touch /var/www/html/log/telemetry.log
 
 chmod 777 /var/www/html/log/
 
@@ -177,6 +184,7 @@ dos2unix -q /var/www/html/bash/listener.sh >/dev/null
 dos2unix -q /var/www/html/bash/cleanup.sh >/dev/null
 dos2unix -q /var/www/html/bash/topology.sh >/dev/null
 dos2unix -q /var/www/html/bash/ztp.sh >/dev/null
+dos2unix -q /var/www/html/bash/telemetry.sh >/dev/null
 chmod 777 /var/www/html/startapp.sh
 chmod +x /var/www/html/startapp.sh
 
@@ -201,7 +209,7 @@ systemctl daemon-reload &> /dev/null
 systemctl enable carius.service &> /dev/null
 systemctl start carius.service &> /dev/null
 
-echo " ######### Carius installation completed ##########"
+echo " ######### Carius 2.0 installation completed ##########"
 echo " Navigate with your browser to http://a.b.c.d:8080   where a.b.c.d is the IP address of the Carius server"
 echo " The default login credentials are:"
 echo " Username:  admin"

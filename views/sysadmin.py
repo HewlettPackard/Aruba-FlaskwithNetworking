@@ -1,6 +1,7 @@
 # (C) Copyright 2019 Hewlett Packard Enterprise Development LP.
 
 from flask import current_app, Blueprint, json, request
+from werkzeug.datastructures import ImmutableMultiDict
 import time
 sysadmin = Blueprint('sysadmin', __name__)
 
@@ -11,19 +12,49 @@ import classes.classes as classes
 
 @sysadmin.route("/useradmin",methods=['GET','POST'])
 def useradmin():
-    authOK=classes.checkAuth()
+    authOK=classes.checkAuth("sysuseraccess","submenu")
     if authOK!=0:
         sysvars=classes.globalvars()
         formresult=request.form
         # Obtain the relevant information from the database
         result=classes.userdbAction(formresult)
-        return render_template("useradmin.html",result=result,formresult=formresult, authOK=authOK, sysvars=sysvars)
+        if authOK['hasaccess']==True:
+            return render_template("useradmin.html",result=result['userresult'],roleresult=result['roleresult'],formresult=formresult, authOK=authOK, sysvars=sysvars)
+        else:
+            return render_template("noaccess.html",authOK=authOK, sysvars=sysvars)
     else:
         return render_template("login.html")
 
+@sysadmin.route("/userroles",methods=['GET','POST'])
+def userroles():
+    authOK=classes.checkAuth("sysroleaccess","submenu")
+    if authOK!=0:
+        sysvars=classes.globalvars()
+        formresult=request.form
+        dictform=formresult.to_dict(flat=True)
+        # Obtain the relevant information from the database
+        result=classes.roledbAction(dictform)
+        if authOK['hasaccess']==True:
+            return render_template("roleadmin.html",result=result,formresult=formresult, totalentries=int(result['totalentries']),pageoffset=int(result['pageoffset']),entryperpage=int(result['entryperpage']), authOK=authOK, sysvars=sysvars)
+        else:
+            return render_template("noaccess.html",authOK=authOK, sysvars=sysvars)
+    else:
+        return render_template("login.html")
+
+
+@sysadmin.route("/editrole",methods=['GET','POST'])
+def editrole():
+    formresult=request.form
+    sysvars=classes.globalvars()
+    queryStr="select * from sysrole where id='{}'".format(formresult['id'])
+    # Obtain the relevant user role information from the database
+    result=classes.sqlQuery(queryStr,"selectone")
+    return json.dumps(result)
+
+
 @sysadmin.route("/sysconf",methods=['GET','POST'])
 def sysconf():
-    authOK=classes.checkAuth()
+    authOK=classes.checkAuth("sysadminaccess","submenu")
     if authOK!=0:
         sysvars=classes.globalvars()
         formresult=request.form
@@ -39,13 +70,16 @@ def sysconf():
 
 @sysadmin.route("/sysmon",methods=['GET','POST'])
 def sysmon():
-    authOK=classes.checkAuth()
+    authOK=classes.checkAuth("servicesstatusaccess","submenu")
     if authOK!=0:
         sysvars=classes.globalvars()
         formresult=request.form
         if formresult:
-            classes.processAction(formresult['name'],formresult['action'])    
-        return render_template("sysmon.html",authOK=authOK, sysvars=sysvars)
+            classes.processAction(formresult['name'],formresult['action'])
+        if authOK['hasaccess']==True:
+            return render_template("sysmon.html",authOK=authOK, sysvars=sysvars)
+        else:
+            return render_template("noaccess.html",authOK=authOK, sysvars=sysvars)
     else:
         return render_template("login.html")
 

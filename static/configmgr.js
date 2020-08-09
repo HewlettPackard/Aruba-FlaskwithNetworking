@@ -18,15 +18,15 @@ $(document).on("click", "#runningBackup", function () {
     else {
         configpageoffset = 0;
     }
-    var e = document.getElementById("searchOwner");
+    var e = document.getElementById("searchowner");
     var owner = e.options[e.selectedIndex].value;
-    var e = document.getElementById("backuptype");
+    var e = document.getElementById("searchbackuptype");
     var backuptype = e.options[e.selectedIndex].value;
     var currentconfigentryperpage = document.getElementById("currentconfigentryperpage").value;
     var re = new RegExp(name + "=([^;]+)");
     var suarray = re.exec(document.cookie);
     sysuser = suarray[1];
-    $("div[data-configmgr='configmgr']").load('configmgr?deviceid=' + document.getElementById('configurationManager').getAttribute('data-deviceid') + '&sysuser=' + sysuser + '&ostype=' + document.getElementById('configurationManager').getAttribute('data-ostype') + '&owner=' + owner + '&backuptype=' + encodeURIComponent(backuptype) + '&searchconfigDescription=' + document.getElementById("searchconfigDescription").value + '&configentryperpage=' + configentryperpage + '&configpageoffset=' + configpageoffset + '&action=runningConfig');
+    $("div[data-configmgr='configmgr']").load('configmgr?deviceid=' + document.getElementById('configurationManager').getAttribute('data-deviceid') + '&sysuser=' + sysuser + '&ostype=' + document.getElementById('configurationManager').getAttribute('data-ostype') + '&owner=' + owner + '&backuptype=' + encodeURIComponent(backuptype) + '&searchdescription=' + document.getElementById("searchdescription").value + '&configentryperpage=' + configentryperpage + '&configpageoffset=' + configpageoffset + '&action=runningConfig');
 });
 
 $(document).on("click", "#startupBackup", function () {
@@ -46,44 +46,16 @@ $(document).on("click", "#startupBackup", function () {
     else {
         configpageoffset = 0;
     }
-    var e = document.getElementById("searchOwner");
+    var e = document.getElementById("searchowner");
     var owner = e.options[e.selectedIndex].value;
-    var e = document.getElementById("backuptype");
+    var e = document.getElementById("searchbackuptype");
     var backuptype = e.options[e.selectedIndex].value;
     var currentconfigentryperpage = document.getElementById("currentconfigentryperpage").value;
     var re = new RegExp(name + "=([^;]+)");
     var suarray = re.exec(document.cookie);
     sysuser = suarray[1];
-    $("div[data-configmgr='configmgr']").load('configmgr?deviceid=' + document.getElementById('configurationManager').getAttribute('data-deviceid') + '&sysuser=' + sysuser + '&ostype=' + document.getElementById('configurationManager').getAttribute('data-ostype') + '&owner=' + owner + '&backuptype=' + encodeURIComponent(backuptype) + '&searchconfigDescription=' + document.getElementById("searchconfigDescription").value + '&configentryperpage=' + configentryperpage + '&configpageoffset=' + configpageoffset + '&action=startupConfig');
+    $("div[data-configmgr='configmgr']").load('configmgr?deviceid=' + document.getElementById('configurationManager').getAttribute('data-deviceid') + '&sysuser=' + sysuser + '&ostype=' + document.getElementById('configurationManager').getAttribute('data-ostype') + '&owner=' + owner + '&backuptype=' + encodeURIComponent(backuptype) + '&searchdescription=' + document.getElementById("searchdescription").value + '&configentryperpage=' + configentryperpage + '&configpageoffset=' + configpageoffset + '&action=startupConfig');
 });
-
-$(document).on("click", "#searchConfig", function () {
-    document.getElementById("editBackup").style.display = "none";
-    document.getElementById("liProgress").style.display = "none";
-    if (document.getElementById("configentryperpage")) {
-        var e = document.getElementById("configentryperpage");
-        var configentryperpage = e.options[e.selectedIndex].value;
-    }
-    else {
-        configentryperpage = 10;
-    }
-    if (document.getElementById("configpageoffset")) {
-        var e = document.getElementById("configpageoffset");
-        var configpageoffset = e.options[e.selectedIndex].value;
-    }
-    else {
-        configpageoffset = 0;
-    }
-    var e = document.getElementById("searchOwner");
-    var owner = e.options[e.selectedIndex].value;
-    var e = document.getElementById("backuptype");
-    var backuptype = e.options[e.selectedIndex].value;
-    var currentconfigentryperpage = document.getElementById("currentconfigentryperpage").value;
-    var masterbackup = e.options[e.selectedIndex].value;
-    var currentconfigentryperpage = document.getElementById("currentconfigentryperpage").value;
-    $("div[data-configmgr='configmgr']").load('configmgr?deviceid=' + document.getElementById('configurationManager').getAttribute('data-deviceid') + '&owner=' + owner + '&masterbackup=' + masterbackup + '&backuptype=' + encodeURIComponent(backuptype) + '&searchconfigDescription=' + document.getElementById("searchconfigDescription").value + '&configentryperpage=' + configentryperpage + '&configpageoffset=' + configpageoffset + '&action=searchConfig');
-    });
-
 
 function configentryperPage() {
     document.getElementById("editBackup").style.display = "none";
@@ -96,7 +68,7 @@ function configentryperPage() {
         configentryperpage = 10;
     }
     var configpageoffset = 0;
-    var e = document.getElementById("searchOwner");
+    var e = document.getElementById("searchowner");
     var owner = e.options[e.selectedIndex].value;
     var e = document.getElementById("backuptype");
     var backuptype = e.options[e.selectedIndex].value;
@@ -123,7 +95,7 @@ function configpageNumber() {
     else {
         configpageoffset = 0;
     }
-    var e = document.getElementById("searchOwner");
+    var e = document.getElementById("searchowner");
     var owner = e.options[e.selectedIndex].value;
     var e = document.getElementById("backuptype");
     var backuptype = e.options[e.selectedIndex].value;
@@ -133,7 +105,7 @@ function configpageNumber() {
     $("div[data-configmgr='configmgr']").load('configmgr?deviceid=' + document.getElementById('configurationManager').getAttribute('data-deviceid') + '&owner=' + owner + '&masterbackup=' + masterbackup + '&backuptype=' + encodeURIComponent(backuptype) + '&searchconfigDescription=' + document.getElementById("searchconfigDescription").value + '&configentryperpage=' + configentryperpage + '&configpageoffset=' + configpageoffset + '&action=searchConfig');
 }
 
-function changeOwner(searchOwner) {
+function changeSearch() {
     document.getElementById("editBackup").style.display = "none";
     document.getElementById("liProgress").style.display = "none";
     if (document.getElementById("configentryperpage")) {
@@ -150,68 +122,14 @@ function changeOwner(searchOwner) {
     else {
         configpageoffset = 0;
     }
-    var e = document.getElementById("searchOwner");
-    var owner = e.options[e.selectedIndex].value;
-    var e = document.getElementById("backuptype");
-    var backuptype = e.options[e.selectedIndex].value;
+    var e = document.getElementById("searchowner");
+    var searchowner = e.options[e.selectedIndex].value;
+    var e = document.getElementById("searchbackuptype");
+    var searchbackuptype = e.options[e.selectedIndex].value;
+    var e = document.getElementById("searchmasterbackup");
+    var searchmasterbackup = e.options[e.selectedIndex].value;
     var currentconfigentryperpage = document.getElementById("currentconfigentryperpage").value;
-    var masterbackup = e.options[e.selectedIndex].value;
-    var currentconfigentryperpage = document.getElementById("currentconfigentryperpage").value;
-    $("div[data-configmgr='configmgr']").load('configmgr?deviceid=' + document.getElementById('configurationManager').getAttribute('data-deviceid') + '&owner=' + owner + '&masterbackup=' + masterbackup + '&backuptype=' + encodeURIComponent(backuptype) + '&searchconfigDescription=' + document.getElementById("searchconfigDescription").value + '&configentryperpage=' + configentryperpage + '&configpageoffset=' + configpageoffset + '&action=searchConfig');
-}
-
-function changebackupType(backuptype) {
-    document.getElementById("editBackup").style.display = "none";
-    document.getElementById("liProgress").style.display = "none";
-    if (document.getElementById("configentryperpage")) {
-        var e = document.getElementById("configentryperpage");
-        var configentryperpage = e.options[e.selectedIndex].value;
-    }
-    else {
-        configentryperpage = 10;
-    }
-    if (document.getElementById("configpageoffset")) {
-        var e = document.getElementById("configpageoffset");
-        var configpageoffset = e.options[e.selectedIndex].value;
-    }
-    else {
-        configpageoffset = 0;
-    }
-    var e = document.getElementById("searchOwner");
-    var owner = e.options[e.selectedIndex].value;
-    var e = document.getElementById("backuptype");
-    var backuptype = e.options[e.selectedIndex].value;
-    var currentconfigentryperpage = document.getElementById("currentconfigentryperpage").value;
-    var masterbackup = e.options[e.selectedIndex].value;
-    var currentconfigentryperpage = document.getElementById("currentconfigentryperpage").value;
-    $("div[data-configmgr='configmgr']").load('configmgr?deviceid=' + document.getElementById('configurationManager').getAttribute('data-deviceid') + '&owner=' + owner + '&masterbackup=' + encodeURIComponent(masterbackup) + '&backuptype=' + encodeURIComponent(backuptype) + '&searchconfigDescription=' + document.getElementById("searchconfigDescription").value + '&configentryperpage=' + configentryperpage + '&configpageoffset=' + configpageoffset + '&action=searchConfig');
-}
-
-function changemasterBackup(masterbackup) {
-    document.getElementById("editBackup").style.display = "none";
-    document.getElementById("liProgress").style.display = "none";
-    if (document.getElementById("configentryperpage")) {
-        var e = document.getElementById("configentryperpage");
-        var configentryperpage = e.options[e.selectedIndex].value;
-    }
-    else {
-        configentryperpage = 10;
-    }
-    if (document.getElementById("configpageoffset")) {
-        var e = document.getElementById("configpageoffset");
-        var configpageoffset = e.options[e.selectedIndex].value;
-    }
-    else {
-        configpageoffset = 0;
-    }
-    var e = document.getElementById("searchOwner");
-    var owner = e.options[e.selectedIndex].value;
-    var e = document.getElementById("backuptype");
-    var backuptype = e.options[e.selectedIndex].value;
-    var e = document.getElementById("masterbackup");
-    var masterbackup = e.options[e.selectedIndex].value;
-    var currentconfigentryperpage = document.getElementById("currentconfigentryperpage").value;
-    $("div[data-configmgr='configmgr']").load('configmgr?deviceid=' + document.getElementById('configurationManager').getAttribute('data-deviceid') + '&owner=' + owner + '&masterbackup=' + masterbackup + '&backuptype=' + encodeURIComponent(backuptype) + '&searchconfigDescription=' + document.getElementById("searchconfigDescription").value + '&configentryperpage=' + configentryperpage + '&configpageoffset=' + configpageoffset + '&action=searchConfig');
+    $("div[data-configmgr='configmgr']").load('configmgr?deviceid=' + document.getElementById('configurationManager').getAttribute('data-deviceid') + '&searchowner=' + searchowner + '&searchmasterbackup=' + encodeURIComponent(searchmasterbackup) + '&searchbackuptype=' + encodeURIComponent(searchbackuptype) + '&searchdescription=' + document.getElementById("searchdescription").value + '&configentryperpage=' + configentryperpage + '&configpageoffset=' + configpageoffset + '&action=searchConfig');
 }
 
 $(document).on("click", "#restoreConfig", function () {
@@ -237,9 +155,9 @@ $(document).on("click", "#submitbackupChanges", async function () {
     var suarray = re.exec(document.cookie);
     sysuser = suarray[1];
     backupInfo = await $.ajax({
-        url: "/branchBackup",
+        url: "/changebranchBackup",
         type: "POST",
-        data: { id: id, masterbackup: masterbackup, backupDescription: backupDescription, backupContent: backupContent, deviceid: deviceid, sysuser: sysuser, backuptype: backuptype, action: 'submitbackupChanges'},
+        data: { id: id, backupDescription: backupDescription, backupContent: backupContent, sysuser: sysuser},
         success: function () {
             // Obtaining the backup was successful
         },
@@ -255,7 +173,7 @@ $(document).on("click", "#submitbackupChanges", async function () {
     document.getElementById('backupContent').value = backupContent;
     document.getElementById('backupDescription').value = backupDescription;
     $("#backupDescription").prop('disabled', false);
-    document.getElementById('backupTitle').innerHTML = "Edit branch backup from master backup ID " + masterbackup;
+    document.getElementById('backupTitle').innerHTML = "<font class='font13pxwhite'>Edit branch backup from master backup ID " + masterbackup + "</font>";
     document.getElementById("backupAction").style.display = "block";
     var x = document.getElementById('backupTable').rows[parseInt(tableRow, 10)].cells;
     x[parseInt(0, 10)].innerHTML = "<font class='font12px'>" + id + "</font>";
@@ -270,6 +188,7 @@ $(document).on("click", "#submitbackupChanges", async function () {
 $(document).on("click", "#editConfig", async function () {
     document.getElementById("editBackup").style.display = "block";
     document.getElementById("liProgress").style.display = "none";
+
     id = $(this).attr('data-id');
     tableRow = $(this).closest('tr').index();
     backupInfo = await $.ajax({
@@ -289,20 +208,23 @@ $(document).on("click", "#editConfig", async function () {
     document.getElementById('backupContent').value = backupInfo['configuration'];
     document.getElementById('backupDescription').value = backupInfo['description'];
     $("#backupDescription").prop('disabled', false);
-    document.getElementById('backupTitle').innerHTML = "Edit branch backup from master backup ID " + backupInfo['masterbackup'];
+    $("#backupContent").prop('disabled', false);
+    document.getElementById('backupTitle').innerHTML = "<font class='font13pxwhite'>Edit branch backup from master backup ID " + backupInfo['masterbackup'] + "</font>";
     document.getElementById("backupAction").style.display = "block";
     document.getElementById('backupAction').innerHTML = "<input type='button' name='backupAction' value='Submit branch backup changes' class='button' id='submitbackupChanges' data-tableRow='" + tableRow + "' data-id='" + backupInfo['id'] + "' data-masterbackup='" + backupInfo['masterbackup'] + "'  data-backuptype='" + backupInfo['backuptype'] + "'>";
 });
 
-$(document).on("click", "#branchBackup", async function () {
+$(document).on("click", "#createbranchBackup", async function () {
     document.getElementById("editBackup").style.display = "block";
     document.getElementById("liProgress").style.display = "none";
-    masterbackup = $(this).attr('data-id');
-    backuptype = $(this).attr('data-backuptype');
+    masterbackup = $(this).attr('data-masterbackup');
+    var re = new RegExp(name + "=([^;]+)");
+    var suarray = re.exec(document.cookie);
+    sysuser = suarray[1];
     backupInfo = await $.ajax({
-        url: "/branchBackup",
+        url: "/createbranchBackup",
         type: "POST",
-        data: { masterbackup: masterbackup, action: "createBranch"  },
+        data: { masterbackup: masterbackup },
         success: function () {
             // Obtaining the master backup was successful
         },
@@ -316,25 +238,69 @@ $(document).on("click", "#branchBackup", async function () {
     document.getElementById('backupContent').value = backupInfo['configuration'];
     document.getElementById('backupDescription').value = "Backup branch from master backup id " + masterbackup;
     $("#backupDescription").prop('disabled', false);
-    document.getElementById('backupTitle').innerHTML = "Create branch backup";
-    document.getElementById('backupAction').innerHTML = "<input type='button' name='backupAction' value='Submit branch backup' class='button' id='submitbranchBackup' data-id='" + masterbackup + "' data-backuptype='" + backuptype + "'>";
+    document.getElementById("branchmasterbackup").value = masterbackup;
+    document.getElementById("branchbackuptype").value = backupInfo['backuptype'];
+    document.getElementById("branchdeviceid").value = backupInfo['deviceid'];
+    document.getElementById('backupTitle').innerHTML = "<font class='font13pxwhite'>Edit branch backup</font>";  
+    document.getElementById('backupAction').innerHTML = "<input type='button' name='backupAction' value='Submit branch backup' class='button' id='submitbranchBackup'>";
 });
+
 
 $(document).on("click", "#submitbranchBackup", async function () {
     document.getElementById("editBackup").style.display = "block";
+    document.getElementById("liProgress").style.display = "none";
+    var re = new RegExp(name + "=([^;]+)");
+    var suarray = re.exec(document.cookie);
+    sysuser = suarray[1];
+    backupInfo = await $.ajax({
+        url: "/submitbranchBackup",
+        type: "POST",
+        data: { masterbackup: document.getElementById("branchmasterbackup").value, sysuser: sysuser, deviceid: document.getElementById("branchdeviceid").value, backupcontent: document.getElementById("backupContent").value, backupdescription: document.getElementById("backupDescription").value, backuptype: document.getElementById("branchbackuptype").value },
+        success: function () {
+            // Obtaining the master backup was successful
+        },
+        error: function () {
+            document.getElementById("liProgress").style.display = "block";
+            document.getElementById("progresstooltip").style.display = "none";
+            progressInfo.innerHTML = "Error finding backup information";
+        }
+    });
+    var table = document.getElementById('backupTable');
+    document.getElementById("editBackup").style.display = "none";
+    backupInfo = JSON.parse(backupInfo);
+    utctime = new Date(1000 * backupInfo['utctime']);
+    utctime = utctime.toLocaleString();
+    var branchHTML = "<tr>";
+    branchHTML += "<td><font class='font12px'>" + backupInfo['id'] + " </font></td>";
+    branchHTML += "<td><font class='font12px'>" + utctime + "</font></td>";
+    branchHTML += "<td><font class='font12px'>" + backupInfo['description'] + "</font></td>";
+    branchHTML += "<td><font class='font12px'>" + backupInfo['backuptype'] + "</font></td>";
+    branchHTML += "<td><font class='font12px'>Branch</font></td >";
+    branchHTML += "<td><font class='font12px'>" + backupInfo['owner'] + "</font></td>";
+    branchHTML += "<td align='right'>";
+    branchHTML += "<input type='submit' name='action' value='Restore' class='button' id='restoreConfig' data-id='" + backupInfo['id'] + "' /><input type='submit' name='action' value='View' class='button' id='viewConfig' data-id='" + backupInfo['id'] + "' /><input type='submit' name='action' value='Edit' class='button' id='editConfig' data-id='" + backupInfo['id'] + "' data-masterbackup='" + backupInfo['masterbackup'] + "'/><input type='submit' name='action' value='Delete' id='deleteConfig' class='button' data-id='" + backupInfo['id'] + "'>";
+    branchHTML += "</td></tr>";
+    $(table).append(branchHTML);
+});
+
+
+
+$(document).on("click", "#changebranchBackup", async function () {
+    //document.getElementById("editBackup").style.display = "block";
     document.getElementById("liProgress").style.display = "none";
     backupContent = document.getElementById('backupContent').value;
     backupDescription = document.getElementById('backupDescription').value;
     var re = new RegExp(name + "=([^;]+)");
     var suarray = re.exec(document.cookie);
     sysuser = suarray[1];
-    masterbackup = $(this).attr('data-id');
+    id = $(this).attr('data-id');
+    masterbackup = $(this).attr('data-masterbackup');
     backuptype = $(this).attr('data-backuptype');
     deviceid = document.getElementById('configurationManager').getAttribute('data-deviceid');
     backupInfo = await $.ajax({
-        url: "/branchBackup",
+        url: "/changebranchBackup",
         type: "POST",
-        data: { masterbackup: masterbackup, action: "submitBranch", backupContent: backupContent, backupDescription:backupDescription, sysuser: sysuser, deviceid: deviceid, backuptype: backuptype },
+        data: { id: id, backupContent: backupContent, backupDescription:backupDescription, sysuser: sysuser },
         success: function () {
             // Saving the backup was successful
         },
@@ -344,37 +310,12 @@ $(document).on("click", "#submitbranchBackup", async function () {
             progressInfo.innerHTML = "Branch backup could not be stored";
         }
     });
-    backupInfo = JSON.parse(backupInfo);
-    utctime = new Date(1000 * backupInfo['utctime']);
-    utctime = utctime.toLocaleString();
-    document.getElementById('backupContent').value = backupInfo['configuration'];
-    document.getElementById('backupDescription').value = "Backup branch from master backup id " + masterbackup;
-    $("#backupDescription").prop('disabled', false);
-    document.getElementById('backupTitle').innerHTML = "Edit branch backup from master backup id " + masterbackup;
-    document.getElementById('backupAction').innerHTML = "<input type='button' name='backupAction' value='Submit branch backup changes' class='button' id='submitbackupChanges' data-id='" + backupInfo['id'] + "' data-masterbackup='" + backupInfo['masterbackup'] + "'>";
-
-    var tbody = document.getElementById("showbranchBackup");
-    var row = tbody.insertRow(0);
-    var cell1 = row.insertCell(0);
-    var cell2 = row.insertCell(1);
-    var cell3 = row.insertCell(2);
-    var cell4 = row.insertCell(3);
-    var cell5 = row.insertCell(4);
-    var cell6 = row.insertCell(5);
-    var cell7 = row.insertCell(6);
-    cell7.style.textAlign = "right";
-    cell1.innerHTML = "<font class='font12px'>" + backupInfo['id'] + "</font>";
-    cell2.innerHTML = "<font class='font12px'>" + utctime + "</font>";
-    cell3.innerHTML = "<font class='font12px'>" + backupInfo['description'] + "</font>";
-    cell4.innerHTML = "<font class='font12px'>" + backupInfo['backuptype'] + "</font>";
-    cell5.innerHTML = "<font class='font12px'>Branch</font>";
-    cell6.innerHTML = "<font class='font12px'>" + backupInfo['owner'] + "</font>";
-    cell7.innerHTML = "<input type='submit' name='action' value='Restore' class='button' id=restoreConfig' data-id='ID' /><input type='submit' name='action' value='View' class='button' id='viewConfig' data-id='" + backupInfo['id'] + "' /><input type='submit' name='action' value='Edit' class='button' id='editConfig' data-id='" + backupInfo['id'] + "' data-masterbackup='" + backupInfo['masterbackup'] + "' /><input type='submit' name='action' value='Delete' id='deleteConfig' class='button' data-id='" + backupInfo['id'] + "'>";
-});
+  });
 
 
 $(document).on("click", "#viewConfig", async function () {
     document.getElementById("editBackup").style.display = "block";
+    document.getElementById("backupAction").style.display = "none";
     document.getElementById("liProgress").style.display = "none";
     id = $(this).attr('data-id');
     backupInfo = await $.ajax({
@@ -394,8 +335,8 @@ $(document).on("click", "#viewConfig", async function () {
     document.getElementById('backupContent').value = backupInfo['configuration'];
     document.getElementById('backupDescription').value = backupInfo['description'];
     $("#backupDescription").prop('disabled', true);
-    document.getElementById('backupAction').innerHTML = "View backup";
-    document.getElementById("submitbackupChanges").style.display = "none";
+    $("#backupContent").prop('disabled', true);
+    document.getElementById('backupTitle').innerHTML = "<font class='font13pxwhite'>View backup</font>";
 });
 
 $(document).on("click", "#deleteConfig", function () {
@@ -417,7 +358,7 @@ $(document).on("click", "#deleteConfig", function () {
         else {
             configpageoffset = 0;
         }
-        var e = document.getElementById("searchOwner");
+        var e = document.getElementById("searchowner");
         var owner = e.options[e.selectedIndex].value;
         var e = document.getElementById("backuptype");
         var backuptype = e.options[e.selectedIndex].value;
@@ -426,7 +367,6 @@ $(document).on("click", "#deleteConfig", function () {
         $("div[data-configmgr='configmgr']").load('configmgr?id=' + id + '&deviceid=' + document.getElementById('configurationManager').getAttribute('data-deviceid') + '&owner=' + owner + '&backuptype=' + encodeURIComponent(backuptype) + '&searchconfigDescription=' + document.getElementById("searchconfigDescription").value + '&configentryperpage=' + configentryperpage + '&configpageoffset=' + configpageoffset + '&action=deleteBackup');
     }
 });
-
 
 $('.configdeviceStatus').ready(function () {
 

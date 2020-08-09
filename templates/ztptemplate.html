@@ -48,7 +48,7 @@
                 <td align="left" valign="top"><input type="text" id="searchName" name="searchName" value="{{ formresult.searchName }}" size="15"></td>
                 <td align="left" valign="top"><input type="text" id="searchDescription" name="searchDescription" value="{{ formresult.searchDescription }}" size="15"></td>
                 <td align="right">
-                    <input type="button" class="button" value="Add template" id="addztpTemplate" onclick="cleartemplateRow(this);"><input type="submit" name="searchAction" value="Search" class="button" id="searchTemplate" onclick="cleartemplateRow(this);">
+                    <input type="button" class="button" value="Add template" id="addztpTemplate" onclick="cleartemplateRow(this);"  {% if va("ztptemplateaccess","feature")==False %} style="opacity:0.2;pointer-events:none;" {% endif %}><input type="submit" name="searchAction" value="Search" class="button" id="searchTemplate" onclick="cleartemplateRow(this);">
                 </td>
             </tr>
         </form>
@@ -67,7 +67,7 @@
                 <td><font class="font12px">{{ info['name'] }}</font></td>
                 <td><font class="font12px">{{ info['description'] }}</font></td>
                 <td align="right">
-                    <input type="button" name="editTemplate" value="Edit" data-templateid="{{info['id']}}" class="editTemplate" onclick="highlighttemplateRow(this);"><input type="submit" name="action" value="Delete" class="button" onclick="return confirm('Are you sure you want to delete {{ info['name'] }}?')">
+                    <input type="button" name="editTemplate" value="Edit" data-templateid="{{info['id']}}" class="editTemplate" onclick="highlighttemplateRow(this);"  {% if va("ztptemplateaccess","feature")==False %} style="opacity:0.2;pointer-events:none;" {% endif %}><input type="submit" name="action" value="Delete" class="button" onclick="return confirm('Are you sure you want to delete {{ info['name'] }}?')"  {% if va("ztptemplateaccess","feature")==False %} style="opacity:0.2;pointer-events:none;" {% endif %}>
                 </td>
             </tr>
         </form>

@@ -1,0 +1,129 @@
+<!-- (C) Copyright 2019 Hewlett Packard Enterprise Development LP. -->
+{% block scripts %}
+<script src="static/scripts/jquery-1.10.2.min.js"></script>
+<link href="static/stylesheet.css" rel="stylesheet" />
+<script type="text/javascript" src="static/main.js"></script>
+<script type="text/javascript" src="static/telemetry.js"></script>
+{% endblock %}
+
+{% block content %}
+{% set pagename = "Telemetry" %}
+{% include 'navbar.html' %}
+
+
+{% if totalentries|int % entryperpage|int == 0 %}
+{% set totalpages=(totalentries|int/entryperpage|int)|int %}
+{% else %}
+{% set totalpages=(totalentries|int/entryperpage|int)|int +1 %}
+{% endif %}
+
+<div id="maincontainer">
+    <div id="wsClient" data-hostip="{{ hostip }}"></div>
+    <table class="tablenoborder">
+        <form method="post">
+            <input id='orderBy' name='orderBy' type='hidden' value="{{ orderBy }}" />
+            <input id='descascDescription' name='descascDescription' type='hidden' value="{{ descascDescription }}" />
+            <input id='descascIpaddress' name='descascIpaddress' type='hidden' value="{{ descascIpaddress }}" />
+            <input id='currentpageoffset' name='currentpageoffset' type='hidden' value="{{pageoffset}}" />
+            <input id='currenttotalentries' name='currenttotalentries' type='hidden' value="{{totalentries}}" />
+            <input id="totalpages" name="totalpages" type="hidden" value="{{ totalpages }}" />
+            <input name='currententryperpage' type='hidden' value="{{ entryperpage }}" />
+            <input name="action" type="hidden" value="navigation" />
+            <tr>
+                <td width="2%"><font class="font13pxgrey">Item</font></td>
+                <td width="6%" nowrap align="center"><font class="font13pxgrey">Client status</font></td>
+                <td width="9%" align="left" nowrap><font class="font13pxgrey">IP address</font></td>
+                <td width="9%"><font class="font13pxgrey">Description</font></td>
+                <td width="9%" nowrap><font class="font13pxgrey">Software version</font></td>
+                <td width="9%" nowrap><font class="font13pxgrey">Subscriber ID</font></td>
+                <td width="9%" nowrap><font class="font13pxgrey">Subscription count</font></td>
+                <td width="9%" nowrap><font class="font13pxgrey">Activated subscriptions</font></td>
+                <td width="9%" nowrap><font class="font13pxgrey">Active subscriptions</font></td>
+                <td width="9%" nowrap><font class="font13pxgrey">Received notifications</font></td>
+                <td width="21%" align="right" nowrap>
+                    <font class="font13pxgrey">
+                        Show <select name="entryperpage" id="deviceEntryperpage" onchange="this.form.submit()">
+                            <option value="5" {% if entryperpage==5 %} selected {% endif %}>5</option>
+                            <option value="10" {% if entryperpage==10 %} selected {% endif %}>10</option>
+                            <option value="25" {% if entryperpage==25 %} selected {% endif %}>25</option>
+                            <option value="50" {% if entryperpage==50 %} selected {% endif %}>50</option>
+                            <option value="100" {% if entryperpage==100 %} selected {% endif %}>100</option>
+                        </select> entries per page (page <select name="pageoffset" id="devicePageoffset" onchange="this.form.submit();">
+                            {% for i in  range(totalpages) %}
+                            <option value="{{ (i)*entryperpage|int }}" {% if (pageoffset|int) /(entryperpage|int) ==(i) %}selected{% endif %}>{{ i+1 }}</option>
+                            {% endfor %}
+                        </select> of {{ totalpages }} pages)
+                    </font>
+                </td>
+            </tr>
+            <tr style="background-color: grey;" class="tableTitle">
+                <td colspan="2">&nbsp;</td>
+                <td align="left" valign="top">
+                    <input type="text" name="searchIPaddress" id="searchIPaddress" size="15" value="{{ formresult['searchIPaddress'] }}">
+                </td>
+                <td align="left" valign="top">
+                    <input type="text" name="searchDescription" id="searchDescription" size="15" value="{{ formresult['searchDescription'] }}">
+                </td>
+                <td align="left" valign="top">
+                    <input type="text" name="searchVersion" value="{{ formresult.searchVersion }}" size="15">
+                </td>
+                <td colspan="5"></td>
+                <td align="right">
+                    <input type="submit" name="searchAction" value="Search" class="button" id="searchDevice" onclick="cleardeviceRow(this);">
+                </td>
+            </tr>
+        </form>
+        {% for info in result %}
+        <form method="post">
+            <input name='currentpageoffset' type='hidden' value="{{pageoffset}}" />
+            <input name='currenttotalentries' type='hidden' value="{{totalentries}}" />
+            <input name='totalpages' type="hidden" value="{{ totalpages }}" />
+            <input name='entryperpage' type='hidden' value="{{ entryperpage }}" />
+            <input name='currententryperpage' type='hidden' value="{{ entryperpage }}" />
+            <input type="hidden" name="searchIPaddress" value="{{ formresult.searchIPaddress }}">
+            <input type="hidden" name="searchDescription" value="{{ formresult.searchDescription }}">
+            <input type="hidden" name="searchVersion" value="{{ formresult.searchVersion }}">
+            <input type="hidden" name="deviceid" value="{{ info['id'] }}">
+            <tr>
+                <td><font class="font12px">{{ loop.index }}</font></td>
+                <td align="center">
+                    <font class="font12px">
+                        <div class="telemetryOnline" id="telemetryOnline{{info['id']}}" data-deviceid="{{info['id']}}"><img src='static/images/risk.png' height='15' width='15'></div>
+                    </font>
+                </td>
+                <td><font class="font12px">{{ info['ipaddress'] }}</font></td>
+                <td><font class="font12px">{{ info['description'] }}</font></td>
+                <td><font class="font12px">{{ info['osversion'] }}</font></td>
+                <td><font class="font12px"><div id="subscriber{{ info['id'] }}">{{ info['subscriber'] }}</div></font></td>
+                {% set subscriptions = converttoJSON(info['subscriptions']) %}
+                <td><font class="font12px"><div id="subscriptions{{ info['id'] }}">{{ subscriptions[0] |count }}</div></font></td>
+                <td><font class="font12px"><div id="activatedsubscriptions{{ info['id'] }}"></div></font></td>
+                <td><font class="font12px"><div id="activesubscriptions{{ info['id'] }}"></div></font></td>
+                <td>
+                    <font class="font12px">
+                        <div class="socketRow">
+                            <div class="showWS" id="showWS{{info['ipaddress']}}" data-username="{{ info['ipaddress'] }}" data-id="{{info['id']}}" data-messagecount="0">0</div>
+                        </div>
+                    </font>
+                </td>
+                <td align="right">
+                    <span class="startWS" id="startws{{ info['id'] }}"></span><input type="button" name="monitor" value="Monitor" data-username="{{ info['ipaddress'] }}" data-deviceid="{{info['id']}}" id="monitor{{info['id']}}" class="monitorSubscription" onclick="highlightdeviceRow(this);"><input type="button" name="managesubscription" value="Manage subscriptions" data-deviceid="{{info['id']}}" class="manageSubscription" onclick="highlightdeviceRow(this);" {% if va("telemetrysubscriptionaccess","feature")==False %} style="opacity:0.2;pointer-events:none;" {% endif %}>
+                </td>
+            </tr>
+        </form>
+        {% endfor %}
+    </table>
+
+
+    <div id="monitorsubscription" style="display:none;" data-deviceid="">
+        <textarea class="showNotifications" id="showNotifications" rows="30" onclick="clearTextArea(this);" readonly></textarea>
+    </div>
+
+
+    <div id="managesubscription" style="display:none;">
+        Manage Subscriptions....
+    </div>
+
+
+</div>
+{% endblock %}

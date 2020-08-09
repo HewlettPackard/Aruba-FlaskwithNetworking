@@ -9,7 +9,7 @@ ztp = Blueprint('ztp', __name__)
 from datetime import datetime
 
 
-ALLOWED_EXTENSIONS = set(['swi'])
+ALLOWED_EXTENSIONS = set(['swi','SWI'])
 
 def allowed_file(filename):
 	return '.' in filename and filename.rsplit('.', 1)[1].lower() in ALLOWED_EXTENSIONS
@@ -18,7 +18,7 @@ import classes.classes as classes
 
 @ztp.route("/ztpdevice", methods=['GET','POST'])
 def ztpdevice ():
-    authOK=classes.checkAuth()
+    authOK=classes.checkAuth("ztpdeviceaccess","submenu")
     parameterValues={}
     link1=[]
     link2=[]
@@ -61,25 +61,31 @@ def ztpdevice ():
                 ipamstatus="Online"
         else:
             ipamstatus="Online"
-        return render_template("ztpdevice.html",result=result['result'],formresult=formresult,imageResult=imageResult, templateResult=templateResult, ipamstatus=ipamstatus, ztpstatusInfo=ztpstatusInfo, totalentries=int(result['totalentries']),pageoffset=int(result['pageoffset']),entryperpage=int(result['entryperpage']), authOK=authOK, sysvars=sysvars)
+        if authOK['hasaccess']==True:
+            return render_template("ztpdevice.html",result=result['result'],formresult=formresult,imageResult=imageResult, templateResult=templateResult, ipamstatus=ipamstatus, ztpstatusInfo=ztpstatusInfo, totalentries=int(result['totalentries']),pageoffset=int(result['pageoffset']),entryperpage=int(result['entryperpage']), authOK=authOK, sysvars=sysvars)
+        else:
+            return render_template("noaccess.html",authOK=authOK, sysvars=sysvars)
     else:
         return render_template("login.html")
 
 @ztp.route("/ztptemplate", methods=['GET','POST'])
 def ztptemplate ():
-    authOK=classes.checkAuth()
+    authOK=classes.checkAuth("ztptemplateaccess","submenu")
     if authOK!=0:
         sysvars=classes.globalvars()
         formresult=request.form
         # Obtain the relevant device information from the database
         result=classes.ztptemplatedbAction(formresult)
-        return render_template("ztptemplate.html",result=result['result'],formresult=formresult, totalentries=int(result['totalentries']),pageoffset=int(result['pageoffset']),entryperpage=int(result['entryperpage']), authOK=authOK, sysvars=sysvars)
+        if authOK['hasaccess']==True:
+            return render_template("ztptemplate.html",result=result['result'],formresult=formresult, totalentries=int(result['totalentries']),pageoffset=int(result['pageoffset']),entryperpage=int(result['entryperpage']), authOK=authOK, sysvars=sysvars)
+        else:
+            return render_template("noaccess.html",authOK=authOK, sysvars=sysvars)
     else:
         return render_template("login.html")
 
 @ztp.route("/ztpimage", methods=['GET','POST'])
 def ztpimage ():
-    authOK=classes.checkAuth()
+    authOK=classes.checkAuth("ztpdeviceaccess","submenu")
     message=""
     filename=""
     if authOK!=0:
@@ -97,13 +103,16 @@ def ztpimage ():
                         message=''
                         filename=file.filename
                     else:
-                        message='Allowed file type is img'
+                        message='Allowed file type is swi'
             # Obtain the relevant device information from the database
             result=classes.ztpimagedbAction(formresult,filename,message)
         else:
             # Obtain the relevant device information from the database
             result=classes.ztpimagedbAction(formresult,'','')
-        return render_template("ztpimage.html",result=result['result'], formresult=formresult, totalentries=int(result['totalentries']),pageoffset=int(result['pageoffset']),entryperpage=int(result['entryperpage']), authOK=authOK, sysvars=sysvars)
+        if authOK['hasaccess']==True:
+            return render_template("ztpimage.html",result=result['result'], formresult=formresult, totalentries=int(result['totalentries']),pageoffset=int(result['pageoffset']),entryperpage=int(result['entryperpage']), authOK=authOK, sysvars=sysvars)
+        else:
+            return render_template("noaccess.html",authOK=authOK, sysvars=sysvars)
     else:
         return render_template("login.html")
 
@@ -226,7 +235,7 @@ def ztptemplateparameterInfo ():
 
 @ztp.route("/ztpActivate", methods=['GET','POST'])
 def ztpActivate ():
-    authOK=classes.checkAuth()
+    authOK=classes.checkAuth("ztpdevice","feature")
     if authOK!=0:
         sysvars=classes.globalvars()
         formresult=request.form
@@ -238,7 +247,7 @@ def ztpActivate ():
 
 @ztp.route("/ztpDeactivate", methods=['GET','POST'])
 def ztpDeactivate ():
-    authOK=classes.checkAuth()
+    authOK=classes.checkAuth("ztpdevice","feature")
     if authOK!=0:
         sysvars=classes.globalvars()
         formresult=request.form

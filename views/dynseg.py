@@ -11,8 +11,9 @@ import classes.classes as classes
 
 @dynseg.route("/dsprofile",methods=['GET','POST'])
 def dsprofile():
-    authOK=classes.checkAuth()
+    authOK=classes.checkAuth("ubtprofileaccess","submenu")
     if authOK!=0:
+        print(authOK)
         sysvars=classes.globalvars()
         result={}
         editProfile={}
@@ -43,13 +44,16 @@ def dsprofile():
                 editProfile=classes.sqlQuery("select * from dsprofiles where id='{}'".format(formresult['id']),"selectone")
         except:
             formresult=[]
-        return render_template("dsprofile.html",result=result,formresult=formresult, cpInfo=cpInfo,mcInfo=mcInfo,devInfo=devInfo, editProfile=editProfile,authMethod=authMethod,authSource=authSource,message=message, authOK=authOK, sysvars=sysvars)
+        if authOK['hasaccess']==True:
+            return render_template("dsprofile.html",result=result,formresult=formresult, cpInfo=cpInfo,mcInfo=mcInfo,devInfo=devInfo, editProfile=editProfile,authMethod=authMethod,authSource=authSource,message=message, authOK=authOK, sysvars=sysvars)
+        else:
+            return render_template("noaccess.html",authOK=authOK, sysvars=sysvars)
     else:
         return render_template("login.html")
 
 @dynseg.route("/dsservice",methods=['GET','POST'])
 def dsservice():
-    authOK=classes.checkAuth()
+    authOK=classes.checkAuth("ubtserviceaccess","submenu")
     if authOK!=0:
         sysvars=classes.globalvars()
         authMethod = ["EAP PEAP", "EAP-TLS", "Allow All MAC", "Mac Auth", "PAP", "CHAP"]
@@ -72,7 +76,10 @@ def dsservice():
                 profileresult=classes.getProfile()
         except:
             formresult=[]
-        return render_template("dsservice.html",result=result,formresult=formresult,mcInfo=mcInfo,profileInfo=profileInfo,editService=editService,profileresult=profileresult,authMethod=authMethod,authSource=authSource,message=message,authOK=authOK, sysvars=sysvars)
+        if authOK['hasaccess']==True:
+            return render_template("dsservice.html",result=result,formresult=formresult,mcInfo=mcInfo,profileInfo=profileInfo,editService=editService,profileresult=profileresult,authMethod=authMethod,authSource=authSource,message=message,authOK=authOK, sysvars=sysvars)
+        else:
+            return render_template("noaccess.html",authOK=authOK, sysvars=sysvars)
     else:
         return render_template("login.html")
 

@@ -47,14 +47,15 @@ document.getElementById("liProgress").style.display = "block";
             <input name='currententryperpage' type='hidden' value="{{ entryperpage }}" />
             <input name="action" type="hidden" value="navigation" />
             <tr>
-                <td width="3%"><font class="font13pxgrey">Item</font></td>
+                <td width="2%"><font class="font13pxgrey">Item</font></td>
                 <td width="3%"><font class="font13pxgrey">API</font></td>
                 <td width="5%" align="left" nowrap><font class="font13pxgrey">IP address</font></td>
                 <td width="9%"><font class="font13pxgrey">Description</font></td>
                 <td width="9%"><font class="font13pxgrey">Operating System</font></td>
                 <td width="9%"><font class="font13pxgrey">Platform</font></td>
                 <td width="9%"><font class="font13pxgrey">Software version</font></td>
-                <td width="9%"><font class="font13pxgrey">Topology</font></td>
+                <td width="5%"><font class="font13pxgrey">Topology</font></td>
+                <td width="5%"><font class="font13pxgrey">Telemetry</font></td>
                 <td width="14%" align="right" nowrap>
                     <font class="font13pxgrey">
                         Show <select name="entryperpage" id="deviceEntryperpage" onchange="this.form.submit()">
@@ -105,8 +106,15 @@ document.getElementById("liProgress").style.display = "block";
                         <option value="1" {% if formresult.searchTopology=="1" %} selected {% endif %}>Enabled</option>
                     </select>
                 </td>
+                <td align="left" valign="top">
+                    <select name="searchTelemetry" id="searchTelemetry" onchange="this.form.submit();">
+                        <option value="">Select</option>
+                        <option value="0" {% if formresult.searchTelemetry=="0" %} selected {% endif %}>Disabled</option>
+                        <option value="1" {% if formresult.searchTelemetry=="1" %} selected {% endif %}>Enabled</option>
+                    </select>
+                </td>
                 <td align="right">
-                    <input type="button" class="button" value="Add device" id="addDevice" onclick="cleardeviceRow(this);"><input type="submit" name="searchAction" value="Search" class="button" id="searchDevice" onclick="cleardeviceRow(this);">
+                    <input type="button" class="button" value="Add device" id="addDevice" onclick="cleardeviceRow(this);" {% if va("switchaccess","feature")== False %} disabled style="opacity:0.2;pointer-events:none;" {% endif %}><input type="submit" name="searchAction" value="Search" class="button" id="searchDevice" onclick="cleardeviceRow(this);">
                 </td>
             </tr>
         </form>
@@ -123,23 +131,27 @@ document.getElementById("liProgress").style.display = "block";
             <input type="hidden" name="searchPlatform" value="{{ formresult.searchPlatform }}">
             <input type="hidden" name="searchOS" value="{{ formresult.searchOS }}">
             <input type="hidden" name="searchTopology" value="{{ formresult.searchTopology }}">
+            <input type="hidden" name="searchTelemetry" value="{{ formresult.searchTelemetry }}">
+            <input type="hidden" name="telemetrystatus" value="{{ formresult.telemetrystatus }}">
+            <input type="hidden" name="subscriber" value="{{ formresult.subscriber }}">
             <input type="hidden" name="deviceid" value="{{ info['id'] }}">
             <tr>
                 <td><font class="font12px">{{ loop.index }}</font></td>
                 <td>
                     <font class="font12px">
-                        <div class="deviceStatus" id="deviceStatus{{info['id']}}" data-deviceid="{{info['id']}}" data-ostype="{{ info['ostype'] }}"></div>
+                        <div class="isOnline" id="isOnline{{info['id']}}" data-deviceid="{{info['id']}}" data-ostype="{{ info['ostype'] }}"><img src='static/images/risk.png' height='15' width='15'></div>
                     </font>
                 </td>
                 <td><font class="font12px">{{ info['ipaddress'] }}</font></td>
                 <td><font class="font12px">{{ info['description'] }}</font></td>
                 <td><font class="font12px">{{ info['ostype'] }}</font></td>
-                <td><font class="font12px">{{ info['platform_name'] }} {{ info['platform'] }}</font></td>
+                <td nowrap><font class="font12px">{{ info['platform_name'] }} {{ info['platform'] }}</font></td>
                 <td><font class="font12px">{{ info['swversion'] }} {{ info['osversion'] }}</font></td>
                 <td><font class="font12px">{% if info['topology']==1 %}Enabled{% else %}Disabled{% endif %}</font></td>
+                <td><font class="font12px">{% if info['ostype']=="arubaos-cx" %}{% if info['telemetryenable']==1 %}Enabled{% else %}Disabled{% endif %}{% else %}-{% endif %}</font></td>
                 <td align="right">
                     {% if info['ostype']=="arubaos-switch" %}<input type="button" name="portaccess" value="Port Access" data-deviceid="{{info['id']}}" class="portaccess" id="portaccess{{info['id']}}" onclick="highlightdeviceRow(this);">{% endif %}
-</div><input type="button" name="monitor" value="Monitor" data-deviceid="{{info['id']}}" id="monitor{{info['id']}}" class="monitordevice" onclick="highlightdeviceRow(this);"><input type="button" name="configuration" value="Configuration" data-deviceid="{{info['id']}}" data-ostype="{{info['ostype']}}" class="configuration" onclick="highlightdeviceRow(this);"><input type="button" name="editDevice" value="Edit" data-deviceid="{{info['id']}}" class="editDevice" onclick="highlightdeviceRow(this);"><input type="submit" name="action" value="Delete" class="button" onclick="return confirm('Are you sure you want to delete {{ info['ipaddress'] }}?')">
+</div><input type="button" style="opacity:0.1; pointer-events:none;" disabled name="monitor" value="Monitor" data-deviceid="{{info['id']}}" id="monitor{{info['id']}}" class="monitordevice" onclick="highlightdeviceRow(this);"><input type="button" name="configuration" value="Configuration" data-deviceid="{{info['id']}}" data-ostype="{{info['ostype']}}" class="configuration" onclick="highlightdeviceRow(this);"><input type="button" name="editDevice" value="Edit" data-deviceid="{{info['id']}}" class="editDevice" {% if va("switchaccess","feature")== False %} style="opacity:0.2;pointer-events:none;" {% endif %} onclick="highlightdeviceRow(this);"><input type="submit" name="action" value="Delete" class="button" onclick="return confirm('Are you sure you want to delete {{ info['ipaddress'] }}?')" {% if va("switchaccess","feature")== False %} style="opacity:0.2;pointer-events:none;" {% endif %}>
             </td>
         </tr>
     </form>
@@ -186,14 +198,15 @@ document.getElementById("liProgress").style.display = "block";
     <p>
         <table class="tablenoborder">
             <tr style="background-color: grey;" class="tableTitle">
-                <td colspan="6"><font class='font13pxwhite'><center>Add device</center></font></td>
+                <td colspan="7"><font class='font13pxwhite'><center>Add device</center></font></td>
             </tr>
             <tr style="line-height:20px;">
-                <td width="15%" align="left" nowrap><font class="font13pxgrey">IP address</font></td>
+                <td width="10%" align="left" nowrap><font class="font13pxgrey">IPv4 address</font></td>
                 <td width="15%"><font class="font13pxgrey">Description</font></td>
                 <td width="15%"><font class="font13pxgrey">Username</font></td>
                 <td width="15%"><font class="font13pxgrey">Password</font></td>
                 <td width="5%" nowrap><font class="font13pxgrey">Topology</font></td>
+                <td width="5%" nowrap><font class="font13pxgrey">Telemetry</font></td>
             </tr>
             <tr>
                 <form method="post">
@@ -207,11 +220,15 @@ document.getElementById("liProgress").style.display = "block";
                     <input type="hidden" name="searchPlatform" value="{{ formresult.searchPlatform }}">
                     <input type="hidden" name="searchOS" value="{{ formresult.searchOS }}">
                     <input type="hidden" name="searchTopology" value="{{ formresult.searchTopology }}">
+                    <input type="hidden" name="searchTelemetry" value="{{ formresult.searchTelemetry }}">
+                    <input type="hidden" name="telemetrystatus" value="{{ formresult.telemetrystatus }}">
+                    <input type="hidden" name="subscriber" value="{{ formresult.subscriber }}">
                     <td><div class="addField"><input type="text" name="ipaddress" class="input"></div></td>
                     <td><div class="addField"><input type="text" name="description" class="input" size="50"></div></td>
                     <td><div class="addField"><input type="text" name="username" class="input"></div></td>
                     <td><div class="addField"><input type="password" name="password" class="input"></div></td>
                     <td align="center"><input type="checkbox" id="addTopology" name="topology" class="input"></td>
+                    <td align="center"><input type="checkbox" id="addTelemetry" name="telemetryenable" class="input"></td>
                     <td align="right" width="30%">
                         <div class="addActions">
                             <input type="submit" disabled name="action" value="Submit device" class="button" />
@@ -227,14 +244,15 @@ document.getElementById("liProgress").style.display = "block";
     <p>
         <table class="tablenoborder">
             <tr style="background-color: grey;" class="tableTitle">
-                <td colspan="6"><font class='font13pxwhite'><center>Edit device <span name="titleeditDescription" id="titleeditDescription"></span> (<span name="titleeditIpaddress" id="titleeditIpaddress"></span>)</center></font></td>
+                <td colspan="7"><font class='font13pxwhite'><center>Edit device <span name="titleeditDescription" id="titleeditDescription"></span> (<span name="titleeditIpaddress" id="titleeditIpaddress"></span>)</center></font></td>
             </tr>
             <tr style="line-height:20px;">
-                <td width="15%" align="left" nowrap><font class="font13pxgrey">IP address</font></td>
+                <td width="10%" align="left" nowrap><font class="font13pxgrey">IPv4 address</font></td>
                 <td width="15%"><font class="font13pxgrey">Description</font></td>
                 <td width="15%"><font class="font13pxgrey">Username</font></td>
                 <td width="15%"><font class="font13pxgrey">Password</font></td>
                 <td width="5%" nowrap><font class="font13pxgrey">Topology</font></td>
+                <td width="5%" nowrap><font class="font13pxgrey">Telemetry</font></td>
             </tr>
             <tr>
                 <form method="post">
@@ -250,12 +268,16 @@ document.getElementById("liProgress").style.display = "block";
                     <input type="hidden" name="searchPlatform" value="{{ formresult.searchPlatform }}">
                     <input type="hidden" name="searchOS" value="{{ formresult.searchOS }}">
                     <input type="hidden" name="searchTopology" value="{{ formresult.searchTopology }}">
+                    <input type="hidden" name="searchTelemetry" value="{{ formresult.searchTelemetry }}">
+                    <input type="hidden" name="telemetrystatus" value="{{ formresult.telemetrystatus }}">
+                    <input type="hidden" name="subscriber" value="{{ formresult.subscriber }}">
                     <input type="hidden" name="orgIPaddress" id="orgIPaddress">
                     <td><div class="editField"><input type="text" id="editIpaddress" name="ipaddress" class="input"></div></td>
                     <td><div class="editField"><input type="text" id="editDescription" name="description" class="input"></div></td>
                     <td><div class="editField"><input type="text" id="editUsername" name="username" class="input"></div></td>
                     <td><div class="editField"><input type="password" id="editPassword" name="password" class="input"></div></td>
                     <td align="center"><input type="checkbox" id="editTopology" name="topology" class="input"></></td>
+                    <td align="center"><input type="checkbox" id="editTelemetry" name="telemetryenable" class="input"></></td>
                     <td align="right" width="30%">
                         <div class="editActions">
                             <input type="submit" name="action" value="Submit changes" class="button" />

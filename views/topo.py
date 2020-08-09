@@ -10,13 +10,16 @@ import classes.classes as classes
 
 @topo.route("/topology", methods=['GET', 'POST'])
 def topology ():
-    authOK=classes.checkAuth()
+    authOK=classes.checkAuth("topology","menu")
     if authOK!=0:
         sysvars=classes.globalvars()
         formresult=request.form
         # Obtain the relevant device information from the database
         result=classes.topodbAction(formresult)
-        return render_template("topology.html",result=result['result'], formresult=formresult, totalentries=int(result['totalentries']),pageoffset=int(result['pageoffset']),entryperpage=int(result['entryperpage']), authOK=authOK, sysvars=sysvars)
+        if authOK['hasaccess']==True:
+            return render_template("topology.html",result=result['result'], formresult=formresult, totalentries=int(result['totalentries']),pageoffset=int(result['pageoffset']),entryperpage=int(result['entryperpage']), authOK=authOK, sysvars=sysvars)
+        else:
+            return render_template("noaccess.html",authOK=authOK, sysvars=sysvars)
     else:
         return render_template("login.html")
 

@@ -1,4 +1,4 @@
-# (C) Copyright 2019 Hewlett Packard Enterprise Development LP.
+# (C) Copyright 2020 Hewlett Packard Enterprise Development LP.
 
 from flask import current_app, Blueprint, json, request
 deviceview = Blueprint('deviceview', __name__)
@@ -29,7 +29,7 @@ def showInterface():
             # Get the LLDP information for the given interface 
             try:
                 url="system/interfaces/" + request.args.get('interface').replace('/', '%2f') + "/lldp_neighbors?depth=2"
-                lldpinfo=classes.getRESTcx(request.args.get('deviceid'),url)
+                lldpinfo=classes.getcxREST(request.args.get('deviceid'),url)
             except:
                 print("Error obtaining lldp information")
             return render_template("showcxinterface.html", interfaceinfo=interfaceinfo[0], lldpinfo=lldpinfo, interface=request.args.get('interface'), sysvars=sysvars)

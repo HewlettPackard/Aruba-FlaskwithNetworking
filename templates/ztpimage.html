@@ -59,7 +59,7 @@
                 <td align="left" valign="top"><input type="text" name="searchVersion" value="{{ formresult.searchVersion }}" size="15"></td>
                 <td></td>
                 <td align="right">
-                    <input type="button" class="button" value="Add image" id="addztpImage" onclick="clearimageRow(this);"><input type="submit" name="searchAction" value="Search" class="button" id="searchImage" onclick="clearimageRow(this);">
+                    <input type="button" class="button" value="Add image" id="addztpImage" onclick="clearimageRow(this);"  {% if va("ztpimageaccess","feature")==False %} style="opacity:0.2;pointer-events:none;" {% endif %}><input type="submit" name="searchAction" value="Search" class="button" id="searchImage" onclick="clearimageRow(this);">
                 </td>
             </tr>
         </form>
@@ -81,7 +81,7 @@
                 <td><font class="font12px">{{ info['version'] }}</font></td>
                 <td><font class="font12px">{{ info['filename'] }}</font></td>
                 <td align="right">
-                    <input type="button" name="editImage" value="Edit" data-imageid="{{info['id']}}" class="editImage" onclick="highlightimageRow(this);"><input type="submit" name="action" value="Delete" class="button" onclick="return confirm('Are you sure you want to delete {{ info['name'] }}?')">
+                    <input type="button" name="editImage" value="Edit" data-imageid="{{info['id']}}" class="editImage" onclick="highlightimageRow(this);"  {% if va("ztpimageaccess","feature")==False %} style="opacity:0.2;pointer-events:none;" {% endif %}><input type="submit" name="action" value="Delete" class="button" onclick="return confirm('Are you sure you want to delete {{ info['name'] }}?')"  {% if va("ztpimageaccess","feature")==False %} style="opacity:0.2;pointer-events:none;" {% endif %}>
                 </td>
             </tr>
         </form>

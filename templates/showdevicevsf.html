@@ -153,6 +153,7 @@
 
             </tr>
             {% endfor %}
+            {% if sysinfo['time_server_protocol'] %}
             <tr>
                 <td><font class="font12pxwhite">NTP protocol</font></td>
                 <td class="whiteBG"><font face="arial" size="1">{{ sysinfo['time_server_protocol'][4:] }}</font></td>
@@ -163,6 +164,7 @@
                 <td><font class="font12pxwhite">NTP up time</font></td>
                 <td class="whiteBG"><font face="arial" size="1">{{ sysinfo['NTP Up Time'] }}</font></td>
             </tr>
+            {% endif %}
             {% for items in sysinfo.vlan_element %}
             <tr>
                 <td><font class="font12pxwhite">VLAN ID</font></td>

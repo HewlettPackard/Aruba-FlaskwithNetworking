@@ -160,43 +160,43 @@ $(function () {
                     document.getElementById('roleinfo').value = roledata;
                     document.getElementById('policies').value = JSON.stringify(roledata);
                     //Fill the table with the role information
-                    roleHTML = "<table class='fwtable'>";
-                    roleHTML += "<tr style='background-color:black;'><td colspan='7' align='center' style='color:orange;'>Configured policies</td></tr>";
-                    roleHTML += "<tr><td nowrap><font class='font13px'>Device authentication</font></td>";
-                    roleHTML += "<td nowrap><font class='font13px'>Authentication source(s)</font></td>";
-                    roleHTML += "<td nowrap><font class='font13px'>Authentication method(s)</font></td>";
-                    roleHTML += "<td nowrap><font class='font13px'>Role</font></td>";
-                    roleHTML += "<td nowrap><font class='font13px'>Filter rules</font></td>";
-                    roleHTML += "<td nowrap><font class='font13px'>Egress VLAN</font></td>";
-                    roleHTML += "<td width='10%'>&nbsp;</td></tr>";
+                    roleHTML = "<table class='tablewithborder'>";
+                    roleHTML += "<tr style='background-color:grey;'><td colspan='7' align='center' class='font13pxwhite'>Configured policies</td></tr>";
+                    roleHTML += "<tr style='background-color:grey;'><td nowrap><font class='font12pxwhite'>Device authentication</font></td>";
+                    roleHTML += "<td nowrap><font class='font12pxwhite'>Authentication source(s)</font></td>";
+                    roleHTML += "<td nowrap><font class='font12pxwhite'>Authentication method(s)</font></td>";
+                    roleHTML += "<td nowrap><font class='font12pxwhite'>Role</font></td>";
+                    roleHTML += "<td nowrap><font class='font12pxwhite'>Filter rules</font></td>";
+                    roleHTML += "<td nowrap><font class='font12pxwhite'>Egress VLAN</font></td>";
+                    roleHTML += "<td width='1%'>&nbsp;</td></tr>";
                     for (i = 0; i < roledata.length; i++) {
                         if (roledata[i]['devauth'] == "dot1x") { devauth = "802.1x"; }
                         else if (roledata[i]['devauth'] == "macauth") { devauth = "MAC Authentication"; }
                         else { devauth = "";}
-                        roleHTML += "<tr><td><font class='font12px'>" + devauth + "</font></td>";
-                        roleHTML += "<td><font class='font12px'>";
+                        roleHTML += "<tr><td class='whiteBG'><font class='font12px'>" + devauth + "</font></td>";
+                        roleHTML += "<td class='whiteBG'><font class='font12px'>";
                         for (j = 0; j < roledata[i]['authMethod'].length; j++) {
                             roleHTML += methods[roledata[i]['authMethod'][j]] + ", ";
                         }
                         //Remove last comma
                         roleHTML = roleHTML.substring(0, roleHTML.length - 2);
                         roleHTML += "</font></td>";
-                        roleHTML += "<td><font class='font12px'>";
+                        roleHTML += "<td class='whiteBG'><font class='font12px'>";
                         for (j = 0; j < roledata[i]['authSource'].length; j++) {
                            roleHTML += sources[roledata[i]['authSource'][j]] + ", ";
                         }
                         //Remove last comma
                         roleHTML=roleHTML.substring(0, roleHTML.length - 2);
                         roleHTML += "</font></td>";
-                        roleHTML += "<td><font class='font12px'>" + roledata[i]['rname'] + "</font></td>";
-                        roleHTML += "<td><font class='font12px'>";
+                        roleHTML += "<td class='whiteBG'><font class='font12px'>" + roledata[i]['rname'] + "</font></td>";
+                        roleHTML += "<td class='whiteBG'><font class='font12px'>";
                         for (j = 0; j < roledata[i]['ACL'].length; j++){
                             roleHTML += roledata[i]['ACL'][j]['pname'] + ", ";
                         }
                         roleHTML = roleHTML.substring(0, roleHTML.length - 2);
                         roleHTML += "</font></td > ";
-                        roleHTML += "<td><font class='font12px'>" + roledata[i]['vlan'] + "</font></td>";
-                        roleHTML += "<td><input type='button' class='button' id='rolelistAction' value='Delete' data-roleEntry='" + i + "'></td>";
+                        roleHTML += "<td class='whiteBG'><font class='font12px'>" + roledata[i]['vlan'] + "</font></td>";
+                        roleHTML += "<td class='whiteBG' width='1%' nowrap><input type='button' class='button' id='rolelistAction' value='Delete' data-roleEntry='" + i + "'></td>";
                         roleHTML += "</tr>";
                     }
                     roleHTML += "</table>";
@@ -213,43 +213,43 @@ $(function () {
         roledata = JSON.parse(document.getElementById('policies').value);
         roledata.splice(this.getAttribute('data-roleEntry'), 1);
         document.getElementById('policies').value = JSON.stringify(roledata)
-        roleHTML = "<table class='fwtable'>";
-        roleHTML += "<tr style='background-color:black;'><td colspan='7' align='center' style='color:orange;'>Configured policies</td></tr>";
-        roleHTML += "<tr><td nowrap><font class='font13px'>Device authentication</font></td>";
-        roleHTML += "<td nowrap><font class='font13px'>Authentication source(s)</font></td>";
-        roleHTML += "<td nowrap><font class='font13px'>Authentication method(s)</font></td>";
-        roleHTML += "<td nowrap><font class='font13px'>Role</font></td>";
-        roleHTML += "<td nowrap><font class='font13px'>Filter rules</font></td>";
-        roleHTML += "<td nowrap><font class='font13px'>Egress VLAN</font></td>";
-        roleHTML += "<td width='10%'>&nbsp;</td></tr>";
+        roleHTML = "<table class='tablewithborder'>";
+        roleHTML += "<tr style='background-color:grey;'><td colspan='7' align='center' class='font13pxwhite'>Configured policies</td></tr>";
+        roleHTML += "<tr style='background-color:grey;'><td nowrap><font class='font12pxwhite'>Device authentication</font></td>";
+        roleHTML += "<td nowrap><font class='font12pxwhite'>Authentication source(s)</font></td>";
+        roleHTML += "<td nowrap><font class='font12pxwhite'>Authentication method(s)</font></td>";
+        roleHTML += "<td nowrap><font class='font12pxwhite'>Role</font></td>";
+        roleHTML += "<td nowrap><font class='font12pxwhite'>Filter rules</font></td>";
+        roleHTML += "<td nowrap><font class='font12pxwhite'>Egress VLAN</font></td>";
+        roleHTML += "<td width='1%'>&nbsp;</td></tr>";
         for (i = 0; i < roledata.length; i++) {
             if (roledata[i]['devauth'] == "dot1x") { devauth = "802.1x"; }
             else if (roledata[i]['devauth'] == "macauth") { devauth = "MAC Authentication"; }
             else { devauth = ""; }
-            roleHTML += "<tr><td><font class='font12px'>" + devauth + "</font></td>";
-            roleHTML += "<td><font class='font12px'>";
+            roleHTML += "<tr><td class='whiteBG'><font class='font12px'>" + devauth + "</font></td>";
+            roleHTML += "<td class='whiteBG'><font class='font12px'>";
             for (j = 0; j < roledata[i]['authMethod'].length; j++) {
                 roleHTML += methods[roledata[i]['authMethod'][j]] + ", ";
             }
             //Remove last comma
             roleHTML = roleHTML.substring(0, roleHTML.length - 2);
             roleHTML += "</font></td>";
-            roleHTML += "<td><font class='font12px'>";
+            roleHTML += "<td class='whiteBG'><font class='font12px'>";
             for (j = 0; j < roledata[i]['authSource'].length; j++) {
                 roleHTML += sources[roledata[i]['authSource'][j]] + ", ";
             }
             //Remove last comma
             roleHTML = roleHTML.substring(0, roleHTML.length - 2);
             roleHTML += "</font></td>";
-            roleHTML += "<td><font class='font12px'>" + roledata[i]['rname'] + "</font></td>";
-            roleHTML += "<td><font class='font12px'>";
+            roleHTML += "<td class='whiteBG'><font class='font12px'>" + roledata[i]['rname'] + "</font></td>";
+            roleHTML += "<td class='whiteBG'><font class='font12px'>";
             for (j = 0; j < roledata[i]['ACL'].length; j++) {
                 roleHTML += roledata[i]['ACL'][j]['pname'] + ", ";
             }
             roleHTML = roleHTML.substring(0, roleHTML.length - 2);
             roleHTML += "</font></td > ";
-            roleHTML += "<td><font class='font12px'>" + roledata[i]['vlan'] + "</font></td>";
-            roleHTML += "<td><input type='button' class='button' id='rolelistAction' value='Delete' data-roleEntry='" + i + "'></td>";
+            roleHTML += "<td class='whiteBG'><font class='font12px'>" + roledata[i]['vlan'] + "</font></td>";
+            roleHTML += "<td class='whiteBG'><input type='button' class='button' id='rolelistAction' value='Delete' data-roleEntry='" + i + "'></td>";
             roleHTML += "</tr>";
         }
         roleHTML += "</table>";

@@ -17,6 +17,7 @@
 {% set totalpages=(totalentries|int/entryperpage|int)|int +1 %}
 {% endif %}
 
+
 <div id="maincontainer">
     <table class="tablenoborder" />
     <form method="post">
@@ -70,7 +71,7 @@
                 </select>
             </td>
             <td></td>
-            <td align="right"><input type="button" class="button" value="Add device" id="addDevice" onclick="cleardeviceRow(this);"><input type="submit" name="searchAction" value="Search" class="button" id="searchDevice" onclick="cleardeviceRow(this);" /></td>
+            <td align="right"><input type="button" class="button" value="Add device" id="addDevice" onclick="cleardeviceRow(this);" {% if va("mobilityaccess","feature")== False %} style="opacity:0.2;pointer-events:none;" {% endif %}><input type="submit" name="searchAction" value="Search" class="button" id="searchDevice" onclick="cleardeviceRow(this);" /></td>
         </tr>
     </form>
 
@@ -81,6 +82,7 @@
         {% else %}
         {% set sysinfo="Unknown" %}
         {% endif %}
+       
         <form method="post">
             <input name='currentpageoffset' type='hidden' data-currentpageoffset="{{pageoffset}}" />
             <input name="totalpages" type="hidden" data-totalpages="{{ totalpages }}" />
@@ -101,10 +103,10 @@
                 <td><font class="font12px"> {{ info['description'] }} </font></td>
                 <td><font class="font12px"> {{ info['platform_name'] }} {{ info['platform'] }} </font></td>
                 <td><font class="font12px"> {{ info['swversion'] }} {{ info['osversion'] }} </font></td>
-                <td><font class="font12px"> {% if sysinfo=="Unknown" %}Unknown {% else %}{{ sysinfo['_global']['_switch_role'] }} {% endif %}</font></td>
+                <td><font class="font12px"> {% if sysinfo=="Unknown" %}Unknown {% else %}{{ sysinfo['_global']['_switch_role'] }} {% endif %} </font></td>
                 <td align="right">
                     {% if sysinfo['mm']=="" or sysinfo['mm']=="master"   %}
-                    <input type="button" name="Interfaces" value="Interfaces" class="mobilityInterfaces" id="mobilityInterfaces{{info['id']}}" data-deviceid="{{info['id']}}" onclick="highlightdeviceRow(this);" /><input type="button" name="Roles" value="Roles" id="mobilityRoles{{info['id']}}" data-deviceid="{{info['id']}}" class="mobilityRoles" onclick="highlightdeviceRow(this);" /><input type="button" name="Policies" value="Policies" id="mobilityPolicies{{info['id']}}" data-deviceid="{{info['id']}}" class="mobilityPolicies" onclick="highlightdeviceRow(this);" />{% else %}<font class="font11px">Managed by {{ sysinfo['mm'] }} </font>{% endif %}<input type="button" name="editDevice" value="Edit" data-deviceid="{{info['id']}}" class="editDevice" onclick="highlightdeviceRow(this);"><input type="submit" name="action" value="Delete" class="button" onclick="return confirm('Are you sure you want to delete this item?')">
+                    <input type="button" name="Interfaces" value="Interfaces" class="mobilityInterfaces" id="mobilityInterfaces{{info['id']}}" data-deviceid="{{info['id']}}" onclick="highlightdeviceRow(this);" /><input type="button" name="Roles" value="Roles" id="mobilityRoles{{info['id']}}" data-deviceid="{{info['id']}}" class="mobilityRoles" onclick="highlightdeviceRow(this);" /><input type="button" name="Policies" value="Policies" id="mobilityPolicies{{info['id']}}" data-deviceid="{{info['id']}}" class="mobilityPolicies" onclick="highlightdeviceRow(this);" />{% else %}<font class="font11px">Managed by {{ sysinfo['master'] }}</font>{% endif %}<input type="button" name="editDevice" value="Edit" data-deviceid="{{info['id']}}" class="editDevice" onclick="highlightdeviceRow(this);" {% if va("mobilityaccess","feature")==False %} style="opacity:0.2;pointer-events:none;" {% endif %}><input type="submit" name="action" value="Delete" class="button" onclick="return confirm('Are you sure you want to delete this item?')" {% if va("mobilityaccess","feature")==False %} style="opacity:0.2;pointer-events:none;" {% endif %}>
                     <input type="hidden" name="id" value="{{ info['id'] }}">
 
                 </td>

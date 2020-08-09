@@ -38,6 +38,8 @@ else:
     proc = subprocess.Popen(scriptName, shell=True, stdout=subprocess.PIPE)
     scriptName=globalsconf['appPath'] +"bash/listener.sh"
     proc = subprocess.Popen(scriptName, shell=True, stdout=subprocess.PIPE)
+    scriptName=globalsconf['appPath'] +"bash/telemetry.sh"
+    proc = subprocess.Popen(scriptName, shell=True, stdout=subprocess.PIPE)
 
 # Check whether something has changed in the hardware and update the globalvars config if that's the case
 sysadmin.checksysConf()
@@ -58,6 +60,7 @@ app.jinja_env.globals.update(getService=classes.getService)
 app.jinja_env.globals.update(provisionSwitch=classes.provisionSwitch)
 app.jinja_env.globals.update(sysTime=classes.sysTime)
 app.jinja_env.globals.update(timeDelta=classes.timeDelta)
+app.jinja_env.globals.update(va=classes.verifyAccess)
 
 from views.anycli import anycli
 app.register_blueprint(anycli)
@@ -69,8 +72,6 @@ from views.dynseg import dynseg
 app.register_blueprint(dynseg)
 from views.trackers import trackers
 app.register_blueprint(trackers)
-from views.websockets import websockets
-app.register_blueprint(websockets)
 from views.sysadmin import sysadmin
 app.register_blueprint(sysadmin)
 from views.auth import auth
@@ -79,6 +80,8 @@ from views.ztp import ztp
 app.register_blueprint(ztp)
 from views.topo import topo
 app.register_blueprint(topo)
+from views.tele_metry import tele_metry
+app.register_blueprint(tele_metry)
 
 if (__name__) == "carius": 
     #serve(app,host='0.0.0.0',port=8080,ident="Carius")

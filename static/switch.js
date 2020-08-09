@@ -1,37 +1,5 @@
 // (C) Copyright 2020 Hewlett Packard Enterprise Development LP.
 
-function highlightdeviceRow(e) {
-    var tr = e.parentNode.parentNode;
-    var table = e.parentNode.parentNode.parentNode;
-    //set current backgroundColor
-    var len = table.childNodes.length;
-    for (var i = 0; i < len; i++) {
-        if (table.childNodes[i].nodeType == 1) {
-            table.childNodes[i].style.backgroundColor = 'transparent';
-        }
-    }
-    tr.style.backgroundColor = 'darkorange';
-    var tableTitles = document.getElementsByClassName('tableTitle');
-    for (var i = 0; i < tableTitles.length; i++) {
-        tableTitles[i].style.backgroundColor = 'grey';
-    }
-}
-
-function cleardeviceRow(e) {
-    var tr = e.parentNode.parentNode;
-    var table = e.parentNode.parentNode.parentNode;
-    var len = table.childNodes.length;
-    for (var i = 0; i < len; i++) {
-        if (table.childNodes[i].nodeType == 1) {
-            table.childNodes[i].style.backgroundColor = 'transparent';
-        }
-    }
-    var tableTitles = document.getElementsByClassName('tableTitle');
-    for (var i = 0; i < tableTitles.length; i++) {
-        tableTitles[i].style.backgroundColor = 'grey';
-    }
-}
-
 $(document).ready(function () {
 
     $('.editField input').keyup(function () {
@@ -145,7 +113,7 @@ $(document).ready(function () {
                 progressInfo.innerHTML = "Error finding device information";
             }
         });
-        deviceInfo=JSON.parse(deviceInfo);
+        deviceInfo = JSON.parse(deviceInfo);
         document.getElementById('editIpaddress').value = deviceInfo['ipaddress'];
         document.getElementById('editDescription').value = deviceInfo['description'];
         document.getElementById('titleeditIpaddress').innerHTML = deviceInfo['ipaddress'];
@@ -160,6 +128,20 @@ $(document).ready(function () {
         else {
             document.getElementById("editTopology").checked = false;
         }
+        if (deviceInfo['telemetryenable'] == 1) {
+            document.getElementById("editTelemetry").checked = true;
+        }
+        else {
+            document.getElementById("editTelemetry").checked = false;
+        }
+        if (deviceInfo['ostype'] == "arubaos-switch") {
+            //Telemetry is not supported on arubaos switches, therefore disable the checkbox
+            $('#editTelemetry').attr('disabled', true);
+            document.getElementById("editTelemetry").checked = false;
+        }
+        else {
+              $('#editTelemetry').attr('disabled', false);
+            }
     });
 
     $(".selectInterface").on('change', function () {
@@ -197,6 +179,92 @@ $(document).ready(function () {
         });
     });
 
+
+
+    $('.isOnline').ready(function () {
+        var refresh = async function () {
+            isOnline = document.getElementsByClassName('isOnline');
+            for (var i = 0; i < isOnline.length; i++) {
+                deviceid = isOnline.item(i).getAttribute('data-deviceid');
+                ostype = isOnline.item(i).getAttribute('data-ostype');
+                await $.ajax({
+                    type: "POST",
+                    data: { 'deviceid': deviceid, 'ostype': ostype },
+                    url: "/deviceStatus",
+                    success: function (response) {
+                        response = JSON.parse(response);
+                        // For some strange reason it could be that the status that is received from the call is not for the same device. If that is the case, we have to skip the update
+                        if (response['deviceid'] == deviceid) {
+                            //We can show the status
+
+
+                            if (response['status'] == "Online") {
+                                document.getElementById('isOnline' + deviceid).innerHTML = "<img src='static/images/ok.png' height='15' width='15'>";
+                                $('#isOnline' + deviceid).attr('data-status', '2');
+                                $('#isOnline' + deviceid).attr('data-ostype', ostype);
+                                if (ostype == "arubaos-switch") {
+                                    $("#portaccess" + deviceid).prop('disabled', false);
+                                    $("#portaccess" + deviceid).css('opacity', '1');
+                                    $("#portaccess" + deviceid).css('pointer-events', 'auto');
+                                    $("#monitor" + deviceid).prop('disabled', false);
+                                    $("#monitor" + deviceid).css('opacity', '1');
+                                    $("#monitor" + deviceid).css('pointer-events', 'auto');
+                                }
+                                else {
+                                    $("#monitor" + deviceid).prop('disabled', false);
+                                    $("#monitor" + deviceid).css('opacity', '1');
+                                    $("#monitor" + deviceid).css('pointer-events', 'auto');
+                                }
+                            }
+                            if (response['status'] == "Offline") {
+                                document.getElementById('isOnline' + deviceid).innerHTML = "<img src='static/images/notok.png' height='15' width='15'>";
+                                $('#isOnline' + deviceid).attr('data-status', '0');
+                                $('#isOnline' + deviceid).attr('data-ostype', ostype);
+                                if (ostype == "arubaos-switch") {
+                                    $("#portaccess" + deviceid).prop('disabled', true);
+                                    $("#portaccess" + deviceid).css('opacity', '0.1');
+                                    $("#portaccess" + deviceid).css('pointer-events', 'none');
+                                    $("#monitor" + deviceid).prop('disabled', true);
+                                    $("#monitor" + deviceid).css('opacity', '0.1');
+                                    $("#monitor" + deviceid).css('pointer-events', 'none');
+                                }
+                                else {
+                                    $("#monitor" + deviceid).prop('disabled', true);
+                                    $("#monitor" + deviceid).css('opacity', '0.1');
+                                    $("#monitor" + deviceid).css('pointer-events', 'none');
+                                }
+                            }
+                            if (response['status'] == "Unstable") {
+                                document.getElementById('isOnline' + deviceid).innerHTML = "<img src='static/images/risk.png' height='15' width='15'>";
+                                $('#isOnline' + deviceid).attr('data-status', '1');
+                                $('#isOnline' + deviceid).attr('data-ostype', ostype);
+                                if (ostype == "arubaos-switch") {
+                                    $("#portaccess" + deviceid).prop('disabled', true);
+                                    $("#portaccess" + deviceid).css('opacity', '0.1');
+                                    $("#portaccess" + deviceid).css('pointer-events', 'none');
+                                    $("#monitor" + deviceid).prop('disabled', true);
+                                    $("#monitor" + deviceid).css('opacity', '0.1');
+                                    $("#monitor" + deviceid).css('pointer-events', 'none');
+                                }
+                                else {
+                                    $("#monitor" + deviceid).prop('disabled', true);
+                                    $("#monitor" + deviceid).css('opacity', '0.1');
+                                    $("#monitor" + deviceid).css('pointer-events', 'none');
+                                }
+                            }
+                        }
+                    },
+                    error: function () {
+                        console.log("There is an error obtaining status information");
+                    }
+                })
+            }
+        }
+        setInterval(refresh, 3000);
+        refresh();
+    });
+
+
     $('.deviceStatus').ready(function () {
         var refresh = async function () {
             deviceStatus = document.getElementsByClassName('deviceStatus');
@@ -210,8 +278,8 @@ $(document).ready(function () {
                     success: function (response) {
                         response = JSON.parse(response);
                         if (response['status'] == "Online") {
-                            document.getElementById('deviceStatus' + deviceid).innerHTML = "<img src='static/images/ok.png' data-deviceStatus" + deviceid + "='1' height='15' width='15'>";
-                            $('#deviceStatus' + deviceid).attr('data-status', '1');
+                            document.getElementById('deviceStatus' + deviceid).innerHTML = "<img src='static/images/ok.png' height='15' width='15'>" + deviceid;
+                            $('#deviceStatus' + deviceid).attr('data-status', '2');
                             $('#deviceStatus' + deviceid).attr('data-ostype', ostype);
                             if (ostype == "arubaos-switch") {
                                 $("#portaccess" + deviceid).prop('disabled', false);
@@ -227,8 +295,8 @@ $(document).ready(function () {
                                 $("#monitor" + deviceid).css('pointer-events', 'auto');
                             }
                         }
-                        else {
-                            document.getElementById('deviceStatus' + deviceid).innerHTML = "<img src='static/images/notok.png' data-deviceStatus" + deviceid + "='0' height='15' width='15'>";
+                        if (response['status'] == "Offline") {
+                            document.getElementById('deviceStatus' + deviceid).innerHTML = "<img src='static/images/notok.png' height='15' width='15'>" + deviceid;
                             $('#deviceStatus' + deviceid).attr('data-status', '0');
                             $('#deviceStatus' + deviceid).attr('data-ostype', ostype);
                             if (ostype == "arubaos-switch") {
@@ -245,11 +313,32 @@ $(document).ready(function () {
                                 $("#monitor" + deviceid).css('pointer-events', 'none');
                             }
                         }
-                    }
+                        if (response['status'] == "Unstable") {
+                            document.getElementById('deviceStatus' + deviceid).innerHTML = "<img src='static/images/risk.png' height='15' width='15'>" + deviceid;
+                            $('#deviceStatus' + deviceid).attr('data-status', '1');
+                            $('#deviceStatus' + deviceid).attr('data-ostype', ostype);
+                            if (ostype == "arubaos-switch") {
+                                $("#portaccess" + deviceid).prop('disabled', true);
+                                $("#portaccess" + deviceid).css('opacity', '0.1');
+                                $("#portaccess" + deviceid).css('pointer-events', 'none');
+                                $("#monitor" + deviceid).prop('disabled', true);
+                                $("#monitor" + deviceid).css('opacity', '0.1');
+                                $("#monitor" + deviceid).css('pointer-events', 'none');
+                            }
+                            else {
+                                $("#monitor" + deviceid).prop('disabled', true);
+                                $("#monitor" + deviceid).css('opacity', '0.1');
+                                $("#monitor" + deviceid).css('pointer-events', 'none');
+                            }
+                        }
+                    },
+                    error: function () {
+                        console.log("There is an error obtaining status information");
+                }
                 });
             }
         }
-        setInterval(refresh, 10000);
+        setInterval(refresh, 3000);
         refresh();
     });
 

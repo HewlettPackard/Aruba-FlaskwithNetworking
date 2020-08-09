@@ -28,7 +28,7 @@
                 <td style="background-color:#ffffff;" nowrap><font class='font11px'>{{ items['Client Base Details']['Session Time'] }}</font></td>
                 <td style="background-color:#ffffff;" nowrap width='3%'>
                     <font class='font11px'>
-                        <input type='button' value='Disconnect' id='accessAction' data-auth='macauth' data-port='{{ items['Client Base Details']['Port'] }}' data-deviceid='{{ deviceInfo['id'] }}' data-macaddress='{{ items['Client Base Details']['MAC Address'] }}'>
+                        <input type='button' value='Disconnect' id='accessAction' data-auth='macauth' data-port='{{ items['Client Base Details']['Port'] }}' data-deviceid='{{ deviceInfo['id'] }}' data-macaddress='{{ items['Client Base Details']['MAC Address'] }}' {% if va("switchaccess","feature")== False %} style="opacity:0.2;pointer-events:none;" {% endif %}>
                     </font>
                 </td>
             </tr>
@@ -40,15 +40,15 @@
             {% for items in accessInfo['8021x_Auth_Client_UR_Status_Detail'] %}
 
             <tr>
-                <td nowrap><font class='font11px'>{{ items['Client Base Details']['Port'] }}</font></td>
-                <td nowrap><font class='font11px'>{{ items['Client Base Details']['Client name'] }}</font></td>
-                <td nowrap><font class='font11px'>{{ items['Client Base Details']['Authentication Type'] }}</font></td>
-                <td nowrap><font class='font11px'>{{ items['Client Base Details']['Client Status'] }}</font></td>
-                <td nowrap><font class='font11px'>{{ items['Client Base Details']['MAC Address'] }}</font></td>
-                <td nowrap><font class='font11px'>{{ items['Client Base Details']['Session Time'] }}</font></td>
-                <td nowrap width='3%'>
+                <td style="background-color:#ffffff;" nowrap><font class='font11px'>{{ items['Client Base Details']['Port'] }}</font></td>
+                <td style="background-color:#ffffff;" nowrap><font class='font11px'>{{ items['Client Base Details']['Client name'] }}</font></td>
+                <td style="background-color:#ffffff;" nowrap><font class='font11px'>{{ items['Client Base Details']['Authentication Type'] }}</font></td>
+                <td style="background-color:#ffffff;" nowrap><font class='font11px'>{{ items['Client Base Details']['Client Status'] }}</font></td>
+                <td style="background-color:#ffffff;" nowrap><font class='font11px'>{{ items['Client Base Details']['MAC Address'] }}</font></td>
+                <td style="background-color:#ffffff;" nowrap><font class='font11px'>{{ items['Client Base Details']['Session Time'] }}</font></td>
+                <td style="background-color:#ffffff;" nowrap width='3%'>
                     <font class='font11px'>
-                        <input type='button' value='Disconnect' id='accessAction' data-auth='dot1x' data-port='{{ items['Client Base Details']['Port'] }}' data-deviceid='{{ deviceInfo['id'] }}' data-macaddress='{{ items['Client Base Details']['MAC Address'] }}'>
+                        <input type='button' value='Disconnect' id='accessAction' data-auth='dot1x' data-port='{{ items['Client Base Details']['Port'] }}' data-deviceid='{{ deviceInfo['id'] }}' data-macaddress='{{ items['Client Base Details']['MAC Address'] }}' {% if va("switchaccess","feature")== False %} style="opacity:0.2;pointer-events:none;" {% endif %}>
                     </font>
                 </td>
             </tr>

@@ -10,7 +10,7 @@
 {% set pagename = "User administration" %}
 {% include 'navbar.html' %}
 
-{% set roleMap = ['Superuser','Administrator','Operator','Read only'] %}
+
 <div id="maincontainer">
     <table class="tablenoborder">
         <form method="post">
@@ -21,7 +21,7 @@
                 <td width="20%"><font class="font13pxgrey">Password</font></td>
                 <td width="20%" align="left" nowrap><font class="font13pxgrey">e-Mail address</font></td>
                 <td width="20%"><font class="font13pxgrey">Role</font></td>
-                <td width="15%" align="right"><input type="submit" class="button" value="Add user" onclick="return setHidden('Add user');"></td>
+                <td width="15%" align="right"><input type="submit" class="button" value="Add user" onclick="return setHidden('Add user');" {% if va("sysuseraccess","feature")==False %} style="opacity:0.2;pointer-events:none;" {% endif %}></td>
             </tr>
         </form>
         <tbody>
@@ -34,10 +34,9 @@
                     <td><div class="field"><input type="text" name="email" class="input"></div></td>
                     <td>
                         <select name="role">
-                            <option value="0">Superuser</option>
-                            <option value="1">Administrator</option>
-                            <option value="2">Operator</option>
-                            <option value="3">Read only</option>
+                            {% for roleitems in roleresult %}
+                            <option value="{{ roleitems['id'] }}">{{ roleitems ['name'] }}</option>
+                            {% endfor %}
                         </select>
                     </td>
                     <td align="right">
@@ -54,6 +53,7 @@
             <tr>
                 <form method="post">
                     <input type="hidden" name="id" value="{{ info['id'] }}">
+                    <input type="hidden" name="orgrole" value="{{ info['role'] }}">
                     <td><font class="font12px">{{ loop.index }}</font></td>
                     <td>
                         <div class="field">
@@ -73,10 +73,9 @@
                     <td>
                         <div class="field">
                             <select name="role" {% if info['username']=="admin" %} disabled {% endif %}>
-                                <option value="0" {% if info['role']=="0" %}selected{% endif %}>Superuser</option>
-                                <option value="1" {% if info['role']=="1" %}selected{% endif %}>Administrator</option>
-                                <option value="2" {% if info['role']=="2" %}selected{% endif %}>Operator</option>
-                                <option value="3" {% if info['role']=="3" %}selected{% endif %}>Read only</option>
+                                {% for roleitems in roleresult %}
+                                <option value="{{ roleitems['id'] }}" {% if roleitems['id']==info['role'] %} selected {% endif %}>{{ roleitems ['name'] }}</option>
+                                {% endfor %}
                             </select>
                         </div>
                     </td>
@@ -94,9 +93,9 @@
                     <td><font class="font12px">{{ info['username'] }}</font></td>
                     <td><font class="font12px">xxxxxxxxxxx</font></td>
                     <td><font class="font12px">{{ info['email'] }}</font></td>
-                    <td><font class="font12px">{{ roleMap[info['role'] | int] }}</font></td>
+                    <td><font class="font12px">{% for roleitems in roleresult %} {% if info['role'] == roleitems['id'] %}{{ roleitems['name'] }}{% endif %}{% endfor %}</font></td>
                     <td align="right">
-                        <input type="submit" name="action" value="Edit" class="button" /><input type="submit" name="action" value="Delete" {% if info['username']=="admin" %} disabled {% endif%} class="button" onclick="return confirm('Are you sure you want to delete this item?')">
+                        <input type="submit" name="action" value="Edit" class="button" {% if va("sysuseraccess","feature")==False %} style="opacity:0.2;pointer-events:none;" {% endif %}/><input type="submit" name="action" value="Delete" {% if info['username']=="admin" %} disabled {% endif%} class="button" onclick="return confirm('Are you sure you want to delete this item?')" {% if va("sysuseraccess","feature")==False %} style="opacity:0.2;pointer-events:none;" {% endif %}>
                         <input type="hidden" name="id" value="{{  info['id'] }}">
 
                     </td>

@@ -158,11 +158,14 @@ def getMCinfo(cookie,deviceid):
     mcresult=getRESTmc(cookie,"configuration/object/sys_info?UIDARUBA=",deviceid) 
     mcrole=getRESTmc(cookie,"configuration/showcommand?command=show+roleinfo&UIDARUBA=",deviceid)
     if mcrole['_data'][0]=="MD":
-        mcresult['mm']=mcrole['_data'][1]
+        # This is a managed device, we need to get the mobility master IP address
+        mcmaster=getRESTmc(cookie,"configuration/object/masterip?config_path=%2Fmm&UIDARUBA=",deviceid)
+        mcresult['master']=mcmaster['_data']['masterip']['masterip_val']
     elif mcrole['_data'][0]=="master":
         # This is a master. Need to get the md's from the Master
         mcresult['mm']=mcrole['_data'][0]
         mcresult['cluster']=getRESTmc(cookie,"configuration/object/cluster_prof?config_path=%2Fmd&UIDARUBA=",deviceid)
+        mcresult['master']=""
     else:
         mcresult['mm']=""
     return mcresult

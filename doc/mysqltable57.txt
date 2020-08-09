@@ -14,7 +14,10 @@ CREATE TABLE IF NOT EXISTS devices (
   username text,
   password text,
   secinfo text,
-  websocketconnect int(11) UNSIGNED,
+  telemetryenable int(11) UNSIGNED,
+  switchstatus int(11) UNSIGNED,
+  subscriptions text,
+  subscriber text,
   ostype text,
   platform text,
   osversion text,
@@ -151,6 +154,7 @@ CREATE TABLE `ztpdevices` (
   `ztpdhcp` int(11) NOT NULL,
   `adminuser` text NOT NULL,
   `adminpassword` text NOT NULL,
+  `ztpvlan` text NOT NULL,
   PRIMARY KEY (`id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=latin1;
 
@@ -196,5 +200,18 @@ CREATE TABLE `topology` (
   PRIMARY KEY (`id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=latin1;
 
+DROP TABLE IF EXISTS `sysrole`;
+CREATE TABLE `sysrole` (
+  `id` BIGINT(20) UNSIGNED NOT NULL AUTO_INCREMENT, 
+  `name` text NOT NULL,
+  `accessrights` text NOT NULL,
+  `status` int NOT NULL,
+   PRIMARY KEY (`id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+
 INSERT INTO `sysuser` (`username`, `email`,`password`,`cookie`,`role`) VALUES
-('admin', 'admin@carius.org', '', '','0');
+('admin', 'admin@carius.org', '', '','1');
+
+INSERT INTO `sysrole` (`name`, `accessrights`, `status`) VALUES
+('Administrator', '{\"devices\": \"on\", \"switchaccess\": \"2\", \"mobilityaccess\": \"2\", \"clearpassaccess\": \"2\", \"ztp\": \"on\", \"ztpimageaccess\": \"2\", \"ztptemplateaccess\": \"2\", \"ztpdeviceaccess\": \"2\", \"topology\": \"on\", \"telemetry\": \"on\", \"telemetrymonitoraccess\": \"2\", \"telemetrysubscriptionaccess\": \"2\", \"ubt\": \"on\", \"ubtprofileaccess\": \"2\", \"ubtserviceaccess\": \"2\", \"trackers\": \"on\", \"dhcptrackeraccess\": \"2\", \"snmptrackeraccess\": \"2\", \"syslogtrackeraccess\": \"2\", \"tools\": \"on\", \"anycliaccess\": \"2\", \"administration\": \"on\", \"sysuseraccess\": \"2\", \"sysroleaccess\": \"2\", \"sysadminaccess\": \"2\", \"servicesstatusaccess\": \"2\"}', 1);
+

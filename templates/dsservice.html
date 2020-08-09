@@ -22,7 +22,7 @@
                 <td width="10%" align="left" nowrap><font class="font13pxgrey">Profile</font></td>
                 <td width="30%"><font class="font13pxgrey">Policies (ACL's) (Authentication source(s)) (Authentication method(s))</font></td>
                 <div id="progress" style="display:block;"><td width="10%"></td></div>
-                <td width="10%" align="right"><input type="submit" class="button" value="Add service" onclick="return setHidden('Add service');"></td>
+                <td width="10%" align="right"><input type="submit" class="button" value="Add service" onclick="return setHidden('Add service');" {% if va("ubtserviceaccess","feature")==False %} style="opacity:0.2;pointer-events:none;" {% endif %}></td>
             </tr>
         </form>
 
@@ -63,7 +63,7 @@
                 </td>
                 <div id="progress" style="display:block;"><td width="10%"></td></div>
                 <td align="right">
-                    <input type="button" name="provisionService" value="Provision" class="provisionService" id="{{info['id']}}"><input type="submit" name="action" value="Edit" class="button"><input type="submit" name="action" value="Delete" class="button" onclick="return confirm('Are you sure you want to delete this item?')">
+                    <input type="button" name="provisionService" value="Provision" class="provisionService" id="{{info['id']}}" {% if va("ubtserviceaccess","feature")==False %} style="opacity:0.2;pointer-events:none;" {% endif %}><input type="submit" name="action" value="Edit" class="button" {% if va("ubtserviceaccess","feature")==False %} style="opacity:0.2;pointer-events:none;" {% endif %}><input type="submit" name="action" value="Delete" class="button" onclick="return confirm('Are you sure you want to delete this item?')" {% if va("ubtserviceaccess","feature")==False %} style="opacity:0.2;pointer-events:none;" {% endif %}>
                     <input type="hidden" name="id" value="{{ info['id'] }}">
 
                 </td>

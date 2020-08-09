@@ -11,7 +11,7 @@ import classes.classes as classes
 
 @trackers.route("/snmptracker",methods=['GET','POST'])
 def snmptracker():
-    authOK=classes.checkAuth()
+    authOK=classes.checkAuth("snmptrackeraccess","submenu")
     if authOK!=0:
         sysvars=classes.globalvars()
         formresult=request.form
@@ -27,7 +27,7 @@ def snmptracker():
 
 @trackers.route("/dhcptracker",methods=['GET','POST'])
 def dhcptracker():
-    authOK=classes.checkAuth()
+    authOK=classes.checkAuth("dhcptrackeraccess","submenu")
     if authOK!=0:
         sysvars=classes.globalvars()
         formresult=request.form
@@ -43,7 +43,7 @@ def dhcptracker():
 
 @trackers.route("/syslog",methods=['GET','POST'])
 def syslog():
-    authOK=classes.checkAuth()
+    authOK=classes.checkAuth("syslogtrackeraccess","submenu")
     if authOK!=0:
         sysvars=classes.globalvars()
         formresult=request.form
@@ -71,6 +71,8 @@ def updateDHCPtracker():
     queryStr="select COUNT(*) as totalentries from dhcptracker where dhcptype like '%{}%' AND information like '%{}%'".format(formresult['searchType'],formresult['searchInfo'])
     totalentries=classes.sqlQuery(queryStr,"selectone")
     response['totalentries']=totalentries['totalentries']
+    # Verify access
+    response["accessright"]=classes.verifyAccess("dhcptrackeraccess", "feature")
     return json.dumps(response)
 
 @trackers.route("/updateSNMPtracker",methods=['GET','POST'])
@@ -87,6 +89,8 @@ def updateSNMPtracker():
     queryStr="select COUNT(*) as totalentries from snmptracker where source like '%{}%' AND version like '%{}%' AND community like '%{}%' AND information like '%{}%'".format(formresult['searchSource'],formresult['searchVersion'],formresult['searchCommunity'],formresult['searchInfo'])
     totalentries=classes.sqlQuery(queryStr,"selectone")
     response['totalentries']=totalentries['totalentries']
+    # Verify access
+    response["accessright"]=classes.verifyAccess("snmptrackeraccess", "feature")
     return json.dumps(response)
 
 @trackers.route("/updateSyslogtracker",methods=['GET','POST'])
@@ -103,6 +107,8 @@ def updateSyslogtracker():
     queryStr="select COUNT(*) as totalentries from syslog where source like '%{}%' AND facility like '%{}%'AND severity like '%{}%' AND information like '%{}%'".format(formresult['searchSource'],formresult['searchFacility'],formresult['searchSeverity'],formresult['searchInfo'])
     totalentries=classes.sqlQuery(queryStr,"selectone")
     response['totalentries']=totalentries['totalentries']
+    # Verify access
+    response["accessright"]=classes.verifyAccess("syslogtrackeraccess", "feature")
     return json.dumps(response)
 
 @trackers.route("/getTrackercount",methods=['GET','POST'])

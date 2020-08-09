@@ -4,12 +4,21 @@
 <link href="static/stylesheet.css" rel="stylesheet" />
 <script type="text/javascript" src="static/main.js"></script>
 <script type="text/javascript" src="static/sysconf.js"></script>
+
+
+
+
 {% endblock %}
 
 {% block content %}
 {% set pagename = "System configuration" %}
 {% include 'navbar.html' %}
 
+{% if va("sysadminaccess","feature")==False %}
+{% set disabled=" disabled "%}
+{% else %}
+{% set disabled="  " %}
+{% endif %}
 
 <!--
 netInfo is dictionary containing a list of variables:
@@ -21,81 +30,84 @@ netInfo is dictionary containing a list of variables:
 <div id="maincontainer">
     <br />
     <table class="tablewithborder">
-        <form method="post">
+        <form method="post" id="sysadminform">
             <input type="hidden" name="orig_secret_key" value="{{ sysvars['secret_key'] }}" />
             <input type="hidden" name="orig_ztppassword" value="{{ sysvars['ztppassword'] }}" />
             <tr style="background-color:grey;"><td colspan="6"><font class="font13pxwhite"><center>System configuration</center></font></td></tr>
             <tr>
                 <td><font class="font12pxwhite">Idle timeout (300-3600 seconds)</font></td>
-                <td class="whiteBG"><input type="number" name="idle_timeout" min="300" max="3600" value="{{sysvars['idle_timeout']}}" /><font class="font11px"> seconds</font></td>
+                <td class="whiteBG"><input type="number" name="idle_timeout" min="300" max="3600" value="{{sysvars['idle_timeout']}}" {{ disabled }} /><font class="font11px"> seconds</font></td>
                 <td><font class="font12pxwhite">Landing page</font></td>
                 <td class="whiteBG">
-                    <select name='landingpage' id='landingpage'>
+                    <select name='landingpage' id='landingpage' {{ disabled }}>
                         <option value="/">Select</option>
                         <option value='switches' {% if sysvars['landingpage']=='switches' %} selected {% endif %}>Switches</option>
                         <option value='clearpass' {% if sysvars['landingpage']=='clearpass' %} selected {% endif %}>ClearPass</option>
                         <option value='mobility' {% if sysvars['landingpage']=='mobility' %} selected {% endif %}>Mobility</option>
                         <option value='topology' {% if sysvars['landingpage']=='topology' %} selected {% endif %}>Topology</option>
+                        <option value='telemetry' {% if sysvars['landingpage']=='telemetry' %} selected {% endif %}>Telemetry</option>
                         <option value='ztpdevice' {% if sysvars['landingpage']=='ztpdevice' %} selected {% endif %}>ZTP devices</option>
                         <option value='ztptemplate' {% if sysvars['landingpage']=='ztptemplate' %} selected {% endif %}>ZTP templates</option>
                     </select>
                 </td>
                 <td><font class="font12pxwhite">Secret Hashing Key (exactly 16 characters)</font></td>
                 <td class="whiteBG">
-                    <input type="password" maxlength="16" name="secret_key" value="{{ sysvars['secret_key'] }}" id="secret_key" />
+                    <input type="password" maxlength="16" name="secret_key" value="{{ sysvars['secret_key'] }}" id="secret_key" {{ disabled }} />
                 </td>
             </tr>
             <tr>
                 <td><font class="font12pxwhite">Purge DHCP Tracker information after</font></td>
-                <td class="whiteBG"><input type="number" name="retain_dhcp" value="{{sysvars['retain_dhcp']}}" /><font class="font11px"> days</font></td>
+                <td class="whiteBG"><input type="number" name="retain_dhcp" value="{{sysvars['retain_dhcp']}}" min="1" max="15" {{disabled }} /><font class="font11px"> days</font></td>
                 <td><font class="font12pxwhite">Purge SNMP Tracker information after</font></td>
-                <td class="whiteBG"><input type="number" name="retain_snmp" value="{{sysvars['retain_snmp']}}" /><font class="font11px"> days</font></td>
+                <td class="whiteBG"><input type="number" name="retain_snmp" value="{{sysvars['retain_snmp']}}" min="1" max="15" {{disabled }} /><font class="font11px"> days</font></td>
                 <td><font class="font12pxwhite">Purge Syslog information after</font></td>
-                <td class="whiteBG"><input type="number" name="retain_syslog" value="{{sysvars['retain_syslog']}}" /><font class="font11px"> days</font></td>
+                <td class="whiteBG"><input type="number" name="retain_syslog" value="{{sysvars['retain_syslog']}}" min="1" max="15" {{disabled }} /><font class="font11px"> days</font></td>
             </tr>
             <tr>
                 <td><font class="font12pxwhite">Purge ZTP log information after</font></td>
-                <td class="whiteBG"><input type="number" name="retain_ztplog" value="{{sysvars['retain_ztplog']}}" /><font class="font11px"> days</font></td>
+                <td class="whiteBG"><input type="number" name="retain_ztplog" value="{{sysvars['retain_ztplog']}}" min="1" max="15" {{disabled }} /><font class="font11px"> days</font></td>
                 <td><font class="font12pxwhite">Purge Listener log information after</font></td>
-                <td class="whiteBG"><input type="number" name="retain_listenerlog" value="{{sysvars['retain_listenerlog']}}" /><font class="font11px"> days</font></td>
+                <td class="whiteBG"><input type="number" name="retain_listenerlog" value="{{sysvars['retain_listenerlog']}}" min="1" max="15" {{disabled }} /><font class="font11px"> days</font></td>
                 <td><font class="font12pxwhite">Purge Topology log information after</font></td>
-                <td class="whiteBG"><input type="number" name="retain_topologylog" value="{{sysvars['retain_topologylog']}}" /><font class="font11px"> days</font></td>
+                <td class="whiteBG"><input type="number" name="retain_topologylog" value="{{sysvars['retain_topologylog']}}" min="1" max="15" {{disabled }} /><font class="font11px"> days</font></td>
             </tr>
             <tr>
                 <td><font class="font12pxwhite">Purge Cleanup log information after</font></td>
-                <td class="whiteBG"><input type="number" name="retain_cleanuplog" value="{{sysvars['retain_cleanuplog']}}" /><font class="font11px"> days</font></td>
-                <td colspan="4">&nbsp;</td>
-                
+                <td class="whiteBG"><input type="number" name="retain_cleanuplog" value="{{sysvars['retain_cleanuplog']}}" min="1" max="15" {{disabled }} /><font class="font11px"> days</font></td>
+                <td><font class="font12pxwhite">Purge Telemetry log information after</font></td>
+                <td class="whiteBG"><input type="number" name="retain_telemetrylog" value="{{sysvars['retain_telemetrylog']}}" min="1" max="15" {{disabled }} /><font class="font11px"> days</font></td>
+                <td colspan="2">&nbsp;</td>
+
             </tr>
             <tr>
                 <td><font class="font12pxwhite">IPAM System</font></td>
                 <td class="whiteBG">
-                    <select name="ipamsystem" id="ipamsystem" onchange="ipamConf();">
+                    <select name="ipamsystem" id="ipamsystem" onchange="ipamConf();" {{disabled }}>
                         <option value="">Select</option>
                         <option name="PHPIPAM" {% if sysvars['ipamsystem']=="PHPIPAM" %} selected {% endif %}>PHPIPAM</option>
                         <option name="Infoblox" {% if sysvars['ipamsystem']=="Infoblox" %} selected {% endif %}>Infoblox</option>
                     </select>
                 </td>
-                <td colspan="2"><font class="font12pxwhite">Activate IPAM for ZTP</font><input type="checkbox" name="ipamenabled" id="ipamenabled" value="1" {% if sysvars['ipamenabled']=="1" %} checked {% endif %} /></td>
+                <td colspan="2"><font class="font12pxwhite">Activate IPAM for ZTP</font><input type="checkbox" name="ipamenabled" id="ipamenabled" value="1" {% if sysvars['ipamenabled']=="1" %} checked {% endif %} {{disabled }} /></td>
                 <td colspan="2"><div id="ipamStatus"></div></td>
             </tr>
 
 
             <tr id="ipamtr" {% if sysvars['ipamsystem']=="PHPIPAM" or sysvars['ipamsystem']=="Infoblox" %} style="display:table-row;" {% else %} style="display:none;" {% endif %}>
                 <td><font class='font12pxwhite'>IPAM IP address</font></td>
-                <td class="whiteBG"><input type="text" name="ipamipaddress" id="ipamipaddress" value="{{ sysvars['ipamipaddress'] }}" /></td>
+                <td class="whiteBG"><input type="text" name="ipamipaddress" id="ipamipaddress" value="{{ sysvars['ipamipaddress'] }}" {{disabled }} /></td>
                 <td><font class='font12pxwhite'>IPAM username</font></td>
-                <td class="whiteBG"><input type='text' name='ipamuser' id="ipamuser" value='{{ sysvars['ipamuser'] }}' /></td>
+                <td class="whiteBG"><input type='text' name='ipamuser' id="ipamuser" value='{{ sysvars['ipamuser'] }}' {{disabled }} /></td>
                 <td><font class='font12pxwhite'>IPAM password</font></td>
-                <td class="whiteBG"><input type='password' maxlength='16' name='ipampassword' id="ipampassword" value='{{ sysvars['ipampassword'] }}' /></td>
+                <td class="whiteBG"><input type='password' maxlength='16' name='ipampassword' id="ipampassword" value='{{ sysvars['ipampassword'] }}' {{disabled }} /></td>
             </tr>
 
             <tr id="phpipamtr" {% if sysvars['ipamsystem']=="PHPIPAM" %} style="display:table-row;" {% else %} style="display:none;" {% endif %}>
                 <td><font class='font12pxwhite'>PHPIPAM APP ID</font></td>
-                <td><input type='text' name='phpipamappid' id="phpipamappid" value='{{ sysvars['phpipamappid'] }}' /></td>
+                <td><input type='text' name='phpipamappid' id="phpipamappid" value='{{ sysvars['phpipamappid'] }}' {{disabled }} /></td>
                 <td><font class='font12pxwhite'>Token type</font></td>
                 <td>
-                    <select name='phpipamauth' id='phpipamauth'>
+                    <select name='phpipamauth' id='phpipamauth' {{disabled }}>
                         <option value='http' {% if sysvars['phpipamauth']=='http' %} selected {% endif %}>Token</option>
                         <option value='https' {% if sysvars['phpipamauth']=='https' %} selected {% endif %}>SSL</option>
                     </select>
@@ -104,14 +116,14 @@ netInfo is dictionary containing a list of variables:
             </tr>
             <tr>
                 <td><font class='font12pxwhite'>ZTP user password</font></td>
-                <td><input type='password' name='ztppassword' id="ztppassword" value='{{ sysvars['ztppassword'] }}' /></td>
+                <td><input type='password' name='ztppassword' id="ztppassword" value='{{ sysvars['ztppassword'] }}' {{disabled }} /></td>
 
                 <td colspan='4'></td>
             </tr>
 
             <tr>
                 <td colspan="6" align="center" class="whiteBG">
-                    <button name="action" value="Submit changes" class="button" id="submitChanges">Submit changes</button>
+                    <button name="action" value="Submit changes" class="button" id="submitChanges" {{disabled }} >Submit changes</button>
                 </td>
             </tr>
         </form>
@@ -177,5 +189,5 @@ netInfo is dictionary containing a list of variables:
         {% endfor %}
 
     </table>
-    </div>
+</div>
     {% endblock %}

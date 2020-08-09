@@ -10,7 +10,7 @@ import classes.classes as classes
 
 @anycli.route("/anycli", methods=['GET','POST'])
 def index ():
-    authOK=classes.checkAuth()
+    authOK=classes.checkAuth("anycliaccess","submenu")
     if authOK!=0:
         sysvars=classes.globalvars()
         try:
@@ -33,6 +33,9 @@ def index ():
         else:
             cmdResult=[]
             cmdContent=[]
-        return render_template("anycli.html", formresult=formresult, devicelist=devicelist, cmdResult=cmdResult, cmdContent=cmdContent, authOK=authOK, sysvars=sysvars)
+        if authOK['hasaccess']==True:
+            return render_template("anycli.html", formresult=formresult, devicelist=devicelist, cmdResult=cmdResult, cmdContent=cmdContent, authOK=authOK, sysvars=sysvars)
+        else:
+            return render_template("noaccess.html",authOK=authOK, sysvars=sysvars)
     else:
         return render_template("login.html")

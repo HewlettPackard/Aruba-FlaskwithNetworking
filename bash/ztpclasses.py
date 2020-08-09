@@ -726,8 +726,8 @@ def ztpupdate():
                         queryStr="update ztpdevices set ztpstatus='{}' where id='{}'".format(ztpstatus,items['id'])
                         cursor.execute(queryStr)
                 except:
-                    logEntry(items['id'],"Stage 6: Error pushing configuration template to running configuration {}".format(items['ipaddress']), cursor)
-                    ztplog.write('{}: Stage 6: Unable to push the configuration template to the running configuration of {} ({}). \n'.format(datetime.now(),items['ipaddress'],items['name']))
+                    logEntry(items['id'],"Stage 6: Error pushing configuration template to running configuration for {}, IP address might have changed.".format(items['ipaddress']), cursor)
+                    ztplog.write('{}: Stage 6: Unable to push the configuration template to the running configuration of {} ({}), IP address might have changed. \n'.format(datetime.now(),items['ipaddress'],items['name']))
             else:
                 logEntry(items['id'],"Stage 6: There is no template configured for {}".format(items['ipaddress']), cursor)
                 ztplog.write('{}: Stage 6: There is no template configured for {} ({}). \n'.format(datetime.now(),items['ipaddress'],items['name']))
@@ -840,17 +840,43 @@ def getRESTcxIP(ip,username,password,url):
     baseurl="https://{}/rest/v1/".format(ip)
     credentials={'username': username,'password': password }
     try:
-        sessionid.post(baseurl + "login", params=credentials, verify=False, timeout=5)
-        response = sessionid.get(baseurl + url, verify=False, timeout=10)
+        response=sessionid.post(baseurl + "login", params=credentials, verify=False, timeout=5)
+        if "session limit reached" in response.text:
+        #    # We need to clear the https sessions. For some reason there are too many logins
+            cs=clearSessions(ip, username,password)
+            if cs=="ok":
+                sessionid.post(baseurl + "login", params=credentials, verify=False, timeout=5)
+                response = sessionid.get(baseurl + url, verify=False, timeout=10)
+                sessionid.post(baseurl + "logout", verify=False, timeout=5)
+                response=json.loads(response.content)
+                return response
+
+            else:
+                response={}
+                ztplog.write('{}: Error obtaining information from {} ({}) through REST GET. \n'.format(datetime.now(),items['ipaddress'],items['name']))
+                pass
+        else:
+            response = sessionid.get(baseurl + url, verify=False, timeout=10)
         try:
             # If the response contains information, the content is converted to json format
             response=json.loads(response.content)
         except:
+            try:
+                sessionid.post(baseurl + "logout", verify=False, timeout=5)
+                return {}
+            except ConnectionError as e:
+                ztplog.write('{}: Connection error from {} ({}) through REST GET: {} \n'.format(datetime.now(),items['ipaddress'],items['name']),e)
+                return {}
+        try:
             sessionid.post(baseurl + "logout", verify=False, timeout=5)
-            response={}
-        sessionid.post(baseurl + "logout", verify=False, timeout=5)
+        except ConnectionError as e:
+            ztplog.write('{}: Connection error from {} ({}) through REST GET: {} \n'.format(datetime.now(),items['ipaddress'],items['name']),e)
+            return {}
+    except ConnectionError as e:
+        ztplog.write('{}: Connection error from {} ({}) through REST GET: {} \n'.format(datetime.now(),items['ipaddress'],items['name']),e)
+        return {}
     except:
-        response={}
+        return {}
     return response
 
 def putRESTcxIP(ip,username,password,url,parameters):
@@ -858,7 +884,7 @@ def putRESTcxIP(ip,username,password,url,parameters):
     baseurl="https://{}/rest/v1/".format(ip)
     credentials={'username': username,'password': password }
     try:
-        sessionid.post(baseurl + "login", params=credentials, verify=False, timeout=5)
+        response = sessionid.post(baseurl + "login", params=credentials, verify=False, timeout=5)
         response = sessionid.put(baseurl + url, data=parameters, verify=False, timeout=10)
         sessionid.post(baseurl + "logout", verify=False, timeout=5)
         return response.status_code
@@ -941,7 +967,6 @@ def checkVRF(ip,username,password):
     # Check the management VRF IP address against the configured IP address. If there is a match we need to return the mgmt VRF, else the default VRF
     url="system?attributes=mgmt_intf%2Cmgmt_intf_status&depth=2"
     response=getRESTcxIP(ip,username,password,url)
-    print("response in check vrf is {}".format(response))
     if response:
         if "ip" in response['mgmt_intf_status']:
             if response['mgmt_intf_status']['ip']==ip:
@@ -963,7 +988,7 @@ def checkztpIPaddress(ztpip,netmask,macaddress,cursor):
                     # Check whether the IP address of the ztp device is in the same subnet as the IP address in the template
                     # First, extract the IP address. Note that this is unstructured data, so we need to split and create a list
                     templateIP=line.split(" ")
-                    devIP=templateIP[2].split("/")
+                    devIP=templateIP[len(templateIP)-1].split("/")
                     if ipaddress.ip_address(devIP[0]) in ipaddress.ip_network(ztpip + "/" + netmask,strict=False):
                         # There is an IP address configured in the template...
                         return devIP[0]
@@ -996,19 +1021,14 @@ def checkztpUser(ip,password):
 def checkifChanged(deviceIP,ztpip,password,id,cursor):
     url="system?attributes=platform_name"
     # First check if the IP address has changed
-    print("Device IP is: {}".format(deviceIP))
-    print("ZTP IP is: {}".format(ztpip))
-    print("Password is: {}".format(password))
     if (deviceIP==ztpip):
         adminResult=getRESTcxIP(ztpip,"admin",password,url)
         ztpResult=getRESTcxIP(ztpip,"ztpuser",password,url)
         if adminResult:
             # Nothing has changed
-            print("Nothing has changed")
             return 0
         elif ztpResult:
             # The configuration has been pushed and the admin user has changed
-            print("Configuration has been pushed and the admin user has changed")
             return 1
         else:
            return 0
@@ -1018,22 +1038,32 @@ def checkifChanged(deviceIP,ztpip,password,id,cursor):
         # There is a third situation, where the configuration has not been pushed, so the IP address of the device has not changed
         # This means that we also have to check admin access on the ztp ip address
         ztpinitResult=getRESTcxIP(ztpip,"admin",password,url)
-        print("Admin result is {}".format(adminResult))
-        print("Ztpuser result is {}".format(ztpResult))
-        print("ztp init result is {}".format(ztpinitResult))
         if ztpinitResult:
             # Nothing has changed
-            print("Nothing has changed")
             return 0
         elif adminResult:
             # IP address has changed, but admin still has access
-            print("IP address has changed but admin still has access")
             return 2
         elif ztpResult:
             # IP address and admin access has changed
-            print("IP address and admin access has changed")
             return 3
         else:
-            print("Something went wrong checking there has to be a change of IP address, option 2 or 3 have to be returned")
             return 4
     return 0
+
+def clearSessions(ipaddr, username,password):
+    try:
+        client=SSHClient()
+        client.set_missing_host_key_policy(AutoAddPolicy)
+        client.connect(ipaddr,username=username,password=password, timeout=5)
+        # Logging in could take some time. Pause a bit
+        connection=client.invoke_shell()
+        connection.send("\n")
+        time.sleep(10)
+        connection.send("https session close all \n")
+        time.sleep(3)
+        connection.close()
+        client.close()
+        return "ok"
+    except:
+        return "nok"

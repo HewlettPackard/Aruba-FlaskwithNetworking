@@ -46,67 +46,68 @@
 
                     <td colspan="2"></td>
                     <td align="left" valign="top">
-                        <input type="text" name="searchconfigDescription" id="searchconfigDescription" value="{{ searchconfigDescription }}" size="30">
+                        <input type="text" name="searchdescription" id="searchdescription" value="{{ searchdescription }}" size="30">
                     </td>
                     <td align="left" valign="top">
-                        <select name="backuptype" id="backuptype" onchange="changebackupType(this);">
+                        <select name="searchbackuptype" id="searchbackuptype" onchange="changeSearch();">
                             <option value="">Select</option>
-                            <option value="Running configuration" {% if backuptype=='Running configuration' %} selected {% endif %}>Running configuration</option>
-                            <option value="Startup configuration" {% if backuptype=='Startup configuration' %} selected {% endif %}>Startup configuration</option>
+                            <option value="Running configuration" {% if searchbackuptype=='Running configuration' %} selected {% endif %}>Running configuration</option>
+                            <option value="Startup configuration" {% if searchbackuptype=='Startup configuration' %} selected {% endif %}>Startup configuration</option>
                         </select>
                     </td>
                     <td align="left" valign="top">
-                        <select name="masterbackup" id="masterbackup" onchange="changemasterBackup(this);">
+                        <select name="searchmasterbackup" id="searchmasterbackup" onchange="changeSearch();">
                             <option value="">Select</option>
-                            <option value="0" {% if masterbackup=='0' %} selected {% endif %}>Master backup</option>
-                            <option value="1" {% if masterbackup=='1' %} selected {% endif %}>Branch backup</option>
+                            <option value="Master backup" {% if searchmasterbackup=='Master backup' %} selected {% endif %}>Master backup</option>
+                            <option value="Branch backup" {% if searchmasterbackup=='Branch backup' %} selected {% endif %}>Branch backup</option>
                         </select>
                     </td>
                     <td align="left" valign="top">
-                        <select name="searchOwner" id="searchOwner" onchange="changeOwner(this);">
+                        <select name="searchowner" id="searchowner" onchange="changeSearch();">
                             <option value="">Select</option>
                             {% for owneritems in ownerinfo %}
-                            <option value="{{ owneritems['owner'] }}" {% if searchOwner==owneritems['owner'] %} selected {% endif %}>{{ owneritems['owner'] }}</option>
+                            <option value="{{ owneritems['owner'] }}" {% if searchowner==owneritems['owner'] %} selected {% endif %}>{{ owneritems['owner'] }}</option>
                             {% endfor %}
                         </select>
                     </td>
 
                     <td align="right">
-                        <input type="submit" class="button" value="Running configuration backup" id="runningBackup"><input type="submit" class="button" value="Startup configuration backup" id="startupBackup"><input type="submit" name="searchConfig" id="searchConfig" value="Search" class="button">
+                        
+                        <input type="submit" class="button" value="Running configuration backup" id="runningBackup" {% if va("switchaccess","feature")== False %} style="opacity:0.2;pointer-events:none;" {% endif %} /><input type="submit" class="button" value="Startup configuration backup" id="startupBackup" {% if va("switchaccess","feature")== False %} style="opacity:0.2;pointer-events:none;" {% endif %} /><input type="button" name="searchConfig" value="Search" class="button" onclick="changeSearch();">
                     </td>
                 </tr>
-
-
 
                 {% for items in result %}
-                <tr>
-                    <td class="whiteBG"><font face="arial" size="1"> {{ items['id'] }} </font></td>
-                    <td class="whiteBG"><font face="arial" size="1"> {{ ctime(items['utctime']) }}  </font></td>
-                    <td class="whiteBG"><font face="arial" size="1"> {{items['description']}} </font></td>
-                    <td class="whiteBG"><font face="arial" size="1"> {{items['backuptype']}} </font></td>
-                    <td class="whiteBG"><font face="arial" size="1"> {% if items['masterbackup'] == 0 %}Master{% else %}Branch{% endif %}</font></td>
-                    <td class="whiteBG"><font face="arial" size="1"> {{items['owner']}} </font></td>
-                    <td align="right">
-                        <input type="submit" name="action" value="Restore" class="button" id="restoreConfig" data-id="{{items['id']}}" /><input type="submit" name="action" value="View" class="button" id="viewConfig" data-id="{{items['id']}}" />{% if items['masterbackup'] == 0 %}<input type="submit" name="action" value="Create branch" class="button" id="branchBackup" data-id="{{items['id']}}" data-backuptype="{{items['backuptype']}}" />{% else %}<input type="submit" name="action" value="Edit" class="button" id="editConfig" data-id="{{items['id']}}" data-masterbackup="{{items['masterbackup']}}" />{% endif %}<input type="submit" name="action" value="Delete" id="deleteConfig" class="button" data-id="{{items['id']}}">
-                    </td>
-                </tr>
-                {% endfor %}
+                    <tr>
+                        <td><font class="font12px"> {{ items['id'] }} </font></td>
+                        <td><font class="font12px"> {{ ctime(items['utctime']) }}  </font></td>
+                        <td><font class="font12px"> {{items['description']}} </font></td>
+                        <td><font class="font12px"> {{items['backuptype']}} </font></td>
+                        <td><font class="font12px"> {% if items['masterbackup'] == 0 %}Master{% else %}Branch{% endif %}</font></td>
+                        <td><font class="font12px"> {{items['owner']}} </font></td>
+                        <td align="right">
+                            <input type="submit" name="action" value="Restore" class="button" id="restoreConfig" data-id="{{items['id']}}" {% if va("switchaccess","feature")== False %} style="opacity:0.2;pointer-events:none;" {% endif %} /><input type="submit" name="action" value="View" class="button" id="viewConfig" data-id="{{items['id']}}" />{% if items['masterbackup'] == 0 %}<input type="submit" name="action" value="Create branch" class="button" id="createbranchBackup" data-masterbackup="{{items['id']}}" {% if va("switchaccess","feature")== False %} style="opacity:0.2;pointer-events:none;" {% endif %} />{% else %}<input type="submit" name="action" value="Edit" class="button" id="editConfig" data-id="{{items['id']}}" data-masterbackup="{{items['masterbackup']}}" {% if va("switchaccess","feature")== False %} style="opacity:0.2;pointer-events:none;" {% endif %} />{% endif %}<input type="submit" name="action" value="Delete" id="deleteConfig" class="button" data-id="{{items['id']}}" {% if va("switchaccess","feature")== False %} style="opacity:0.2;pointer-events:none;" {% endif %}>
+                        </td>
+                    </tr>
+                 {% endfor %}
                 <tbody id="showbranchBackup"></tbody>
             </form>
 
         </table>
-
         <div id="editBackup" style="display:none;">
 
             <table class="tablenoborder">
                 <form method="post" id="editbackupContent">
-                    <tr style="background-color: black;line-height:20px;">
-                        <td colspan="2" style="color:darkorange;">
-                            <center><span id="backupTitle"></span></center>
+                    <input type="hidden" name="branchmasterbackup" id="branchmasterbackup" value="" />
+                    <input type="hidden" name="branchbackuptype" id="branchbackuptype" value="" />
+                    <input type="hidden" name="branchdeviceid" id="branchdeviceid" value="" />
+                    <tr style="background-color: grey;" class="tableTitle">
+                        <td colspan="2">
+                            <center><div id="backupTitle"></div></center>
                         </td>
                     </tr>
                     <tr style="line-height:30px;">
-                        <td width="10%"><font class="font13px">Description</font></td>
+                        <td width="10%"><font class="font13pxgrey">Description</font></td>
                         <td>
                             <input type="text" name="backupDescription" id="backupDescription" size="150"></input>
                         </td>

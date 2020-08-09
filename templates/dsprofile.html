@@ -26,7 +26,7 @@
                 <td witch="10%"><font class="font13pxgrey">NTP Server</font></td>
                 <td witch="9%"><font class="font13pxgrey">Primary controller</font></td>
                 <td witch="9%"><font class="font13pxgrey">Backup controller</font></td>
-                <td width="10%" align="right"><input type="submit" class="button" value="Add profile" onclick="return setHidden('Add profile');"></td>
+                <td width="10%" align="right"><input type="submit" class="button" value="Add profile" onclick="return setHidden('Add profile');" {% if va("ubtprofileaccess","feature")==False %} style="opacity:0.2;pointer-events:none;" {% endif %}></td>
             </tr>
         </form>
         {% for info in result %}
@@ -84,8 +84,8 @@
                     </font>
                 </td>
                 <td align="right">
-                    <input type="submit" name="action" value="Edit" class="button">
-                    <input type="submit" name="action" value="Delete" class="button" onclick="return confirm('Are you sure you want to delete this item?')">
+                    <input type="submit" name="action" value="Edit" class="button" {% if va("ubtprofileaccess","feature")==False %} style="opacity:0.2;pointer-events:none;" {% endif %}>
+                    <input type="submit" name="action" value="Delete" class="button" onclick="return confirm('Are you sure you want to delete this item?')" {% if va("ubtprofileaccess","feature")==False %} style="opacity:0.2;pointer-events:none;" {% endif %}>
                     <input type="hidden" name="id" value="{{ info['id'] }}">
 
                 </td>

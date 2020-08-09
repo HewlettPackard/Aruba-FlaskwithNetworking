@@ -49,7 +49,7 @@ $(document).ready(function () {
             //VSF is activated. Enable all the VSF related fields
             $('.selectLink1').attr('disabled', false);
             $('.selectLink2').attr('disabled', false);
-            $('.selectSwitchtype').attr('disabled', false);
+            $('#editSelectswitchtype option:not(:selected)').attr('disabled', false);
             if ($(".selectVsfrole").val() == "Master") {
                 //Master is selected, disable the member id and master switch field
                 $('.selectVsfmember').attr('disabled', true);
@@ -75,9 +75,14 @@ $(document).ready(function () {
             $('.selectVsflink2').attr('disabled', true);
             $('.selectLink1').attr('disabled', true);
             $('.selectLink2').attr('disabled', true);
-            $('.selectSwitchtype').attr('disabled', true);
             $('.selectSoftwareimage').attr('disabled', false);
             $('.selectTemplateparameters').attr('disabled', false);
+            if (document.getElementById("editztpdhcp").checked == true) {
+                $('#editSelectswitchtype option:not(:selected)').attr('disabled', true);
+            }
+            else {
+                    $('#editSelectswitchtype option:not(:selected)').attr('disabled', false);
+                }
         }
 
     });
@@ -91,17 +96,22 @@ $(document).ready(function () {
                 $('#editipamipaddress option:not(:selected)').attr('disabled', true);
             }
             if ($('#editIpaddress').length) {
-                $('#editIpaddress option:not(:selected)').attr('disabled', true);
+                $('#editIpaddress').attr('disabled', true);
             }
             if ($('#editNetmask').length) {
-                $('#editNetmask option:not(:selected)').attr('disabled', true);
+                $('#editNetmask').attr('disabled', true);
             }
             if ($('#editGateway').length) {
-                $('#editGateway option:not(:selected)').attr('disabled', true);
-                $('').attr('disabled', true);
+                $('#editGateway').attr('disabled', true);
             }
-            if ($('#editVrf').length) {
-                $('#editVrf option:not(:selected)').attr('disabled', true);
+            if ($('#edituplinkVlan').length) {
+                $('#edituplinkVlan').attr('disabled', true);
+            }
+            if ($('#edittaggedVlan').length) {
+                $('#edittaggedVlan').attr('disabled', true);
+            }
+            if ($('#editSelectswitchtype').length && document.getElementById("editEnablevsf").checked == false) {
+                $('#editSelectswitchtype option:not(:selected)').attr('disabled', true);
             }
         }
         else {
@@ -113,16 +123,22 @@ $(document).ready(function () {
                 $('#editipamipaddress option:not(:selected)').attr('disabled', false);
             }
             if ($('#editIpaddress').length) {
-                $('#editIpaddress option:not(:selected)').attr('disabled', false);
+                $('#editIpaddress').attr('disabled', false);
             }
             if ($('#editNetmask').length) {
-                $('#editNetmask option:not(:selected)').attr('disabled', false);
+                $('#editNetmask').attr('disabled', false);
             }
             if ($('#editGateway').length) {
-                $('#editGateway option:not(:selected)').attr('disabled', false);
+                $('#editGateway').attr('disabled', false);
             }
-            if ($('#editVrf').length) {
-                $('#editVrf option:not(:selected)').attr('disabled', false);
+            if ($('#edituplinkVlan').length) {
+                $('#edituplinkVlan').attr('disabled', false);
+            }
+            if ($('#edittaggedVlan').length) {
+                $('#edittaggedVlan').attr('disabled', false);
+            }
+            if ($('#editSelectswitchtype').length) {
+                $('#editSelectswitchtype option:not(:selected)').attr('disabled', false);
             }
         }
         if (document.getElementById("addztpdhcp").checked == true) {
@@ -133,16 +149,22 @@ $(document).ready(function () {
                 $('#addipamipaddress option:not(:selected)').attr('disabled', true);
             }
             if ($('#addIpaddress').length) {
-                $('#addIpaddress option:not(:selected)').attr('disabled', true);
+                $('#addIpaddress').attr('disabled', true);
             }
             if ($('#addNetmask').length) {
-                $('#addNetmask option:not(:selected)').attr('disabled', true);
+                $('#addNetmask').attr('disabled', true);
             }
             if ($('#addGateway').length) {
-                $('#addGateway option:not(:selected)').attr('disabled', true);
+                $('#addGateway').attr('disabled', true);
             }
-            if ($('#addVrf').length) {
-                $('#addVrf option:not(:selected)').attr('disabled', true);
+            if ($('#adduplinkVlan').length) {
+                $('#adduplinkVlan').attr('disabled', true);
+            }
+            if ($('#addtaggedVlan').length) {
+                $('#addtaggedVlan').attr('disabled', true);
+            }
+            if ($('#addSelectswitchtype').length && document.getElementById("addEnablevsf").checked == false) {
+                $('#addSelectswitchtype option:not(:selected)').attr('disabled', true);
             }
         }
         else {
@@ -153,16 +175,22 @@ $(document).ready(function () {
                 $('#addipamipaddress option:not(:selected)').attr('disabled', false);
             }
             if ($('#addIpaddress').length) {
-                $('#addIpaddress option:not(:selected)').attr('disabled', false);
+                $('#addIpaddress').attr('disabled', false);
             }
             if ($('#addNetmask').length) {
-                $('#addNetmask option:not(:selected)').attr('disabled', false);
+                $('#addNetmask').attr('disabled', false);
             }
             if ($('#addGateway').length) {
-                $('#addGateway option:not(:selected)').attr('disabled', false);
+                $('#addGateway').attr('disabled', false);
             }
-            if ($('#addVrf').length) {
-                $('#addVrf option:not(:selected)').attr('disabled', false);
+            if ($('#adduplinkVlan').length) {
+                $('#adduplinkVlan').attr('disabled', false);
+            }
+            if ($('#addtaggedVlan').length) {
+                $('#addtaggedVlan').attr('disabled', false);
+            }
+            if ($('#addSelectswitchtype').length) {
+                $('#addSelectswitchtype option:not(:selected)').attr('disabled', false);
             }
         }
     });
@@ -338,36 +366,37 @@ $(document).ready(function () {
         });
     });
 
-    $('.editOrshow').ready(
+    $('.editShow').ready(
         function () {
-
-            editOrshow = document.getElementsByClassName('editOrshow');
-            for (var i = 0; i < editOrshow.length; i++) {
-                deviceid = editOrshow.item(i).getAttribute('data-deviceid');
-                ipamstatus = editOrshow.item(i).getAttribute('data-ipamstatus');
-                enableztp = editOrshow.item(i).getAttribute('data-enableztp');
+            editShow = document.getElementsByClassName('editShow');
+            for (var i = 0; i < editShow.length; i++) {
+                deviceid = editShow.item(i).getAttribute('data-deviceid');
+                ipamstatus = editShow.item(i).getAttribute('data-ipamstatus');
+                enableztp = editShow.item(i).getAttribute('data-enableztp');
                 // If ZTP is enabled, we should show the "Show configuration" button. This is reflected in the enableztp status
                 // If it's 0 then we can set the edit button, otherwise we should only show the "show" button
                 if (enableztp == "0") {
                     //Show the edit button
                     editshowHTML = "<input type='button' name='editDevice' value='Edit' data-deviceid='" + deviceid + "' class='editDevice' id='editDevice" + deviceid + "'";
-                    editshowHTML += "onclick = 'highlightdeviceRow(" + editOrshow.item(i).id + ");'";
+                    editshowHTML += "onclick = 'highlightdeviceRow(" + editShow.item(i).id + ");'";
                     if (ipamstatus == "Offline") {
-                        editshowHTML += " disabled style='opacity:0.3;'";
+                        editshowHTML += " style='opacity:0.3;pointer-events:none;'";
                     }
                     editshowHTML += ">";
                     editshowHTML += "<input type='button' name='showDevice' value='Show' data-deviceid='" + deviceid + "' class='showDevice' id='showDevice" + deviceid + "'";
-                    editshowHTML += "onclick = 'highlightdeviceRow(" + editOrshow.item(i).id + ");'>";
+                    editshowHTML += "onclick = 'highlightdeviceRow(" + editShow.item(i).id + ");'>";
                 }
                 else {
                     //Show the show button
                     editshowHTML = "<input type='button' name='showDevice' value='Show' data-deviceid='" + deviceid + "' class='showDevice' id='showDevice" + deviceid + "'";
-                    editshowHTML += "onclick = 'highlightdeviceRow(" + editOrshow.item(i).id + ");'>";
+                    editshowHTML += "onclick = 'highlightdeviceRow(" + editShow.item(i).id + ");'>";
                 }
-                document.getElementById('editOrshow' + deviceid).innerHTML = editshowHTML;
+                document.getElementById('editShow' + deviceid).innerHTML = editshowHTML;
 
 
             }
+
+            
         });
 
 
@@ -591,124 +620,6 @@ $(document).ready(function () {
     });
 
 
-    $('.editField input').keyup(function () {
-        var fieldisEmpty = false;
-        $('.editField input').keyup(function () {
-            $('.editField input').each(function () {
-                if ($(this).val().length == 0) {
-                    fieldisEmpty = true;
-                }
-                else {
-                    fieldisEmpty = false;
-                }
-            });
-
-            // We also need to check the select values of the netmask. If these are not selected, then we still need to disable the submit button
-
-            $('.editselectField select').each(function () {
-                if (!$(this).val()) {
-                    fieldisEmpty = true;
-                }
-                else {
-                    fieldisEmpty = false;
-                }
-            });
-
-            if (fieldisEmpty) {
-                $('.editActions input').attr('disabled', 'disabled');
-            } else {
-                $('.editActions input').attr('disabled', false);
-            }
-        });
-    });
-
-    $('.addField input').keyup(function () {
-        var fieldisEmpty = false;
-        $('.addField input').keyup(function () {
-            $('.addField input').each(function () {
-                if (!$(this).val()) {
-                    fieldisEmpty = true;
-                }
-                else {
-                    fieldisEmpty = false;
-                }
-            });
-
-            // We also need to check the select values of the netmask. If these are not selected, then we still need to disable the submit button
-
-            $('.addselectField select').each(function () {
-                if (!$(this).val()) {
-                    fieldisEmpty = true;
-                }
-                else {
-                    fieldisEmpty = false;
-                }
-            });
-
-            if (fieldisEmpty) {
-                $('.addActions input').attr('disabled', 'disabled');
-            } else {
-                $('.addActions input').attr('disabled', false);
-            }
-        });
-    });
-
-    $('.editselectField select').on('change', function () {
-        $('.editselectField select').each(function () {
-            if (!$(this).val()) {
-                fieldisEmpty = true;
-            }
-            else {
-                fieldisEmpty = false;
-            }
-        });
-
-        // We also need to check the required text input. these are empty, then we still need to disable the submit button
-
-        $('.editField input').each(function () {
-            if (!$(this).val()) {
-                fieldisEmpty = true;
-            }
-            else {
-                fieldisEmpty = false;
-            }
-        });
-
-        if (fieldisEmpty) {
-            $('.addActions input').attr('disabled', 'disabled');
-        } else {
-            $('.addActions input').attr('disabled', false);
-        }
-    })
-
-    $('.addselectField select').on('change', function () {
-        $('.addselectField select').each(function () {
-            if (!$(this).val()) {
-                fieldisEmpty = true;
-            }
-            else {
-                fieldisEmpty = false;
-            }
-        });
-
-        // We also need to check the required text input. these are empty, then we still need to disable the submit button
-
-        $('.addField input').each(function () {
-            if (!$(this).val()) {
-                fieldisEmpty = true;
-            }
-            else {
-                fieldisEmpty = false;
-            }
-        });
-
-        if (fieldisEmpty) {
-            $('.addActions input').attr('disabled', 'disabled');
-        } else {
-            $('.addActions input').attr('disabled', false);
-        }
-    })
-
       $(document).on('click', '.showDevice', function ()
         {
           document.getElementById("editDevice").style.display = "none";
@@ -773,6 +684,7 @@ $(document).ready(function () {
         response = JSON.parse(response);
         deviceInfo = response['deviceInfo'];
         sysvars = response['sysvars'];
+        ztpvlan=JSON.parse(deviceInfo['ztpvlan']);
 
         if ("ipamenabled" in sysvars) {
             var ipArray = [];
@@ -891,6 +803,10 @@ $(document).ready(function () {
         document.getElementById('editVsfmaster').value = deviceInfo['vsfmaster'];
         document.getElementById('editVsfmember').value = deviceInfo['vsfmember'];
         document.getElementById('editSelectswitchtype').value = deviceInfo['switchtype'];
+        document.getElementById('edituplinkVlan').value = ztpvlan['uplinkVlan'];
+        if (ztpvlan['taggedVlan'] == 1) {
+            document.getElementById("edittaggedVlan").checked = true;
+        }
  
         if (deviceInfo['vsfenabled'] == 1 ) {
             //VSF is enabled. We need to obtain the master switch information and push this to the select
@@ -972,7 +888,6 @@ $(document).ready(function () {
             //VSF is disabled. Disable all the VSF fields
             document.getElementById("editEnablevsf").checked = false;
             $('.selectSoftwareimage').attr('disabled', false);
-            $('.selectSwitchtype').attr('disabled', true);
             $('.selectVsfrole').attr('disabled', true);
             $('.selectVsflink1').attr('disabled', true);
             $('.selectVsflink2').attr('disabled', true);

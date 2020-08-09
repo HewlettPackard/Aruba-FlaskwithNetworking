@@ -22,18 +22,54 @@ from subprocess import Popen, PIPE
 
 urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)
 
-def checkAuth():
+def checkAuth(item, type):
     #Definition that verifies whether the cookie is still valid for the user. If it is valid, return 1, if not valid return 0
+    # In addition, we have to check the RBAC, check whether the user is allowed access. If no access, we will add it to the dictionary that is returned
+    # If 0 is returned, a logout occurs, which we don't want to happen if the cookie is still valid
     try:
         queryStr="select * from sysuser where username='{}' and cookie='{}'".format(request.cookies['username'],request.cookies['token'])
         result=classes.classes.sqlQuery(queryStr,"selectone")
         if result:
-            authOK={'username':result['username'],'token':result['cookie']}
+            # The cookie is valid, now we need to check whether the user is allowed access
+            hasaccess=verifyAccess(item, type)
+            authOK={'username':result['username'],'token':result['cookie'],'hasaccess': hasaccess }
         else:
             authOK=0
     except:
         authOK=0
     return authOK
+
+def verifyAccess(item, type):
+    #Definition that verifies whether user has access to the item
+    try:
+        queryStr="select * from sysuser where username='{}' and cookie='{}'".format(request.cookies['username'],request.cookies['token'])
+        result=classes.classes.sqlQuery(queryStr,"selectone")
+        queryStr="select accessrights from sysrole where id='{}'".format(result['role'])
+        roleresult=classes.classes.sqlQuery(queryStr,"selectone")
+        accessrights=json.loads(roleresult['accessrights'])
+        # There are three different items, two for the menus in the navbar and one for the functions. The type variable identified this (menu, submenu or feature)
+        if type=="menu":
+            if item in accessrights:
+                # If the item exists, this means that the menu item can be displayed
+                return True
+            else:
+                return False
+        elif type=="submenu":
+            if accessrights[item]=="1" or accessrights[item]=="2":
+                # Read only or write 
+                return True
+            else:
+                return False
+        elif type=="feature":
+            #We need to check what type of access is allowed (read-write). This is typically for edit and delete actions
+            if accessrights[item]=="2":
+                # Write access 
+                return True
+            else:
+                return False
+    except:
+        return {}
+    return {}
 
 def submitLogin(username,password):
     globalsconf=classes.classes.globalvars()
@@ -160,6 +196,7 @@ def userdbAction(formresult):
             if checkdbExist(queryStr)==0:
                 queryStr="insert into sysuser (username,password,email, cookie, role) values ('{}','{}','{}','{}','{}')".format(formresult['username'],classes.classes.encryptPassword("ArubaRocks!!!!!!", formresult['password']), formresult['email'],"", formresult['role'])
                 classes.classes.sqlQuery(queryStr,"insert")
+                checkroleStatus(formresult['role'])
             else:
                 print("User already exists")
             result=classes.classes.sqlQuery("select * from sysuser","select")
@@ -167,13 +204,20 @@ def userdbAction(formresult):
             if(formresult['username']=="admin"):
                 queryStr="update sysuser set email='{}' where id='{}'".format(formresult['email'],formresult['id'])
             else:
-                queryStr="update sysuser set username='{}',password='{}',email='{}' where id='{}' "\
-                .format(formresult['username'],classes.classes.encryptPassword("ArubaRocks!!!!!!", formresult['password']),formresult['email'],formresult['id'])
+                queryStr="update sysuser set username='{}',password='{}',email='{}', role='{}' where id='{}' "\
+                .format(formresult['username'],classes.classes.encryptPassword("ArubaRocks!!!!!!", formresult['password']),formresult['email'], formresult['role'], formresult['id'])
             classes.classes.sqlQuery(queryStr,"update")
+            # And update the status of the assigned role to 1
+            queryStr="update sysrole set status='1' where id='{}'".format(formresult['role'])
+            classes.classes.sqlQuery(queryStr,"update")
+            checkroleStatus(formresult['orgrole'])
             result=classes.classes.sqlQuery("select * from sysuser","select")
         elif (formresult['action']=="Delete"):
+            queryStr="select role from sysuser where id='{}'".format(formresult['id'])
+            roleInfo=classes.classes.sqlQuery(queryStr,"selectone")
             queryStr="delete from sysuser where id='{}'".format(formresult['id'])
             classes.classes.sqlQuery(queryStr,"delete")
+            checkroleStatus(roleInfo['role'])
             result=classes.classes.sqlQuery("select * from sysuser","select")
         elif (formresult['action']=="order by username"):
             result=classes.classes.sqlQuery("select * from sysuser order by username ASC","select")
@@ -183,7 +227,76 @@ def userdbAction(formresult):
             result=classes.classes.sqlQuery("select * from sysuser","select")
     else:
         result=classes.classes.sqlQuery("select * from sysuser","select")
-    return result
+    # Select the roles from the database
+    roleResult=classes.classes.sqlQuery("select id, name from sysrole","select")
+    response={"roleresult":roleResult,"userresult":result}
+    return response
+
+def roledbAction(formresult):
+    # This definition is for all the database actions for the user administration
+    searchAction="None"
+    constructQuery=""
+    if(bool(formresult)==True):
+        accessrights={i:formresult[i] for i in formresult if i not in ['id','currentpageoffset', 'totalpages', 'entryperpage','currententryperpage','searchName','name','action']}
+        if(formresult['action']=="Submit role"):
+            # First check if the role name already exists
+            queryStr="select * from sysrole where name='{}'".format(formresult['name'])
+            if checkdbExist(queryStr)==0:
+                queryStr="insert into sysrole (name,accessrights,status) values ('{}','{}','{}')".format(formresult['name'],json.dumps(accessrights),'0')
+                classes.classes.sqlQuery(queryStr,"insert")
+            else:
+                print("Role name already exists")
+            result=classes.classes.sqlQuery("select * from sysrole","select")
+        elif  (formresult['action']=="Submit changes"):
+            queryStr="update sysrole set name='{}', accessrights='{}' where id='{}'".format(formresult['name'],json.dumps(accessrights),formresult['id'])
+            classes.classes.sqlQuery(queryStr,"update")
+            result=classes.classes.sqlQuery("select * from sysrole","select")
+        elif (formresult['action']=="Delete"):
+            queryStr="delete from sysrole where id='{}'".format(formresult['id'])
+            classes.classes.sqlQuery(queryStr,"delete")
+            result=classes.classes.sqlQuery("select * from sysrole","select")
+        try:
+            searchAction=formresult['searchAction']
+        except:
+            searchAction=""    
+        if formresult['searchName']:
+            constructQuery += " where name like'%" + formresult['searchName'] + "%' " 
+        # We have to construct the query based on the formresult information (entryperpage, totalpages, pageoffset)
+        queryStr="select COUNT(*) as totalentries from sysrole " + constructQuery
+        navResult=classes.classes.navigator(queryStr,formresult)
+        totalentries=navResult['totalentries']
+        entryperpage=formresult['entryperpage']
+        # If the entry per page value has changed, need to reset the pageoffset
+        if formresult['entryperpage']!=formresult['currententryperpage']:
+            pageoffset=0
+        else:
+            pageoffset=navResult['pageoffset']
+        # We have to construct the query based on the formresult information (entryperpage, totalpages, pageoffset)
+        queryStr = "select * from sysrole " + constructQuery + " LIMIT {} offset {}".format(entryperpage,pageoffset)
+        result=classes.classes.sqlQuery(queryStr,"select")
+    else:
+        queryStr="select COUNT(*) as totalentries from sysrole"
+        navResult=classes.classes.sqlQuery(queryStr,"selectone")
+        entryperpage=25
+        pageoffset=0
+        queryStr="select * from sysrole LIMIT {} offset {}".format(entryperpage,pageoffset)
+        result=classes.classes.sqlQuery(queryStr,"select")
+    return {'result':result, 'totalentries': navResult['totalentries'], 'pageoffset': pageoffset, 'entryperpage': entryperpage}
+
+def checkroleStatus(role):
+    #This definition checks whether a role still has users assigned. If not, then the role needs to be set to 0 (unassigned). System is only allowed to delete a role when it
+    # is not assigned to any user
+    queryStr="select COUNT(*) as totalentries from sysuser where role='{}'".format(role)
+    roleresult=classes.classes.sqlQuery(queryStr,"selectone")
+    if roleresult['totalentries']==0:
+        # There are no more users assigned to this role. We can set the status for this role to 0
+        queryStr="update sysrole set status='0' where id='{}'".format(role)
+        classes.classes.sqlQuery(queryStr,"update")
+    else:
+        # There are no more users assigned to this role. We can set the status for this role to 0
+        queryStr="update sysrole set status='1' where id='{}'".format(role)
+        classes.classes.sqlQuery(queryStr,"update")
+
 
 def checkdbExist(queryStr):
     result=classes.classes.sqlQuery(queryStr,"select")
@@ -196,7 +309,7 @@ def checkProcess(name):
     globalsconf=classes.classes.globalvars()
     for proc in psutil.process_iter():
         # Need to check whether the listener process or the scheduler process is queried
-        if name=="Cleanup" or name=="Topology" or name=="ZTP":
+        if name=="Cleanup" or name=="Topology" or name=="ZTP" or name=="Telemetry":
             try:
                 if "python" in proc.name().lower():
                     procinfo=psutil.Process(proc.pid)
@@ -228,7 +341,7 @@ def processAction(name, action):
     pathname = os.path.dirname(sys.argv[0])
     if action =="Stop":
         # Need to check whether the listener process or the scheduler process is queried
-        if name=="Cleanup" or name=="Topology" or name=="ZTP":
+        if name=="Cleanup" or name=="Topology" or name=="ZTP" or name=="Telemetry":
             for proc in psutil.process_iter():
                 processname=globalsconf['appPath'] + "bash/" + name.lower()
                 cmdline=proc.cmdline()

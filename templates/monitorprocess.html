@@ -9,12 +9,12 @@
             <td width="10%" align="left" nowrap><font class="font11px">{{ cpu }}%</font></td>
             <td width="10%" align="left" nowrap><font class="font11px">{{ memory }}%</font></td>
             <td width="10%" align="left" nowrap>
-                <input type="button" name="Clear log" id="clearLogclick" data-processname="{{ name|lower }}" value="Clear log" class="button clearLog" />
+                <input type="button" name="Clear log" id="clearLogclick" data-processname="{{ name|lower }}" value="Clear log" class="button clearLog" {% if va("servicesstatusaccess","feature")==False %} style="opacity:0.2;pointer-events:none;" {% endif %} />
                 <input type="button" name="Download log" value="Download log" class="button downloadLog" id="{{ name|lower}}showLog" data-processname="{{ name|lower }}">           
                 {% if status==True %}
-                <input type="submit" name="action" value="Stop" />
+                <input type="submit" name="action" value="Stop" {% if va("servicesstatusaccess","feature")==False %} style="opacity:0.2;pointer-events:none;" {% endif %}/>
                 {% else %}
-                <input type="submit" name="action" value="Start" />
+                <input type="submit" name="action" value="Start" {% if va("servicesstatusaccess","feature")==False %} style="opacity:0.2;pointer-events:none;" {% endif %}/>
                 {% endif %}
             </td>
         </tr>
