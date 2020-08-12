@@ -22,13 +22,13 @@
                 <td><select name="searchValid" onchange="showTrusts({{ deviceInfo['id'] }})" id="searchValid">
     <option value="" {% if searchValid=="" %} selected {% endif %}>Select</option>
     <option value="valid" {% if searchValid=="valid" %} selected {% endif %}>Valid</option>
-    <option value="invalid" {% if searchValid=="invalid" %} selected {% endif %}>Invalid</option>
+    <option value="Expired" {% if searchValid=="Expired" %} selected {% endif %}>Expired</option>
 </select></td>
                 <td nowrap>
                     <select name="searchStatus" onchange="showTrusts({{ deviceInfo['id'] }})" id="searchStatus">
                         <option value="" {% if searchStatus=="" %} selected {% endif %}>Select</option>
-                        <option value="false" {% if searchStatus=="false" %} selected {% endif %}>Disabled</option>
-                        <option value="true" {% if searchStatus=="true" %} selected {% endif %}>Enabled</option>
+                        <option value="False" {% if searchStatus=="False" %} selected {% endif %}>Disabled</option>
+                        <option value="True" {% if searchStatus=="True" %} selected {% endif %}>Enabled</option>
                     </select>
                 </td>
                 <td colspan="2" align="right">
@@ -39,10 +39,14 @@
                             <option value="50" {% if trEntryperpage==50 %} selected {% endif %}>50</option>
                             <option value="100" {% if trEntryperpage==100 %} selected {% endif %}>100</option>
                         </select> entries per page (page <select name="trPageoffset" id="trPageoffset" class="showTrusts" onchange="showTrusts({{ deviceInfo['id'] }})">
-                            {% for i in  range((trTotalentries/trEntryperpage)|round(0,'ceil')|int) %}
-                            <option value="{{ i }}" {% if trPageoffset==i %}selected{% endif %}>{{ i+1 }}</option>
-                            {% endfor %}
-                        </select> of {{ (trTotalentries/trEntryperpage)|round(0,'ceil')|int }} pages)
+    {% if trTotalentries==0 %}
+    <option value="1" selected>1</option>
+    {% else %}
+    {% for i in  range((trTotalentries/trEntryperpage)|round(0,'ceil')|int) %}
+    <option value="{{ i }}" {% if trPageoffset==i %}selected{% endif %}>{{ i+1 }}</option>
+    {% endfor %}
+    {% endif %}
+</select> of {% if trTotalentries==0 %} 1 {% else %}{{ (trTotalentries/trEntryperpage)|round(0,'ceil')|int }} {% endif %} pages)
                     </font><input type="button" name="searchAction" value="Search" class="button" id="searchTrusts" onclick="showTrusts({{ deviceInfo['id'] }})"/>
                 </td>
             </tr>
@@ -54,7 +58,7 @@
             <td class="whiteBG"><font class='font11px'>{{ items['subject_DN']|truncate(140, True) }}{% if items['subject_dn']|length > 140 %}...{% endif %}</font></td>
             <td class="whiteBG"><font class='font11px'>{{ items['issue_date'] }}</font></td>
             <td class="whiteBG"><font class='font11px'>{{ items['expiry_date'] }}</font></td>
-            <td class="whiteBG"><font class='font11px'>{% if items['valid']=="valid" %}Valid{% else %}Invalid{% endif %}</font></td>
+            <td class="whiteBG"><font class='font11px'>{% if items['valid']=="valid" %}Valid{% else %}Expired{% endif %}</font></td>
             <td class="whiteBG"><font class='font11px'>{% if items['enabled']==False %}Disabled{% else %}Enabled{% endif %}</font></td>
             <td class="whiteBG" colspan="2">
                 <font class='font11px'>

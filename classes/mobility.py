@@ -215,47 +215,55 @@ def mcroleInfo(deviceid):
     logoutmc(cookie,deviceid)
     return json.dumps(response['_data']['role'])
 
-def mcpolicyInfo(deviceid):
+def mcpolicyInfo(deviceid, policy):
     response=[]
     cookie=loginmc(deviceid)
     mcrole=getRESTmc(cookie,"configuration/showcommand?command=show+roleinfo&UIDARUBA=",deviceid)
     # We have to get all the ACL information from the controllers.
-    if mcrole['_data'][0]=="master":
-        url="configuration/object/acl_sess?config_path=%2Fmd&UIDARUBA=" + cookie
+    if policy=="":
+        if mcrole['_data'][0]=="master":
+            url="configuration/object/acl_sess?config_path=%2Fmd&UIDARUBA=" + cookie
+        else:
+            url="configuration/object/acl_sess?UIDARUBA=" + cookie
+        result=getRESTmc(cookie,url,deviceid)
+        response.append(result['_data'])
+        if mcrole['_data'][0]=="master":
+            url="configuration/object/acl_mac?config_path=%2Fmd&UIDARUBA=" + cookie
+        else:
+            url="configuration/object/acl_mac?UIDARUBA=" + cookie
+        result=getRESTmc(cookie,url,deviceid)
+        response.append(result['_data'])
+        if mcrole['_data'][0]=="master":
+            url="configuration/object/acl_std?config_path=%2Fmd&UIDARUBA=" + cookie
+        else:
+            url="configuration/object/acl_std?UIDARUBA=" + cookie
+        result=getRESTmc(cookie,url,deviceid)
+        response.append(result['_data'])
+        if mcrole['_data'][0]=="master":
+            url="configuration/object/acl_ext?config_path=%2Fmd&UIDARUBA=" + cookie
+        else:
+            url="configuration/object/acl_ext?UIDARUBA=" + cookie
+        result=getRESTmc(cookie,url,deviceid)
+        response.append(result['_data'])
+        if mcrole['_data'][0]=="master":
+            url="configuration/object/acl_qinq?config_path=%2Fmd&UIDARUBA=" + cookie
+        else:
+            url="configuration/object/acl_qinq?UIDARUBA=" + cookie
+        result=getRESTmc(cookie,url,deviceid)
+        response.append(result['_data'])
+        if mcrole['_data'][0]=="master":
+            url="configuration/object/acl_route?config_path=%2Fmd&UIDARUBA=" + cookie
+        else:
+            url="configuration/object/acl_route?UIDARUBA=" + cookie
+        result=getRESTmc(cookie,url,deviceid)
+        response.append(result['_data'])
     else:
-        url="configuration/object/acl_sess?UIDARUBA=" + cookie
-    result=getRESTmc(cookie,url,deviceid)
-    response.append(result['_data'])
-    if mcrole['_data'][0]=="master":
-        url="configuration/object/acl_mac?config_path=%2Fmd&UIDARUBA=" + cookie
-    else:
-        url="configuration/object/acl_mac?UIDARUBA=" + cookie
-    result=getRESTmc(cookie,url,deviceid)
-    response.append(result['_data'])
-    if mcrole['_data'][0]=="master":
-        url="configuration/object/acl_std?config_path=%2Fmd&UIDARUBA=" + cookie
-    else:
-        url="configuration/object/acl_std?UIDARUBA=" + cookie
-    result=getRESTmc(cookie,url,deviceid)
-    response.append(result['_data'])
-    if mcrole['_data'][0]=="master":
-        url="configuration/object/acl_ext?config_path=%2Fmd&UIDARUBA=" + cookie
-    else:
-        url="configuration/object/acl_ext?UIDARUBA=" + cookie
-    result=getRESTmc(cookie,url,deviceid)
-    response.append(result['_data'])
-    if mcrole['_data'][0]=="master":
-        url="configuration/object/acl_qinq?config_path=%2Fmd&UIDARUBA=" + cookie
-    else:
-        url="configuration/object/acl_qinq?UIDARUBA=" + cookie
-    result=getRESTmc(cookie,url,deviceid)
-    response.append(result['_data'])
-    if mcrole['_data'][0]=="master":
-        url="configuration/object/acl_route?config_path=%2Fmd&UIDARUBA=" + cookie
-    else:
-        url="configuration/object/acl_route?UIDARUBA=" + cookie
-    result=getRESTmc(cookie,url,deviceid)
-    response.append(result['_data'])
+        if mcrole['_data'][0]=="master":
+            url="configuration/object/" + policy + "?config_path=%2Fmd&UIDARUBA=" + cookie
+        else:
+            url="configuration/object/" + policy + "?UIDARUBA=" + cookie
+        result=getRESTmc(cookie,url,deviceid)
+        response= result['_data']
     logoutmc(cookie,deviceid)
     return json.dumps(response)
 

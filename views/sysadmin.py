@@ -19,6 +19,7 @@ def useradmin():
         # Obtain the relevant information from the database
         result=classes.userdbAction(formresult)
         if authOK['hasaccess']==True:
+            authOK['hasaccess']="true"
             return render_template("useradmin.html",result=result['userresult'],roleresult=result['roleresult'],formresult=formresult, authOK=authOK, sysvars=sysvars)
         else:
             return render_template("noaccess.html",authOK=authOK, sysvars=sysvars)
@@ -35,6 +36,7 @@ def userroles():
         # Obtain the relevant information from the database
         result=classes.roledbAction(dictform)
         if authOK['hasaccess']==True:
+            authOK['hasaccess']="true"
             return render_template("roleadmin.html",result=result,formresult=formresult, totalentries=int(result['totalentries']),pageoffset=int(result['pageoffset']),entryperpage=int(result['entryperpage']), authOK=authOK, sysvars=sysvars)
         else:
             return render_template("noaccess.html",authOK=authOK, sysvars=sysvars)
@@ -64,7 +66,11 @@ def sysconf():
                 sysvars=classes.globalvars()
         except:
             pass
-        return render_template("sysconf.html",authOK=authOK, sysvars=sysvars)
+        if authOK['hasaccess']==True:
+            authOK['hasaccess']="true"
+            return render_template("sysconf.html",authOK=authOK, sysvars=sysvars)
+        else:
+            return render_template("noaccess.html",authOK=authOK, sysvars=sysvars)
     else:
         return render_template("login.html")
 
@@ -77,6 +83,7 @@ def sysmon():
         if formresult:
             classes.processAction(formresult['name'],formresult['action'])
         if authOK['hasaccess']==True:
+            authOK['hasaccess']="true"
             return render_template("sysmon.html",authOK=authOK, sysvars=sysvars)
         else:
             return render_template("noaccess.html",authOK=authOK, sysvars=sysvars)

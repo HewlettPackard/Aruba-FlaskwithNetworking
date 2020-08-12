@@ -21,6 +21,8 @@ def snmptracker():
         except:
             pass
         result=classes.snmpdbAction()
+        if authOK['hasaccess']==True:
+            authOK['hasaccess']="true"
         return render_template("snmptracker.html",formresult=formresult,totalentries=result['totalentries'],versionInfo=result['versionInfo'], communityInfo=result['communityInfo'],pageoffset=0,entryperpage=25, authOK=authOK, sysvars=sysvars)
     else:
         return render_template("login.html")
@@ -37,6 +39,8 @@ def dhcptracker():
         except:
             pass
         result=classes.dhcpdbAction()
+        if authOK['hasaccess']==True:
+            authOK['hasaccess']="true"
         return render_template("dhcptracker.html",formresult=formresult,totalentries=result['totalentries'],dhcptypeInfo=result['dhcptypeInfo'],pageoffset=0,entryperpage=25, authOK=authOK, sysvars=sysvars)
     else:
         return render_template("login.html")
@@ -53,6 +57,8 @@ def syslog():
         except:
             pass
         result=classes.syslogdbAction()
+        if authOK['hasaccess']==True:
+            authOK['hasaccess']="true"
         return render_template("syslog.html",formresult=formresult,totalentries=result['totalentries'],severityInfo=result['severityInfo'],facilityInfo=result['facilityInfo'],pageoffset=0,entryperpage=25, authOK=authOK, sysvars=sysvars)
     else:
         return render_template("login.html")

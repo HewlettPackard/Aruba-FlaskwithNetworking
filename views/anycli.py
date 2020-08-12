@@ -34,6 +34,7 @@ def index ():
             cmdResult=[]
             cmdContent=[]
         if authOK['hasaccess']==True:
+            authOK['hasaccess']="true"
             return render_template("anycli.html", formresult=formresult, devicelist=devicelist, cmdResult=cmdResult, cmdContent=cmdContent, authOK=authOK, sysvars=sysvars)
         else:
             return render_template("noaccess.html",authOK=authOK, sysvars=sysvars)

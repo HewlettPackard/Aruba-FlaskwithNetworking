@@ -11,7 +11,7 @@ $(".mobilityPolicies").on('click', async function () {
     policyInfo = await $.ajax({
         url: "/mcpolicyInfo",
         type: "POST",
-        data: { deviceid: deviceid },
+        data: { deviceid: deviceid, policy:'' },
         success: function () {
         },
         error: function () {
@@ -37,149 +37,155 @@ $(".mobilityPolicies").on('click', async function () {
     });
     policyInfo = JSON.parse(policyInfo);
     deviceInfo = JSON.parse(deviceInfo);
+    showPolicies(policyInfo, deviceInfo,"")
+});
+
+$(document).on("change", "#filterPolicy", async function () {
+    var policy_select = document.getElementById('filterPolicy');
+    var policy = policy_select.options[policy_select.selectedIndex].value;
+    var deviceid = document.getElementById('filterdeviceid').value;
+    policyInfo = await $.ajax({
+        url: "/mcpolicyInfo",
+        type: "POST",
+        data: { deviceid: deviceid, policy:policy },
+        success: function () {
+        },
+        error: function () {
+            document.getElementById("liProgress").style.display = "block";
+            document.getElementById("progresstooltip").style.display = "none";
+            progressInfo.innerHTML = "Error finding policy information";
+        }
+    });
+    deviceInfo = await $.ajax({
+        url: "/deviceInfo",
+        type: "POST",
+        data: { id: deviceid },
+        success: function () {
+
+
+        },
+        error: function () {
+            document.getElementById("liProgress").style.display = "block";
+            document.getElementById("progresstooltip").style.display = "none";
+            progressInfo.innerHTML = "Error finding device information";
+        }
+    });
+    policyInfo = JSON.parse(policyInfo);
+    deviceInfo = JSON.parse(deviceInfo);
+    showPolicies(policyInfo, deviceInfo, policy)
+});
+
+function showPolicies(policyInfo, deviceInfo, policy) {
     //Build the table. There are many different ACL types (session, MAC, standard, extended, route, etc)
-    policyHTML = "<table class='tablewithborder'>";
+    policyHTML = "<form method='post'><table class='tablewithborder'>";
+    policyHTML +="<input type='hidden' name='deviceid' id='filterdeviceid' value='" + deviceInfo['id'] + "'>";
     policyHTML += "<tr style='background-color: grey;'>";
     policyHTML += "<td><font class='font12pxwhite'>Select Policy type:</font> <select name='filterPolicy' id='filterPolicy' class='filterPolicy'>";
     policyHTML += "<option value=''>Select</option>";
-    policyHTML += "<option value='acl_sess'>Session</option>";
-    policyHTML += "<option value='acl_mac'>MAC</option>";
-    policyHTML += "<option value='acl_std'>Standard</option>";
-    policyHTML += "<option value='acl_ext'>Extended</option>";
-    policyHTML += "<option value='acl_qinq'>QinQ</option>";
-    policyHTML += "<option value='acl_route'>Routed</option>";
+    if (policy == "acl_sess") { policyHTML += "<option value='acl_sess' selected>Session</option>"; }
+    else {
+        policyHTML += "<option value='acl_sess'>Session</option>";
+    }
+    if (policy == "acl_mac") { policyHTML += "<option value='acl_mac' selected>MAC</option>"; }
+    else {
+        policyHTML += "<option value='acl_mac'>MAC</option>";
+    }
+    if (policy == "acl_std") { policyHTML += "<option value='acl_std' selected>Standard</option>"; }
+    else {
+        policyHTML += "<option value='acl_std'>Standard</option>";
+    }
+    if (policy == "acl_ext") { policyHTML += "<option value='acl_ext' selected>Extended</option>"; }
+    else {
+        policyHTML += "<option value='acl_ext'>Extended</option>";
+    }
+    if (policy == "acl_qinq") { policyHTML += "<option value='acl_qinq' selected>QinQ</option>"; }
+    else {
+        policyHTML += "<option value='acl_qinq'>QinQ</option>";
+    }
+    if (policy == "acl_route") { policyHTML += "<option value='acl_route' selected>Routed</option>"; }
+    else {
+        policyHTML += "<option value='acl_route'>Routed</option>";
+    }
     policyHTML += "</select></td> ";
-
     policyHTML += "<td><font class='font13pxwhite'><center>Configured policies for " + deviceInfo['ipaddress'] + " (" + deviceInfo['description'] + ")</center></font></td></tr>";
     policyHTML += "<tr style='background-color: grey;'><td nowrap><font class='font12pxwhite'>Policy name</font></td>";
     policyHTML += "<td nowrap><font class='font12pxwhite'>ACL's</font></td></tr>";
-    if (policyInfo[0]['acl_sess']) {
-        for (counter = 0; counter < policyInfo[0]['acl_sess'].length; counter++) {
-            policyHTML += "<tr><td class='whiteBG' nowrap><font class='font11px'>" + policyInfo[0]['acl_sess'][counter]['accname'] + " (session)</font></td><td class='whiteBG'><font class='font11px'>";
-            if (policyInfo[0]['acl_sess'][counter]['acl_sess__v4policy']) {
-                for (counter2 = 0; counter2 < policyInfo[0]['acl_sess'][counter]['acl_sess__v4policy'].length; counter2++) {
-                    if (policyInfo[0]['acl_sess'][counter]['acl_sess__v4policy'][counter2]['service-name']) {
-                        policyHTML += policyInfo[0]['acl_sess'][counter]['acl_sess__v4policy'][counter2]['service-name'] + "||";
-                    }
-                    else if (policyInfo[0]['acl_sess'][counter]['acl_sess__v4policy'][counter2]['svc']) {
-                        policyHTML += policyInfo[0]['acl_sess'][counter]['acl_sess__v4policy'][counter2]['svc'] + "||";
+    //Fill the table if there is no filter selection
+    if (policy == "") {
+        for (var i = 0; i < policyInfo.length; i++) {
+            for (var key in policyInfo[i]) {
+                // The key value is the policy type
+                if (policyInfo[i][key] != null){
+                    for (j = 0; j < policyInfo[i][key].length; j++) {
+                        policyHTML += "<tr><td class='whiteBG' nowrap><font class='font11px'>" + policyInfo[i][key][j]['accname'] + " (" + key + ")</font></td><td class='whiteBG'><font class='font11px'>";
+                        if (policyInfo[i][key][j]['acl_sess__v4policy']) {
+                            for (k = 0; k < policyInfo[i][key][j]['acl_sess__v4policy'].length; k++) {
+                                if (policyInfo[i][key][j]['acl_sess__v4policy'][k]['service-name']) {
+                                    policyHTML += policyInfo[i][key][j]['acl_sess__v4policy'][k]['service-name'] + "||";
+                                }
+                                else if (policyInfo[i][key][j]['acl_sess__v4policy'][k]['svc']) {
+                                    policyHTML += policyInfo[i][key][j]['acl_sess__v4policy'][k]['svc'] + "||";
+                                }
+                            }
+                        }
+                        if (policyHTML.slice(-2) === "||") {
+                            policyHTML=policyHTML.slice(0, -2);
+                        }
+                        if (policyInfo[i][key][j]['acl_sess__v6policy']) {
+                            for (k = 0; k < policyInfo[i][key][j]['acl_sess__v6policy'].length; k++) {
+                                if (policyInfo[i][key][j]['acl_sess__v6policy'][k]['service-name']) {
+                                    policyHTML += policyInfo[i][key][j]['acl_sess__v6policy'][k]['service-name'] + "||";
+                                }
+                                else if (policyInfo[i][key][j]['acl_sess__v6policy'][k]['svc']) {
+                                    policyHTML += policyInfo[i][key][j]['acl_sess__v6policy'][k]['svc'] + "||";
+                                }
+                            }
+                        }
+                        if (policyHTML.slice(-2) === "||") {
+                            policyHTML=policyHTML.slice(0, -2);
+                        }
+                        policyHTML += "</font></td></tr>";
                     }
                 }
             }
-
-            if (policyInfo[0]['acl_sess'][counter]['acl_sess__v6policy']) {
-                for (counter2 = 0; counter2 < policyInfo[0]['acl_sess'][counter]['acl_sess__v6policy'].length; counter2++) {
-                    if (policyInfo[0]['acl_sess'][counter]['acl_sess__v6policy'][counter2]['service-name']) {
-                        policyHTML += policyInfo[0]['acl_sess'][counter]['acl_sess__v6policy'][counter2]['service-name'] + "||";
-                    }
-                    else if (policyInfo[0]['acl_sess'][counter]['acl_sess__v6policy'][counter2]['svc']) {
-                        policyHTML += policyInfo[0]['acl_sess'][counter]['acl_sess__v6policy'][counter2]['svc'] + "||";
+        }
+    }
+    else {
+        if (policyInfo[policy] != null) {
+            for (j = 0; j < policyInfo[policy].length; j++) {
+                policyHTML += "<tr><td class='whiteBG' nowrap><font class='font11px'>" + policyInfo[policy][j]['accname'] + " (" + policy + ")</font></td><td class='whiteBG'><font class='font11px'>";
+                if (policyInfo[policy][j]['acl_sess__v4policy']) {
+                    for (k = 0; k < policyInfo[policy][j]['acl_sess__v4policy'].length; k++) {
+                        if (policyInfo[policy][j]['acl_sess__v4policy'][k]['service-name']) {
+                            policyHTML += policyInfo[policy][j]['acl_sess__v4policy'][k]['service-name'] + "||";
+                        }
+                        else if (policyInfo[policy][j]['acl_sess__v4policy'][k]['svc']) {
+                            policyHTML += policyInfo[policy][j]['acl_sess__v4policy'][k]['svc'] + "||";
+                        }
                     }
                 }
+                if (policyHTML.slice(-2) === "||") {
+                    policyHTML=policyHTML.slice(0, -2);
+                }
+                if (policyInfo[policy][j]['acl_sess__v6policy']) {
+                    for (k = 0; k < policyInfo[policy][j]['acl_sess__v6policy'].length; k++) {
+                        if (policyInfo[policy][j]['acl_sess__v6policy'][k]['service-name']) {
+                            policyHTML += policyInfo[policy][j]['acl_sess__v6policy'][k]['service-name'] + "||";
+                        }
+                        else if (policyInfo[policy][j]['acl_sess__v6policy'][k]['svc']) {
+                            policyHTML += policyInfo[policy][j]['acl_sess__v6policy'][k]['svc'] + "||";
+                        }
+                    }
+                }
+                if (policyHTML.slice(-2) === "||") {
+                    policyHTML=policyHTML.slice(0, -2);
+                }
+                policyHTML += "</font></td></tr>";
             }
-            policyHTML += "</font></td></tr>";
         }
     }
 
-    if (policyInfo[1]['acl_mac']) {
-        for (counter = 0; counter < policyInfo[1]['acl_mac'].length; counter++) {
-            policyHTML += "<tr><td class='whiteBG' nowrap><font class='font11px'>" + policyInfo[1]['acl_mac'][counter]['accname'] + " (MAC)</font></td><td class='whiteBG'><font class='font11px'>";
-            if (policyInfo[1]['acl_mac'][counter]['acl_mac__policy']) {
-                for (counter2 = 0; counter2 < policyInfo[1]['acl_mac'][counter]['acl_mac__policy'].length; counter2++) {
-                    if (policyInfo[1]['acl_mac'][counter]['acl_mac__policy'][counter2]['src']=="mask") {
-                        policyHTML += "<b>" + policyInfo[1]['acl_mac'][counter]['acl_mac__policy'][counter2]['action'] + "</b> " + policyInfo[1]['acl_mac'][counter]['acl_mac__policy'][counter2]['srcmac1'] + "(" + policyInfo[1]['acl_mac'][counter]['acl_mac__policy'][counter2]['srcmask']  + ")||" ;
-                    }
-                    else {
-                        policyHTML += "<b>" + policyInfo[1]['acl_mac'][counter]['acl_mac__policy'][counter2]['action'] + "</b> " + policyInfo[1]['acl_mac'][counter]['acl_mac__policy'][counter2]['srcmac'] + "||";
-                    }
-                }
-            }
-            policyHTML += "</font></td></tr>";
-        }
-    }
-    if (policyInfo[2]['acl_std']) {
-        for (counter = 0; counter < policyInfo[2]['acl_std'].length; counter++) {
-            policyHTML += "<tr><td class='whiteBG'><font class='font11px'>" + policyInfo[2]['acl_std'][counter]['accname'] + " (Standard)</font></td><td class='whiteBG'><font class='font11px'>";
-            if (policyInfo[2]['acl_std'][counter]['acl_std__v4policy']) {
-                for (counter2 = 0; counter2 < policyInfo[2]['acl_std'][counter]['acl_std__v4policy'].length; counter2++) {
-                    if (policyInfo[2]['acl_std'][counter]['acl_std__v4policy'][counter2]['src'] == "host") {
-                        policyHTML += "<b>" + policyInfo[2]['acl_std'][counter]['acl_std__v4policy'][counter2]['action'] + "</b> " + policyInfo[2]['acl_std'][counter]['acl_std__v4policy'][counter2]['srcaddr'] + "(" + policyInfo[2]['acl_std'][counter]['acl_std__v4policy'][counter2]['src'] + ")||";
-                    }
-                }
-            }
-            if (policyInfo[2]['acl_std'][counter]['acl_std__v6policy']) {
-                for (counter2 = 0; counter2 < policyInfo[2]['acl_std'][counter]['acl_std__v6policy'].length; counter2++) {
-                    if (policyInfo[2]['acl_std'][counter]['acl_std__v6policy'][counter2]['src'] == "host") {
-                        policyHTML += "<b>" + policyInfo[2]['acl_std'][counter]['acl_std__v6policy'][counter2]['action'] + "</b> " + policyInfo[2]['acl_std'][counter]['acl_std__v6policy'][counter2]['srcaddr'] + "(" + policyInfo[2]['acl_std'][counter]['acl_std__v6policy'][counter2]['src'] + ")||";
-                    }
-                }
-            }
-            policyHTML += "</font></td></tr>";
-        }
-    }
 
-    if (policyInfo[3]['acl_ext']) {
-        for (counter = 0; counter < policyInfo[3]['acl_ext'].length; counter++) {
-            policyHTML += "<tr><td class='whiteBG' nowrap><font class='font11px'>" + policyInfo[3]['acl_ext'][counter]['accname'] + " (Extended)</font></td><td class='whiteBG'><font class='font11px'>";
-            if (policyInfo[3]['acl_ext'][counter]['acl_ext__v4']) {
-                for (counter2 = 0; counter2 < policyInfo[3]['acl_ext'][counter]['acl_ext__v4'].length; counter2++) {
-                    policyHTML += "<b>" + policyInfo[3]['acl_ext'][counter]['acl_ext__v4'][counter2]['action'] + "</b> " + policyInfo[3]['acl_ext'][counter]['acl_ext__v4'][counter2]['srcaddr'];
-                    policyHTML += " " + policyInfo[3]['acl_ext'][counter]['acl_ext__v4'][counter2]['srcip'] + " " + policyInfo[3]['acl_ext'][counter]['acl_ext__v4'][counter2]['src_oper'];
-                    policyHTML += " " + policyInfo[3]['acl_ext'][counter]['acl_ext__v4'][counter2]['srcport'] + " " + policyInfo[3]['acl_ext'][counter]['acl_ext__v4'][counter2]['srcportnum'];
-                    policyHTML += " " + policyInfo[3]['acl_ext'][counter]['acl_ext__v4'][counter2]['dstip'] + " " + policyInfo[3]['acl_ext'][counter]['acl_ext__v4'][counter2]['dstip'] + "||";
-                }
-            }
-            if (policyInfo[3]['acl_ext'][counter]['acl_ext__v6']) {
-                for (counter2 = 0; counter2 < policyInfo[3]['acl_ext'][counter]['acl_ext__v6'].length; counter2++) {
-                    policyHTML += "<b>" +policyInfo[3]['acl_ext'][counter]['acl_ext__v6'][counter2]['action'] + "</b> " + policyInfo[3]['acl_ext'][counter]['acl_ext__v6'][counter2]['srcaddr'];
-                    policyHTML += " " + policyInfo[3]['acl_ext'][counter]['acl_ext__v6'][counter2]['srcip'] + " " + policyInfo[3]['acl_ext'][counter]['acl_ext__v6'][counter2]['src_oper'];
-                    policyHTML += " " + policyInfo[3]['acl_ext'][counter]['acl_ext__v6'][counter2]['srcport'] + " " + policyInfo[3]['acl_ext'][counter]['acl_ext__v6'][counter2]['srcportnum'];
-                    policyHTML += " " + policyInfo[3]['acl_ext'][counter]['acl_ext__v6'][counter2]['dstip'] + " " + policyInfo[3]['acl_ext'][counter]['acl_ext__v6'][counter2]['dstip'] + "||";
-                }
-            }
-            policyHTML += "</font></td></tr>";
-        }
-    }
-
-    if (policyInfo[4]['acl_qinq']) {
-        for (counter = 0; counter < policyInfo[4]['acl_qinq'].length; counter++) {
-            policyHTML += "<td class='whiteBG' nowrap><font class='font11px'>" + policyInfo[4]['acl_qinq'][counter]['accname'] + " (MAC)</font></td><td class='whiteBG'><font class='font11px'>";
-            policyHTML += "</font></td></tr>";
-        }
-    }
-
-    if (policyInfo[5]['acl_route']) {
-        for (counter = 0; counter < policyInfo[5]['acl_route'].length; counter++) {
-            policyHTML += "<td class='whiteBG' nowrap><font class='font11px'>" + policyInfo[5]['acl_route'][counter]['accname'] + " (Routed)</font></td><td class='whiteBG'><font class='font11px'>";
-            policyHTML += "</font></td></tr>";
-        }
-    }
-
-    policyInfo += "</table>";
+    policyInfo += "</form></table>";
     document.getElementById("mobilityPolicies").innerHTML = policyHTML;
-
-    $(".addPolicy").click(async function () {
-        document.getElementById("policyAction").style.display = "block";
-        console.log("add policy");
-    });
-
-
-    $(".editPolicy").click(async function () {
-        document.getElementById("policyAction").style.display = "block";
-        console.log("edit policy");
-    });
-
-    $(".deletePolicy").click(async function () {
-        document.getElementById("policyAction").style.display = "block";
-        console.log("delete policy");
-    });
-
-    $(document).on("change", "#filterPolicy", async function () {
-        var policy_select = document.getElementById('filterPolicy');
-        var policy = policy_select.options[policy_select.selectedIndex].value;
-        console.log(policy);
-    });
-
-
-
-});
+}

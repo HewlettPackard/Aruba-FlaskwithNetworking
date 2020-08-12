@@ -24,6 +24,7 @@ def telemetry ():
         # Obtain the relevant device information from the database
         result=classes.telemetrydbAction(formresult)
         if authOK['hasaccess']==True:
+            authOK['hasaccess']="true"
             return render_template("telemetry.html",result=result['result'], formresult=formresult, totalentries=int(result['totalentries']),pageoffset=int(result['pageoffset']),entryperpage=int(result['entryperpage']), authOK=authOK, sysvars=sysvars, hostip=hostip)
         else:
             return render_template("noaccess.html",authOK=authOK, sysvars=sysvars)

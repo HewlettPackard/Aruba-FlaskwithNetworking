@@ -25,7 +25,6 @@ $('#updateTracker').ready(function () {
                 data: { entryperpage: entryperpage, pageoffset: pageoffset, searchType: searchType, searchInfo: searchInfo },
                 success: function (response) {
                     result = JSON.parse(response);
-                    console.log(result['accessright']);
                     response = result['result'];
                     //Render the table
                     listHTML = "";

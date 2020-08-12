@@ -62,6 +62,7 @@ def ztpdevice ():
         else:
             ipamstatus="Online"
         if authOK['hasaccess']==True:
+            authOK['hasaccess']="true"
             return render_template("ztpdevice.html",result=result['result'],formresult=formresult,imageResult=imageResult, templateResult=templateResult, ipamstatus=ipamstatus, ztpstatusInfo=ztpstatusInfo, totalentries=int(result['totalentries']),pageoffset=int(result['pageoffset']),entryperpage=int(result['entryperpage']), authOK=authOK, sysvars=sysvars)
         else:
             return render_template("noaccess.html",authOK=authOK, sysvars=sysvars)
@@ -77,6 +78,7 @@ def ztptemplate ():
         # Obtain the relevant device information from the database
         result=classes.ztptemplatedbAction(formresult)
         if authOK['hasaccess']==True:
+            authOK['hasaccess']="true"
             return render_template("ztptemplate.html",result=result['result'],formresult=formresult, totalentries=int(result['totalentries']),pageoffset=int(result['pageoffset']),entryperpage=int(result['entryperpage']), authOK=authOK, sysvars=sysvars)
         else:
             return render_template("noaccess.html",authOK=authOK, sysvars=sysvars)
@@ -110,6 +112,7 @@ def ztpimage ():
             # Obtain the relevant device information from the database
             result=classes.ztpimagedbAction(formresult,'','')
         if authOK['hasaccess']==True:
+            authOK['hasaccess']="true"
             return render_template("ztpimage.html",result=result['result'], formresult=formresult, totalentries=int(result['totalentries']),pageoffset=int(result['pageoffset']),entryperpage=int(result['entryperpage']), authOK=authOK, sysvars=sysvars)
         else:
             return render_template("noaccess.html",authOK=authOK, sysvars=sysvars)

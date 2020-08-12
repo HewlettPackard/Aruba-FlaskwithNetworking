@@ -17,6 +17,7 @@ def topology ():
         # Obtain the relevant device information from the database
         result=classes.topodbAction(formresult)
         if authOK['hasaccess']==True:
+            authOK['hasaccess']="true"
             return render_template("topology.html",result=result['result'], formresult=formresult, totalentries=int(result['totalentries']),pageoffset=int(result['pageoffset']),entryperpage=int(result['entryperpage']), authOK=authOK, sysvars=sysvars)
         else:
             return render_template("noaccess.html",authOK=authOK, sysvars=sysvars)

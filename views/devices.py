@@ -17,6 +17,7 @@ def index ():
         # Obtain the relevant device information from the database
         result=classes.devicedbAction(formresult)
         if authOK['hasaccess']==True:
+            authOK['hasaccess']="true"
             return render_template("switch.html",result=result['result'],switchos=result['switchos'], platforms=result['platforms'], formresult=formresult, totalentries=int(result['totalentries']),pageoffset=int(result['pageoffset']),entryperpage=int(result['entryperpage']), authOK=authOK, sysvars=sysvars)
         else:
             return render_template("noaccess.html",authOK=authOK, sysvars=sysvars)
@@ -32,6 +33,7 @@ def switches ():
         # Obtain the relevant device information from the database
         result=classes.devicedbAction(formresult)
         if authOK['hasaccess']==True:
+            authOK['hasaccess']="true"
             return render_template("switch.html",result=result['result'], switchos=result['switchos'], platforms=result['platforms'], formresult=formresult, totalentries=int(result['totalentries']),pageoffset=int(result['pageoffset']),entryperpage=int(result['entryperpage']), authOK=authOK, sysvars=sysvars, entryExists=result['entryExists'])
         else:
             return render_template("noaccess.html",authOK=authOK, sysvars=sysvars)
@@ -150,6 +152,7 @@ def clearpass ():
         # Obtain the relevant ClearPass information from the database
         result=classes.clearpassdbAction(formresult)
         if authOK['hasaccess']==True:
+            authOK['hasaccess']="true"
             return render_template("clearpass.html",result=result['result'], platformResult=result['platformResult'],osversionResult=result['osversionResult'], formresult=formresult, totalentries=int(result['totalentries']),pageoffset=int(result['pageoffset']),entryperpage=int(result['entryperpage']), authOK=authOK, sysvars=sysvars)
         else:
             return render_template("noaccess.html",authOK=authOK, sysvars=sysvars)
@@ -159,13 +162,13 @@ def clearpass ():
 @devices.route("/mobility", methods=['GET', 'POST'])
 def mobility ():
     authOK=classes.checkAuth("mobilityaccess","submenu")
-    print(authOK)
     if authOK!=0:
         sysvars=classes.globalvars()
         formresult=request.form
         # Obtain the relevant Mobility Controller information from the database
         result=classes.mobilitydbAction(formresult)
         if authOK['hasaccess']==True:
+            authOK['hasaccess']="true"
             return render_template("mobility.html",result=result['result'], platformResult=result['platformResult'],osversionResult=result['osversionResult'], formresult=formresult, totalentries=int(result['totalentries']),pageoffset=int(result['pageoffset']),entryperpage=int(result['entryperpage']), authOK=authOK, sysvars=sysvars)
         else:
             return render_template("noaccess.html",authOK=authOK, sysvars=sysvars)
@@ -223,7 +226,7 @@ def mcroleInfo ():
 @devices.route("/mcpolicyInfo", methods=['GET', 'POST'])
 def mcpolicyInfo ():
     # Obtain the relevant Mobility Controller information from the database
-    result=classes.mcpolicyInfo(request.form['deviceid'])
+    result=classes.mcpolicyInfo(request.form['deviceid'], request.form['policy'])
     return result
 
 @devices.route("/mcinterfaceInfo", methods=['GET', 'POST'])

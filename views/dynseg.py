@@ -45,6 +45,7 @@ def dsprofile():
         except:
             formresult=[]
         if authOK['hasaccess']==True:
+            authOK['hasaccess']="true"
             return render_template("dsprofile.html",result=result,formresult=formresult, cpInfo=cpInfo,mcInfo=mcInfo,devInfo=devInfo, editProfile=editProfile,authMethod=authMethod,authSource=authSource,message=message, authOK=authOK, sysvars=sysvars)
         else:
             return render_template("noaccess.html",authOK=authOK, sysvars=sysvars)
@@ -77,6 +78,7 @@ def dsservice():
         except:
             formresult=[]
         if authOK['hasaccess']==True:
+            authOK['hasaccess']="true"
             return render_template("dsservice.html",result=result,formresult=formresult,mcInfo=mcInfo,profileInfo=profileInfo,editService=editService,profileresult=profileresult,authMethod=authMethod,authSource=authSource,message=message,authOK=authOK, sysvars=sysvars)
         else:
             return render_template("noaccess.html",authOK=authOK, sysvars=sysvars)

@@ -6,6 +6,11 @@ import urllib3
 import json
 urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)
 
+def str_to_bool(s):
+        if s == 'True':
+            return True
+        elif s == 'False':
+            return False
 
 def clearpassdbAction(formresult):
     # This definition is for all the database actions for ClearPass, based on the user click on the pages
@@ -171,26 +176,36 @@ def gettrustInfo(deviceid,trEntryperpage,trPageoffset, searchSubject, searchVali
         pageOffset=int(trPageoffset)*int(trEntryperpage)
     queryStr="select id, ipaddress, description from devices where id='{}'".format(deviceid)
     deviceInfo=classes.classes.sqlQuery(queryStr,"selectone")
-    # Check out whether there are any filters
-    if searchSubject or searchValid or searchStatus:
-        searchFilter="{\"$and\":["
-        if searchSubject:
-            searchFilter+="{\"subject_DN\":{\"$contains\":\"" + searchSubject + "\"}},"
-        if searchValid:
-            searchFilter+="{\"valid\":{\"$eq\":" + searchValid + "}},"
-        if searchStatus:
-            searchFilter+="{\"enabled\":{\"$eq\":" + searchStatus + "}},"
-        searchFilter=searchFilter[:-1]
-        searchFilter+="]}"
-    else:
-        searchFilter="{}"
     # Obtain the ClearPass trusted certificates information from ClearPass
-    url="cert-trust-list-details?filter=" + searchFilter + "&sort=%2Bid&offset=" + str(pageOffset) + "&limit=" + str(trEntryperpage) + "&calculate_count=true"
+    url="cert-trust-list-details?filter=%7B%7D&sort=%2Bid&offset=0&limit=1000&calculate_count=true"
     trustInfo=classes.classes.getRESTcp(deviceid,url)
+    trustItems=[]
+    # Now that we have all the certs, check whether we need to filter based on search criteria and adapt the counts
+    if searchSubject:
+        # We need to filter the items
+        for li in trustInfo['_embedded']['items']:
+            if searchSubject in li['subject_DN']:
+                trustItems.append(li)
+            trustInfo['_embedded']['items']=trustItems
+            trustInfo['count']=len(trustItems)
+        trustItems=[]
+    if searchStatus:
+        # We need to filter the items
+        for li in trustInfo['_embedded']['items']:         
+            if li['enabled'] == str_to_bool(searchStatus):
+                trustItems.append(li)
+            trustInfo['_embedded']['items']=trustItems
+            trustInfo['count']=len(trustItems)
+        trustItems=[]
+    if searchValid:
+        for li in trustInfo['_embedded']['items']:
+            if searchValid in li['valid']:
+                trustItems.append(li)
+            trustInfo['_embedded']['items']=trustItems
+            trustInfo['count']=len(trustItems)
+        trustItems=[]
     if trustInfo==401:
-        # Something went wrong with the query. Obtain the information without search criteria
-        url="cert-trust-list-details?sort=%2Bid&offset=" + str(pageOffset) + "&limit=" + str(trEntryperpage) + "&calculate_count=true"
-        trustInfo=classes.classes.getRESTcp(deviceid,url)
+        trustInfo={}
         return {'trustInfo': trustInfo,'deviceInfo': deviceInfo, 'trTotalentries': trustInfo['count'], 'trEntryperpage': trEntryperpage, 'trPageoffset': trPageoffset , 'searchSubject': searchSubject, 'searchValid': searchValid, 'searchStatus': searchStatus }
     else:
         return {'trustInfo': trustInfo,'deviceInfo': deviceInfo, 'trTotalentries': trustInfo['count'], 'trEntryperpage': trEntryperpage, 'trPageoffset': trPageoffset , 'searchSubject': searchSubject, 'searchValid': searchValid, 'searchStatus': searchStatus }

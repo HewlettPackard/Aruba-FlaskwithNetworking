@@ -85,7 +85,7 @@ $(document).ready(function () {
         document.getElementById("showServices").style.display = "none";
         document.getElementById("adddeviceForm").style.display = "none";
         document.getElementById("editdeviceForm").style.display = "none";
-        $('#showTrust').load('cpTrusts?deviceid=' + deviceid + "&trEntryperpage=25&trPageoffset=0&searchSubject=&searchValid=&searchStatus=");
+        $('#showTrust').load('cpTrusts?deviceid=' + deviceid + "&trEntryperpage=25&trPageoffset=0&searchSubject=&searchStatus=");
     });
 
     $(".showServices").on('click', function () {
@@ -139,8 +139,8 @@ function showTrusts(deviceid) {
     var currenttrEntryperpage = document.getElementById('currenttrEntryperpage').value;
     var trstatus_select = document.getElementById('searchStatus');
     var searchStatus = trstatus_select.options[trstatus_select.selectedIndex].value;
-    var vlstatus_select = document.getElementById('searchValid');
-    var searchValid = vlstatus_select.options[vlstatus_select.selectedIndex].value;
+    var trvalid_select = document.getElementById('searchValid');
+    var searchValid = trvalid_select.options[trvalid_select.selectedIndex].value;
     var searchSubject = document.getElementById('searchSubject').value;
     if (trEntryperpage == currenttrEntryperpage) {
         var po_select = document.getElementById('trPageoffset');
@@ -154,7 +154,7 @@ function showTrusts(deviceid) {
     document.getElementById("showServices").style.display = "none";
     document.getElementById("adddeviceForm").style.display = "none";
     document.getElementById("editdeviceForm").style.display = "none";
-    $('#showTrust').load('cpTrusts?deviceid=' + deviceid + "&trEntryperpage=" + trEntryperpage + "&trPageoffset=" + trPageoffset + "&searchStatus=" + searchStatus + "&searchValid=" + searchValid + "&searchSubject=" + searchSubject);
+    $('#showTrust').load('cpTrusts?deviceid=' + deviceid + "&trEntryperpage=" + trEntryperpage + "&trPageoffset=" + trPageoffset + "&searchStatus=" + searchStatus + "&searchSubject=" + searchSubject + "&searchValid=" + searchValid);
 }
 
 function showServices(deviceid) {
