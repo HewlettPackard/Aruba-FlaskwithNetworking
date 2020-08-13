@@ -2,7 +2,7 @@
 
 
 $(document).ready(function () {
-
+    document.getElementById("liProgress").style.display = "none";
     $('.telemetryOnline').ready(function () {
         var refresh = async function () {
             telemetryOnline = document.getElementsByClassName('telemetryOnline');
@@ -105,7 +105,9 @@ $(document).ready(function () {
 
         // Connection closed
         socket.addEventListener('close', function (event) {
-            console.log("Disconnected from the websocket server");
+            document.getElementById("liProgress").style.display = "block";
+            document.getElementById("progresstooltip").style.display = "none";
+            progressInfo.innerHTML = "Disconnected from the websocket server";
         });
         const sendMsg = () => {
             socket.send("Hello from client...");

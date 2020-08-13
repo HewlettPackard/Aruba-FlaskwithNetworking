@@ -33,10 +33,14 @@
                                 <option value="50" {% if epEntryperpage==50 %} selected {% endif %}>50</option>
                                 <option value="100" {% if epEntryperpage==100 %} selected {% endif %}>100</option>
                             </select> entries per page (page <select name="epPageoffset" id="epPageoffset" class="showEndpoints" onchange="showEndpoints({{ deviceInfo['id'] }})">
+                                {% if epTotalentries==0 %}
+                                <option value="1" selected>1</option>
+                                {% else %}
                                 {% for i in  range((epTotalentries/epEntryperpage)|round(0,'ceil')|int) %}
                                 <option value="{{ i }}" {% if epPageoffset==i %}selected{% endif %}>{{ i+1 }}</option>
                                 {% endfor %}
-                            </select> of {{ (epTotalentries/epEntryperpage)|round(0,'ceil')|int }} pages)
+                                {% endif %}
+                            </select> of {% if epTotalentries==0 %} 1 {% else %} {{ (epTotalentries/epEntryperpage)|round(0,'ceil')|int }} {% endif %} pages)
                         </font><input type="button" name="searchAction" value="Search" class="button" id="searchEndpoint" onclick="showEndpoints({{ deviceInfo['id'] }})"/>
                     </td>
                 </tr>

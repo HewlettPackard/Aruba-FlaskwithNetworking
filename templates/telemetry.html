@@ -18,7 +18,7 @@
 {% endif %}
 
 <div id="maincontainer">
-    <div id="wsClient" data-hostip="{{ hostip }}"></div>
+    <div id="wsClient" data-hostip="{% if sysvars['telemetrysource']=="" %}{{ hostip }}{% else %}{{ sysvars['telemetrysource'] }}{% endif %}"></div>
     <table class="tablenoborder">
         <form method="post">
             <input id='orderBy' name='orderBy' type='hidden' value="{{ orderBy }}" />

@@ -206,7 +206,7 @@ def gettrustInfo(deviceid,trEntryperpage,trPageoffset, searchSubject, searchVali
         trustItems=[]
     if trustInfo==401:
         trustInfo={}
-        return {'trustInfo': trustInfo,'deviceInfo': deviceInfo, 'trTotalentries': trustInfo['count'], 'trEntryperpage': trEntryperpage, 'trPageoffset': trPageoffset , 'searchSubject': searchSubject, 'searchValid': searchValid, 'searchStatus': searchStatus }
+        return {'trustInfo': trustInfo,'deviceInfo': deviceInfo, 'trTotalentries': 0, 'trEntryperpage': trEntryperpage, 'trPageoffset': trPageoffset , 'searchSubject': searchSubject, 'searchValid': searchValid, 'searchStatus': searchStatus }
     else:
         return {'trustInfo': trustInfo,'deviceInfo': deviceInfo, 'trTotalentries': trustInfo['count'], 'trEntryperpage': trEntryperpage, 'trPageoffset': trPageoffset , 'searchSubject': searchSubject, 'searchValid': searchValid, 'searchStatus': searchStatus }
 
@@ -219,28 +219,44 @@ def getservicesInfo(deviceid,seEntryperpage,sePageoffset, searchName, searchType
         pageOffset=int(sePageoffset)*int(seEntryperpage)
     queryStr="select id, ipaddress, description from devices where id='{}'".format(deviceid)
     deviceInfo=classes.classes.sqlQuery(queryStr,"selectone")
-     # Check out whether there are any filters
-    if searchName or searchType or searchTemplate or searchStatus:
-        searchFilter="{\"$and\":["
-        if searchName:
-            searchFilter+="{\"name\":{\"$contains\":\"" + searchName + "\"}},"
-        if searchType:
-            searchFilter+="{\"type\":{\"$contains\":\"" + searchType + "\"}},"
-        if searchTemplate:
-            searchFilter+="{\"template\":{\"$contains\":\"" + searchTemplate + "\"}},"
-        if searchStatus:
-            searchFilter+="{\"enabled\":{\"$eq\":" + searchStatus + "}},"
-        searchFilter=searchFilter[:-1]
-        searchFilter+="]}"
-    else:
-        searchFilter="{}"
     # Obtain the ClearPass services information from ClearPass
-    url="config/service?filter=" + searchFilter + "&sort=%2Bid&offset=" + str(pageOffset) + "&limit=" + str(seEntryperpage) + "&calculate_count=true"
+    url="config/service?filter=%7B%7D&sort=%2Bid&offset=0&limit=1000&calculate_count=true"
     servicesInfo=classes.classes.getRESTcp(deviceid,url)
-    if servicesInfo==401:
-        # Something went wrong with the query. Obtain the information without search criteria
-        url="config/service?sort=%2Bid&offset=" + str(pageOffset) + "&limit=" + str(seEntryperpage) + "&calculate_count=true"
-        servicesInfo=classes.classes.getRESTcp(deviceid,url)
-        return {'servicesInfo': servicesInfo,'deviceInfo': deviceInfo, 'seTotalentries': servicesInfo['count'], 'seEntryperpage': seEntryperpage, 'sePageoffset': sePageoffset, 'searchName':searchName, 'searchType': searchType,'searchTemplate': searchTemplate,'searchStatus':searchStatus }
+    servicesItems=[]
+    # Now that we have all the certs, check whether we need to filter based on search criteria and adapt the counts
+    if searchName:
+        # We need to filter the items
+        for li in servicesInfo['_embedded']['items']:
+            if searchName in li['name']:
+                servicesItems.append(li)
+            servicesInfo['_embedded']['items']=servicesItems
+            servicesInfo['count']=len(servicesItems)
+        servicesItems=[]
+    if searchStatus:
+        # We need to filter the items
+        for li in servicesInfo['_embedded']['items']: 
+            print(searchStatus)
+            if li['enabled'] == str_to_bool(searchStatus):
+                servicesItems.append(li)
+            servicesInfo['_embedded']['items']=servicesItems
+            servicesInfo['count']=len(servicesItems)
+        servicesItems=[]
+    if searchTemplate:
+        for li in servicesInfo['_embedded']['items']:
+            if searchTemplate in li['template']:
+                servicesItems.append(li)
+            servicesInfo['_embedded']['items']=servicesItems
+            servicesInfo['count']=len(servicesItems)
+        servicesItems=[]
+    if searchType:
+        for li in servicesInfo['_embedded']['items']:
+            if searchType in li['type']:
+                servicesItems.append(li)
+            servicesInfo['_embedded']['items']=servicesItems
+            servicesInfo['count']=len(servicesItems)
+        servicesItems=[]
+    if servicesInfo==401:        
+        servicesInfo={}
+        return {'servicesInfo': servicesInfo,'deviceInfo': deviceInfo, 'seTotalentries': 0, 'seEntryperpage': seEntryperpage, 'sePageoffset': sePageoffset, 'searchName':searchName, 'searchType': searchType,'searchTemplate': searchTemplate,'searchStatus':searchStatus }
     else:
         return {'servicesInfo': servicesInfo,'deviceInfo': deviceInfo, 'seTotalentries': servicesInfo['count'], 'seEntryperpage': seEntryperpage, 'sePageoffset': sePageoffset, 'searchName':searchName, 'searchType': searchType,'searchTemplate': searchTemplate,'searchStatus':searchStatus }

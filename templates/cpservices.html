@@ -16,14 +16,14 @@
             <input type="hidden" name="currentseEntryperpage" id="currentseEntryperpage" value="{{ seEntryperpage }}"/>
             <tr style="background-color: grey;" class="tableTitle">
                 <td nowrap></td>
-                <td nowrap><font class='font12pxwhite'><input type="text" name="searchName" value="" id="searchName"/></font></td>
-                <td nowrap><font class='font12pxwhite'><input type="text" name="searchType" value="" id="searchType"/></font></td>
-                <td nowrap><font class='font12pxwhite'><input type="text" name="searchTemplate" value="" id="searchTemplate"/></font></td>
+                <td nowrap><font class='font12pxwhite'><input type="text" name="searchName" value="{{ searchName }}" id="searchName"/></font></td>
+                <td nowrap><font class='font12pxwhite'><input type="text" name="searchType" value="{{ searchType }}" id="searchType"/></font></td>
+                <td nowrap><font class='font12pxwhite'><input type="text" name="searchTemplate" value="{{ searchTemplate }}" id="searchTemplate"/></font></td>
                 <td nowrap>
                     <select name="searchStatus" onchange="showServices({{ deviceInfo['id'] }})" id="searchStatus">
                         <option value="">Select</option>
-                        <option value="false">Disabled</option>
-                        <option value="true">Enabled</option>
+                        <option value="False" {% if searchStatus=="False" %} selected {% endif %}>Disabled</option>
+                        <option value="True" {% if searchStatus=="True" %} selected {% endif %}>Enabled</option>
                     </select>
                 </td>
                 <td colspan="2" align="right">
@@ -34,10 +34,15 @@
                             <option value="50" {% if seEntryperpage==50 %} selected {% endif %}>50</option>
                             <option value="100" {% if seEntryperpage==100 %} selected {% endif %}>100</option>
                         </select> entries per page (page <select name="sePageoffset" id="sePageoffset" class="showServices" onchange="showServices({{ deviceInfo['id'] }})">
+                            {% if seTotalentries==0 %}
+                            <option value="1" selected>1</option>
+                            {% else %}
                             {% for i in  range((seTotalentries/seEntryperpage)|round(0,'ceil')|int) %}
                             <option value="{{ i }}" {% if sePageoffset==i %}selected{% endif %}>{{ i+1 }}</option>
                             {% endfor %}
-                        </select> of {{ (seTotalentries/seEntryperpage)|round(0,'ceil')|int }} pages)
+                            {% endif %}
+
+                        </select> of {% if seTotalentries==0 %} 1 {% else %}{{ (seTotalentries/seEntryperpage)|round(0,'ceil')|int }} {% endif %} pages)
                     </font><input type="button" name="searchAction" value="Search" class="button" id="searchServices" onclick="showServices({{ deviceInfo['id'] }})" />
                 </td>
             </tr>
