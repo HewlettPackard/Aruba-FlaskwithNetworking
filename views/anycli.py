@@ -23,7 +23,10 @@ def index ():
             if classes.checkifOnline(formresult['deviceid'],"arubaos-switch")=="Online":
                 if formresult['cmd']:
                     cmdResult=classes.anycli(formresult['cmd'],formresult['deviceid'])
-                    cmdContent=classes.b64decode(cmdResult['result_base64_encoded']).decode('utf_8')
+                    if cmdResult:
+                        cmdContent=classes.b64decode(cmdResult['result_base64_encoded']).decode('utf_8')
+                    else:
+                        cmdContent="Could not obtain information"
                 else:
                     cmdResult=[]
                     cmdContent="No command entered..."
