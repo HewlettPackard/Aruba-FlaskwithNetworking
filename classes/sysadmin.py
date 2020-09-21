@@ -10,6 +10,7 @@ import urllib3
 import ssl
 import json
 import secrets
+from ldap3 import Server, Connection, Tls, ALL, SUBTREE
 from http import cookies
 from flask import request
 
@@ -26,74 +27,117 @@ def checkAuth(item, type):
     #Definition that verifies whether the cookie is still valid for the user. If it is valid, return 1, if not valid return 0
     # In addition, we have to check the RBAC, check whether the user is allowed access. If no access, we will add it to the dictionary that is returned
     # If 0 is returned, a logout occurs, which we don't want to happen if the cookie is still valid
-    try:
-        queryStr="select * from sysuser where username='{}' and cookie='{}'".format(request.cookies['username'],request.cookies['token'])
-        result=classes.classes.sqlQuery(queryStr,"selectone")
-        if result:
-            # The cookie is valid, now we need to check whether the user is allowed access
-            hasaccess=verifyAccess(item, type)
-            authOK={'username':result['username'],'token':result['cookie'],'hasaccess': hasaccess }
-        else:
+    globalsconf=classes.classes.globalvars()
+    if globalsconf['authsource']=="ldap":
+        if bool(request.cookies)==False:
             authOK=0
-    except:
-        authOK=0
+        else:
+            hasaccess=verifyAccess(item, type)
+            authOK={'username':request.cookies['username'],'token':request.cookies['token'],'hasaccess': hasaccess }
+    else:
+        try:
+            queryStr="select * from sysuser where username='{}' and cookie='{}'".format(request.cookies['username'],request.cookies['token'])
+            result=classes.classes.sqlQuery(queryStr,"selectone")
+            if result:
+                # The cookie is valid, now we need to check whether the user is allowed access
+                hasaccess=verifyAccess(item, type)
+                authOK={'username':result['username'],'token':result['cookie'],'hasaccess': hasaccess }
+            else:
+                authOK=0
+        except:
+            authOK=0
     return authOK
 
 def verifyAccess(item, type):
-    #Definition that verifies whether user has access to the item
-    try:
-        queryStr="select * from sysuser where username='{}' and cookie='{}'".format(request.cookies['username'],request.cookies['token'])
-        result=classes.classes.sqlQuery(queryStr,"selectone")
-        queryStr="select accessrights from sysrole where id='{}'".format(result['role'])
-        roleresult=classes.classes.sqlQuery(queryStr,"selectone")
-        accessrights=json.loads(roleresult['accessrights'])
-        # There are three different items, two for the menus in the navbar and one for the functions. The type variable identified this (menu, submenu or feature)
-        if type=="menu":
-            if item in accessrights:
-                # If the item exists, this means that the menu item can be displayed
-                return True
-            else:
-                return False
-        elif type=="submenu":
-            if accessrights[item]=="1" or accessrights[item]=="2":
-                # Read only or write 
-                return True
-            else:
-                return False
-        elif type=="feature":
-            #We need to check what type of access is allowed (read-write). This is typically for edit and delete actions
-            if accessrights[item]=="2":
-                # Write access 
-                return True
-            else:
-                return False
-    except:
+    #Definition that verifies whether user has access to the item. RBAC is only supported for local authentication. If the authentication source is LDAP, everything is allowed
+    globalsconf=classes.classes.globalvars()
+    if (globalsconf['authsource']=="ldap"):
+        return True
+    else:
+        try:
+            queryStr="select * from sysuser where username='{}' and cookie='{}'".format(request.cookies['username'],request.cookies['token'])
+            result=classes.classes.sqlQuery(queryStr,"selectone")
+            queryStr="select accessrights from sysrole where id='{}'".format(result['role'])
+            roleresult=classes.classes.sqlQuery(queryStr,"selectone")
+            accessrights=json.loads(roleresult['accessrights'])
+            # There are three different items, two for the menus in the navbar and one for the functions. The type variable identified this (menu, submenu or feature)
+            if type=="menu":
+                if item in accessrights:
+                    # If the item exists, this means that the menu item can be displayed
+                    return True
+                else:
+                    return False
+            elif type=="submenu":
+                if accessrights[item]=="1" or accessrights[item]=="2":
+                    # Read only or write 
+                    return True
+                else:
+                    return False
+            elif type=="feature":
+                #We need to check what type of access is allowed (read-write). This is typically for edit and delete actions
+                if accessrights[item]=="2":
+                    # Write access 
+                    return True
+                else:
+                    return False
+        except:
+            return {}
         return {}
-    return {}
 
 def submitLogin(username,password):
     globalsconf=classes.classes.globalvars()
-    queryStr="select * from sysuser where username ='{}'".format(username)
-    result=classes.classes.sqlQuery(queryStr,"selectone")
-    try:
-        if result['password']!="":
-        # Check whether the user exists and if it exists, whether the password matches. If there is a match we have to create and set a session cookie and update 
-        # the database
-            if classes.classes.decryptPassword(globalsconf['secret_key'], result['password'])==password:
-                # Set and Store the cookie. Cookie has to contain the username and the cookie value
-                token = secrets.token_urlsafe(24)
-                cookievals = {'username':username,'token':token}
-                queryStr="update sysuser set cookie='{}' where id='{}'".format(token,result['id'])
-                classes.classes.sqlQuery(queryStr,"selectone")
-                return cookievals
+    # If the authentication source is LDAP, we need to authenticate against the LDAP server. If the LDAP server is not available, we need to fallback to local authentication
+    if globalsconf['authsource']=="ldap":
+        if checkldap(username, password, globalsconf['ldapsource'], globalsconf['basedn'],"submitLogin")['message']=="LDAP connection successful":
+            print("LDAP connection is successful")
+            # Set a cookie. Cookie has to contain the username and the cookie value
+            token = secrets.token_urlsafe(24)
+            cookievals = {'username':username,'token':token}
+            return cookievals
+        else:
+            # To add: if local fallback is enabled, perform local authentication
+            if "localfallback" in globalsconf:
+                queryStr="select * from sysuser where username ='{}'".format(username)
+                result=classes.classes.sqlQuery(queryStr,"selectone")
+                try:
+                    if result['password']!="":
+                    # Check whether the user exists and if it exists, whether the password matches. If there is a match we have to create and set a session cookie and update 
+                    # the database
+                        if classes.classes.decryptPassword(globalsconf['secret_key'], result['password'])==password:
+                            # Set and Store the cookie. Cookie has to contain the username and the cookie value
+                            token = secrets.token_urlsafe(24)
+                            cookievals = {'username':username,'token':token}
+                            queryStr="update sysuser set cookie='{}' where id='{}'".format(token,result['id'])
+                            classes.classes.sqlQuery(queryStr,"selectone")
+                            return cookievals
+                        else:
+                            return 0
+                except:
+                    return 0
             else:
                 return 0
-        else:
-            # There is no password stored in the database, force password change for user admin
-            return 2
-    except:
+    else:
+        queryStr="select * from sysuser where username ='{}'".format(username)
+        result=classes.classes.sqlQuery(queryStr,"selectone")
+        try:
+            if result['password']!="":
+            # Check whether the user exists and if it exists, whether the password matches. If there is a match we have to create and set a session cookie and update 
+            # the database
+                if classes.classes.decryptPassword(globalsconf['secret_key'], result['password'])==password:
+                    # Set and Store the cookie. Cookie has to contain the username and the cookie value
+                    token = secrets.token_urlsafe(24)
+                    cookievals = {'username':username,'token':token}
+                    queryStr="update sysuser set cookie='{}' where id='{}'".format(token,result['id'])
+                    classes.classes.sqlQuery(queryStr,"selectone")
+                    return cookievals
+                else:
+                    return 0
+            else:
+                # There is no password stored in the database, force password change for user admin
+                return 2
+        except:
+            return 0
         return 0
-    return 0
 
 def changePassword(username,password):
     globalsconf=classes.classes.globalvars()
@@ -181,7 +225,7 @@ def submitsysConf(sysconf):
         else:
             globalsconf.update( { key : items} )
     globalsconf.update({"appPath":appPath})
-    globalsconf.update({"softwareRelease":"2.0"})
+    globalsconf.update({"softwareRelease":"2.1"})
     globalsconf.update({"sysInfo":json.loads(sysInfo)})
     globalsconf.update({"netInfo":psutil.net_if_addrs()})
     with open('bash/globals.json', 'w') as systemconfig:
@@ -189,6 +233,8 @@ def submitsysConf(sysconf):
 
 def userdbAction(formresult):
     # This definition is for all the database actions for the user administration
+    constructQuery=""
+    roleResult=classes.classes.sqlQuery("select id, name from sysrole","select")
     if(bool(formresult)==True):
         if(formresult['action']=="Submit user"):
             # First check if the user or e-mail address already exists
@@ -199,38 +245,102 @@ def userdbAction(formresult):
                 checkroleStatus(formresult['role'])
             else:
                 print("User already exists")
-            result=classes.classes.sqlQuery("select * from sysuser","select")
+            result=classes.classes.sqlQuery("select * from sysuser" + constructQuery,"select")
         elif  (formresult['action']=="Submit changes"):
             if(formresult['username']=="admin"):
-                queryStr="update sysuser set email='{}' where id='{}'".format(formresult['email'],formresult['id'])
+                queryStr="update sysuser set email='{}' where id='{}'".format(formresult['email'],formresult['userid'])
             else:
                 queryStr="update sysuser set username='{}',password='{}',email='{}', role='{}' where id='{}' "\
-                .format(formresult['username'],classes.classes.encryptPassword("ArubaRocks!!!!!!", formresult['password']),formresult['email'], formresult['role'], formresult['id'])
+                .format(formresult['username'],classes.classes.encryptPassword("ArubaRocks!!!!!!", formresult['password']),formresult['email'], formresult['role'], formresult['userid'])
             classes.classes.sqlQuery(queryStr,"update")
             # And update the status of the assigned role to 1
             queryStr="update sysrole set status='1' where id='{}'".format(formresult['role'])
             classes.classes.sqlQuery(queryStr,"update")
             checkroleStatus(formresult['orgrole'])
-            result=classes.classes.sqlQuery("select * from sysuser","select")
+            result=classes.classes.sqlQuery("select * from sysuser" + constructQuery,"select")
         elif (formresult['action']=="Delete"):
-            queryStr="select role from sysuser where id='{}'".format(formresult['id'])
+            queryStr="select role from sysuser where id='{}'".format(formresult['userid'])
             roleInfo=classes.classes.sqlQuery(queryStr,"selectone")
-            queryStr="delete from sysuser where id='{}'".format(formresult['id'])
+            queryStr="delete from sysuser where id='{}'".format(formresult['userid'])
             classes.classes.sqlQuery(queryStr,"delete")
             checkroleStatus(roleInfo['role'])
-            result=classes.classes.sqlQuery("select * from sysuser","select")
-        elif (formresult['action']=="order by username"):
-            result=classes.classes.sqlQuery("select * from sysuser order by username ASC","select")
-        elif (formresult['action']=="order by email"):
-            result=classes.classes.sqlQuery("select * from sysuser order by email ASC","select")
+            result=classes.classes.sqlQuery("select * from sysuser" + constructQuery,"select")
         else:
-            result=classes.classes.sqlQuery("select * from sysuser","select")
+            result=classes.classes.sqlQuery("select * from sysuser" + constructQuery,"select")
+        try:
+            searchAction=formresult['searchAction']
+        except:
+            searchAction=""
+        if formresult['searchName'] or formresult['searchEmail'] or formresult['searchRole']:
+            constructQuery= " where id is not NULL AND "
+        else:
+            constructQuery="      "
+        if formresult['searchName']:
+            constructQuery += " username like'%" + formresult['searchName'] + "%' AND "
+        if formresult['searchEmail']:
+            constructQuery += " email like '%" + formresult['searchEmail'] + "%' AND "
+        if formresult['searchRole']:
+            # This one is more tough. The sysuser table holds the id of the role, not the name. We need to use the roleresult, to check which roles contain the text
+            roleList=[]
+            for items in roleResult:
+                if formresult['searchRole'] in items['name']:
+                    # We need to add the id to the list
+                    roleList.append(items['id'])
+            constructQuery +=  " role in (" + str(roleList)[1:-1] + ") AND "
+        # We have to construct the query based on the formresult information (entryperpage, totalpages, pageoffset)
+        queryStr="select COUNT(*) as totalentries from sysuser " + constructQuery[:-4]
+        navResult=classes.classes.navigator(queryStr,formresult)
+        totalentries=navResult['totalentries']
+        entryperpage=navResult['entryperpage']
+        # If the entry per page value has changed, need to reset the pageoffset
+        if formresult['entryperpage']!=formresult['currententryperpage']:
+            pageoffset=0
+        else:
+            pageoffset=navResult['pageoffset']
+        # We have to construct the query based on the formresult information (entryperpage, totalpages, pageoffset)
+        queryStr = "select * from sysuser " + constructQuery[:-4] + " LIMIT {} offset {}".format(entryperpage,pageoffset)
+        result=classes.classes.sqlQuery(queryStr,"select")
     else:
+        queryStr="select COUNT(*) as totalentries from sysuser"
+        navResult=classes.classes.sqlQuery(queryStr,"selectone")
+        entryperpage=10
+        pageoffset=0
         result=classes.classes.sqlQuery("select * from sysuser","select")
+    
     # Select the roles from the database
-    roleResult=classes.classes.sqlQuery("select id, name from sysrole","select")
-    response={"roleresult":roleResult,"userresult":result}
+    response={"roleresult":roleResult,"userresult":result,'totalentries': navResult['totalentries'], 'pageoffset': pageoffset, 'entryperpage': entryperpage}
     return response
+
+
+def userldapAction(formresult):
+    # This definition is for all the ldap actions for the user administration  
+    globalsconf=classes.classes.globalvars()
+    totalentries=0
+    if formresult['entryperpage']:
+        entryperpage=formresult['entryperpage']
+    else:
+        entryperpage=10
+    if formresult['pageoffset']:
+        pageoffset=formresult['pageoffset']
+    else:
+        pageoffset=0
+    ldapstatus=""
+    response=checkldap(globalsconf['ldapuser'], globalsconf['ldappassword'], globalsconf['ldapsource'], globalsconf['basedn'],"userldapAction")
+    if response['message']=="LDAP connection successful":
+        tls_configuration = Tls(validate=ssl.CERT_NONE)
+        ldapserver = Server(globalsconf['ldapsource'], use_ssl=True, tls=tls_configuration)
+        conn = Connection(ldapserver, user=globalsconf['ldapuser'], password=globalsconf['ldappassword'], auto_bind=True)
+        conn.search(search_base = globalsconf['basedn'], search_filter = '(objectClass=user)', search_scope = SUBTREE, attributes = ["cn","userPrincipalName","distinguishedName"])
+        totalentries = len(conn.response)
+        # We need to extract the proper list based on the page offset and number of entries per page
+        userresult=conn.response[int(pageoffset): int(pageoffset)+int(entryperpage)]
+        result={"roleresult":{},"userresult":userresult,'totalentries': totalentries, 'pageoffset': pageoffset, 'entryperpage': entryperpage, ldapstatus:response['message'] }
+        conn.unbind()
+    else:
+        # There is an issue connecting to the LDAP server, we need to return an error message
+        result={"roleresult":{},"userresult":{},'totalentries': totalentries, 'pageoffset': pageoffset, 'entryperpage': entryperpage, ldapstatus:response['message'] }
+    return result
+    
 
 def roledbAction(formresult):
     # This definition is for all the database actions for the user administration
@@ -389,3 +499,32 @@ def checkInfoblox(info):
             return "Offline"
     except:
         return "Offline"
+
+def checkldap(ldapuser, ldappassword, ldapsource, basedn, calldef):
+    response={}
+    tls_configuration = Tls(validate=ssl.CERT_NONE)
+    ldapserver = Server(ldapsource, use_ssl=True, tls=tls_configuration, get_info=ALL, connect_timeout=5)
+    try:
+        conn = Connection(ldapserver, user=ldapuser, password=ldappassword, auto_bind=True, raise_exceptions=True)
+        # If the connection is successful, we need to check whether the user exists in the context. This only applies when the user is logging in, not in the system configuration
+        if calldef=="submitLogin":
+            try:
+                uid_filter = "(cn="+ldapuser+")"
+                conn.search(search_base = basedn, search_filter=uid_filter,search_scope = SUBTREE)
+                if len(conn.response)>0:
+                    response['message']="LDAP connection successful"
+                else:
+                    response['message']="Cannot find user in LDAP"
+            except Exception as e:
+                response['message']=e
+        else:
+            response['message']="LDAP connection successful"
+        conn.unbind()
+    except Exception as e:
+        if type(e).__name__=="LDAPInvalidCredentialsResult":
+            response['message']="Invalid user credentials"
+        elif type(e).__name__=="LDAPSocketOpenError":
+            response['message']="LDAP server unreachable"
+        else:
+            response['message']=e
+    return response

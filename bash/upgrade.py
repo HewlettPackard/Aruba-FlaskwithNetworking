@@ -105,7 +105,7 @@ except:
 sysvars = open("/var/www/html/bash/globals.json", "r")
 data = json.load(sysvars) 
 sysvars.close()
-data["softwareRelease"] = "2.0"
+data["softwareRelease"] = "2.1"
 data["landingpage"]="/"
 data['ztppassword']="ztpinit"
 data['retain_ztplog']="5"
@@ -113,6 +113,7 @@ data['retain_cleanuplog']="5"
 data['retain_listenerlog']="5"
 data['retain_topologylog']="5"
 data['retain_telemetrylog']="5"
+data['authsource']="local"
 sysvars = open("/var/www/html/bash/globals.json", "w+")
 sysvars.write(json.dumps(data))
 sysvars.close()

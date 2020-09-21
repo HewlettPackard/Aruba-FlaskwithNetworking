@@ -104,8 +104,10 @@ def discoverTopology():
             # If there is no hostname returned, we will use the applied hostname as hostname
             if "hostname" in switchresult:
                 hostname=switchresult['hostname']
-            else:
+            elif "applied_hostname" in switchresult:
                 hostname=switchresult['applied_hostname']
+            else:
+                hostname="Unknown"
             for intitems in intresult:
                 # Obtain the LLDP information from the interfaces
                 url="system/interfaces/" + quote(intitems['name'], safe='') + "/lldp_neighbors?attributes=mac_addr%2Cneighbor_info%2Cport_id&depth=2"

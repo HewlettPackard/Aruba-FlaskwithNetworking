@@ -17,12 +17,18 @@ def useradmin():
         sysvars=classes.globalvars()
         formresult=request.form
         # Obtain the relevant information from the database
-        result=classes.userdbAction(formresult)
+        if "selectauthsource" in formresult:
+            if formresult['selectauthsource']=="ldap":
+                result=classes.userldapAction(formresult)
+            else:
+                result=classes.userdbAction(formresult)
+        else:
+            result=classes.userdbAction(formresult)
         if authOK['hasaccess']==True:
             authOK['hasaccess']="true"
-            return render_template("useradmin.html",result=result['userresult'],roleresult=result['roleresult'],formresult=formresult, authOK=authOK, sysvars=sysvars)
+            return render_template("useradmin.html",result=result['userresult'],roleresult=result['roleresult'],formresult=formresult,totalentries=int(result['totalentries']),pageoffset=int(result['pageoffset']),entryperpage=int(result['entryperpage']), authOK=authOK, sysvars=sysvars)
         else:
-            return render_template("noaccess.html",authOK=authOK, sysvars=sysvars)
+            return render_template("noaccess.html", authOK=authOK, sysvars=sysvars)
     else:
         return render_template("login.html")
 
@@ -139,3 +145,18 @@ def downloadLog():
     logContent=logFile.read()
     logFile.close()
     return json.dumps([formresult['processName'],logContent])
+
+@sysadmin.route("/testldap",methods=['GET','POST'])
+def testldap():
+    formresult=request.form
+    result=classes.checkldap(formresult['ldapuser'], formresult['ldappassword'],formresult['ldapsource'], formresult['basedn'],"testldap")
+    return json.dumps(result)
+
+@sysadmin.route("/getuserinfo",methods=['GET','POST'])
+def getuserinfo():
+    formresult=request.form
+    sysvars=classes.globalvars()
+    queryStr="select * from sysuser where id='{}'".format(formresult['userid'])
+    userinfo=classes.sqlQuery(queryStr,"selectone")
+    userinfo['password']=classes.decryptPassword(sysvars['secret_key'], userinfo['password'])
+    return json.dumps(userinfo)

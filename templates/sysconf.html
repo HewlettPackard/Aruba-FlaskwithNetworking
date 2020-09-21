@@ -119,12 +119,37 @@ netInfo is dictionary containing a list of variables:
                 <td><input type='password' name='ztppassword' id="ztppassword" value='{{ sysvars['ztppassword'] }}' {{disabled }} /></td>
                 <td><font class='font12pxwhite'>Telemetry source IP address</font></td>
                 <td><input type='text' name='telemetrysource' id="telemetrysource" value='{{ sysvars['telemetrysource'] }}' {{disabled }} /></td>
-                <td colspan='2'></td>
+                <td><font class='font12pxwhite'>Authentication source</font></td>
+                <td>
+                    <select name="authsource" id="authsource" onchange="authsourceConf();" {{disabled }}>
+                        <option value="local" {% if sysvars['authsource']=="local" %} selected {% endif %}>Local</option>
+                        <option value="ldap" {% if sysvars['authsource']=="ldap" %} selected {% endif %}>LDAP</option>
+                    </select>
+                </td>
+            </tr>           
+            <tr id="ldapconf" {% if sysvars['authsource']=="ldap" %} style="display:table-row;" {% else %} style="display:none;" {% endif %}>
+                <td><font class='font12pxwhite'>LDAP Source IP address</font></td>
+                <td><input type='text' name='ldapsource' id="ldapsource" value='{{ sysvars['ldapsource'] }}' {{disabled }} /></td>
+                <td><font class='font12pxwhite'>Base DN</font></td>
+                <td><input type='text' name='basedn' id="basedn" value='{{ sysvars['basedn'] }}' {{disabled }} /></td>
+                <td><font class="font12pxwhite">Local fallback</font><input type="checkbox" name="localfallback" id="localfallback" value="1" {% if sysvars['localfallback']=="1" %} checked {% endif %} {{disabled }} /></td>
+                <td>
+                    
+                </td>
             </tr>
-
+            <tr id="ldapconfauth" {% if sysvars['authsource']=="ldap" %} style="display:table-row;" {% else %} style="display:none;" {% endif %}>
+                <td><font class='font12pxwhite'>LDAP username</font></td>
+                <td><input type='text' name='ldapuser' id="ldapuser" value='{{ sysvars['ldapuser'] }}' /></td>
+                <td><font class='font12pxwhite'>LDAP password</font></td>
+                <td><input type='password' name='ldappassword' id="ldappassword" value='{{ sysvars['ldappassword'] }}' /></td>
+                <td>
+                    <button name="testldap" value="testldap" type="button" id="testldap">Verify LDAP connection</button>
+                </td>
+                <td><div id="ldapstatus"></div></td>
+            </tr>
             <tr>
                 <td colspan="6" align="center" class="whiteBG">
-                    <button name="action" value="Submit changes" class="button" id="submitChanges" {{disabled }} >Submit changes</button>
+                    <button name="action" value="Submit changes" class="button" id="submitChanges" {{disabled }}>Submit changes</button>
                 </td>
             </tr>
         </form>

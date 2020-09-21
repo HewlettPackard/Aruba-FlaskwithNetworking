@@ -169,7 +169,61 @@ function ipamConf() {
     else {
         $("#ipamtr").hide();
         $("#phpipamtr").hide();
+    }  
+}
+
+
+function authsourceConf() {
+    var e = document.getElementById("authsource");
+    var authsourceVal = e.options[e.selectedIndex].value;
+    if (authsourceVal == "local") {
+        $("#ldapconf").hide();
+        $("#ldapconfauth").hide();
     }
 
-   
+    else if (authsourceVal == "ldap") {
+        $("#ldapconf").show();
+        $("#ldapconfauth").show();
+    }
+    else {
+        $("#ldapconf").hide();
+        $("#ldapconfauth").hide();
+    }
+}
+
+
+$(document).on('click', '#testldap', function () {
+    response = $.ajax({
+        url: "/testldap",
+        type: "POST",
+        data: { ldapuser: document.getElementById('ldapuser').value, ldappassword: document.getElementById('ldappassword').value, ldapsource: document.getElementById('ldapsource').value, basedn: document.getElementById('basedn').value},
+        success: function (response) {
+            response = JSON.parse(response);
+            document.getElementById("ldapstatus").innerHTML ="<font class='font12pxwhite'>" +  response['message'] + "</font>";
+        }
+    });
+});
+
+$('#ldapstatus').ready(function () {
+    var as = document.getElementById("authsource");
+    var authsource = as.options[as.selectedIndex].value;
+    var refresh = function () {
+        $.ajax({
+            type: "POST",
+            data: { ldapuser: document.getElementById('ldapuser').value, ldappassword: document.getElementById('ldappassword').value, ldapsource: document.getElementById('ldapsource').value, basedn: document.getElementById('basedn').value },
+            url: "/testldap",
+            success: function (response) {
+                response = JSON.parse(response);
+                document.getElementById("ldapstatus").innerHTML = "<font class='font12pxwhite'>" + response['message'] + "</font>";
+            }
+
+        });
+    }
+    setInterval(refresh, 15000);
+    refresh();
+});
+
+
+function closeForm() {
+    document.getElementById("myForm").style.display = "none";
 }

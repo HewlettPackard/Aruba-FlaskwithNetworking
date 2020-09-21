@@ -21,7 +21,7 @@ tput civis
 
 
 
-echo "########## Carius 2.0 Installation ##########"
+echo "########## Carius 2.1 Installation ##########"
 echo "Ensure that you have an active Internet connection with an acceptable speed (at least 10Mbps recommended)"
 # First step is to check whether you are logged in as root
 # and which Ubuntu version is running. Carius requires 18.04 or later
@@ -58,8 +58,6 @@ add-apt-repository universe -y  > /dev/null
 (DEBIAN_FRONTEND=noninteractive apt-get -qq update  &>/dev/null) & spinner $! "Updating the system to ensure that it is up to date....."
 
 
-
-
 # Next is to install all the dependencies
 
 (DEBIAN_FRONTEND=noninteractive apt-get -qq -y -o=Dpkg::Use-Pty=0 install net-tools  &>/dev/null) & spinner $! "Installing Net tools....."
@@ -71,6 +69,10 @@ add-apt-repository universe -y  > /dev/null
 (DEBIAN_FRONTEND=noninteractive apt-get -qq -y -o=Dpkg::Use-Pty=0 install tftpd-hpa &> /dev/null) & spinner $! "Installing TFTP Daemon....."
 (DEBIAN_FRONTEND=noninteractive apt-get -qq -y -o=Dpkg::Use-Pty=0 install mysql-server &> /dev/null) & spinner $! "Installing Mysql Server....."
 (DEBIAN_FRONTEND=noninteractive apt-get -qq -y -o=Dpkg::Use-Pty=0 install mysql-client &> /dev/null) & spinner $! "Installing Mysql Client....."
+(DEBIAN_FRONTEND=noninteractive apt-get -qq -y -o=Dpkg::Use-Pty=0 install libsasl2-dev &> /dev/null) & spinner $! "Installing Cyrus Simple Authentication Service Layer....."
+(DEBIAN_FRONTEND=noninteractive apt-get -qq -y -o=Dpkg::Use-Pty=0 install python-dev &> /dev/null) & spinner $! "Installing Python extension library....."
+(DEBIAN_FRONTEND=noninteractive apt-get -qq -y -o=Dpkg::Use-Pty=0 install libldap2-dev &> /dev/null) & spinner $! "Installing LDAP library....."
+
 
 if ! [ -x "$(command -v python3)" ]; then
 echo 'Error: Python is not installed or it is the incorrect command. Carius requires the   python3   command' >&2
@@ -118,6 +120,7 @@ service tftpd-hpa restart
 (pip3 install --default-timeout=100 netmiko > /dev/null) & spinner $! "Installing Python3 netmiko library....."
 (pip3 install --default-timeout=100 waitress > /dev/null) & spinner $! "Installing Python3 waitress library....."
 (pip3 install --default-timeout=100 websockets > /dev/null) & spinner $! "Installing Python3 websockets library....."
+(pip3 install --default-timeout=100 ldap3 > /dev/null) & spinner $! "Installing Python LDAP3 library....."
 
 # Mysql user, database and table structure creation
 # Depending on the Mysql version, the structure is different
@@ -158,7 +161,7 @@ echo " Configuring the app"
 
 activeInterface=$(route | grep '^default' | grep -o '[^ ]*$')
 cat > /var/www/html/bash/globals.json  << ENDOFFILE
-{"idle_timeout": "3000", "pcap_location": "/var/www/html/bash/trace.pcap", "retain_dhcp": "15", "retain_snmp": "15", "retain_ztplog": "5", "retain_listenerlog": "5", "retain_cleanuplog": "5", "retain_topologylog": "5","retain_syslog": "15","retain_telemetrylog": "5","secret_key": "ArubaRocks!!!!!!", "appPath": "/var/www/html/", "softwareRelease": "2.0", "sysInfo": "","activeInterface":"$activeInterface","ztppassword":"ztpinit","landingpage":"/"}
+{"idle_timeout": "3000", "pcap_location": "/var/www/html/bash/trace.pcap", "retain_dhcp": "15", "retain_snmp": "15", "retain_ztplog": "5", "retain_listenerlog": "5", "retain_cleanuplog": "5", "retain_topologylog": "5","retain_syslog": "15","retain_telemetrylog": "5","secret_key": "ArubaRocks!!!!!!", "appPath": "/var/www/html/", "softwareRelease": "2.1", "sysInfo": "","activeInterface":"$activeInterface","ztppassword":"ztpinit","landingpage":"/","authsource":"local"}
 ENDOFFILE
 chmod 777 /var/www/html/bash/listener.sh
 chmod 777 /var/www/html/bash/cleanup.sh
@@ -209,7 +212,7 @@ systemctl daemon-reload &> /dev/null
 systemctl enable carius.service &> /dev/null
 systemctl start carius.service &> /dev/null
 
-echo " ######### Carius 2.0 installation completed ##########"
+echo " ######### Carius 2.1 installation completed ##########"
 echo " Navigate with your browser to http://a.b.c.d:8080   where a.b.c.d is the IP address of the Carius server"
 echo " The default login credentials are:"
 echo " Username:  admin"

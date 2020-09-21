@@ -7,7 +7,7 @@ from classes.mobility import mobilitydbAction, loginmc, logoutmc, getRESTmc, mci
 from classes.dsprofile import dsprofiledbAction,dsprofileInfo
 from classes.trackers import dhcpdbAction, snmpdbAction, syslogdbAction
 from classes.dsservice import dsservicedbAction, getVLANinfo, getVLANint, getVLANidname, getRolesinfo, getRoleinfo, getACLinfo, getProfile, getService, provisionSwitch
-from classes.sysadmin import verifyAccess, checkAuth, submitLogin, submitsysConf, userdbAction, roledbAction, changePassword, checkProcess, processAction, checkPhpipam, checkInfoblox
+from classes.sysadmin import verifyAccess, checkAuth, submitLogin, submitsysConf, userdbAction,userldapAction, roledbAction, changePassword, checkProcess, processAction, checkPhpipam, checkInfoblox, checkldap
 from classes.configmgr import configdbAction, runningbackupSwitch, runningbackupCX, startupbackupSwitch, startupbackupCX, deleteBackup, branchBackup, changebranchBackup
 from classes.ztp import ztpdevicedbAction, ztpimagedbAction, ztptemplatedbAction, ztpActivate, ztpDeactivate, verifyCredentials
 from classes.phpipam import PHPipamtoken, PHPipamget

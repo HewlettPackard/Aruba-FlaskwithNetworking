@@ -19,7 +19,7 @@ printf "    \b\b\b\b"
 tput reset
 tput civis
 
-echo "########## Carius release 2.0 upgrade ##########"
+echo "########## Carius release 2.1 upgrade ##########"
 echo "Ensure that you have an active Internet connection with an acceptable speed (at least 10Mbps recommended)"
 # First step is to check whether you are logged in as root
 # and which Ubuntu version is running. Carius requires 18.04 or later
@@ -45,7 +45,7 @@ echo "System requirement is Ubuntu LTS 18.04 or higher"
 exit
 else
 IFS=':' read -r var1 var2 <<< "$(lsb_release -d)"
-echo "Upgrading to Carius version 2.0 on $var2"
+echo "Upgrading to Carius version 2.1 on $var2"
 fi
 
 # Second step is to upgrade and update Ubuntu
@@ -55,8 +55,9 @@ add-apt-repository universe -y  > /dev/null
 (DEBIAN_FRONTEND=noninteractive apt-get -qq upgrade  &>/dev/null) & spinner $! "Upgrading the system to ensure that it is up to date....."
 (DEBIAN_FRONTEND=noninteractive apt-get -qq update  &>/dev/null) & spinner $! "Updating the system to ensure that it is up to date....."
 
-# (DEBIAN_FRONTEND=noninteractive apt-get -qq -y -o=Dpkg::Use-Pty=0 install nodejs  &>/dev/null) & spinner $! "Installing node.js....."
-# (DEBIAN_FRONTEND=noninteractive apt-get -qq -y -o=Dpkg::Use-Pty=0 install npm  &>/dev/null) & spinner $! "Installing node.js package manager....."
+(DEBIAN_FRONTEND=noninteractive apt-get -qq -y -o=Dpkg::Use-Pty=0 install libsasl2-dev &> /dev/null) & spinner $! "Installing Cyrus Simple Authentication Service Layer....."
+(DEBIAN_FRONTEND=noninteractive apt-get -qq -y -o=Dpkg::Use-Pty=0 install python-dev &> /dev/null) & spinner $! "Installing Python extension library....."
+(DEBIAN_FRONTEND=noninteractive apt-get -qq -y -o=Dpkg::Use-Pty=0 install libldap2-dev &> /dev/null) & spinner $! "Installing LDAP library....."
 
 
 # Run the Python upgrade script. This updates the database and sets the software release in the globalvars
@@ -65,6 +66,7 @@ add-apt-repository universe -y  > /dev/null
 (pip3 install --default-timeout=100 pyshark > /dev/null) & spinner $! "Installing Pyshark....."
 (pip3 install --default-timeout=100 netmiko > /dev/null) & spinner $! "Installing Python3 netmiko library....."
 (pip3 install --default-timeout=100 websockets > /dev/null) & spinner $! "Installing Python3 websockets library....."
+(pip3 install --default-timeout=100 ldap3 > /dev/null) & spinner $! "Installing Python LDAP3 library....."
 
 
 if [ ! -d "/var/www/html/log" ]; then
@@ -121,5 +123,5 @@ python3 ./bash/upgrade.py
 
 service carius start
 
-echo " ######### Carius upgrade to version 2.0 completed ##########"
+echo " ######### Carius upgrade to version 2.1 completed ##########"
 echo " Navigate with your browser to http://a.b.c.d:8080   where a.b.c.d is the IP address of the Carius server"
