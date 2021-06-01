@@ -186,6 +186,8 @@ CREATE TABLE `softwareupdate` (
   `upgradeto` text NOT NULL,
   `softwareinfo` text NOT NULL,
   `softwareinfoafter` text NOT NULL,
+  `starttime` datetime DEFAULT NULL,
+  `endtime` datetime DEFAULT NULL,
   `status` int UNSIGNED NOT NULL,
   PRIMARY KEY (`id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
