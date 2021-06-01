@@ -235,9 +235,7 @@ CREATE TABLE `deviceattributes` (
   `id` bigint UNSIGNED NOT NULL AUTO_INCREMENT,
   `name` text NOT NULL,
   `type` text NOT NULL,
-  `attributevalue` text NOT NULL,
   `attributelist` text NOT NULL,
-  `attributeboolean` tinyint(1) NOT NULL,
   `isassigned` text NOT NULL,
   PRIMARY KEY (`id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=latin1;

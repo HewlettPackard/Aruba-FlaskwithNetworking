@@ -165,7 +165,7 @@ echo " Configuring the app"
 
 activeInterface=$(route | grep '^default' | grep -o '[^ ]*$')
 cat > /var/www/html/bash/globals.json  << ENDOFFILE
-{"idle_timeout": "3000", "pcap_location": "/var/www/html/bash/trace.pcap", "retain_dhcp": "15", "retain_snmp": "15", "retain_ztplog": "5", "retain_listenerlog": "5", "retain_cleanuplog": "5", "retain_topologylog": "5","retain_syslog": "15","retain_telemetrylog": "5","secret_key": "ArubaRocks!!!!!!", "appPath": "/var/www/html/", "softwareRelease": "2.1", "sysInfo": "","activeInterface":"$activeInterface","ztppassword":"ztpinit","landingpage":"/","authsource":"local"}
+{"idle_timeout": "3000", "pcap_location": "/var/www/html/bash/trace.pcap", "retain_dhcp": "15", "retain_snmp": "15", "retain_ztplog": "5", "retain_listenerlog": "5", "retain_cleanuplog": "5", "retain_topologylog": "5","retain_syslog": "15","retain_telemetrylog": "5","secret_key": "ArubaRocks!!!!!!", "appPath": "/var/www/html/", "softwareRelease": "2.2", "sysInfo": "","activeInterface":"$activeInterface","ztppassword":"ztpinit","landingpage":"/","authsource":"local"}
 ENDOFFILE
 chmod 777 /var/www/html/bash/listener.sh
 chmod 777 /var/www/html/bash/cleanup.sh
