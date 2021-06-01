@@ -44,7 +44,7 @@ def ztpdevice ():
         # And collect all the different ztp status information
         queryStr="select distinct ztpstatus from ztpdevices"
         ztpstatusInfo=classes.sqlQuery(queryStr,"select")
-        queryStr="select id, name, filename from ztpimages"
+        queryStr="select id, name, filename from deviceimages"
         imageResult=classes.sqlQuery(queryStr,"select")
         queryStr="select id, name from ztptemplates"
         templateResult=classes.sqlQuery(queryStr,"select")
@@ -85,39 +85,6 @@ def ztptemplate ():
     else:
         return render_template("login.html")
 
-@ztp.route("/ztpimage", methods=['GET','POST'])
-def ztpimage ():
-    authOK=classes.checkAuth("ztpdeviceaccess","submenu")
-    message=""
-    filename=""
-    if authOK!=0:
-        sysvars=classes.globalvars()
-        formresult=request.form
-        if formresult:
-            if formresult['action']=="Submit image" or formresult['action']=="Submit changes":
-                # check if the post request has the file part
-                if request.files['softwareimage']:
-                    file = request.files['softwareimage']
-                    if file.filename == '':
-                        message='No file selected for uploading'
-                    if file and allowed_file(file.filename):
-                        file.save(os.path.join('/var/www/html/images/', file.filename))
-                        message=''
-                        filename=file.filename
-                    else:
-                        message='Allowed file type is swi'
-            # Obtain the relevant device information from the database
-            result=classes.ztpimagedbAction(formresult,filename,message)
-        else:
-            # Obtain the relevant device information from the database
-            result=classes.ztpimagedbAction(formresult,'','')
-        if authOK['hasaccess']==True:
-            authOK['hasaccess']="true"
-            return render_template("ztpimage.html",result=result['result'], formresult=formresult, totalentries=int(result['totalentries']),pageoffset=int(result['pageoffset']),entryperpage=int(result['entryperpage']), authOK=authOK, sysvars=sysvars)
-        else:
-            return render_template("noaccess.html",authOK=authOK, sysvars=sysvars)
-    else:
-        return render_template("login.html")
 
 @ztp.route("/ztpdeviceInfo", methods=['GET','POST'])
 def ztpdeviceInfo ():
@@ -207,8 +174,8 @@ def ztptemplateInfo ():
 def ztpimageInfo ():
     formresult=request.form
     sysvars=classes.globalvars()
-    queryStr="select * from ztpimages where id='{}'".format(formresult['id'])
-    # Obtain the relevant ZTP image information from the database
+    queryStr="select * from deviceimages where id='{}'".format(formresult['id'])
+    # Obtain the relevant device image information from the database
     result=classes.sqlQuery(queryStr,"selectone")
     return json.dumps(result)
 
@@ -317,7 +284,7 @@ def showdevice ():
     deviceInfo=classes.sqlQuery(queryStr,"selectone")
     # If there is a software image attached, we need to obtain the image information
     if deviceInfo['softwareimage']!=0:
-        queryStr="select * from ztpimages where id='{}'".format(deviceInfo['softwareimage'])
+        queryStr="select * from deviceimages where id='{}'".format(deviceInfo['softwareimage'])
         softwareInfo=classes.sqlQuery(queryStr,"selectone")
     # If there is a template assigned to the device, obtain the template information
     if deviceInfo['template']!=0:
@@ -343,7 +310,7 @@ def showdevice ():
             queryStr="select * from ztpdevices where vsfmaster='{}' or id='{}' order by vsfmember".format(deviceInfo['vsfmaster'],deviceInfo['vsfmaster'])
             vsfInfo=classes.sqlQuery(queryStr,"select")
             if vsfmasterInfo['softwareimage']!=0:
-                queryStr="select * from ztpimages where id='{}'".format(vsfmasterInfo['softwareimage'])
+                queryStr="select * from deviceimages where id='{}'".format(vsfmasterInfo['softwareimage'])
                 softwareInfo=classes.sqlQuery(queryStr,"selectone")
             # If there is a template assigned to the device, obtain the template information
             if vsfmasterInfo['template']!=0:

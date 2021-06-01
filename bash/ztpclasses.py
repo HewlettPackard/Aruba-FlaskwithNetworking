@@ -111,7 +111,7 @@ def ztpupdate():
                 # Only continue if there is a response. If there is no response, the switch might be offline
                 if response:
                     # Obtain the image file name
-                    queryStr="select filename from ztpimages where id='{}'".format(softwareimage)
+                    queryStr="select filename from deviceimages where id='{}'".format(softwareimage)
                     cursor.execute(queryStr)
                     imageResult=cursor.fetchall()
                     # Formating the image name so that we can compare with the information from the rest call
@@ -174,7 +174,7 @@ def ztpupdate():
                         softwareimage=softwareimage[0]['softwareimage']
                     elif items['softwareimage']!=0:
                         softwareimage=items['softwareimage']
-                    queryStr="select filename from ztpimages where id='{}'".format(softwareimage)
+                    queryStr="select filename from deviceimages where id='{}'".format(softwareimage)
                     cursor.execute(queryStr)
                     imageResult=cursor.fetchall()
                     # Formating the image name so that we can compare with the information from the rest call
@@ -257,7 +257,7 @@ def ztpupdate():
                 cursor.execute(queryStr)
                 softwareimage=cursor.fetchall()
                 softwareimage=softwareimage[0]['softwareimage']
-                queryStr="select filename from ztpimages where id='{}'".format(softwareimage)
+                queryStr="select filename from deviceimages where id='{}'".format(softwareimage)
                 cursor.execute(queryStr)
                 imageResult=cursor.fetchall()
                 # Formating the image name so that we can compare with the information from the rest call
@@ -274,7 +274,7 @@ def ztpupdate():
                         ztplog.write('{}: Stage 2: {} ({}) member switch is back online. \n'.format(datetime.now(),items['ipaddress'],items['name']))
         elif items['enableztp']==23:
             # STAGE 23: VSF MASTER REBOOTED. CHECK WHETHER VSF MASTER IS BACK ONLINE. IF BACK ONLINE, GOTO STAGE 4 FOR THE VSF CONFIGURATION
-            queryStr="select filename from ztpimages where id='{}'".format(items['softwareimage'])
+            queryStr="select filename from deviceimages where id='{}'".format(items['softwareimage'])
             cursor.execute(queryStr)
             imageResult=cursor.fetchall()
             # Formating the image name so that we can compare with the information from the rest call
@@ -339,7 +339,7 @@ def ztpupdate():
                     softwareimage=softwareimage[0]['softwareimage']
                 elif items['softwareimage']!=0:
                     softwareimage=items['softwareimage']
-                queryStr="select filename from ztpimages where id='{}'".format(softwareimage)
+                queryStr="select filename from deviceimages where id='{}'".format(softwareimage)
                 cursor.execute(queryStr)
                 imageResult=cursor.fetchall()
                 # Formating the image name so that we can compare with the information from the rest call
@@ -643,6 +643,7 @@ def ztpupdate():
                 deviceIP=checkztpIPaddress(items['ipaddress'],items['netmask'],items['macaddress'],cursor)
                 # If the configuration has already been pushed but something went wrong and the IP address and or username has not changed in the database, we have to make that change
                 configChange=checkifChanged(deviceIP,items['ipaddress'],password,items['id'],cursor)
+                print("Configuration change number is {}".format(configChange))
                 if configChange==0:
                     username="admin"
                 if configChange==1:
@@ -651,6 +652,7 @@ def ztpupdate():
                 elif configChange==2:
                     # The IP address has changed, but admin still has access
                     queryStr="update ztpdevices set ipaddress='{}', vrf='{}' where ipaddress='{}' and macaddress='{}'".format(deviceIP,vrf,items['ipaddress'],items['macaddress']) 
+                    print(queryStr)
                     cursor.execute(queryStr)
                     items['ipaddress']=deviceIP
                 elif configChange==3:
@@ -841,6 +843,7 @@ def getRESTcxIP(ip,username,password,url):
     credentials={'username': username,'password': password }
     try:
         response=sessionid.post(baseurl + "login", params=credentials, verify=False, timeout=5)
+        print("Response in getrestcxip is:  {}".format(response.text))
         if "session limit reached" in response.text:
         #    # We need to clear the https sessions. For some reason there are too many logins
             cs=clearSessions(ip, username,password)

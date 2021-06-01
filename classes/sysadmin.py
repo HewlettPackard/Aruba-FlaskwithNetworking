@@ -1,4 +1,4 @@
-# (C) Copyright 2020 Hewlett Packard Enterprise Development LP.
+# (C) Copyright 2021 Hewlett Packard Enterprise Development LP.
 # System Administration classes
 
 import classes.classes
@@ -217,7 +217,7 @@ def submitsysConf(sysconf):
                 except:
                     # Something went wrong with the password change.
                     pass    
-    # Finally, update the globals configuration file
+    # Update the globals configuration file
     for key, items in sysconf.items():
         # Store the values in a dictionary
         if key=="action" or key=="orig_secret_key" or key=="orig_ztppassword":
@@ -230,6 +230,45 @@ def submitsysConf(sysconf):
     globalsconf.update({"netInfo":psutil.net_if_addrs()})
     with open('bash/globals.json', 'w') as systemconfig:
         systemconfig.write(json.dumps(globalsconf))
+    # Update the timezone (if configured)
+    if "timezoneregion" in sysconf and "timezonecity" in sysconf:
+        # There is a timezone configuration. If these variable have a value, then set the timezone
+        if sysconf['timezoneregion']!="" and sysconf['timezonecity']!="":
+            # Set the timezone
+            scriptName="timedatectl set-timezone " + sysconf['timezoneregion'] + "/" + sysconf['timezonecity']
+            proc = subprocess.Popen(scriptName, shell=True, stdout=subprocess.PIPE)
+    # If there is an NTP server configured, make sure that this one is added (or replaced) and that NTP is enabled and active
+    if sysconf['ntpserver']!="":
+        # Need to edit the /etc/systemd/timesyncd.conf file and add/remove/change the NTP server entry
+        with open('/etc/systemd/timesyncd.conf', 'r') as ntpconfig:
+            ntplines = ntpconfig.readlines()
+        ntpconfig.close()
+        # Iterate through the lines. If there is no NTP server entry in the list with the given IP address, we have to append. If there is an entry with the same IP address we don't have to do anything
+        ntpExists=False
+        timeheaderExists=False
+        for items in ntplines:
+            if sysconf['ntpserver'] in items:
+                ntpExists=True
+            if "[Time]" in items:
+                timeheaderExists=True
+        if timeheaderExists==False:
+            # There is no time header. We have to append this to the configuration file
+            ntpconfig = open('/etc/systemd/timesyncd.conf', 'a')
+            ntpconfig.write("[Time]")
+            ntpconfig.close()
+        if ntpExists==False:
+            # We need to add the NTP server
+            ntpconfig = open('/etc/systemd/timesyncd.conf', 'a')
+            ntpconfig.write("\nNTP=" + sysconf['ntpserver'])
+            ntpconfig.close()
+        scriptName="timedatectl set-ntp true"
+        proc = subprocess.Popen(scriptName, shell=True, stdout=subprocess.PIPE)
+        scriptName="systemctl restart systemd-timedated"
+        proc = subprocess.Popen(scriptName, shell=True, stdout=subprocess.PIPE)
+        scriptName="systemctl restart systemd-timesyncd.service"
+        proc = subprocess.Popen(scriptName, shell=True, stdout=subprocess.PIPE)
+
+
 
 def userdbAction(formresult):
     # This definition is for all the database actions for the user administration
@@ -393,6 +432,7 @@ def roledbAction(formresult):
         result=classes.classes.sqlQuery(queryStr,"select")
     return {'result':result, 'totalentries': navResult['totalentries'], 'pageoffset': pageoffset, 'entryperpage': entryperpage}
 
+
 def checkroleStatus(role):
     #This definition checks whether a role still has users assigned. If not, then the role needs to be set to 0 (unassigned). System is only allowed to delete a role when it
     # is not assigned to any user
@@ -419,7 +459,7 @@ def checkProcess(name):
     globalsconf=classes.classes.globalvars()
     for proc in psutil.process_iter():
         # Need to check whether the listener process or the scheduler process is queried
-        if name=="Cleanup" or name=="Topology" or name=="ZTP" or name=="Telemetry":
+        if name=="Cleanup" or name=="Topology" or name=="ZTP" or name=="Telemetry" or name=="Device-upgrade":
             try:
                 if "python" in proc.name().lower():
                     procinfo=psutil.Process(proc.pid)
@@ -451,7 +491,7 @@ def processAction(name, action):
     pathname = os.path.dirname(sys.argv[0])
     if action =="Stop":
         # Need to check whether the listener process or the scheduler process is queried
-        if name=="Cleanup" or name=="Topology" or name=="ZTP" or name=="Telemetry":
+        if name=="Cleanup" or name=="Topology" or name=="ZTP" or name=="Telemetry"  or name=="Device-upgrade":
             for proc in psutil.process_iter():
                 processname=globalsconf['appPath'] + "bash/" + name.lower()
                 cmdline=proc.cmdline()

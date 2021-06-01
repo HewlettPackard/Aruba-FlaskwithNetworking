@@ -60,6 +60,34 @@ def editrole():
     return json.dumps(result)
 
 
+@sysadmin.route("/deviceattributes",methods=['GET','POST'])
+def deviceattributes():
+    authOK=classes.checkAuth("deviceattributesaccess","submenu")
+    if authOK!=0:
+        sysvars=classes.globalvars()
+        formresult=request.form
+        dictform=formresult.to_dict(flat=True)
+        # Obtain the relevant information from the database
+        result=classes.deviceattributesdbAction(dictform)
+        if authOK['hasaccess']==True:
+            authOK['hasaccess']="true"
+            return render_template("deviceattributes.html",result=result,formresult=formresult, totalentries=int(result['totalentries']),pageoffset=int(result['pageoffset']),entryperpage=int(result['entryperpage']), authOK=authOK, sysvars=sysvars)
+        else:
+            return render_template("noaccess.html",authOK=authOK, sysvars=sysvars)
+    else:
+        return render_template("login.html")
+
+
+@sysadmin.route("/editdeviceattribute",methods=['GET','POST'])
+def editdeviceattribute():
+    formresult=request.form
+    sysvars=classes.globalvars()
+    queryStr="select * from deviceattributes where id='{}'".format(formresult['id'])
+    # Obtain the relevant device attribute information from the database
+    result=classes.sqlQuery(queryStr,"selectone")
+    return json.dumps(result)
+
+
 @sysadmin.route("/sysconf",methods=['GET','POST'])
 def sysconf():
     authOK=classes.checkAuth("sysadminaccess","submenu")
@@ -74,7 +102,8 @@ def sysconf():
             pass
         if authOK['hasaccess']==True:
             authOK['hasaccess']="true"
-            return render_template("sysconf.html",authOK=authOK, sysvars=sysvars)
+            timezoneregion=["Africa","America","Asia","Europe","Indian","Pacific","Antarctica"]
+            return render_template("sysconf.html",authOK=authOK, sysvars=sysvars, timezoneregion=timezoneregion)
         else:
             return render_template("noaccess.html",authOK=authOK, sysvars=sysvars)
     else:

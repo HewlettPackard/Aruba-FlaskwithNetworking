@@ -136,6 +136,30 @@ def getcxREST(deviceid,url):
             return
     return
 
+
+def postcxREST(deviceid,url, parameters):
+    response={}
+    cookie_header=checkcxCookie(deviceid)
+    if type(cookie_header) is dict:
+        header=cookie_header
+    else:
+        header=json.loads(cookie_header)
+    if cookie_header!="":
+        queryStr="select ipaddress from devices where id='{}'".format(deviceid)
+        deviceCreds=classes.classes.sqlQuery(queryStr,"selectone")
+        baseurl="https://{}/rest/v1/".format(deviceCreds['ipaddress'])
+        try:
+            response = requests.post(baseurl+url,headers=header, data=parameters,verify=False, timeout=20)
+            try:
+                # If the response contains information, the content is converted to json format
+                response=json.loads(response.content)
+            except:
+                response=response.status_code
+        except:
+            return {}
+    return response
+
+
 def getcxInfo(deviceid):
     sysinfo={}
     interfaces={}

@@ -82,16 +82,16 @@
         <input type="hidden" name="searchOsversion" value="{{ formresult.searchVersion }}">
         <input type="hidden" name="searchPlatform" value="{{ formresult.searchPlatform }}">
         <tr>
-            <td scope="row"><font class="font12px"> {{ loop.index }} </font></td>
+            <td scope="row"><font class="font10px"> {{ loop.index }} </font></td>
             <td>
-                <font class="font12px">
+                <font class="font10px">
                     <div class="cpStatus" id="cpStatus{{info['id']}}" data-deviceid="{{info['id']}}"></div>
                 </font>
             </td>
-            <td><font class="font12px"> {{ info['ipaddress'] }} </font></td>
-            <td><font class="font12px"> {{ info['description'] }} </font></td>
-            <td><font class="font12px"> {{ info['platform_name'] }} {{ info['platform'] }} </font></td>
-            <td><font class="font12px"> {{ info['swversion'] }} {{ info['osversion'] }} </font></td>
+            <td><font class="font10px"> {{ info['ipaddress'] }} </font></td>
+            <td><font class="font10px"> {{ info['description'] }} </font></td>
+            <td><font class="font10px"> {{ info['platform_name'] }} {{ info['platform'] }} </font></td>
+            <td><font class="font10px"> {{ info['swversion'] }} {{ info['osversion'] }} </font></td>
             <td align="right">
 
                 <input type="button" name="action" value="Endpoints" class="showEndpoints" data-deviceid="{{ info['id'] }}" onclick="highlightdeviceRow(this);" ><input type="button" name="action" value="Certificate Trusts" class="showTrust" data-deviceid="{{ info['id'] }}" onclick="highlightdeviceRow(this);" ><input type="button" name="action" value="Services" class="showServices" data-deviceid="{{ info['id'] }}" onclick="highlightdeviceRow(this);" ><input type="button" name="action" value="Edit" class="editDevice" data-deviceid="{{ info['id'] }}" onclick="highlightdeviceRow(this);" {% if va("clearpassaccess","feature")== False %} style="opacity:0.2;pointer-events:none;" {% endif %}><input type="submit" name="action" value="Delete" class="button" onclick="return confirm('Are you sure you want to delete this item?')" {% if va("clearpassaccess","feature")== False %} style="opacity:0.2;pointer-events:none;" {% endif %}>

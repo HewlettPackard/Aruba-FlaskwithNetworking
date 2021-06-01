@@ -93,7 +93,7 @@
                 </td>
                 <td><font class="font12px">{{ info['ipaddress'] }}</font></td>
                 <td><font class="font12px">{{ info['description'] }}</font></td>
-                <td><font class="font12px">{{ info['osversion'] }}</font></td>
+                <td nowrap><font class="font12px">{{ info['osversion'] }}</font>&nbsp;&nbsp;</td>
                 <td><font class="font12px"><div id="subscriber{{ info['id'] }}">{{ info['subscriber'] }}</div></font></td>
                 {% set subscriptions = converttoJSON(info['subscriptions']) %}
                 <td><font class="font12px"><div id="subscriptions{{ info['id'] }}">{{ subscriptions[0] |count }}</div></font></td>

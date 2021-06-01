@@ -105,7 +105,7 @@ $('#updateTracker').ready(function () {
                         listHTML += "<td><font class='font12px'>" + response[i]['source'] + "</font></td>";
                         listHTML += "<td><font class='font12px'>" + response[i]['facility'] + "</font></td>";
                         listHTML += "<td><font class='font12px'>" + response[i]['severity'] + "</font></td>";
-                        listHTML += "<td colspan='2' nowrap><font class='font12px'>" + response[i]['information'] + "</font></td>";
+                        listHTML += "<td colspan='2'><font class='font12px'>" + response[i]['information'] + "</font></td>";
                         listHTML += "<td align='right'>";
                         if (result['accessright'] == true) {
                             listHTML += "<button name='action' value='Delete' class='button' onclick=\"if (confirm('Are you sure?')) deleteEntry(" + response[i]['id'] + ",'syslog' );\">Delete</button></td></tr></form>";

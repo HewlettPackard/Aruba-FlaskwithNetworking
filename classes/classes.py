@@ -1,15 +1,18 @@
-# (C) Copyright 2019 Hewlett Packard Enterprise Development LP.
+# (C) Copyright 2021 Hewlett Packard Enterprise Development LP.
 from classes.clearpass import clearpassdbAction, getRESTcp, checkcpOnline, getendpointInfo, getservicesInfo, gettrustInfo
-from classes.arubaoscx import getcxInfo, getcxREST, checkcxCookie
-from classes.arubaosswitch import getswitchInfo,anycli,anycliProvision,checkswitchCookie, getswitchREST
-from classes.switch import checkifOnline, discoverModel, devicedbAction, interfacedbAction, showLinechart, portAccess, clearClient
+from classes.arubaoscx import getcxInfo, getcxREST, postcxREST, checkcxCookie
+from classes.arubaosswitch import getswitchInfo,anycli,anycliProvision,checkswitchCookie, getswitchREST, postswitchREST
+from classes.switch import checkifOnline, discoverModel, devicedbAction, interfacedbAction, showLinechart, portAccess, portAccesscx, clearClient
+from classes.deviceattributes import deviceattributesdbAction, assignedAttributes, assignswitchAttribute, removeswitchAttribute, showassignedAttributes
+from classes.deviceupgrades import upgradescheduledbAction, scheduledbAction, getupgradeInfo, bootSwitch
 from classes.mobility import mobilitydbAction, loginmc, logoutmc, getRESTmc, mcinterfaceInfo, mcroleInfo,mcpolicyInfo, checkmcOnline
 from classes.dsprofile import dsprofiledbAction,dsprofileInfo
 from classes.trackers import dhcpdbAction, snmpdbAction, syslogdbAction
 from classes.dsservice import dsservicedbAction, getVLANinfo, getVLANint, getVLANidname, getRolesinfo, getRoleinfo, getACLinfo, getProfile, getService, provisionSwitch
 from classes.sysadmin import verifyAccess, checkAuth, submitLogin, submitsysConf, userdbAction,userldapAction, roledbAction, changePassword, checkProcess, processAction, checkPhpipam, checkInfoblox, checkldap
 from classes.configmgr import configdbAction, runningbackupSwitch, runningbackupCX, startupbackupSwitch, startupbackupCX, deleteBackup, branchBackup, changebranchBackup
-from classes.ztp import ztpdevicedbAction, ztpimagedbAction, ztptemplatedbAction, ztpActivate, ztpDeactivate, verifyCredentials
+from classes.ztp import ztpdevicedbAction, ztptemplatedbAction, ztpActivate, ztpDeactivate, verifyCredentials
+from classes.deviceimages import imagedbAction
 from classes.phpipam import PHPipamtoken, PHPipamget
 from classes.topology import topodbAction, endpointInfo, checktopoDevice, topoInfo
 from classes.infoblox import getInfoblox
@@ -49,13 +52,21 @@ def timeDelta(timestamp):
     uptime="Days: {}, hours: {}, minutes: {}, seconds: {}".format(days,hours,minutes,seconds)
     return uptime
 
+
+def timeDuration(starttime,endtime):
+    timeDiff=endtime-starttime
+    days, seconds = timeDiff.days, timeDiff.seconds
+    hours = seconds // 3600
+    minutes = (seconds % 3600) // 60
+    seconds = (seconds % 60)
+    duration="{} days, {} hours, {} minutes, {} seconds".format(days,hours,minutes,seconds)
+    return duration
     
 
 def sysTime():
     sTime=datetime.datetime.now()
     sysTime=dict({"year":sTime.strftime("%Y"),"month":sTime.strftime("%B"),"day":int(sTime.strftime("%d")),"weekday":sTime.strftime("%A"),"hour":int(sTime.strftime("%H")),"minute":int(sTime.strftime("%M")),"second":int(sTime.strftime("%S"))})
     return sysTime
-
 
 
 def globalvars():
@@ -93,12 +104,14 @@ def sqlQuery(queryStr, command):
     dbconnection.close()
     return result
 
+
 def encryptPassword(salt, password):
     cipher = AES.new(salt.encode(), AES.MODE_CBC)
     ct_bytes = cipher.encrypt(pad(password.encode(), AES.block_size))
     iv = b64encode(cipher.iv).decode('utf-8')
     ct = b64encode(ct_bytes).decode('utf-8')
     return json.dumps({'iv':iv, 'ciphertext':ct})
+
 
 def decryptPassword(salt, password):
     b64 = json.loads(password)
@@ -107,6 +120,7 @@ def decryptPassword(salt, password):
     cipher = AES.new(salt.encode(), AES.MODE_CBC, iv)
     pt = unpad(cipher.decrypt(ct), AES.block_size)
     return pt.decode()
+
 
 def loopCounter(count, compValue):
     countUp=0
@@ -119,6 +133,7 @@ def loopCounter(count, compValue):
         countUp=countUp+1
     return retval
 
+
 def listofIntegers(input):
     result=[]
     converted=json.loads(input)
@@ -126,23 +141,28 @@ def listofIntegers(input):
         result.append(int(items))
     return result
 
+
 def converttoJSON(input):
     #If the first character is a double quote, we have to remove the first and last character
     if input[0] == '"' and input[-1] == '"':
         input=input[1:-1]
     return json.loads(input)
 
+
 def converttoInteger(input):
     if type(input)==str and input:
         input=int(input)
     return input
 
+
 def showdataType(input):
     return type(input)
+
 
 def deleteEntry(dbtable,id):
     queryStr="delete from {} where id='{}'".format(dbtable,id)
     sqlQuery(queryStr,"selectone")
+
 
 def getSystemInfo():
     # Obtain system information
@@ -158,6 +178,7 @@ def getSystemInfo():
         return json.dumps(info)
     except Exception as e:
         logging.exception(e)
+
 
 def factoryDefault(result):
     # Need to do some things here. First is to empty the databases and create the admin user account
@@ -181,6 +202,7 @@ def factoryDefault(result):
     with open('views/globals.json', 'w') as systemconfig:
         systemconfig.write(json.dumps(globalsconf))
 
+
 def navigator(queryStr,formresult):
     navresult=sqlQuery(queryStr,"selectone")
     totalentries=navresult['totalentries']
@@ -197,3 +219,11 @@ def navigator(queryStr,formresult):
     except:
         entryperpage=25
     return {'entryperpage':entryperpage,'totalentries':totalentries,'pageoffset':pageoffset}
+
+
+def checkdbExist(queryStr):
+    result=sqlQuery(queryStr,"select")
+    if result:
+        return 1
+    else:
+        return 0

@@ -70,12 +70,12 @@ function configentryperPage() {
     var configpageoffset = 0;
     var e = document.getElementById("searchowner");
     var owner = e.options[e.selectedIndex].value;
-    var e = document.getElementById("backuptype");
+    var e = document.getElementById("searchbackuptype");
     var backuptype = e.options[e.selectedIndex].value;
     var currentconfigentryperpage = document.getElementById("currentconfigentryperpage").value;
     var masterbackup = e.options[e.selectedIndex].value;
     var currentconfigentryperpage = document.getElementById("currentconfigentryperpage").value;
-    $("div[data-configmgr='configmgr']").load('configmgr?deviceid=' + document.getElementById('configurationManager').getAttribute('data-deviceid') + '&owner=' + owner + '&masterbackup=' + masterbackup + '&backuptype=' + encodeURIComponent(backuptype) + '&searchconfigDescription=' + document.getElementById("searchconfigDescription").value + '&configentryperpage=' + configentryperpage + '&configpageoffset=' + configpageoffset + '&action=searchConfig');
+    $("div[data-configmgr='configmgr']").load('configmgr?deviceid=' + document.getElementById('deviceid').value + '&owner=' + owner + '&masterbackup=' + masterbackup + '&backuptype=' + encodeURIComponent(backuptype) + '&searchconfigDescription=' + document.getElementById("searchdescription").value + '&configentryperpage=' + configentryperpage + '&configpageoffset=' + configpageoffset + '&action=searchConfig');
 }
 
 function configpageNumber() {
@@ -97,12 +97,12 @@ function configpageNumber() {
     }
     var e = document.getElementById("searchowner");
     var owner = e.options[e.selectedIndex].value;
-    var e = document.getElementById("backuptype");
+    var e = document.getElementById("searchbackuptype");
     var backuptype = e.options[e.selectedIndex].value;
     var currentconfigentryperpage = document.getElementById("currentconfigentryperpage").value;
     var masterbackup = e.options[e.selectedIndex].value;
     var currentconfigentryperpage = document.getElementById("currentconfigentryperpage").value;
-    $("div[data-configmgr='configmgr']").load('configmgr?deviceid=' + document.getElementById('configurationManager').getAttribute('data-deviceid') + '&owner=' + owner + '&masterbackup=' + masterbackup + '&backuptype=' + encodeURIComponent(backuptype) + '&searchconfigDescription=' + document.getElementById("searchconfigDescription").value + '&configentryperpage=' + configentryperpage + '&configpageoffset=' + configpageoffset + '&action=searchConfig');
+    $("div[data-configmgr='configmgr']").load('configmgr?deviceid=' + document.getElementById('configurationManager').getAttribute('data-deviceid') + '&owner=' + owner + '&masterbackup=' + masterbackup + '&backuptype=' + encodeURIComponent(backuptype) + '&searchconfigDescription=' + document.getElementById("searchdescription").value + '&configentryperpage=' + configentryperpage + '&configpageoffset=' + configpageoffset + '&action=searchConfig');
 }
 
 function changeSearch() {

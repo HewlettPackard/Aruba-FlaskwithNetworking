@@ -1,4 +1,4 @@
-# (C) Copyright 2020 Hewlett Packard Enterprise Development LP.
+# (C) Copyright 2021 Hewlett Packard Enterprise Development LP.
 # Generic Aruba Switch classes
 
 import classes.classes
@@ -66,7 +66,7 @@ def discoverModel(deviceid):
             try:
                 if sysinfo['switch_type']=="ST_STACKED":
                     url="stacking/vsf/members"
-                    response =classes.classes.getswitchREST(url,deviceid)
+                    vsfinfo =classes.classes.getswitchREST(url,deviceid)
                     # Getting the member information, this information contains which device is the master/commander. This is for running VSF
                     if 'message' in vsfinfo:
                         vsfinfo={}
@@ -74,7 +74,7 @@ def discoverModel(deviceid):
                         sysinfo= {**sysinfo,**vsfinfo}
                     # If there is no response, this means that the switches are running BPS
                     url="stacking/bps/members"
-                    response =classes.classes.getswitchREST(url,deviceid)
+                    bpsinfo =classes.classes.getswitchREST(url,deviceid)
                     if 'message' in bpsinfo:
                         bpsinfo={}
                     else:
@@ -163,7 +163,7 @@ def devicedbAction(formresult):
             if checkDuplicate:
                 entryExists=1
             else:
-                queryStr="insert into devices (description,ipaddress,username,password,telemetryenable,subscriptions,subscriber,cpu,memory,sysinfo,ports,interfaces,vrf,vsx,vsxlags,vsf,bps,lldp,routeinfo,topology) values ('{}','{}','{}','{}','{}','{}','{}','{}','{}','{}','{}','{}','{}','{}','{}','{}','{}','{}','{}','{}')" \
+                queryStr="insert into devices (description,ipaddress,username,password,telemetryenable,subscriptions,subscriber,cpu,memory,sysinfo,ports,interfaces,vrf,vsx,vsxlags,vsf,bps,lldp,routeinfo,topology, deviceattributes) values ('{}','{}','{}','{}','{}','{}','{}','{}','{}','{}','{}','{}','{}','{}','{}','{}','{}','{}','{}','{}','[]')" \
                 .format(formresult['description'],formresult['ipaddress'],formresult['username'],classes.classes.encryptPassword(globalsconf['secret_key'],formresult['password']),telemetryenable,'[[],0]',subscriber,'[]','[]','[]','[]','[]','{}','{}','{}','{}','{}','{}','{}',topology)
                 deviceid=classes.classes.sqlQuery(queryStr,"insert")
                 # Discover what type of device this is and update the database with the obtained information
@@ -207,6 +207,9 @@ def devicedbAction(formresult):
             queryStr="select ipaddress from devices where id='{}'".format(formresult['deviceid'])
             result=classes.classes.sqlQuery(queryStr,"selectone")
             queryStr="delete from topology where switchip='{}'".format(result['ipaddress'])
+            classes.classes.sqlQuery(queryStr,"delete")
+            # Delete from the software upgrades table
+            queryStr="delete from softwareupdate where switchid='{}'".format(formresult['deviceid'])
             classes.classes.sqlQuery(queryStr,"delete")
             # Delete from the devices table
             queryStr="delete from devices where id='{}'".format(formresult['deviceid'])
@@ -326,13 +329,100 @@ def showLinechart(deviceid,entity,ostype,stacktype,title):
     return line_chart
 
 def portAccess(deviceid):
-    #Show access port security
+    # Show access port security for AOS-Switch
     try:
         url="monitoring/port-access/clients/detailed"
         response =classes.classes.getswitchREST(url,deviceid)
     except:
         response={}
     return response
+
+
+def portAccesscx(deviceid):
+    # Show access port security for AOS-CX switches
+    # This is a combination of calls. We first have to check which switchports are configured for port access and which switch ports are operational
+    portaccessInfo=[]
+    try:
+        url="system/interfaces?attributes=name&depth=1&filter=link_state%3Aup%2Ctype%3Asystem"
+        response = sorted(classes.classes.getcxREST(deviceid,url), key=lambda k: k['name'])   
+        # Response contains all the physical interfaces that are operational and up
+        # Next is to iterate through the list and obtain the port-access information per interface. Append that information to a list of dicts
+        for items in response:
+            url="system/ports/" + items['name'].replace('/', '%2F') + "/port_access_clients?attributes=applied_role%2Cauth_attributes%2Cclient_state%2Cmac%2Cport%2Cubt_client_state&depth=2"
+            response = classes.classes.getcxREST(deviceid,url)
+            if response:
+                portaccessInfo.append(response)
+    except:
+        return portaccessInfo
+    return portaccessInfo
+
+def getupgradeInfo(deviceInfo):
+    # Obtain software version and partition information from the switch based on ostype. 
+    bootInfo={}
+    if deviceInfo['ostype']=="arubaos-switch":
+        # There is no REST call available for AOS-Switch, therefore we have to use anycli
+        cliResult=False
+        while cliResult==False:
+            try:
+                header=classes.classes.checkswitchCookie(deviceInfo['id'])
+                url="http://{}/rest/v7/cli".format(deviceInfo['ipaddress'])
+                sendcmd={'cmd':'show flash'}
+                response=requests.post(url, verify=False, headers=header, data=json.dumps(sendcmd), timeout=4)
+                response=response.json()
+                if "error_msg" in response:
+                    if response['error_msg']=="":
+                        cliResult=True
+            except:
+                pass
+        # Now that the image and partition information has been obtained, we need to format this.
+        flashInfo=classes.classes.b64decode(response['result_base64_encoded']).decode('utf_8').splitlines()
+        res = [i for i in flashInfo if "Primary Image" in i]
+        bootInfo['primaryImage'] = res[0].split()[-1]
+        res = [i for i in flashInfo if "Secondary Image" in i]
+        bootInfo['secondaryImage'] = res[0].split()[-1]
+        res = [i for i in flashInfo if "Default Boot Image" in i]
+        bootInfo['defaultImage'] = res[0].split()[-1]
+        # Next, we need to obtain the software versions that are available for this switch. This means that we first have to identify which switch we have, and then obtain the images
+        if "WC" in deviceInfo['osversion']:
+            # It's a 2930 series. Obtain all the images that are available for the 2930 series
+            queryStr="select * from deviceimages where devicefamily='2930'"
+            imageResult=classes.classes.sqlQuery(queryStr,"select")
+        elif "KB" in deviceInfo['osversion']:
+            # It's a 38x0/5400 series. Obtain all the images that are available for the 38x0/5400 series
+            queryStr="select * from deviceimages where devicefamily='3810/5400'"
+            imageResult=classes.classes.sqlQuery(queryStr,"select")
+        else:
+            imageResult=[]
+        bootInfo['images']=imageResult
+        # Another thing to check is whether there is already an active upgrade scheduled. This is identified by the in the softwareupdate table with an existing switchid and a status that is set to 0
+        # Status set to 0 means that the upgrade has not started yet and the upgrade can still be edited
+        queryStr="select * from softwareupdate where switchid='{}' and NOT (status=100 OR status=110)".format(deviceInfo['id'])
+        bootInfo['activeUpdate']=classes.classes.sqlQuery(queryStr,"selectone")
+    elif deviceInfo['ostype']=="arubaos-cx":
+        url="firmware"
+        response = classes.classes.getcxREST(deviceInfo['id'],url)
+        bootInfo['primaryImage']=response['primary_version']
+        bootInfo['secondaryImage']=response['secondary_version']
+        bootInfo['defaultImage']=response['default_image']
+        if "FL" in deviceInfo['osversion']:
+            # It's a 6300/6400 series. Obtain all the images that are available for the 6300/6400 series
+            queryStr="select * from deviceimages where devicefamily='6300/6400'"
+            imageResult=classes.classes.sqlQuery(queryStr,"select")
+        elif "TL" in deviceInfo['osversion']:
+            # It's a 8320 series. Obtain all the images that are available for the 8320 series
+            queryStr="select * from deviceimages where devicefamily='8320'"
+            imageResult=classes.classes.sqlQuery(queryStr,"select")
+        elif "GL" in deviceInfo['osversion']:
+            # It's a 8325 series. Obtain all the images that are available for the 8325 series
+            queryStr="select * from deviceimages where devicefamily='8325'"
+            imageResult=classes.classes.sqlQuery(queryStr,"select")
+        else:
+            imageResult=[]
+        bootInfo['images']=imageResult
+        queryStr="select * from softwareupdate where switchid='{}' and NOT (status=100 OR status=110)".format(deviceInfo['id'])
+        bootInfo['activeUpdate']=classes.classes.sqlQuery(queryStr,"selectone")
+    return bootInfo
+
 
 def clearClient(deviceid,macaddress,port,authmethod):
     # based on the authentication method, push reset client

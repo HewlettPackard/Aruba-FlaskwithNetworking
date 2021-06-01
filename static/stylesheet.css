@@ -30,11 +30,11 @@ button, input[type="button"], input[type="submit"] {
     text-decoration: none;
     border: none;
     border-radius: 3px;
-    padding: 5px 5px;
+    padding: 4px 4px;
     text-align: center;
     display: inline-block;
-    font-size: 10px;
-    margin: 2px 2px;
+    font-size: 9px;
+    margin: 1px 1px;
     cursor: pointer;
 }
 
@@ -44,12 +44,12 @@ button, input[type="button"], input[type="submit"] {
     border: none;
     border-radius: 3px;
     color: #BBBBBB;
-    padding: 5px 5px;
+    padding: 4px 4px;
     text-align: center;
     text-decoration: none;
     display: inline-block;
-    font-size: 10px;
-    margin: 2px 2px;
+    font-size: 9px;
+    margin: 1px 1px;
     cursor: pointer;
 }
 
@@ -61,11 +61,11 @@ button:hover, input[type="button"]:hover, input[type="submit"]:hover {
     text-decoration: none;
     border: none;
     border-radius: 3px;
-    padding: 5px 5px;
+    padding: 4px 4px;
     text-align: center;
     display: inline-block;
-    font-size: 10px;
-    margin: 2px 2px;
+    font-size: 9px;
+    margin: 1px 1px;
     cursor: pointer;
 }
 
@@ -115,6 +115,10 @@ table.insidetable {
         border: 1px solid black;
     }
 
+.font10px {
+    font-size: 11px;
+}
+
 .font11px {
     font-size: 11px;
 }
@@ -143,6 +147,19 @@ table.insidetable {
     font-weight: bold;
 }
 
+.font11pxgrey {
+    font-family: Arial, Helvetica, sans-serif;
+    font-size: 11px;
+    color: #555555;
+    text-decoration: none;
+}
+
+.font12pxgrey {
+    font-family: Arial, Helvetica, sans-serif;
+    font-size: 12px;
+    color: #555555;
+    text-decoration: none;
+}
 
 .font13pxgrey {
     font-family: Arial, Helvetica, sans-serif;
@@ -336,6 +353,7 @@ table.insidetable {
     background-color: darkgrey;
     text-align: center;
     vertical-align: middle;
+    text-decoration: none;
 }
 
 #progressBar {
@@ -348,6 +366,7 @@ table.insidetable {
     vertical-align: middle;
     color: white;
     z-index: 1;
+    text-decoration: none;
 }
 
 #progressInfo {
@@ -355,6 +374,7 @@ table.insidetable {
     right: 0;
     left: 0;
     z-index: 2;
+    text-decoration: none;
 }
 
 
@@ -561,4 +581,56 @@ table.insidetable {
     border: none;
     padding: 0;
     margin: 0;
+}
+
+
+.toggleswitch {
+    position: relative;
+    display: inline-block;
+    width: 40px;
+    height: 20px;
+}
+
+.toggleswitch input {
+    opacity: 0;
+    width: 0;
+    height: 0;
+}
+
+.toggleslider {
+    position: absolute;
+    cursor: pointer;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background-color: #ccc;
+    -webkit-transition: .4s;
+    transition: .4s;
+}
+
+.toggleslider:before {
+    position: absolute;
+    content: "";
+    height: 16px;
+    width: 16px;
+    left: 2px;
+    bottom: 2px;
+    background-color: white;
+    -webkit-transition: .4s;
+    transition: .4s;
+}
+
+input:checked + .toggleslider {
+    background-color: darkgreen ;
+}
+
+input:focus + .toggleslider {
+    box-shadow: 0 0 1px #2196F3;
+}
+
+input:checked + .toggleslider:before {
+    -webkit-transform: translateX(16px);
+    -ms-transform: translateX(16px);
+    transform: translateX(16px);
 }

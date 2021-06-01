@@ -86,7 +86,7 @@
         <input name='entryperpage' type='hidden' value="{{ entryperpage }}" />
         <input name='currententryperpage' type='hidden' value="{{ entryperpage }}" />
         <input type="hidden" name="searchName" value="{{ formresult.searchIPaddress }}">
-        <input type="hidden" name="id" id="roleid"/>
+        <input type="hidden" name="id" id="roleid" />
         <p>
             <table class="tablenoborder">
                 <tr style="background-color: grey;" class="tableTitle">
@@ -118,7 +118,7 @@
                             <option value="2">Read write</option>
                         </select>
                     </td>
-                    <td align="right" width="10%"><font class="font12pxwhite">Mobility:</font></td>
+                    <td align="right" width="10%"><font class="font12pxwhite">Gateways:</font></td>
                     <td align="left" class="whiteBG" width="2%">
                         <select name="mobilityaccess" id="mobilityaccess">
                             <option value="0">No access</option>
@@ -143,14 +143,6 @@
                 <tr style="background-color: grey;">
                     <td align="left" width="10%"><font class="font12pxwhite">ZTP:</font></td>
                     <td class="whiteBG" width="2%"><input type="checkbox" id="ztp" name="ztp" class="input"></td>
-                    <td align="right" width="10%"><font class="font12pxwhite">ZTP images:</font></td>
-                    <td align="left" class="whiteBG" width="2%">
-                        <select name="ztpimageaccess" id="ztpimageaccess">
-                            <option value="0">No access</option>
-                            <option value="1">Read only</option>
-                            <option value="2">Read write</option>
-                        </select>
-                    </td>
                     <td align="right" width="10%" nowrap><font class="font12pxwhite">ZTP templates:</font></td>
                     <td align="left" class="whiteBG" width="2%">
                         <select name="ztptemplateaccess" id="ztptemplateaccess">
@@ -167,6 +159,31 @@
                             <option value="2">Read write</option>
                         </select>
                     </td>
+                    <td class="whiteBG"></td>
+                </tr>
+            </table>
+        </p>
+        <p>
+            <table class="tablewithborder">
+                <tr style="background-color: grey;">
+                    <td align="left" width="10%"><font class="font12pxwhite">Device updates:</font></td>
+                    <td class="whiteBG" width="2%"><input type="checkbox" id="deviceupdates" name="deviceupdates" class="input"></td>
+                    <td align="right" width="10%"><font class="font12pxwhite">Device images:</font></td>
+                    <td align="left" class="whiteBG" width="2%">
+                        <select name="imageaccess" id="imageaccess">
+                            <option value="0">No access</option>
+                            <option value="1">Read only</option>
+                            <option value="2">Read write</option>
+                        </select>
+                    </td>
+                    <td align="right" width="10%" nowrap><font class="font12pxwhite">Upgrade scheduler:</font></td>
+                    <td align="left" class="whiteBG" width="2%">
+                        <select name="upgradescheduleraccess" id="upgradescheduleraccess">
+                            <option value="0">No access</option>
+                            <option value="1">Read only</option>
+                            <option value="2">Read write</option>
+                        </select>
+                    </td>                
                     <td class="whiteBG"></td>
                 </tr>
             </table>
@@ -301,6 +318,14 @@
                             <option value="2">Read write</option>
                         </select>
                     </td>
+                    <td align="right" width="10%" nowrap><font class="font12pxwhite">Device attributes:</font></td>
+                    <td align="left" class="whiteBG" width="2%">
+                        <select name="deviceattributesaccess" id="deviceattributesaccess">
+                            <option value="0">No access</option>
+                            <option value="1">Read only</option>
+                            <option value="2">Read write</option>
+                        </select>
+                    </td>
                     <td align="right" width="10%" nowrap><font class="font12pxwhite">System administration:</font></td>
                     <td align="left" class="whiteBG" width="2%">
                         <select name="sysadminaccess" id="sysadminaccess">
@@ -326,7 +351,7 @@
                 <tr>
                     <td align="center">
                         <div id="submitorchange">
-                            
+
                         </div>
                     </td>
                 </tr>

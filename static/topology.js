@@ -43,12 +43,10 @@ $(document).ready(function () {
             success: function () {
                 // Obtaining the topology information was successful
                 document.getElementById("liProgress").style.display = "none";
-                document.getElementById("progresstooltip").style.display = "none";
 
             },
             error: function () {
                 document.getElementById("liProgress").style.display = "block";
-                document.getElementById("progresstooltip").style.display = "none";
                 progressInfo.innerHTML = "Error finding topology information";
             }
         });

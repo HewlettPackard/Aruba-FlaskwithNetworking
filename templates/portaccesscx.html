@@ -1,0 +1,36 @@
+<!-- (C) Copyright 2021 Hewlett Packard Enterprise Development LP. -->
+{% block content %}
+
+
+<div id="maincontainer">
+    <table class='tablewithborder'>
+        <tr><td colspan='7'><font class='font13pxwhite'><center>Access port client information for device {{deviceInfo['ipaddress']}} ({{deviceInfo['description']}})</center></font></td></tr>
+        <tr>
+            <td nowrap><font class='font12pxwhite'>Access port</font></td>
+            <td nowrap><font class='font12pxwhite'>Client name</font></td>
+            <td nowrap><font class='font12pxwhite'>Authentication type</font></td>
+            <td nowrap><font class='font12pxwhite'>Client status</font></td>
+            <td nowrap><font class='font12pxwhite'>MAC Address</font></td>
+            <td nowrap><font class='font12pxwhite'></font></td>
+            <td><font class='font12pxwhite'>Action</font></td>
+        </tr>
+        {% for items in accessInfo %}
+        {% for items2 in items %}
+        <tr>
+            <td style="background-color:#ffffff;" nowrap><font class='font11px'>{{ items2['port']['name']}}</font></td>
+            <td style="background-color:#ffffff;" nowrap><font class='font11px'>{% if items2['auth_attributes']['mac-auth'] is defined %}{{ items2['auth_attributes']['mac-auth']['username'] }}{% elif items2['auth_attributes']['dot1x']['username'] is defined %}{{ items2['auth_attributes']['dot1x']['username'] }}{% endif %}</font></td>
+            <td style="background-color:#ffffff;" nowrap><font class='font11px'>{% if items2['auth_attributes']['mac-auth'] is defined %}MAC Auth{% else %} 802.1X {% endif %}</font></td>
+            <td style="background-color:#ffffff;" nowrap><font class='font11px'>{{ items2['client_state'] }}</font></td>
+            <td style="background-color:#ffffff;" nowrap><font class='font11px'>{{ items2['mac'] }}</font></td>
+            <td style="background-color:#ffffff;" nowrap><font class='font11px'></font></td>
+            <td style="background-color:#ffffff;" nowrap width='3%'>
+            </td>
+        </tr>
+        {% endfor %}
+
+        {% endfor %}
+
+
+    </table>
+</div>
+        {% endblock %}

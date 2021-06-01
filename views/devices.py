@@ -44,11 +44,44 @@ def switches ():
 def portAccess ():
     sysvars=classes.globalvars()
     # Obtain the device information
-    queryStr="select id, ipaddress, description from devices where id='{}'".format(request.args.get('deviceid'))
+    queryStr="select id, ipaddress, description, ostype from devices where id='{}'".format(request.args.get('deviceid'))
     deviceInfo=classes.sqlQuery(queryStr,"selectone")
     # Obtain the port access information from the device
-    result=classes.portAccess(request.args.get('deviceid'))
-    return render_template("portaccess.html", accessInfo=result, deviceInfo=deviceInfo)
+    if deviceInfo['ostype']=="arubaos-cx":
+        result=classes.portAccesscx(request.args.get('deviceid'))
+        return render_template("portaccesscx.html", accessInfo=result, deviceInfo=deviceInfo)
+    elif deviceInfo['ostype']=="arubaos-switch":
+        result=classes.portAccess(request.args.get('deviceid'))
+        return render_template("portaccess.html", accessInfo=result, deviceInfo=deviceInfo)
+
+
+@devices.route("/deviceUpgrade", methods=['GET','POST'])
+def deviceUpgrade ():
+    sysvars=classes.globalvars()
+    # Obtain the device information
+    queryStr="select id, ipaddress, description, ostype, platform, osversion from devices where id='{}'".format(request.args.get('deviceid'))
+    deviceInfo=classes.sqlQuery(queryStr,"selectone")
+    bootInfo=classes.getupgradeInfo(deviceInfo)
+    return render_template("deviceupgrade.html",bootInfo=bootInfo, deviceInfo=deviceinfo, sysvars=sysvars)
+
+
+@devices.route("/deviceupgradeActions", methods=['GET','POST'])
+def deviceupgradeActions ():
+    sysvars=classes.globalvars()
+    formresult=request.form
+    bootInfo=classes.scheduledbAction(formresult)
+    return json.dumps(bootInfo)
+
+
+@devices.route("/checkupgradeStatus", methods=['GET','POST'])
+def checkupgradeStatus ():
+    sysvars=classes.globalvars()
+    formresult=request.form
+    queryStr="select * from softwareupdate where id='{}'".format(formresult['id'])
+    scheduleInfo=classes.sqlQuery(queryStr,"selectone")
+    scheduleInfo['schedule']=str(scheduleInfo['schedule'])
+    return json.dumps(scheduleInfo)
+
 
 @devices.route("/backupInfo", methods=['GET','POST'])
 def backupInfo ():
@@ -159,8 +192,8 @@ def clearpass ():
     else:
         return render_template("login.html")
 
-@devices.route("/mobility", methods=['GET', 'POST'])
-def mobility ():
+@devices.route("/gateways", methods=['GET', 'POST'])
+def gateways ():
     authOK=classes.checkAuth("mobilityaccess","submenu")
     if authOK!=0:
         sysvars=classes.globalvars()
@@ -169,7 +202,7 @@ def mobility ():
         result=classes.mobilitydbAction(formresult)
         if authOK['hasaccess']==True:
             authOK['hasaccess']="true"
-            return render_template("mobility.html",result=result['result'], platformResult=result['platformResult'],osversionResult=result['osversionResult'], formresult=formresult, totalentries=int(result['totalentries']),pageoffset=int(result['pageoffset']),entryperpage=int(result['entryperpage']), authOK=authOK, sysvars=sysvars)
+            return render_template("gateways.html",result=result['result'], platformResult=result['platformResult'],osversionResult=result['osversionResult'], formresult=formresult, totalentries=int(result['totalentries']),pageoffset=int(result['pageoffset']),entryperpage=int(result['entryperpage']), authOK=authOK, sysvars=sysvars)
         else:
             return render_template("noaccess.html",authOK=authOK, sysvars=sysvars)
     else:
@@ -217,6 +250,7 @@ def deviceinfo ():
     else:
         return render_template("login.html")
 
+    
 @devices.route("/mcroleInfo", methods=['GET', 'POST'])
 def mcroleInfo ():
     # Obtain the relevant Mobility Controller information from the database
@@ -269,3 +303,45 @@ def cpTrusts ():
 def cpServices ():
     result=classes.getservicesInfo(request.args.get('deviceid'),request.args.get('seEntryperpage'),request.args.get('sePageoffset'),request.args.get('searchName'),request.args.get('searchType'),request.args.get('searchTemplate'),request.args.get('searchStatus'))
     return render_template("cpservices.html", servicesInfo=result['servicesInfo'], deviceInfo=result['deviceInfo'], seTotalentries=int(result['seTotalentries']), seEntryperpage=int(result['seEntryperpage']),sePageoffset=int(result['sePageoffset']),searchName=result['searchName'],searchType=result['searchType'],searchTemplate=result['searchTemplate'],searchStatus=result['searchStatus'])
+
+@devices.route("/deviceattributesList", methods=['GET','POST'])
+def deviceattributesList ():
+    if request.form['searchattributeName']!="" or request.form['searchattributeType']!="":
+        queryStr="select * from deviceattributes where name like '%" + request.form['searchattributeName'] + "%'"
+        if request.form['searchattributeType']!="":
+            queryStr += " and type='{}'".format(request.form['searchattributeType'])
+    else:
+        queryStr="select * from deviceattributes"
+    result=classes.sqlQuery(queryStr,"select")
+    return json.dumps(result)
+
+
+@devices.route("/assignedAttributes", methods=['GET','POST'])
+def assignedAttributes ():
+    result=classes.assignedAttributes(request.form['deviceid'])
+    return json.dumps(result)
+
+
+@devices.route("/showassignedAttributes", methods=['GET','POST'])
+def showassignedAttributes ():
+    result=classes.showassignedAttributes(request.form['deviceid'])
+    return json.dumps(result)
+
+
+@devices.route("/submitswitchAttributes", methods=['GET','POST'])
+def submitswitchAttributes ():
+    queryStr="update devices set deviceattributes='[{}]' where id='{}'".format(request.form['attributeList'],request.form['deviceid'])
+    print(queryStr)
+    result=classes.sqlQuery(queryStr,"update")
+    return result
+
+
+@devices.route("/assignswitchAttribute", methods=['GET','POST'])
+def assignswitchAttribute ():
+    result=classes.assignswitchAttribute(request.form['deviceid'], request.form['id'])
+    return json.dumps(result)
+
+@devices.route("/removeswitchAttribute", methods=['GET','POST'])
+def removeswitchAttribute ():
+    result=classes.removeswitchAttribute(request.form['deviceid'], request.form['id'])
+    return json.dumps(result)

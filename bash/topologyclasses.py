@@ -25,6 +25,7 @@ def discoverTopology():
     pathname = os.path.dirname(sys.argv[0])
     appPath = os.path.abspath(pathname) + "/globals.json"
     existingEntries=[]
+    currentEntries=[]
     with open(appPath, 'r') as myfile:
         data=myfile.read()
     globalconf=json.loads(data)
@@ -49,7 +50,13 @@ def discoverTopology():
             else:
                 # There is no switch type information in sysinfo. Assume it is a standalone switch
                 url="system/status"
-                # Get the system name and system MAC address        
+                # Get the system name and system MAC address
+            # Obtain all the current entries in the database for this switch
+            queryStr="select id from topology where switchip='{}' and remoteswitchip!=''".format(items['ipaddress'])
+            cursor.execute(queryStr)
+            cE = cursor.fetchall() 
+            for cItems in cE:
+                currentEntries.append(cItems['id'])
             try:
                 switchresult=getRESTswitch(items['ipaddress'],items['secinfo'],url)
                 # Format the system mac address. It's abcdef-ghijkl now. Has to be ab:cd:ef:gh:ij:kl
@@ -90,6 +97,14 @@ def discoverTopology():
                     print("Could not create or update topology for switch {}".format(items['ipaddress']))
                     topolog.write('{}: Could not create or update topology for switch {} ({}). \n'.format(datetime.now(),items['ipaddress'],switchresult['name']))
                     pass
+                # Once the topology is updated, we need to clean up the topology table for the given device. It could be that a remote device
+                # Has moved and is not connected to the switch anymore. The existingEntries list contains all the devices that have been updated
+                # The currentEntries list contains all the current entries. The difference between the two are the entries that don't exist on the switch anymore
+                # These entries need to be cleared (not deleted)
+                clearEntries=(list(set(currentEntries)-set(existingEntries)))
+                for cI in clearEntries:
+                    queryStr="update topology set remoteswitchip='', remotesystemmac='', remotehostname='', remoteinterface='', lldpinfo='' where id='{}'".format(cI)
+                    cursor.execute(queryStr)
             except:
                 #print ("could not obtain information from Arubaos-switch")
                 pass
@@ -108,6 +123,12 @@ def discoverTopology():
                 hostname=switchresult['applied_hostname']
             else:
                 hostname="Unknown"
+            # Obtain all the current entries in the database for this switch
+            queryStr="select id from topology where switchip='{}' and remoteswitchip!=''".format(items['ipaddress'])
+            cursor.execute(queryStr)
+            cE = cursor.fetchall() 
+            for cItems in cE:
+                currentEntries.append(cItems['id'])
             for intitems in intresult:
                 # Obtain the LLDP information from the interfaces
                 url="system/interfaces/" + quote(intitems['name'], safe='') + "/lldp_neighbors?attributes=mac_addr%2Cneighbor_info%2Cport_id&depth=2"
@@ -119,18 +140,32 @@ def discoverTopology():
                     cursor.execute(queryStr)
                     result = cursor.fetchall()
                     if switchresult:
-                        if switchresult['system_mac'] and "mgmt_ip_list" in lldpresult[0]['neighbor_info']:
+                        if switchresult['system_mac']:
+                            if "mgmt_ip_list" in lldpresult[0]['neighbor_info']:
+                                mgmtip=lldpresult[0]['neighbor_info']['mgmt_ip_list']
+                            else:
+                                mgmtip="0.0.0.0"
                             if result:
                                 queryStr="update topology set switchip='{}', systemmac='{}',hostname='{}',interface='{}',remoteswitchip='{}',remotesystemmac='{}',remotehostname='{}',remoteinterface='{}',lldpinfo='{}' where id='{}'" \
-                                .format(items['ipaddress'],switchresult['system_mac'],hostname,intitems['name'],lldpresult[0]['neighbor_info']['mgmt_ip_list'],lldpresult[0]['mac_addr'],lldpresult[0]['neighbor_info']['chassis_name'],lldpresult[0]['port_id'] ,json.dumps(lldpresult[0]),result[0]['id'])
+                                .format(items['ipaddress'],switchresult['system_mac'],hostname,intitems['name'],mgmtip,lldpresult[0]['mac_addr'],lldpresult[0]['neighbor_info']['chassis_name'],lldpresult[0]['port_id'] ,json.dumps(lldpresult[0]),result[0]['id'])
                                 cursor.execute(queryStr)
                                 #topolog.write('{}: Updated topology for {} ({}). \n'.format(datetime.now(),items['ipaddress'],hostname))
                                 existingEntries.append(result[0]['id'])
                             else:
                                 queryStr="insert into topology (switchip,systemmac,hostname,interface,remoteswitchip,remotesystemmac,remotehostname,remoteinterface,lldpinfo) values ('{}','{}','{}','{}','{}','{}','{}','{}','{}')" \
-                                .format(items['ipaddress'],switchresult['system_mac'],hostname,intitems['name'],lldpresult[0]['neighbor_info']['mgmt_ip_list'],lldpresult[0]['mac_addr'],lldpresult[0]['neighbor_info']['chassis_name'],lldpresult[0]['port_id'] ,json.dumps(lldpresult[0]))
+                                .format(items['ipaddress'],switchresult['system_mac'],hostname,intitems['name'],mgmtip,lldpresult[0]['mac_addr'],lldpresult[0]['neighbor_info']['chassis_name'],lldpresult[0]['port_id'] ,json.dumps(lldpresult[0]))
                                 cursor.execute(queryStr)
                                 topolog.write('{}: Created new topology for {} ({}). \n'.format(datetime.now(),items['ipaddress'],hostname))
+
+            # ...
+            # Once the topology is updated, we need to clean up the topology table for the given device. It could be that a remote device
+            # Has moved and is not connected to the switch anymore. The existingEntries list contains all the devices that have been updated
+            # The currentEntries list contains all the current entries. The difference between the two are the entries that don't exist on the switch anymore
+            # These entries need to be cleared (not deleted)
+            clearEntries=(list(set(currentEntries)-set(existingEntries)))
+            for cI in clearEntries:
+                queryStr="update topology set remoteswitchip='', remotesystemmac='', remotehostname='', remoteinterface='', lldpinfo='' where id='{}'".format(cI)
+                cursor.execute(queryStr)
         else:
             pass
     if existingEntries:

@@ -523,8 +523,13 @@ $(document).ready(function () {
                 response = JSON.parse(ztpStatus);
                 document.getElementById('ztpStatus' + response[1]).innerHTML = "<font class='font12px'>Enabled, start initialization</font>";
                 //Also need to change the button from edit to show
-                editshowHTML = "<input type='button' name='showDevice' value='Show' data-deviceid='" + response[1] + "' class='showDevice' id='showDevice" + response[1] + "'";
-                editshowHTML += "onclick = 'highlightdeviceRow(" + $("#ztpStatus" + response[1]).attr('id') + ");'>";
+                console.log(response);
+                editshowHTML = "<input type='button' class='button showztplog' value='Show log' id='showztplog" + response[1] + "' data-deviceid='" + response[1] + "' onclick='highlightdeviceRow(this);'>";
+                editshowHTML +="<input type='button' name='disableZTP' value='Disable ZTP' id='disableZTP" + response[1] + "' data-macaddress='{{info['macaddress']}}' data-deviceid='{{info['id']}}' class='disableZTP' onclick='highlightdeviceRow(this);'>";
+                editshowHTML += "<input type='button' name='showDevice' value='Show' data-deviceid='" + response[1] + "' class='showDevice' id='showDevice" + response[1] + "' onclick='highlightdeviceRow(this);'>";
+
+                //editshowHTML = "<input type='button' name='showDevice' value='Show' data-deviceid='" + response[1] + "' class='showDevice' id='showDevice" + response[1] + "'";
+                //editshowHTML += "onclick = 'highlightdeviceRow(" + $("#ztpStatus" + response[1]).attr('id') + ");'>";
                 document.getElementById('editOrshow' + response[1]).innerHTML = editshowHTML;
 
             },

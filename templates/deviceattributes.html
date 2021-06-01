@@ -1,0 +1,179 @@
+﻿<!-- (C) Copyright 2019 Hewlett Packard Enterprise Development LP. -->
+{% block scripts %}
+<script src="static/scripts/jquery-1.10.2.min.js"></script>
+<link href="static/stylesheet.css" rel="stylesheet" />
+<script type="text/javascript" src="static/main.js"></script>
+<script type="text/javascript" src="static/deviceattributes.js"></script>
+{% endblock %}
+
+{% block content %}
+{% set pagename = "Device attributes" %}
+{% include 'navbar.html' %}
+
+
+{% if totalentries|int % entryperpage|int == 0 %}
+{% set totalpages=(totalentries|int/entryperpage|int)|int %}
+{% else %}
+{% set totalpages=(totalentries|int/entryperpage|int)|int +1 %}
+{% endif %}
+
+{% macro sentence_case(text) %}
+{{ text[0]|upper}}{{text[1:] }}
+{% endmacro %}
+
+
+<div id="maincontainer">
+    <form method="post" name="attributeForm" id="deviceattributes">
+        <table class="tablenoborder">
+            <input name="action" type="hidden" value="navigation" />
+            <input name='currentpageoffset' type='hidden' value="{{pageoffset}}" />
+            <input name='currenttotalentries' type='hidden' value="{{totalentries}}" />
+            <input name='totalpages' type="hidden" value="{{ totalpages }}" />
+            <input name='currententryperpage' type='hidden' value="{{ entryperpage }}" />
+            <tr>
+                <td width="25%" align="right">
+                    <font class="font13pxgrey">
+                        Show <select name="entryperpage" onchange="this.form.submit()">
+                            <option value="5" {% if entryperpage|int==5 or entryperpage is not defined %} selected {% endif %}>5</option>
+                            <option value="10" {% if entryperpage|int==10 %} selected {% endif %}>10</option>
+                            <option value="25" {% if entryperpage|int==25 %} selected {% endif %}>25</option>
+                            <option value="50" {% if entryperpage|int==50 %} selected {% endif %}>50</option>
+                            <option value="100" {% if entryperpage|int==100 %} selected {% endif %}>100</option>
+                        </select> entries per page (page <select name="pageoffset" onchange="this.form.submit()">
+                            {% for i in  range(totalpages) %}
+                            <option value="{{ (i)*entryperpage|int }}" {% if (pageoffset|int) /(entryperpage|int) ==(i) %}selected{% endif %}>{{ i+1 }}</option>
+                            {% endfor %}
+                        </select> of {{ totalpages }} pages)
+                    </font>
+                </td>
+            </tr>
+        </table>
+    </form>
+
+    <table class="tablenoborder" id="attributeTable">
+        <form method="post">
+            <input name='currentpageoffset' type='hidden' value="{{pageoffset}}" />
+            <input name='currenttotalentries' type='hidden' value="{{totalentries}}" />
+            <input name='totalpages' type="hidden" value="{{ totalpages }}" />
+            <input name='entryperpage' type='hidden' value="{{ entryperpage }}" />
+            <input name='currententryperpage' type='hidden' value="{{ entryperpage }}" />
+            <input name='action' type='hidden' value="searchAttribute" />
+            <tr>
+                <td width="2%" align="left" nowrap><font class="font13pxgrey">ID</font></td>
+                <td width="10%" align="left" nowrap><font class="font13pxgrey">Name</font></td>
+                <td width="5%" align="left" nowrap><font class="font13pxgrey">Type</font></td>
+                <td width="65%" align="left" nowrap><font class="font13pxgrey">Values</font></td>
+                <td width="8%"><font class="font13pxgrey">Assignment status</font></td>
+                <td width="20%" align="right"></td>
+            </tr>
+            <tr style="background-color: grey;" class="tableTitle">
+                <td align="left" nowrap>&nbsp;</td>
+                <td align="left" valign="top"><input type="text" name="searchName" value="{{ formresult.searchName }}" size="10"></td>
+                <td>
+                    <select name="searchType">
+                        <option value="">Select</option>
+                        <option value="list" {% if formresult.searchType=="list" %} selected {% endif %}>List</option>
+                        <option value="value" {% if formresult.searchType=="value" %} selected {% endif %}>Value</option>
+                        <option value="boolean" {% if formresult.searchType=="boolean" %} selected {% endif %}>Boolean</option>
+                    </select>
+                </td>
+                <td></td>
+                <td>
+                    <select name="searchAssigned">
+                        <option value="">Select</option>
+                        <option value="0" {% if formresult.searchAssigned=="0" %} selected {% endif %}>Not assigned</option>
+                        <option value="1" {% if formresult.searchAssigned=="1" %} selected {% endif %}>Assigned</option>
+                    </select>
+                </td>
+                <td align="right">
+                    <input type="button" class="button" value="Add device attribute" id="adddeviceAttribute" onclick="cleardeviceRow(this);" {% if va("deviceattributeaccess","feature")==False %} style="opacity:0.2;pointer-events:none;" {% endif %}><input type="submit" name="searchAction" value="Search" class="button" id="searchRole" onclick="cleardeviceRow(this);">
+                </td>
+            </tr>
+        </form>
+
+        {% for info in result['result'] %}
+        <form method="post">
+            <input name='currentpageoffset' type='hidden' value="{{pageoffset}}" />
+            <input name='currenttotalentries' type='hidden' value="{{totalentries}}" />
+            <input name='totalpages' type="hidden" value="{{ totalpages }}" />
+            <input name='entryperpage' type='hidden' value="{{ entryperpage }}" />
+            <input name='currententryperpage' type='hidden' value="{{ entryperpage }}" />
+            <input type="hidden" name="searchName" value="{{ formresult.searchName }}">
+            <input type="hidden" name="searchType" value="{{ formresult.searchType }}">
+            <input type="hidden" name="searchAssigned" value="{{ formresult.searchAssigned }}">
+            <input type="hidden" name="id" value="{{ info['id'] }}" />
+            <tr>
+                <td class="whiteBG"><font class="font12px">{{ loop.index }}</font></td>
+                <td class="whiteBG" nowrap><font class="font12px">{{ info['name'] }}</font></td>
+                <td class="whiteBG"><font class="font12px">{{ sentence_case(info['type']) }}</font></td>
+                <td class="whiteBG"><font class="font12px">{% if info['type']=="list" %}{{ info['attributelist'][1:-1] | replace('"', '') }}{% endif %}</font></td>
+                <td class="whiteBG"><font class="font12px">{% if info['isassigned']!="[]" %} Assigned {% else %} Not assigned {%endif %} </td>
+                <td align="right" class="whiteBG"><input type="button" value="Edit" id="editdeviceAttribute{{ info['id'] }}" class="editdeviceAttribute" data-attributeid="{{ info['id'] }}" {% if va("deviceattributesaccess","feature")==False  %} style="opacity:0.2;pointer-events:none;" {% endif %} /><input type="submit" name="action" value="Delete" class="button" data-deviceattributeid="{{info['id']}}" class="deleteAttribute" id="deleteAttribute{{ info['id'] }}" onclick="return confirm('Are you sure you want to delete {{ info['name'] }}?')" {% if va("deviceattributesaccess","feature")==False or info['isassigned']!="[]" %} style="opacity:0.2;pointer-events:none;" {% endif %}></td>
+            </tr>
+        </form>
+            {% endfor %}
+    </table>
+
+</div>
+
+<span id="deviceattributeDiv" style="display:none;">
+    <form method="post">
+        <input name='currentpageoffset' type='hidden' value="{{pageoffset}}" />
+        <input name="totalpages" type="hidden" value="{{ totalpages }}" />
+        <input name='entryperpage' type='hidden' value="{{ entryperpage }}" />
+        <input name='currententryperpage' type='hidden' value="{{ entryperpage }}" />
+        <input type="hidden" name="searchName" value="{{ formresult.searchName }}">
+        <input type="hidden" name="searchType" value="{{ formresult.searchType }}">
+        <input type="hidden" name="searchAssigned" value="{{ formresult.searchAssigned }}">
+        <input type="hidden" name="id" id="attributeid" />
+        <p>
+            <table class="tablenoborder">
+                <tr style="background-color: grey;" class="tableTitle">
+                    <td><font class='font13pxwhite'><center><span id="addoredit"></span> device attribute</center></font></td>
+                </tr>
+            </table>
+        </p>
+        <p>
+            <table class="tablewithborder">
+                <tr style="background-color: grey;">
+                    <td width="10%" align="left" nowrap><font class="font12pxwhite">Name</font></td>
+                    <td width="20%">
+                        <input type="text" name="name" class="input" id="name" size="30" required minlength="4">
+                    </td>
+                    <td align="left" width="10%" nowrap><font class="font12pxwhite">Attribute type:</font></td>
+                    <td align="left" class="whiteBG" width="2%">
+                        <select name="attributetype" id="attributetype" onchange="showattributeType();">
+                            <option value="">Select</option>
+                            <option value="value">Value</option>
+                            <option value="list">List</option>
+                            <option value="boolean">Boolean (True or False)</option>
+                        </select>
+                    </td>
+                </tr>
+                <tr>
+                    <td><span class="attributetype"><font class="font12pxwhite">Select attribute type</font></span></td>
+                    <td colspan="3" class="whiteBG">
+                        <span id="attributelist" style="display:none;"><input type="text" name="attributelist" size="50" id="attributeList"> <font class="font11px">&nbsp;Enter comma separated values</font> </span>
+                    </td>
+                </tr>
+
+            </table>
+        </p>
+
+
+        <p>
+            <table class="tablenoborder">
+                <tr>
+                    <td align="center">
+                        <div id="submitorchange">
+
+                        </div>
+                    </td>
+                </tr>
+            </table>
+        </p>
+    </form>
+
+    </div>
+
+    {% endblock %}

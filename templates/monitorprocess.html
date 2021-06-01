@@ -4,7 +4,7 @@
     <input type="hidden" name="name" value="{{ name }}" />
     <table class="tablenoborder">
         <tr>
-            <td width="10%" align="left" nowrap><font class="font11px">{{ name }}</font></td>
+            <td width="10%" align="left" nowrap><font class="font11px">{{ name |replace("-", " ") }}</font></td>
             <td width="10%" align="left" nowrap><font class="font11px">{% if status==True %}Started{% else %}Stopped{% endif %}</font></td>
             <td width="10%" align="left" nowrap><font class="font11px">{{ cpu }}%</font></td>
             <td width="10%" align="left" nowrap><font class="font11px">{{ memory }}%</font></td>

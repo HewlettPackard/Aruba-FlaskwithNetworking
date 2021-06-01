@@ -1,0 +1,244 @@
+<!-- (C) Copyright 2021 Hewlett Packard Enterprise Development LP. -->
+{% block content %}
+
+{% macro sentence_case(text) %}
+{{ text[0]|upper}}{{text[1:] }}
+{% endmacro %}
+
+
+<div id="maincontainer">
+
+    <div id="editUpgrade" style="display:none;" data-id="{{bootInfo['id'] }}">
+        <form method="post">
+            <table class="tablewithborder">
+                <tr style="background-color:grey;"><td colspan="8"><font class="font13pxwhite"><center>Edit upgrade</center></font></td></tr>
+                <tr>
+                    <td><font class="font12pxwhite">Primary image</font></td>
+                    <td class="whiteBG"><font class="font11px">{{ bootInfo['primaryImage'] }}</font></td>
+                    <td><font class="font12pxwhite">Secondary image</font></td>
+                    <td class="whiteBG"><font class="font11px">{{ bootInfo['secondaryImage'] }}</font></td>
+                    <td><font class="font12pxwhite">Active image</font></td>
+                    <td class="whiteBG"><font class="font11px">{{ sentence_case(bootInfo['defaultImage']) }}</font></td>
+                    <td colspan="2"></td>
+                </tr>
+                <tr>
+                    <td><font class="font12pxwhite">Upgrade on partition</font></td>
+                    <td class="whiteBG">
+                        <select name="editupgradepartition" id="editupgradepartition" onchange="checkupgradeForm(this);" data-action="edit">
+                            <option disabled>Select upgrade partition</option>
+                            <option value="primary">Primary</option>
+                            <option value="secondary">Secondary</option>
+                        </select>
+                    </td>
+                    <td><font class="font12pxwhite">Set active partition</font></td>
+                    <td class="whiteBG">
+                        <select name="editactivepartition" id="editactivepartition" onchange="checkupgradeForm(this);" data-action="add">
+                            <option disabled>Select active partition</option>
+                            <option value="primary">Primary</option>
+                            <option value="secondary">Secondary</option>
+                        </select>
+                    </td>
+                    <td><font class="font12pxwhite">Select software image</font></td>
+                    <td class="whiteBG">
+                        <select name="editsoftwareimage" id="editsoftwareimage" onchange="checkupgradeForm(this);" data-action="add">
+                            <option disabled>Select software image</option>
+                            {% for items in bootInfo['images'] %}
+                            <option value="{{ items['id'] }}" {% if bootInfo['activeUpdate']['software']==items['id'] %}selected{% endif %}>{{ items['version'] }} ({{ items['filename'] }})</option>
+                            {% endfor %}
+                        </select>
+                    </td>
+                    <td colspan="2"><font class="font12pxwhite">Reboot after upgrade <input type="checkbox" name="editrebootafterupgrade" id="editrebootafterUpgrade" {% if bootInfo['activeUpdate']['reboot']==1 %}checked{% endif %} /></font></td>
+                </tr>
+                <tr>
+                    <td><font class="font12pxwhite">Schedule upgrade</font></td>
+                    <td class="whiteBG">
+                        <input name="editdatetime" class="form-control" id="editdatetime" readonly="readonly">&nbsp; <img src="static/images/clear.png" width="12" height="12" onclick="editclearTime();" alt="Clear schedule" title="Clear schedule">
+                        
+                    </td>
+                    <td><font class="font12pxwhite">Upgrade status</font></td>
+                    <td class="whiteBG" colspan="5">
+                        <div class="upgradeStatus"><font class="font11px">Not started</font></div>
+                    </td>
+                </tr>
+                <tr>
+                    <td colspan="8" align="center" class="whiteBG">
+                        <div class="actions">
+                            <input type="button" name="editUpgrade" class="button" id="submitupgradeChanges" value="Submit changes">
+                        </div>
+                    </td>
+                </tr>
+            </table>
+        </form>
+        
+    </div>
+    <script>
+        instance = new dtsel.DTS('input[name="editdatetime"]', {
+            direction: 'BOTTOM',
+            dateFormat: "yyyy-mm-dd",
+            showTime: true,
+            timeFormat: "HH:MM:SS"
+        });
+        function editclearTime() {
+            document.getElementById('editdatetime').value = "";
+        }
+    </script>
+    {% if bootInfo['activeUpdate'] is none  %}
+    <!--
+        If there is an active update (status < 100), then we cannot edit the job anymore, but we can view the status
+        If the status is still 0, we can edit the job
+        -->
+
+
+
+    <div id="addUpgrade">
+        <form method="post">
+            <table class="tablewithborder">
+                <tr style="background-color:grey;"><td colspan="8"><font class="font13pxwhite"><center> Create upgrade</center></font></td></tr>
+                <tr>
+                    <td><font class="font12pxwhite">Primary image</font></td>
+                    <td class="whiteBG"><font class="font11px">{{ bootInfo['primaryImage'] }}</font></td>
+                    <td><font class="font12pxwhite">Secondary image</font></td>
+                    <td class="whiteBG"><font class="font11px">{{ bootInfo['secondaryImage'] }}</font></td>
+                    <td><font class="font12pxwhite">Active image</font></td>
+                    <td class="whiteBG"><font class="font11px">{{ sentence_case(bootInfo['defaultImage']) }}</font></td>
+                    <td colspan="2"></td>
+                </tr>
+                <tr>
+                    <td><font class="font12pxwhite">Upgrade on partition</font></td>
+                    <td class="whiteBG">
+                        <select name="addupgradepartition" id="addupgradepartition" onchange="checkupgradeForm(this);" data-action="add">
+                            <option disabled selected>Select upgrade partition</option>
+                            <option value="primary">Primary</option>
+                            <option value="secondary">Secondary</option>
+                        </select>
+                    </td>
+                    <td><font class="font12pxwhite">Set active partition</font></td>
+                    <td class="whiteBG">
+                        <select name="addactivepartition" id="addactivepartition" onchange="checkupgradeForm(this);" data-action="add">
+                            <option disabled selected>Select active partition</option>
+                            <option value="primary">Primary</option>
+                            <option value="secondary">Secondary</option>
+                        </select>
+                    </td>
+                    <td><font class="font12pxwhite">Select software image</font></td>
+                    <td class="whiteBG">
+                        <select name="addsoftwareimage" id="addsoftwareimage" onchange="checkupgradeForm(this);" data-action="add">
+                            <option disabled selected>Select software image</option>
+                            {% for items in bootInfo['images'] %}
+                            <option value="{{ items['id'] }}">{{ items['version'] }} ({{ items['filename'] }})</option>
+                            {% endfor %}
+                        </select>
+                    </td>
+                    <td colspan="2"><font class="font12pxwhite">Reboot after upgrade <input type="checkbox" name="addrebootafterupgrade" id="addrebootafterUpgrade" /></font></td>
+                </tr>
+                <tr>
+
+                    <td><font class="font12pxwhite">Schedule upgrade</font></td>
+                    <td class="whiteBG">
+                        <input name="adddatetime" class="form-control" id="adddatetime" readonly="readonly" />&nbsp; <img src="static/images/clear.png" width="12" height="12" onclick="addclearTime();" alt="Clear schedule" title="Clear schedule">
+                    </td>
+                    <td><font class="font12pxwhite">Upgrade status</font></td>
+                    <td colspan="5" class="whiteBG"><div class="upgradeStatus"><font class="font11px">Not created</font></div></td>
+                </tr>
+                <tr>
+                    <td colspan="8" align="center" class="whiteBG">
+                        <div class="actions">
+                            <input type="button" name="addUpgrade" style="pointer-events:none;opacity:0.4;" class="button" id="submitUpgrade" value="Submit upgrade">
+                        </div>
+                    </td>
+                </tr>
+            </table>
+        </form>
+    </div>
+    <script>
+        instance = new dtsel.DTS('input[name="adddatetime"]', {
+            direction: 'BOTTOM',
+            dateFormat: "yyyy-mm-dd",
+            showTime: true,
+            timeFormat: "HH:MM:SS"
+        });
+        function addclearTime() {
+            document.getElementById('adddatetime').value = "";
+        }
+    </script>
+
+    {% else %}
+
+    <div id="initmonitorUpgrade" data-id="{{ bootInfo['activeUpdate']['id'] }}">
+        {{ bootInfo['id'] }}
+        <table class="tablewithborder">
+            <tr style="background-color:grey;"><td colspan="8"><font class="font13pxwhite"><center>Software upgrade</center></font></td></tr>
+            <tr>
+                <td><font class="font12pxwhite">Primary image</font></td>
+                <td class="whiteBG"><div class="monitorprimaryImage"><font class="font11px">{{ bootInfo['primaryImage'] }}</font></div></td>
+                <td><font class="font12pxwhite">Secondary image</font></td>
+                <td class="whiteBG"><div class="monitorsecondaryImage"><font class="font11px">{{ bootInfo['secondaryImage'] }}</font></div></td>
+                <td><font class="font12pxwhite">Active image</font></td>
+                <td class="whiteBG"><div class="monitordefaultImage"><font class="font11px">{{ sentence_case(bootInfo['defaultImage']) }}</font></div></td>
+                <td colspan="2"></td>
+            </tr>
+            <tr>
+                <td><font class="font12pxwhite">Upgrade on partition</font></td>
+                <td class="whiteBG"><div class="monitorupgradepartition"><font class="font11px">{{ sentence_case(bootInfo['activeUpdate']['imagepartition']) }}</font></div></td>
+                <td><font class="font12pxwhite">Active partition</font></td>
+                <td class="whiteBG"><div class="monitoractivepartition"><font class="font11px">{{ sentence_case(bootInfo['activeUpdate']['activepartition']) }}</font></div></td>
+                <td><font class="font12pxwhite">Software image</font></td>
+                <td class="whiteBG"><div class="monitorsoftwareimage"><font class="font11px">
+                    {% for items in bootInfo['images'] %}
+                    {% if items['id']==bootInfo['activeUpdate']['software'] %}
+                    {{ items['name']}} ({{ items['filename']}})
+                    {% endif %}
+                    {% endfor %}
+                </font></div></td>
+                <td colspan="2"><font class="font12pxwhite">Reboot after upgrade</font><input type="checkbox" disabled {% if bootInfo['activeUpdate']['reboot']==1 %} checked {% endif %}></td>
+            </tr>
+            <tr>
+                <td><font class="font12pxwhite">Schedule upgrade</font></td>
+                <td class="whiteBG"><div class="monitordatetime"><font class="font11px">{% if bootInfo['activeUpdate']['schedule'] %} {{ bootInfo['activeUpdate']['schedule'] }} {% endif %}</font></div></td>
+                <td><font class="font12pxwhite">Upgrade status</font></td>
+                <td class="whiteBG" colspan="5"><div class="upgradeStatus" style="display:inline;"><font class="font11px">Checking...</font></div><div id="initeditupgradeEnable" style="display:none;"><input type="button" name="monitoreditdeviceupgrade" value="Edit" data-id="{{bootInfo['activeUpdate']['id']}}" class="editdeviceupgrade"><input type="button" name="removedeviceUpgrade" value="Remove" data-id="{{bootInfo['activeUpdate']['id']}}" class="removedeviceUpgrade"></div></td>
+            </tr>
+        </table>
+    </div>
+    
+
+    {% endif %}
+
+    <div id="upgradeExists" data-id="{{ bootInfo['activeUpdate']['id'] }}"></div>
+
+    <div id="monitorUpgrade" style="display:none;" data-id="{{ bootInfo['activeUpdate']['id'] }}">
+        {{ bootInfo['id'] }}
+        <table class="tablewithborder">
+            <tr style="background-color:grey;"><td colspan="8"><font class="font13pxwhite"><center>Software upgrade</center></font></td></tr>
+            <tr>
+                <td><font class="font12pxwhite">Primary image</font></td>
+                <td class="whiteBG"><div class="monitorprimaryImage"><font class="font11px">{{ bootInfo['primaryImage'] }}</font></div></td>
+                <td><font class="font12pxwhite">Secondary image</font></td>
+                <td class="whiteBG"><div class="monitorsecondaryImage"><font class="font11px">{{ bootInfo['secondaryImage'] }}</font></div></td>
+                <td><font class="font12pxwhite">Active image</font></td>
+                <td class="whiteBG"><div class="monitordefaultImage"><font class="font11px">{{ sentence_case(bootInfo['defaultImage']) }}</font></div></td>
+                <td colspan="2"></td>
+            </tr>
+            <tr>
+                <td><font class="font12pxwhite">Upgrade on partition</font></td>
+                <td class="whiteBG"><div class="monitorupgradepartition" id="monitorupgradepartition"></div></td>
+                <td><font class="font12pxwhite">Active partition</font></td>
+                <td class="whiteBG"><div class="monitoractivepartition" id="monitoractivepartition"></div></td>
+                <td><font class="font12pxwhite">Software image</font></td>
+                <td class="whiteBG"><div class="monitorsoftwareimage" id="monitorsoftwareimage"></div></td>
+                <td colspan="2"><font class="font12pxwhite">Reboot after upgrade</font><input type="checkbox" disabled id="monitorrebootafterUpgrade" /></td>
+            </tr>
+            <tr>
+                <td><font class="font12pxwhite">Schedule upgrade</font></td>
+                <td class="whiteBG"><div class="monitordatetime" id="monitordatetime"></div></td>
+                <td><font class="font12pxwhite">Upgrade status</font></td>
+                <td class="whiteBG" colspan="5"><div class="upgradeStatus" style="display:inline;"><font class="font11px">Checking...</font></div><div id="editupgradeEnable" style="display:none;"><input type="button" name="monitoreditdeviceupgrade" value="Edit" data-id="{{bootInfo['activeUpdate']['id']}}" class="editdeviceupgrade"><input type="button" name="removedeviceUpgrade" value="Remove" data-id="{{bootInfo['activeUpdate']['id']}}" class="removedeviceUpgrade"></div></td>
+            </tr>
+        </table>
+    </div>
+
+</div>
+
+
+
+{% endblock %}

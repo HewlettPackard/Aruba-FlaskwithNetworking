@@ -10,6 +10,7 @@
         <table class="tablenoborder" id="backupTable">
             <form method="post" name="configMgr" id="configMgr">
                 <input type="hidden" name="currentconfigentryperpage" id="currentconfigentryperpage" value="{{ configentryperpage }}" />
+                <input type="hidden" name="deviceid" id="deviceid" value="{{ deviceinfo['id']}}" />
                 <tr style="background-color: grey;" class="tableTitle">
                     <td colspan="7">
                         <center><font class="font13pxwhite">Configuration manager for {{ deviceinfo['ipaddress'] }}  ({{ deviceinfo['description'] }})</font></center>

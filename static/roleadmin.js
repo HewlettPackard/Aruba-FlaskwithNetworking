@@ -3,7 +3,7 @@
 $(document).on("click", "#addRole", function () {
     document.getElementById("Rolediv").style.display = "block";
     var menuitems = ["devices", "ztp", "topology", "telemetry", "ubt", "trackers", "tools", "administration"];
-    var accessitems = ["switch", "mobility", "clearpass", "ztpimage", "ztptemplate", "ztpdevice", "telemetrymonitor", "telemetrysubscription", "ubtprofile", "ubtservice", "dhcptracker", "snmptracker", "syslogtracker", "anycli", "sysuser", "sysrole", "sysadmin", "servicesstatus"];
+    var accessitems = ["switch", "mobility", "clearpass", "ztpimage", "ztptemplate", "ztpdevice", "telemetrymonitor", "telemetrysubscription", "ubtprofile", "ubtservice", "dhcptracker", "snmptracker", "syslogtracker", "anycli", "sysuser", "sysrole","deviceattributes", "sysadmin", "servicesstatus"];
     document.getElementById("name").value = "";
     for (i = 0; i < menuitems.length; i++) {
         document.getElementById(menuitems[i]).checked = false;
@@ -28,8 +28,8 @@ $(document).on("click", ".editRole", async function () {
         success: function (response) {
             response = JSON.parse(response);
             document.getElementById("name").value=response["name"];
-            var menuitems = ["devices", "ztp", "topology", "telemetry", "ubt", "trackers", "tools", "administration"];
-            var accessitems = ["switch", "mobility", "clearpass", "ztpimage", "ztptemplate", "ztpdevice","telemetrymonitor","telemetrysubscription","ubtprofile","ubtservice","dhcptracker","snmptracker","syslogtracker","anycli","sysuser","sysrole","sysadmin","servicesstatus"];
+            var menuitems = ["devices", "ztp", "deviceupdates", "topology", "telemetry", "ubt", "trackers", "tools", "administration"];
+            var accessitems = ["switch", "mobility", "clearpass", "ztptemplate", "ztpdevice","image","upgradescheduler","telemetrymonitor","telemetrysubscription","ubtprofile","ubtservice","dhcptracker","snmptracker","syslogtracker","anycli","sysuser","sysrole","deviceattributes", "sysadmin","servicesstatus"];
             accessrights = JSON.parse(response['accessrights']);
             for (i = 0; i < menuitems.length; i++) {
                 if (menuitems[i] in accessrights) {
@@ -37,7 +37,7 @@ $(document).on("click", ".editRole", async function () {
                 }
             } 
             for (i = 0; i < accessitems.length; i++) {
-                document.getElementById(accessitems[i]+"access").value = accessrights[accessitems[i]+"access"];
+                document.getElementById(accessitems[i] + "access").value = accessrights[accessitems[i] + "access"];
             }
         },
         error: function () {

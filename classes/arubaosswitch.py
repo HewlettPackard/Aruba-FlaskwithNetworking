@@ -129,6 +129,22 @@ def getswitchREST(url,deviceid):
     except:
         return
 
+
+
+def postswitchREST(deviceid,url,parameters):
+    # Obtain device information from the database
+    queryStr="select ipaddress, secinfo from devices where id='{}'".format(deviceid)
+    deviceCreds=classes.classes.sqlQuery(queryStr,"selectone")
+    url="http://{}/rest/v7/".format(deviceCreds['ipaddress']) + url
+    header=checkswitchCookie(deviceid)
+    try:
+        response = requests.post(url, verify=False, data=json.dumps(parameters), headers=header, timeout=20)
+        # If the response contains information, the content is converted to json format
+        response=json.loads(response.content.decode('utf-8'))
+    except:
+        response={} 
+    return response
+
 def getswitchInfo(deviceid, stacktype):
     # This definition obtains all the relevant information from the arubaos-switch device and then stores this in the database
     # There are a couple steps, first gather sysinfo, interface and lldp information, then obtain vsf information or bps information
@@ -296,15 +312,18 @@ def anycli(cmd,deviceid):
     deviceCreds=classes.classes.sqlQuery(queryStr,"selectone")
     url="http://{}/rest/v7/cli".format(deviceCreds['ipaddress'])
     sendcmd={'cmd':cmd}
-    try:
-        response=requests.post(url, verify=False, headers=header, data=json.dumps(sendcmd), timeout=20)
-        # If the response contains information, the content is converted to json format
-        return json.loads(response.content)
-    except requests.exceptions.HTTPError as err:
-        print(err)
-        return
-    except:
-        return
+    cliResult=False
+    while cliResult==False:
+        try:
+            response=requests.post(url, verify=False, headers=header, data=json.dumps(sendcmd))
+            # If the response contains information, the content is converted to json format
+            jresponse=response.json()
+            if "error_msg" in jresponse:
+                if jresponse['error_msg']=="":
+                    cliResult=True
+        except:
+            pass
+    return json.loads(response.content)
 
 def anycliProvision(cmd,ipaddress,header):
     queryStr="select id from devices where ipaddress='{}'".format(ipaddress)

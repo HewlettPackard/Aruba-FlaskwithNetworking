@@ -64,7 +64,7 @@ def endpointInfo(id):
     queryStr="select switchip from topology where id='{}'".format(id)
     ipresult=classes.classes.sqlQuery(queryStr,"selectone")
     # Now, select all the entries
-    queryStr="select * from topology where switchip='{}'".format(ipresult['switchip']) + " order by interface"
+    queryStr="select * from topology where switchip='{}' and remoteswitchip!=''".format(ipresult['switchip']) + " order by interface"
     result=classes.classes.sqlQuery(queryStr,"select")
     return result
 
@@ -91,12 +91,12 @@ def topoInfo(deviceid):
     nodes=[{'name': sourceresult['systemmac'], 'label': sourceresult['hostname']}]
     links=[]
     # Now, select all the entries
-    queryStr="select * from topology where systemmac='{}'".format(sourceresult['systemmac']) + " order by interface"
+    queryStr="select * from topology where systemmac='{}' and remoteswitchip!=''".format(sourceresult['systemmac']) + " order by interface"
     linkresult=classes.classes.sqlQuery(queryStr,"select")
     # Now construct the nodes and links
     for items in linkresult:
         try:
-            nodes.append({'name':items['remotesystemmac'],'label':items['remotehostname']})
+            nodes.append({'name':items['remotesystemmac'],'label':items['remotehostname'][:18]})
         except:
             pass
         try:

@@ -35,6 +35,7 @@ CREATE TABLE IF NOT EXISTS devices (
   lldp mediumtext,
   routeinfo mediumtext,
   topology int(11) UNSIGNED,
+  deviceattributes text,
   PRIMARY KEY (id)
 ) ENGINE=MyISAM AUTO_INCREMENT=335 DEFAULT CHARSET=latin1;
 
@@ -169,7 +170,8 @@ CREATE TABLE `ztpdevices` (
 
 
 DROP TABLE IF EXISTS `ztpimages`;
-CREATE TABLE `ztpimages` (
+DROP TABLE IF EXISTS `deviceimages`;
+CREATE TABLE `deviceimages` (
   `id` bigint(20) UNSIGNED NOT NULL AUTO_INCREMENT,
   `name` text NOT NULL,
   `devicefamily` text NOT NULL,
@@ -177,6 +179,25 @@ CREATE TABLE `ztpimages` (
   `version` text NOT NULL,
   PRIMARY KEY (`id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=latin1;
+
+
+DROP TABLE IF EXISTS `softwareupdate`;
+CREATE TABLE `softwareupdate` (
+  `id` bigint UNSIGNED NOT NULL,
+  `switchid` bigint UNSIGNED NOT NULL,
+  `software` bigint UNSIGNED NOT NULL,
+  `imagepartition` text NOT NULL,
+  `activepartition` text NOT NULL,
+  `schedule` datetime DEFAULT NULL,
+  `reboot` int UNSIGNED NOT NULL,
+  `policy` text NOT NULL,
+  `upgradefrom` text NOT NULL,
+  `upgradeto` text NOT NULL,
+  `softwareinfo` text NOT NULL,
+  `softwareinfoafter` text NOT NULL,
+  `status` int UNSIGNED NOT NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+
 
 DROP TABLE IF EXISTS `ztptemplates`;
 CREATE TABLE `ztptemplates` (
@@ -209,9 +230,21 @@ CREATE TABLE `topology` (
   PRIMARY KEY (`id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=latin1;
 
+DROP TABLE IF EXISTS `deviceattributes`;
+CREATE TABLE `deviceattributes` (
+  `id` bigint UNSIGNED NOT NULL AUTO_INCREMENT,
+  `name` text NOT NULL,
+  `type` text NOT NULL,
+  `attributevalue` text NOT NULL,
+  `attributelist` text NOT NULL,
+  `attributeboolean` tinyint(1) NOT NULL,
+  `isassigned` text NOT NULL,
+  PRIMARY KEY (`id`)
+) 
+
 INSERT INTO `sysuser` (`username`, `email`,`password`,`cookie`,`role`) VALUES
 ('admin', 'admin@carius.org', '', '','1');
 
 INSERT INTO `sysrole` (`name`, `accessrights`, `status`) VALUES
-('Administrator', '{\"devices\": \"on\", \"switchaccess\": \"2\", \"mobilityaccess\": \"2\", \"clearpassaccess\": \"2\", \"ztp\": \"on\", \"ztpimageaccess\": \"2\", \"ztptemplateaccess\": \"2\", \"ztpdeviceaccess\": \"2\", \"topology\": \"on\", \"telemetry\": \"on\", \"telemetrymonitoraccess\": \"2\", \"telemetrysubscriptionaccess\": \"2\", \"ubt\": \"on\", \"ubtprofileaccess\": \"2\", \"ubtserviceaccess\": \"2\", \"trackers\": \"on\", \"dhcptrackeraccess\": \"2\", \"snmptrackeraccess\": \"2\", \"syslogtrackeraccess\": \"2\", \"tools\": \"on\", \"anycliaccess\": \"2\", \"administration\": \"on\", \"sysuseraccess\": \"2\", \"sysroleaccess\": \"2\", \"sysadminaccess\": \"2\", \"servicesstatusaccess\": \"2\"}', 1);
+('Administrator', '{\"devices\": \"on\", \"switchaccess\": \"2\", \"mobilityaccess\": \"2\", \"clearpassaccess\": \"2\", \"ztp\": \"on\", \"ztptemplateaccess\": \"2\", \"ztpdeviceaccess\": \"2\",\"deviceupdates\": \"on\", \"imageaccess\": \"2\", \"upgradescheduleraccess\": \"2\", \"topology\": \"on\", \"telemetry\": \"on\", \"telemetrymonitoraccess\": \"2\", \"telemetrysubscriptionaccess\": \"2\", \"ubt\": \"on\", \"ubtprofileaccess\": \"2\", \"ubtserviceaccess\": \"2\", \"trackers\": \"on\", \"dhcptrackeraccess\": \"2\", \"snmptrackeraccess\": \"2\", \"syslogtrackeraccess\": \"2\", \"tools\": \"on\", \"anycliaccess\": \"2\", \"administration\": \"on\", \"sysuseraccess\": \"2\", \"sysroleaccess\": \"2\", \"deviceattributesaccess\": \"2\", \"sysadminaccess\": \"2\", \"servicesstatusaccess\": \"2\"}', 1);
 

@@ -185,13 +185,11 @@
                     </td>
                     <td width="1%" align="left" nowrap><font class="font13pxgrey">Role</font></td>
                     <td>
-                        <div class="field">
                             <select name="role">
                                 {% for roleitems in roleresult %}
                                 <option value="{{ roleitems['id'] }}">{{ roleitems ['name'] }}</option>
                                 {% endfor %}
                             </select>
-                        </div>
                     </td>
                 <tr>
                     <td colspan="8" align="center">
@@ -241,13 +239,11 @@
                     </td>
                     <td width="1%" align="left" nowrap><font class="font13pxgrey">Role</font></td>
                     <td>
-                        <div class="field">
-                            <select name="role" id="editrole">
+                             <select name="role" id="editrole">
                                 {% for roleitems in roleresult %}
                                 <option value="{{ roleitems['id'] }}">{{ roleitems ['name'] }}</option>
                                 {% endfor %}
                             </select>
-                        </div>
                     </td>
                 <tr>
                     <td colspan="8" align="center">

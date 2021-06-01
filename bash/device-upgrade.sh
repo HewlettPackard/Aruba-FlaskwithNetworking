@@ -1,0 +1,1 @@
+python3 /var/www/html/bash/device-upgrade.py

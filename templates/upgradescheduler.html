@@ -1,0 +1,179 @@
+<!-- (C) Copyright 2021 Hewlett Packard Enterprise Development LP. -->
+{% block scripts %}
+<script src="static/scripts/jquery-1.10.2.min.js"></script>
+<link href="static/stylesheet.css" rel="stylesheet" />
+<script type="text/javascript" src="static/main.js"></script>
+<script type="text/javascript" src="static/upgradescheduler.js"></script>
+{% endblock %}
+
+{% block content %}
+{% set pagename = "Upgrade scheduler" %}
+{% include 'navbar.html' %}
+
+{% if totalentries|int % entryperpage|int == 0 %}
+{% set totalpages=(totalentries|int/entryperpage|int)|int %}
+{% else %}
+{% set totalpages=(totalentries|int/entryperpage|int)|int +1 %}
+{% endif %}
+
+
+{% macro sentence_case(text) %}
+{{ text[0]|upper}}{{text[1:] }}
+{% endmacro %}
+
+
+<div id="maincontainer">
+
+    <form method="post" name="scheduler" id="scheduler">
+        <table class="tablenoborder" id="scheduleTable">
+            <tr>
+                <td width="20%" align="right">
+                    <font class="font13pxgrey">
+                        Show <select name="entryperpage" onchange="this.form.submit()">
+                            <option value="5" {% if entryperpage|int==5 or entryperpage is not defined %} selected {% endif %}>5</option>
+                            <option value="10" {% if entryperpage|int==10 %} selected {% endif %}>10</option>
+                            <option value="25" {% if entryperpage|int==25 %} selected {% endif %}>25</option>
+                            <option value="50" {% if entryperpage|int==50 %} selected {% endif %}>50</option>
+                            <option value="100" {% if entryperpage|int==100 %} selected {% endif %}>100</option>
+                        </select> entries per page (page <select name="pageoffset" onchange="this.form.submit()">
+                            {% for i in  range(totalpages) %}
+                            <option value="{{ (i)*entryperpage|int }}" {% if (pageoffset|int) /(entryperpage|int) ==(i) %}selected{% endif %}>{{ i+1 }}</option>
+                            {% endfor %}
+                        </select> of {{ totalpages }} pages)
+                    </font>
+                </td>
+            </tr>
+        </table>
+        <table class="tablenoborder" id="scheduleTable">
+            <input name="action" type="hidden" value="navigation" />
+            <input name='currentpageoffset' type='hidden' value="{{pageoffset}}" />
+            <input name='currenttotalentries' type='hidden' value="{{totalentries}}" />
+            <input name='totalpages' type="hidden" value="{{ totalpages }}" />
+            <input name='currententryperpage' type='hidden' value="{{ entryperpage }}" />
+            <tr>
+                <td width="2%" align="left" nowrap><font class="font13pxgrey">ID</font></td>
+                <td width="10%" align="left" nowrap><font class="font13pxgrey">Device</font></td>
+                <td width="8%" align="left" nowrap><font class="font13pxgrey">IP address</font></td>
+                <td width="12%" align="left"><font class="font13pxgrey">Upgrade(d) from</font></td>
+                <td width="12%" align="left"><font class="font13pxgrey">Upgrade(d) to</font></td>
+                <td width="12%" align="left"><font class="font13pxgrey">On partition</font></td>
+                <td width="10%" align="left"><font class="font13pxgrey">Scheduled</font></td>
+                <td width="10%" align="left"><font class="font13pxgrey">Upgrade duration</font></td>
+                <td width="20%" align="left"><font class="font13pxgrey">Status</font></td>
+                <td width="4%" align="right"></td>
+            </tr>
+
+            <tr style="background-color: grey;" class="tableTitle">
+                <td align="left" nowrap>&nbsp;</td>
+                <td align="left" valign="top"><input type="text" name="searchName" value="{{ formresult.searchName }}" size="15"></td>
+                <td align="left" valign="top"><input type="text" name="searchIpaddress" value="{{ formresult.searchIpaddress }}" size="10"></td>
+                <td align="left" valign="top"><input type="text" name="searchupgradeFrom" value="{{ formresult.searchupgradeFrom }}" size="10"></td>
+                <td align="left" valign="top"><input type="text" name="searchupgradeTo" value="{{ formresult.searchupgradeTo }}" size="10"></td>
+                <td align="left" valign="top"><input type="text" name="searchPartition" value="{{ formresult.searchPartition }}" size="10"></td>
+                <td></td>
+                <td></td>
+                <td align="left" valign="top">
+                    <select name="searchStatus">
+                        <option value="0">Not started</option>
+                        <option value="5">Copy software to the switch</option>
+                        <option value="10">Software copied onto the switch</option>
+                        <option value="20">Switch is rebooted</option>
+                        <option value="50">Another software upgrade in progress</option>
+                        <option value="100">Completed</option>
+                        <option value="110">Completed, reboot required</option>
+                    </select>
+                </td>
+                <td align="right">
+                    <input type="submit" name="searchAction" value="Search" class="button" id="searchSchedule" onclick="clearimageRow(this);">
+                </td>
+            </tr>
+    </form>
+    {% for info in upgraderesult %}
+    <form method="post">
+        <input name='currentpageoffset' type='hidden' value="{{pageoffset}}" />
+        <input name='currenttotalentries' type='hidden' value="{{totalentries}}" />
+        <input name='totalpages' type="hidden" value="{{ totalpages }}" />
+        <input name='entryperpage' type='hidden' value="{{ entryperpage }}" />
+        <input name='currententryperpage' type='hidden' value="{{ entryperpage }}" />
+        <input type="hidden" name="searchName" value="{{ formresult.searchName }}">
+        <input type="hidden" name="searchIpaddress" value="{{ formresult.searchIpaddress }}">
+        <input type="hidden" name="searchupgradeFrom" value="{{ formresult.searchupgradeFrom }}">
+        <input type="hidden" name="searchupgradeTo" value="{{ formresult.searchupgradeTo }}">
+        <input type="hidden" name="searchPartition" value="{{ formresult.searchPartition }}">
+        <input type="hidden" name="imageid" value="{{ info['id'] }}">
+        <tr id="scheduletableRow{{ info['id'] }}">
+            <td><font class="font10px">{{ loop.index }}</font></td>
+            <td><font class="font10px">{% for items in switchresult %} {%if items['id']==info['switchid']%} {{ items['description'] }} {% endif %} {% endfor %}</font></td>
+            <td><font class="font10px">{% for items in switchresult %} {%if items['id']==info['switchid']%} {{ items['ipaddress'] }} {% endif %} {% endfor %}</font></td>
+            <td>
+                <div id="softwareinfo{{ info['id'] }}">
+                    <font class="font10px">
+                        {% if info['upgradefrom'] %}
+                        {{ info['upgradefrom'] }}
+                        {% endif %}
+                    </font>
+                </div>
+            </td>
+            <td>
+                <div id="softwareinfoafter{{ info['id'] }}">
+                <font class="font10px">
+                    {% if info['upgradeto'] %}
+                    {{ info['upgradeto'] }}
+                    {% endif %}
+                </font>
+                </div>
+            </td>
+            <td><font class="font10px">{{ sentence_case(info['activepartition']) }}</font></td>
+            <td><font class="font10px">{% if info['schedule'] %}{{ info['schedule'] }}{% endif %}</font></td>
+            <td><div id="upgradeduration{{ info['id'] }}"><font class="font10px">{% if info['status']|int > 99 %}{{ timeDuration (info['starttime'],info['endtime']) }}{% endif %}</font></div></td>
+            <td><div id="upgradestatus{{info['id']}}" data-id="{{info['id']}}" class="statusOverview"><font class="font10px">{{ upgradestatus[info['status']] }}</font></div></td>
+            <td align="right" nowrap><span id="rebootSwitch{{ info['id'] }}">{% if info['status']==110 %}<input type="button"  onclick="switchReboot({{ info['switchid'] }},{{ info['id'] }} );"class="button" value="Reboot" />{% endif %}</span><input type="button" id="showupgradeDetails{{ info['id'] }}" onclick="showupgradeDetails( {{ info['id'] }} );" class="button" value="Show details"/><span id="removescheduleSpan{{ info['id'] }}">{% if info['status']==0 %}<input type="button" id="removescheduleUpgrade{{ info['id'] }}" onclick="removescheduleUpgrade( {{ info['id'] }} );" class="button" value="Remove" />{% endif %}</span></td>
+        </tr>
+    </form>
+    {% endfor %}
+
+    </table>
+
+    <div id="showSchedule" style="display:none;" data-id="">
+        <table class="tablewithborder">
+            <tr style="background-color:grey;"><td colspan="8"><div id="showscheduleTitle"></div></td></tr>
+            <tr>
+                <td><font class="font12pxwhite">Primary image before upgrade</font></td>
+                <td class="whiteBG" width="12%"><div class="bprimaryImage"></div></td>
+                <td><font class="font12pxwhite">Secondary image before upgrade</font></td>
+                <td class="whiteBG" width="12%"><div class="bsecondaryImage"></div></td>
+                <td><font class="font12pxwhite">Active partition before upgrade</font></td>
+                <td class="whiteBG" width="12%"><div class="bdefaultImage"></div></td>
+                <td><font class="font12pxwhite">Reboot after upgrade</font></td>
+                <td class="whiteBG" width="15%"><div class="rebootafterUpgrade"></div></td>
+            </tr>
+            <tr>
+                <td><font class="font12pxwhite">Primary image after upgrade</font></td>
+                <td class="whiteBG"><div class="aprimaryImage"></div></td>
+                <td><font class="font12pxwhite">Secondary image after upgrade</font></td>
+                <td class="whiteBG"><div class="asecondaryImage"></div></td>
+                <td><font class="font12pxwhite">Active partition after upgrade</font></td>
+                <td class="whiteBG"><div class="adefaultImage"></div></td>
+                <td class="whiteBG" colspan="2"><div class="showschedulerebootSwitch" id="showschedulerebootSwitch"></div></td>
+            </tr>
+            <tr>
+                <td><font class="font12pxwhite">Upgrade schedule time</font></td>
+                <td class="whiteBG"><div class="upgradeSchedule"></div></td>
+                <td><font class="font12pxwhite">Upgrade started</font></td>
+                <td class="whiteBG"><div class="upgradeStart"></div></td>
+                <td><font class="font12pxwhite">Upgrade finished</font></td>
+                <td class="whiteBG"><div class="upgradeEnd"></div></td>
+                <td><font class="font12pxwhite">Upgrade duration</font></td>
+                <td class="whiteBG"><div class="upgradeDuration"></div></td>
+            </tr>
+            <tr>
+                <td><font class="font12pxwhite">Upgrade status</font></td>
+                <td class="whiteBG" colspan="7"><div class="upgradeStatus"></div></td>
+            </tr>
+        </table>
+    </div>
+
+
+</div>
+
+    {% endblock %}

@@ -27,12 +27,14 @@ netInfo is dictionary containing a list of variables:
 17 or -1: MAC address
 -->
 
+
 <div id="maincontainer">
     <br />
     <table class="tablewithborder">
         <form method="post" id="sysadminform">
             <input type="hidden" name="orig_secret_key" value="{{ sysvars['secret_key'] }}" />
             <input type="hidden" name="orig_ztppassword" value="{{ sysvars['ztppassword'] }}" />
+            <input type="hidden" name="tzcity" value="{{ sysvars['timezonecity'] }}" id="tzcity" />
             <tr style="background-color:grey;"><td colspan="6"><font class="font13pxwhite"><center>System configuration</center></font></td></tr>
             <tr>
                 <td><font class="font12pxwhite">Idle timeout (300-3600 seconds)</font></td>
@@ -116,36 +118,82 @@ netInfo is dictionary containing a list of variables:
             </tr>
             <tr>
                 <td><font class='font12pxwhite'>ZTP user password</font></td>
-                <td><input type='password' name='ztppassword' id="ztppassword" value='{{ sysvars['ztppassword'] }}' {{disabled }} /></td>
+                <td class="whiteBG"><input type='password' name='ztppassword' id="ztppassword" value='{{ sysvars['ztppassword'] }}' {{disabled }} /></td>
                 <td><font class='font12pxwhite'>Telemetry source IP address</font></td>
-                <td><input type='text' name='telemetrysource' id="telemetrysource" value='{{ sysvars['telemetrysource'] }}' {{disabled }} /></td>
+                <td class="whiteBG"><input type='text' name='telemetrysource' id="telemetrysource" value='{{ sysvars['telemetrysource'] }}' {{disabled }} /></tdclass="whiteBG">
                 <td><font class='font12pxwhite'>Authentication source</font></td>
-                <td>
+                <td class="whiteBG">
                     <select name="authsource" id="authsource" onchange="authsourceConf();" {{disabled }}>
                         <option value="local" {% if sysvars['authsource']=="local" %} selected {% endif %}>Local</option>
                         <option value="ldap" {% if sysvars['authsource']=="ldap" %} selected {% endif %}>LDAP</option>
                     </select>
                 </td>
-            </tr>           
+            </tr>
             <tr id="ldapconf" {% if sysvars['authsource']=="ldap" %} style="display:table-row;" {% else %} style="display:none;" {% endif %}>
                 <td><font class='font12pxwhite'>LDAP Source IP address</font></td>
-                <td><input type='text' name='ldapsource' id="ldapsource" value='{{ sysvars['ldapsource'] }}' {{disabled }} /></td>
+                <td class="whiteBG"><input type='text' name='ldapsource' id="ldapsource" value='{{ sysvars['ldapsource'] }}' {{disabled }} /></td>
                 <td><font class='font12pxwhite'>Base DN</font></td>
-                <td><input type='text' name='basedn' id="basedn" value='{{ sysvars['basedn'] }}' {{disabled }} /></td>
+                <td class="whiteBG"><input type='text' name='basedn' id="basedn" value='{{ sysvars['basedn'] }}' {{disabled }} /></td>
                 <td><font class="font12pxwhite">Local fallback</font><input type="checkbox" name="localfallback" id="localfallback" value="1" {% if sysvars['localfallback']=="1" %} checked {% endif %} {{disabled }} /></td>
                 <td>
-                    
                 </td>
             </tr>
             <tr id="ldapconfauth" {% if sysvars['authsource']=="ldap" %} style="display:table-row;" {% else %} style="display:none;" {% endif %}>
                 <td><font class='font12pxwhite'>LDAP username</font></td>
-                <td><input type='text' name='ldapuser' id="ldapuser" value='{{ sysvars['ldapuser'] }}' /></td>
+                <td class="whiteBG"><input type='text' name='ldapuser' id="ldapuser" value='{{ sysvars['ldapuser'] }}' /></td>
                 <td><font class='font12pxwhite'>LDAP password</font></td>
-                <td><input type='password' name='ldappassword' id="ldappassword" value='{{ sysvars['ldappassword'] }}' /></td>
+                <td class="whiteBG"><input type='password' name='ldappassword' id="ldappassword" value='{{ sysvars['ldappassword'] }}' /></td>
                 <td>
                     <button name="testldap" value="testldap" type="button" id="testldap">Verify LDAP connection</button>
                 </td>
                 <td><div id="ldapstatus"></div></td>
+            </tr>
+
+            <tr>
+                <td><font class="font12pxwhite">NTP server</font></td>
+                <td class="whiteBG">
+                    <input type='text' name='ntpserver' id="ntpserver" value='{{ sysvars['ntpserver'] }}' />
+                </td>
+                <td><font class="font12pxwhite">Timezone region</font></td>
+                <td class="whiteBG">
+                    <select name="timezoneregion" id="timezoneregion" onchange="changetimezoneRegion();">
+                        <option value="">Select region</option>
+                        {% for items in timezoneregion %}
+                        <option value="{{ items }}" {% if items==sysvars['timezoneregion'] %} selected {% endif %}>{{ items }}</option>
+                        {% endfor %}
+                    </select>
+                </td>
+                <td><font class="font12pxwhite">Timezone city</font></td>
+                <td class="whiteBG">
+                        <select name="timezonecity" id="timezonecity">
+                            <option id="selecttzcity" value="">Select city</option>
+                        </select>
+                </td>
+            </tr>
+
+
+            <tr>
+                <td><font class='font12pxwhite'>Aruba Central API URL</font></td>
+                <td class="whiteBG"><input type='text' name='centralurl' id="centralurl" value='{{ sysvars['centralurl'] }}' {{disabled }} /></td>
+                <td><font class='font12pxwhite'>Aruba Central user name</font></td>
+                <td class="whiteBG"><input type='text' name='centralusername' id="centralusername" value='{{ sysvars['centralusername'] }}' {{disabled }} /></td>
+                <td><font class="font12pxwhite">Aruba Central user password</font></td>
+                <td class="whiteBG"><input type="password" name="centraluserpassword" id="centraluserpassword" value='{{ sysvars['centraluserpassword'] }}' {{disabled }} /></td>
+            </tr>
+            <tr>
+                <td><font class='font12pxwhite'>Aruba Central client id</font></td>
+                <td class="whiteBG"><input type='text' name='centralclientid' id="centralclientid" value='{{ sysvars['centralclientid'] }}' {{disabled }} /></td>
+                <td><font class="font12pxwhite">Aruba Central client secret</font></td>
+                <td class="whiteBG"><input type="password" name="centralclientsecret" id="centralclientsecret" value='{{ sysvars['centralclientsecret'] }}' {{disabled }} /></td>
+                <td><font class='font12pxwhite'>Aruba Central customer id</font></td>
+                <td class="whiteBG"><input type='text' name='centralcustomerid' id="centralcustomerid" value='{{ sysvars['centralcustomerid'] }}' {{disabled }} /></td>
+            </tr>
+            <tr>
+                <td><font class='font12pxwhite'>Aruba Central authentication status: </font></td>
+                <td><div id="arubacentralauthenticationstatus"></div></td>
+                <td><font class='font12pxwhite'>Aruba Central authorization status: </font></td>
+                <td><div id="arubacentralauthorizationstatus"></div></td>
+                <td colspan="2"><button name="arubacentralauthstatus" value="arubacentralauthstatus" type="button" id="arubacentralauthstatus">Verify Aruba Central connection</button></td>
             </tr>
             <tr>
                 <td colspan="6" align="center" class="whiteBG">
