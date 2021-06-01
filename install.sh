@@ -140,6 +140,10 @@ else
  mysql -uroot < ./doc/mysqltable80.txt
 fi
 
+if [ ! -d "/var/www/html" ]; then
+mkdir /var/www/html
+fi
+
 echo " Installing the app"
 cp ./__init__.py /var/www/html/__init__.py  > /dev/null
 cp ./startapp.sh /var/www/html/startapp.sh  > /dev/null
