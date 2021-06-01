@@ -184,7 +184,7 @@ CREATE TABLE `deviceimages` (
 DROP TABLE IF EXISTS `softwareupdate`;
 CREATE TABLE `softwareupdate` (
   `id` bigint UNSIGNED NOT NULL,
-  `switchid` bigint UNSIGNED NOT NULL,
+  `switchid` bigint UNSIGNED NOT NULL AUTO_INCREMENT,
   `software` bigint UNSIGNED NOT NULL,
   `imagepartition` text NOT NULL,
   `activepartition` text NOT NULL,
