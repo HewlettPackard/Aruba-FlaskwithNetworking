@@ -240,7 +240,7 @@ CREATE TABLE `deviceattributes` (
   `attributeboolean` tinyint(1) NOT NULL,
   `isassigned` text NOT NULL,
   PRIMARY KEY (`id`)
-) 
+) ENGINE=InnoDB DEFAULT CHARSET=latin1;
 
 INSERT INTO `sysuser` (`username`, `email`,`password`,`cookie`,`role`) VALUES
 ('admin', 'admin@carius.org', '', '','1');
