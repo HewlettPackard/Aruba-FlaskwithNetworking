@@ -168,6 +168,7 @@ chmod 777 /var/www/html/bash/cleanup.sh
 chmod 777 /var/www/html/bash/topology.sh
 chmod 777 /var/www/html/bash/ztp.sh
 chmod 777 /var/www/html/bash/telemetry.sh
+chmod 777 /var/www/html/bash/device-upgrade.sh
 
 
 if [ ! -d "/var/www/html/log" ]; then
@@ -179,6 +180,7 @@ touch /var/www/html/log/topology.log
 touch /var/www/html/log/ztp.log
 touch /var/www/html/log/listener.log
 touch /var/www/html/log/telemetry.log
+touch /var/www/html/log/device-upgrade.log
 
 chmod 777 /var/www/html/log/
 
@@ -188,6 +190,7 @@ dos2unix -q /var/www/html/bash/cleanup.sh >/dev/null
 dos2unix -q /var/www/html/bash/topology.sh >/dev/null
 dos2unix -q /var/www/html/bash/ztp.sh >/dev/null
 dos2unix -q /var/www/html/bash/telemetry.sh >/dev/null
+dos2unix -q /var/www/html/bash/device-upgrade.sh >/dev/null
 chmod 777 /var/www/html/startapp.sh
 chmod +x /var/www/html/startapp.sh
 
