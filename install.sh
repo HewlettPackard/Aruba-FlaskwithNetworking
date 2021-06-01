@@ -21,7 +21,7 @@ tput civis
 
 
 
-echo "########## Carius 2.1 Installation ##########"
+echo "########## Carius 2.2 Installation ##########"
 echo "Ensure that you have an active Internet connection with an acceptable speed (at least 10Mbps recommended)"
 # First step is to check whether you are logged in as root
 # and which Ubuntu version is running. Carius requires 18.04 or later
@@ -219,7 +219,7 @@ systemctl daemon-reload &> /dev/null
 systemctl enable carius.service &> /dev/null
 systemctl start carius.service &> /dev/null
 
-echo " ######### Carius 2.1 installation completed ##########"
+echo " ######### Carius 2.2 installation completed ##########"
 echo " Navigate with your browser to http://a.b.c.d:8080   where a.b.c.d is the IP address of the Carius server"
 echo " The default login credentials are:"
 echo " Username:  admin"
