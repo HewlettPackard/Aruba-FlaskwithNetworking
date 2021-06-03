@@ -297,6 +297,10 @@ $(document).ready(function () {
                                 $("#configuration" + deviceid).prop('disabled', false);
                                 $("#configuration" + deviceid).css('opacity', '1');
                                 $("#configuration" + deviceid).css('pointer-events', 'auto');
+                                $("#deviceupgrade" + deviceid).prop('disabled', false);
+                                $("#deviceupgrade" + deviceid).css('opacity', '1');
+                                $("#deviceupgrade" + deviceid).css('pointer-events', 'auto');
+
                             }
                             if (response['status'] == "Offline") {
                                 document.getElementById('isOnline' + deviceid).innerHTML = "<img src='static/images/notok.png' height='15' width='15'>";
@@ -311,6 +315,9 @@ $(document).ready(function () {
                                 $("#configuration" + deviceid).prop('disabled', true);
                                 $("#configuration" + deviceid).css('opacity', '0.1');
                                 $("#configuration" + deviceid).css('pointer-events', 'none');
+                                $("#deviceupgrade" + deviceid).prop('disabled', true);
+                                $("#deviceupgrade" + deviceid).css('opacity', '0.1');
+                                $("#deviceupgrade" + deviceid).css('pointer-events', 'none');
                             }
                             if (response['status'] == "Unstable") {
                                 document.getElementById('isOnline' + deviceid).innerHTML = "<img src='static/images/risk.png' height='15' width='15'>";
@@ -325,6 +332,9 @@ $(document).ready(function () {
                                 $("#configuration" + deviceid).prop('disabled', true);
                                 $("#configuration" + deviceid).css('opacity', '0.1');
                                 $("#configuration" + deviceid).css('pointer-events', 'none');
+                                $("#deviceupgrade" + deviceid).prop('disabled', true);
+                                $("#deviceupgrade" + deviceid).css('opacity', '0.1');
+                                $("#deviceupgrade" + deviceid).css('pointer-events', 'none');
                             }
                         }
                     },

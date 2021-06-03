@@ -45,7 +45,6 @@ function clearRow(e) {
 
 
 function highlightRow(e) {
-    console.log("Highlight");
     var tr = e.parentNode.parentNode;
     var table = e.parentNode.parentNode.parentNode;
     //set current backgroundColor

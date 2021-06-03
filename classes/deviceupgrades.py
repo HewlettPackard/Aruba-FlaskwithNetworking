@@ -203,6 +203,10 @@ def getupgradeInfo(deviceInfo):
             # It's a 8325 series. Obtain all the images that are available for the 8325 series
             queryStr="select * from deviceimages where devicefamily='8325'"
             imageResult=classes.classes.sqlQuery(queryStr,"select")
+        if "ML" in deviceInfo['osversion']:
+            # It's a 6200 series. Obtain all the images that are available for the 6200 series
+            queryStr="select * from deviceimages where devicefamily='6200'"
+            imageResult=classes.classes.sqlQuery(queryStr,"select")
         else:
             imageResult=[]
         bootInfo['images']=imageResult
