@@ -11,7 +11,6 @@ $(document).ready(function () {
     }
 
     $("#primarycontroller,#clearpass").change(function () {
-        console.log("Select changed");
         var selectisEmpty = false;
         var fieldisEmpty = false;
         var clearpass_select = document.getElementById('clearpass');

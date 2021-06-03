@@ -64,7 +64,8 @@ $(document).ready(function () {
         scheduleInfo = JSON.parse(scheduleInfo);
     });  
 
-    });
+ });
+
 
 
 $(document).on("click", "#submitUpgrade", async function () {

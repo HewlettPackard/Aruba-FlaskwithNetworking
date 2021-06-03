@@ -13,7 +13,6 @@ import classes.classes as classes
 def dsprofile():
     authOK=classes.checkAuth("ubtprofileaccess","submenu")
     if authOK!=0:
-        print(authOK)
         sysvars=classes.globalvars()
         result={}
         editProfile={}

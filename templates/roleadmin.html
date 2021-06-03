@@ -54,7 +54,7 @@
                 <td></td>
                 <td></td>
                 <td align="right">
-                    <input type="button" class="button" value="Add role" id="addRole" onclick="cleardeviceRow(this);" {% if va("sysroleaccess","feature")==False %} style="opacity:0.2;pointer-events:none;" {% endif %}><input type="submit" name="searchAction" value="Search" class="button" id="searchRole" onclick="cleardeviceRow(this);">
+                    <input type="button" class="button" value="Add role" id="addRole" onclick="cleardeviceRow(this);" {% if va("sysroleaccess","feature")==False %} style="opacity:0.2;pointer-events:none;" {% endif %}><input type="submit" name="searchAction" value="Search" class="button" id="searchRole" onclick="clearRow(this);">
                 </td>
             </tr>
         </form>
@@ -68,11 +68,11 @@
             <input type="hidden" name="searchName" value="{{ formresult.searchName }}">
             <input type="hidden" name="id" value="{{ info['id'] }}" />
             <tr>
-                <td class="whiteBG"><font class="font12px">{{ loop.index }}</font></td>
-                <td class="whiteBG" nowrap><font class="font12px">{{ info['name'] }}</font></td>
-                <td class="whiteBG"><font class="font12px">{% for key, value in converttoJSON(info['accessrights']).items() %}{% if value=="on" %}{{ key }}&nbsp;{% endif %}{% endfor%}</font></td>
-                <td class="whiteBG"><font class="font12px">{% if info['status']==0 %} Not assigned {% else %} Assigned {% endif %}</font></td>
-                <td align="right" class="whiteBG"><input type="button" value="Edit" id="editRole{{ info['id'] }}" class="editRole" data-roleid="{{ info['id'] }}" {% if info['name']=="Administrator" %} disabled style="opacity:0.3;pointer-events:none;" {% endif %} {% if va("sysroleaccess","feature")==False %} style="opacity:0.2;pointer-events:none;" {% endif %}/><input type="submit" name="action" value="Delete" class="button" data-deviceid="{{info['id']}}" class="deleteRole" id="deleteRole{{ info['id'] }}" onclick="return confirm('Are you sure you want to delete {{ info['name'] }}?')" {% if info['name']=="Administrator" or info['status']==1 %} disabled style="pointer-events:none;"  {% endif %} {% if va("sysroleaccess","feature")==False %} style="opacity:0.2;pointer-events:none;" {% endif %}></td>
+                <td><font class="font12px">{{ loop.index }}</font></td>
+                <td nowrap><font class="font12px">{{ info['name'] }}</font></td>
+                <td><font class="font12px">{% for key, value in converttoJSON(info['accessrights']).items() %}{% if value=="on" %}{{ key }}&nbsp;{% endif %}{% endfor%}</font></td>
+                <td><font class="font12px">{% if info['status']==0 %} Not assigned {% else %} Assigned {% endif %}</font></td>
+                <td align="right"><input type="button" value="Edit" id="editRole{{ info['id'] }}" class="editRole" data-roleid="{{ info['id'] }}" {% if info['name']=="Administrator" %} disabled style="opacity:0.3;pointer-events:none;" {% endif %} {% if va("sysroleaccess","feature")==False %} style="opacity:0.2;pointer-events:none;" {% endif %} onclick="highlightRow(this);"><input type="submit" name="action" value="Delete" class="button" data-deviceid="{{info['id']}}" class="deleteRole" id="deleteRole{{ info['id'] }}" onclick="return confirm('Are you sure you want to delete {{ info['name'] }}?')" {% if info['name']=="Administrator" or info['status']==1 %} disabled style="pointer-events:none;"  {% endif %} {% if va("sysroleaccess","feature")==False %} style="opacity:0.2;pointer-events:none;" {% endif %}></td>
             </tr>
         </form>
         {% endfor %}
@@ -176,14 +176,22 @@
                             <option value="2">Read write</option>
                         </select>
                     </td>
-                    <td align="right" width="10%" nowrap><font class="font12pxwhite">Upgrade scheduler:</font></td>
+                    <td align="right" width="10%" nowrap><font class="font12pxwhite">Device upgrade monitor:</font></td>
                     <td align="left" class="whiteBG" width="2%">
                         <select name="upgradescheduleraccess" id="upgradescheduleraccess">
                             <option value="0">No access</option>
                             <option value="1">Read only</option>
                             <option value="2">Read write</option>
                         </select>
-                    </td>                
+                    </td>
+                    <td align="right" width="10%" nowrap><font class="font12pxwhite">Device upgrade profiles:</font></td>
+                    <td align="left" class="whiteBG" width="2%">
+                        <select name="upgradeprofilesaccess" id="upgradeprofilesaccess">
+                            <option value="0">No access</option>
+                            <option value="1">Read only</option>
+                            <option value="2">Read write</option>
+                        </select>
+                    </td>
                     <td class="whiteBG"></td>
                 </tr>
             </table>

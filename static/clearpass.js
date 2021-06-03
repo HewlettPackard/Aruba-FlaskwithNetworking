@@ -181,37 +181,6 @@ function showServices(deviceid) {
     $('#showServices').load('cpServices?deviceid=' + deviceid + "&seEntryperpage=" + seEntryperpage + "&sePageoffset=" + sePageoffset + "&searchName=" + searchName + "&searchType=" + searchType + "&searchTemplate=" + searchTemplate + "&searchStatus=" + searchStatus);
 }
 
-function highlightdeviceRow(e) {
-    var tr = e.parentNode.parentNode;
-    var table = e.parentNode.parentNode.parentNode;
-    //set current backgroundColor
-    var len = table.childNodes.length;
-    for (var i = 0; i < len; i++) {
-        if (table.childNodes[i].nodeType == 1) {
-            table.childNodes[i].style.backgroundColor = 'transparent';
-        }
-    }
-    tr.style.backgroundColor = 'darkorange';
-    var tableTitles = document.getElementsByClassName('tableTitle');
-    for (var i = 0; i < tableTitles.length; i++) {
-        tableTitles[i].style.backgroundColor = 'grey';
-    }
-}
-
-function cleardeviceRow(e) {
-    var tr = e.parentNode.parentNode;
-    var table = e.parentNode.parentNode.parentNode;
-    var len = table.childNodes.length;
-    for (var i = 0; i < len; i++) {
-        if (table.childNodes[i].nodeType == 1) {
-            table.childNodes[i].style.backgroundColor = 'transparent';
-        }
-    }
-    var tableTitles = document.getElementsByClassName('tableTitle');
-    for (var i = 0; i < tableTitles.length; i++) {
-        tableTitles[i].style.backgroundColor = 'grey';
-    }
-}
 
 $(document).ready(function () {
     $('.field input').keyup(function () {

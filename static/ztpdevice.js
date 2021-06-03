@@ -530,7 +530,8 @@ $(document).ready(function () {
 
                 //editshowHTML = "<input type='button' name='showDevice' value='Show' data-deviceid='" + response[1] + "' class='showDevice' id='showDevice" + response[1] + "'";
                 //editshowHTML += "onclick = 'highlightdeviceRow(" + $("#ztpStatus" + response[1]).attr('id') + ");'>";
-                document.getElementById('editOrshow' + response[1]).innerHTML = editshowHTML;
+                $('#deviceItem' + response[1]).html(editshowHTML);
+                //document.getElementById('editOrshow' + response[1]).innerHTML = editshowHTML;
 
             },
             error: function () {
@@ -607,7 +608,7 @@ $(document).ready(function () {
                 editshowHTML += ">";
                 editshowHTML += "<input type='button' name='showDevice' value='Show' data-deviceid='" + response[1] + "' class='showDevice' id='showDevice" + response[1] + "'";
                 editshowHTML += "onclick = 'highlightdeviceRow(" + $("#ztpStatus" + response[1]).attr('id') + ");'>";
-                document.getElementById('editOrshow' + response[1]).innerHTML = editshowHTML;
+                $('#deviceItem'+ response[1]).html(editshowHTML);
             },
             error: function () {
                 document.getElementById("liProgress").style.display = "block";

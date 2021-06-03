@@ -27,6 +27,43 @@ function getCookie(name) {
     document.getElementById('userInfo').innerHTML = "<a href='/login' class='nohover'><img src='/static/images/logout.png' width='20' height='20' title='Logout " + value[1] + " ' />";
 }
 
+
+function clearRow(e) {
+    var tr = e.parentNode.parentNode;
+    var table = e.parentNode.parentNode.parentNode;
+    var len = table.childNodes.length;
+    for (var i = 0; i < len; i++) {
+        if (table.childNodes[i].nodeType == 1) {
+            table.childNodes[i].style.backgroundColor = 'transparent';
+        }
+    }
+    var tableTitles = document.getElementsByClassName('tableTitle');
+    for (var i = 0; i < tableTitles.length; i++) {
+        tableTitles[i].style.backgroundColor = 'grey';
+    }
+}
+
+
+function highlightRow(e) {
+    console.log("Highlight");
+    var tr = e.parentNode.parentNode;
+    var table = e.parentNode.parentNode.parentNode;
+    //set current backgroundColor
+    var len = table.childNodes.length;
+    for (var i = 0; i < len; i++) {
+        if (table.childNodes[i].nodeType == 1) {
+            table.childNodes[i].style.backgroundColor = 'transparent';
+        }
+    }
+    tr.style.backgroundColor = 'darkorange';
+    var tableTitles = document.getElementsByClassName('tableTitle');
+    for (var i = 0; i < tableTitles.length; i++) {
+        tableTitles[i].style.backgroundColor = 'grey';
+    }
+}
+
+
+
 function checkPass() {
     //Store the password field objects into variables ...
     var password = document.getElementById('password');
@@ -56,35 +93,3 @@ function checkPass() {
         message.innerHTML = 'Passwords Do Not Match!';
     }
 }  
-
-function highlightdeviceRow(e) {
-    var tr = e.parentNode.parentNode;
-    var table = e.parentNode.parentNode.parentNode;
-    //set current backgroundColor
-    var len = table.childNodes.length;
-    for (var i = 0; i < len; i++) {
-        if (table.childNodes[i].nodeType == 1) {
-            table.childNodes[i].style.backgroundColor = 'transparent';
-        }
-    }
-    tr.style.backgroundColor = 'darkorange';
-    var tableTitles = document.getElementsByClassName('tableTitle');
-    for (var i = 0; i < tableTitles.length; i++) {
-        tableTitles[i].style.backgroundColor = 'grey';
-    }
-}
-
-function cleardeviceRow(e) {
-    var tr = e.parentNode.parentNode;
-    var table = e.parentNode.parentNode.parentNode;
-    var len = table.childNodes.length;
-    for (var i = 0; i < len; i++) {
-        if (table.childNodes[i].nodeType == 1) {
-            table.childNodes[i].style.backgroundColor = 'transparent';
-        }
-    }
-    var tableTitles = document.getElementsByClassName('tableTitle');
-    for (var i = 0; i < tableTitles.length; i++) {
-        tableTitles[i].style.backgroundColor = 'grey';
-    }
-}

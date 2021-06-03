@@ -86,9 +86,9 @@
                 <td></td>
                 <td align="right">
                     {% if va("ztpdeviceaccess","feature")==False %}
-                    <input type="button" value="Add device" class="button" style="opacity:0.2;pointer-events:none;"><input type="submit" name="searchAction" value="Search" class="button" id="searchDevice" onclick="cleardeviceRow(this);">
+                    <input type="button" value="Add device" class="button" style="opacity:0.2;pointer-events:none;"><input type="submit" name="searchAction" value="Search" class="button" id="searchDevice" onclick="clearRow(this);">
                     {% else %}
-                    <input type="button" class="button addDevice" value="Add device" id="addztpDevice" onclick="cleardeviceRow(this);" {% if ipamstatus=="Offline" %} disabled {% endif %} {% if va("ztpdeviceaccess","feature")==False %} style="opacity:0.2;pointer-events:none;" {% endif %}><input type="submit" name="searchAction" value="Search" class="button" id="searchDevice" onclick="cleardeviceRow(this);">
+                    <input type="button" class="button addDevice" value="Add device" id="addztpDevice" onclick="clearRow(this);" {% if ipamstatus=="Offline" %} disabled {% endif %} {% if va("ztpdeviceaccess","feature")==False %} style="opacity:0.2;pointer-events:none;" {% endif %}><input type="submit" name="searchAction" value="Search" class="button" id="searchDevice" onclick="clearRow(this);">
                     {% endif %}
                 </td>
             </tr>
@@ -164,7 +164,6 @@
                 </td>
                 <td nowrap><div class="ztpStatus" id="ztpStatus{{ info['id'] }}" data-deviceid="{{info['id']}}" data-enableztp="{{info['enableztp']}}"><font class="font12px">{{ info['ztpstatus'] }}</font></div></td>
                 <td align="right" nowrap id="deviceItem{{info['id']}}">
-
                     {% if info['enableztp']|int>0 %}
                     {% set ztpenabled=1 %}
                     {% else %}
@@ -176,7 +175,7 @@
                     {% else %}
                     {% set nogateway=1 %}
                     {% endif %}
-                    <span id="editOrshow{{info['id']}}"><input type="button" class="button showztplog" value="Show log" id="showztplog{{ info['id'] }}" data-deviceid="{{info['id']}}" onclick="highlightdeviceRow(this);">{% if ztpenabled==1 %}<input type="button" name="disableZTP" value="Disable ZTP" id="disableZTP{{ info['id'] }}" data-macaddress="{{info['macaddress']}}" data-deviceid="{{info['id']}}" class="disableZTP" onclick="highlightdeviceRow(this);" {% if va("ztpdeviceaccess","feature")==False %} style="opacity:0.2;pointer-events:none;" {% endif %}>{% else %}<input type="button" name="enableZTP" value="Enable ZTP" id="enableZTP{{ info['id'] }}" data-macaddress="{{ info['macaddress'] }}" data-deviceid="{{info['id']}}" class="enableZTP" onclick="highlightdeviceRow(this);" {% if nogateway==1 %} disabled style="opacity:0.3;" {% endif %}{% if va("ztpdeviceaccess","feature")==False %} style="opacity:0.2;pointer-events:none;" {% endif %}>{% endif %}{% if va("ztpdeviceaccess","feature")==False %}<input type="button" name="Edit" value="Edit" style="opacity:0.2;pointer-events:none;"><input type="button" name="showDevice" value="Show" data-deviceid="{{ info['id'] }}" class='showDevice' id="showDevice{{ info['id'] }}" onclick="highlightdeviceRow(this);">{% else %}<span class="editShow" data-enableztp="{{ info['enableztp'] }}" data-ipamstatus="{{ ipamstatus }}" data-deviceid="{{ info['id'] }}" id="editShow{{ info['id'] }}"></span>{% endif %}{% if ztpenabled==0 %}<input type="submit" name="action" value="Delete" class="button" data-deviceid="{{info['id']}}" class="deleteDevice" id="deleteDevice{{ info['id'] }}" onclick="return confirm('Are you sure you want to delete {{ info['name'] }}?')" {% if va("ztpdeviceaccess","feature")==False %} style="opacity:0.2;pointer-events:none;" {% endif %}>{% endif %}</span>
+                    <input type="button" class="button showztplog" value="Show log" id="showztplog{{ info['id'] }}" data-deviceid="{{info['id']}}" onclick="highlightRow(this);">{% if ztpenabled==1 %}<input type="button" name="disableZTP" value="Disable ZTP" id="disableZTP{{ info['id'] }}" data-macaddress="{{info['macaddress']}}" data-deviceid="{{info['id']}}" class="disableZTP" onclick="highlightRow(this);" {% if va("ztpdeviceaccess","feature")==False %} style="opacity:0.2;pointer-events:none;" {% endif %}>{% else %}<input type="button" name="enableZTP" value="Enable ZTP" id="enableZTP{{ info['id'] }}" data-macaddress="{{ info['macaddress'] }}" data-deviceid="{{info['id']}}" class="enableZTP" onclick="highlightRow(this);" {% if nogateway==1 %} disabled style="opacity:0.3;" {% endif %}{% if va("ztpdeviceaccess","feature")==False %} style="opacity:0.2;pointer-events:none;" {% endif %}>{% endif %}{% if va("ztpdeviceaccess","feature")==False %}<input type="button" name="Edit" value="Edit" style="opacity:0.2;pointer-events:none;"><input type="button" name="showDevice" value="Show" data-deviceid="{{ info['id'] }}" class='showDevice' id="showDevice{{ info['id'] }}" onclick="highlightRow(this);">{% else %}<span class="editShow" data-enableztp="{{ info['enableztp'] }}" data-ipamstatus="{{ ipamstatus }}" data-deviceid="{{ info['id'] }}" id="editShow{{ info['id'] }}"></span>{% endif %}{% if ztpenabled==0 %}<input type="submit" name="action" value="Delete" class="button" data-deviceid="{{info['id']}}" class="deleteDevice" id="deleteDevice{{ info['id'] }}" onclick="return confirm('Are you sure you want to delete {{ info['name'] }}?')" {% if va("ztpdeviceaccess","feature")==False %} style="opacity:0.2;pointer-events:none;" {% endif %}>{% endif %}
                 </td>
             </tr>
         </form>

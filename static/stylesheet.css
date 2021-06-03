@@ -389,6 +389,7 @@ table.insidetable {
     -webkit-border-radius: 5px;
     border-radius: 5px;
     background: #777777;
+    z-index: 10;
 
 }
 
@@ -400,6 +401,7 @@ table.insidetable {
     margin-right: 30px;
     margin-top: 3px;
     border: none;
+    z-index:10;
 }
 
 #menu li:hover {
@@ -413,6 +415,7 @@ table.insidetable {
     -moz-border-radius: 5px 5px 5px 5px;
     -webkit-border-radius: 5px 5px 5px 5px;
     border-radius: 5px 5px 5px 5px;
+    z-index:10;
 }
 
 #menu li a {
@@ -423,16 +426,21 @@ table.insidetable {
     outline: 0;
     text-decoration: none;
     text-shadow: 1px 1px 1px #000;
+    z-index: 10;
 }
 
-        #menu li:hover a {
-            color: #161616;
-            text-shadow: 1px 1px 1px #FFFFFF;
-        }
+    #menu li:hover a {
+        color: #161616;
+        text-shadow: 1px 1px 1px #FFFFFF;
+        z-index: 10;
+    }
 
-        #menu  li .drop {
-            padding-right: 21px;
-        }
+
+    #menu li .drop {
+        padding-right: 21px;
+        z-index: 10;
+    }
+
 
 
     #menu .liplaceholder_left {
@@ -445,6 +453,7 @@ table.insidetable {
         text-decoration: none;
         text-shadow: 1px 1px 1px #000;
         pointer-events: none;
+        z-index: 10;
     }
 
     #menu .liplaceholder_right {
@@ -456,10 +465,12 @@ table.insidetable {
         outline: 0;
         text-decoration: none;
         text-shadow: 1px 1px 1px #000;
+        z-index: 10;
     }
 
         #menu .liplaceholder_right:hover {
             text-decoration: none;
+            z-index: 10;
         }
 
     #menu .liplaceholder_right {
@@ -470,6 +481,7 @@ table.insidetable {
         margin-right: 5px;
         margin-top: 3px;
         border: none;
+        z-index: 10;
     }
     #menu .no_event {
         text-decoration: none;
@@ -483,28 +495,30 @@ table.insidetable {
         outline: 0;
         text-decoration: none;
         text-shadow: 1px 1px 1px #000;
+        z-index: 10;
     }
 
 /* Drop Down */
 
-#menu .dropdown {
-    margin: 4px auto;
-    float: left;
-    position: absolute;
-    left: -999em; /* Hides the drop down */
-    text-align: left;
-    padding: 10px 5px 10px 5px;
-    border: 1px solid #777777;
-    border-top: none;
-    /* Gradient background */
-    background: #F4F4F4;
-    background: -moz-linear-gradient(top, #EEEEEE, #BBBBBB);
-    background: -webkit-gradient(linear, 0% 0%, 0% 100%, from(#EEEEEE), to(#BBBBBB));
-    /* Rounded Corners */
-    -moz-border-radius: 0px 5px 5px 5px;
-    -webkit-border-radius: 0px 5px 5px 5px;
-    border-radius: 0px 5px 5px 5px;
-}
+    #menu .dropdown {
+        margin: 4px auto;
+        float: left;
+        position: absolute;
+        left: -999em; /* Hides the drop down */
+        text-align: left;
+        padding: 10px 5px 10px 5px;
+        border: 1px solid #777777;
+        border-top: none;
+        /* Gradient background */
+        background: #F4F4F4;
+        background: -moz-linear-gradient(top, #EEEEEE, #BBBBBB);
+        background: -webkit-gradient(linear, 0% 0%, 0% 100%, from(#EEEEEE), to(#BBBBBB));
+        /* Rounded Corners */
+        -moz-border-radius: 0px 5px 5px 5px;
+        -webkit-border-radius: 0px 5px 5px 5px;
+        border-radius: 0px 5px 5px 5px;
+        z-index: 10;
+    }
 
 .dropdown {
     width: 160px;
@@ -514,6 +528,7 @@ table.insidetable {
     left: -1px;
     top: -100px;
     top: 17px;
+    z-index: 10;
 }
 
 /* Columns */
@@ -535,7 +550,8 @@ table.insidetable {
     top: -3px;
     margin-right: 0px;
     background-color: #777777;
-    text-decoration:none;
+    text-decoration: none;
+    z-index: 10;
 }
 
 
@@ -545,6 +561,7 @@ table.insidetable {
     float: left;
     top: -5px;
     margin-left: 0px;
+    z-index: 10;
 }
 
 /* Drop Down Content Stylings */
@@ -552,36 +569,42 @@ table.insidetable {
 #menu li:hover div a {
     font-size: 12px;
     color: #015b86;
+    z-index: 10;
+    z-index: 10;
 }
 
-#menu li:hover div a:hover {
-    color: #029feb;
-}
+    #menu li:hover div a:hover {
+        color: #029feb;
+        z-index: 10;
+    }
 
 #menu li ul {
     list-style: none;
     padding: 0;
     margin: 0 0 0 0;
+    z-index: 10;
 }
 
-#menu li ul li {
-    font-size: 12px;
-    line-height: 24px;
-    position: relative;
-    text-shadow: 1px 1px 1px #ffffff;
-    padding: 0;
-    margin: 0;
-    float: none;
-    text-align: left;
-    width: 130px;
-}
+    #menu li ul li {
+        font-size: 12px;
+        line-height: 24px;
+        position: relative;
+        text-shadow: 1px 1px 1px #ffffff;
+        padding: 0;
+        margin: 0;
+        float: none;
+        text-align: left;
+        width: 130px;
+        z-index: 10;
+    }
 
-#menu li ul li:hover {
-    background: none;
-    border: none;
-    padding: 0;
-    margin: 0;
-}
+        #menu li ul li:hover {
+            background: none;
+            border: none;
+            padding: 0;
+            margin: 0;
+            z-index: 10;
+        }
 
 
 .toggleswitch {

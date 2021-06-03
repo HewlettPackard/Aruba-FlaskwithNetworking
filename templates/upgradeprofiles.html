@@ -3,11 +3,11 @@
 <script src="static/scripts/jquery-1.10.2.min.js"></script>
 <link href="static/stylesheet.css" rel="stylesheet" />
 <script type="text/javascript" src="static/main.js"></script>
-<script type="text/javascript" src="static/upgradescheduler.js"></script>
+<script type="text/javascript" src="static/upgradeprofiles.js"></script>
 {% endblock %}
 
 {% block content %}
-{% set pagename = "Upgrade scheduler" %}
+{% set pagename = "Upgrade profiles" %}
 {% include 'navbar.html' %}
 
 {% if totalentries|int % entryperpage|int == 0 %}
@@ -24,8 +24,8 @@
 
 <div id="maincontainer">
 
-    <form method="post" name="scheduler" id="scheduler">
-        <table class="tablenoborder" id="scheduleTable">
+    <form method="post" name="profiles" id="profiles">
+        <table class="tablenoborder" id="profileeTable">
             <tr>
                 <td width="20%" align="right">
                     <font class="font13pxgrey">
@@ -83,7 +83,7 @@
                         <option value="110">Completed, reboot required</option>
                     </select>
                 </td>
-                <td align="right">
+                <td align="right"><input type="button" name="createUpgrade" value="Create upgrade" class="button" id="createUpgrade" onclick="clearRow(this);">
                     <input type="submit" name="searchAction" value="Search" class="button" id="searchSchedule" onclick="clearRow(this);">
                 </td>
             </tr>
@@ -125,9 +125,9 @@
             </td>
             <td><font class="font10px">{{ sentence_case(info['activepartition']) }}</font></td>
             <td><font class="font10px">{% if info['schedule'] %}{{ info['schedule'] }}{% endif %}</font></td>
-            <td><div id="upgradeduration{{ info['id'] }}"><font class="font10px">{% if info['status']|int > 99 %}{{ timeDuration (info['starttime'],info['endtime']) }}{% endif %}</font></div></td>
-            <td><div id="upgradestatus{{info['id']}}" data-id="{{info['id']}}" class="statusOverview"><font class="font10px">{{ upgradestatus[info['status']] }}</font></div></td>
-            <td align="right" nowrap><span id="rebootSwitch{{ info['id'] }}">{% if info['status']==110 %}<input type="button"  onclick="switchReboot({{ info['switchid'] }},{{ info['id'] }} );"class="button" value="Reboot" />{% endif %}</span><input type="button" id="showupgradeDetails{{ info['id'] }}" onclick="showupgradeDetails( {{ info['id'] }} );highlightRow(this);" class="button" value="Show details"><span id="removescheduleSpan{{ info['id'] }}">{% if info['status']==0 %}<input type="button" id="removescheduleUpgrade{{ info['id'] }}" onclick="removescheduleUpgrade( {{ info['id'] }} );" class="button" value="Remove" />{% endif %}</span></td>
+            <td><div id="upgradeduration{{ info['id'] }}"><font class="font10px"></font></div></td>
+            <td></td>
+            <td align="right" nowrap><span id="rebootSwitch{{ info['id'] }}">{% if info['status']==110 %}<input type="button"  onclick="switchReboot({{ info['switchid'] }},{{ info['id'] }} );"class="button" value="Reboot" />{% endif %}</span><input type="button" id="showupgradeDetails{{ info['id'] }}" onclick="showupgradeDetails( {{ info['id'] }} );" class="button" value="Show details"/><span id="removescheduleSpan{{ info['id'] }}">{% if info['status']==0 %}<input type="button" id="removescheduleUpgrade{{ info['id'] }}" onclick="removescheduleUpgrade( {{ info['id'] }} );" class="button" value="Remove" />{% endif %}</span></td>
         </tr>
     </form>
     {% endfor %}

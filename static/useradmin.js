@@ -41,7 +41,6 @@ $(document).on("click", ".editUser", function () {
                 $('#editusername').attr('disabled', false);
                 $('#editrole').attr('disabled', false);
             }
-            console.log(response);
             document.getElementById('edituserid').value = response['id'];
             document.getElementById('editusername').value = response['username'];
             document.getElementById('editpassword').value = response['password'];

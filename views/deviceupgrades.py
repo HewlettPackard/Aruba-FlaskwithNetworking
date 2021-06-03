@@ -70,6 +70,23 @@ def upgradescheduler ():
     else:
         return render_template("login.html")
 
+@deviceupgrades.route("/upgradeprofiles", methods=['GET','POST'])
+def upgradeprofiles ():
+    authOK=classes.checkAuth("upgradescheduleraccess","submenu")
+    message=""
+    filename=""
+    if authOK!=0:
+        sysvars=classes.globalvars()
+        formresult=request.form
+        result=classes.upgradescheduledbAction(formresult)
+        if authOK['hasaccess']==True:
+            authOK['hasaccess']="true"
+            return render_template("upgradeprofiles.html",upgraderesult=result['upgraderesult'], switchresult=result['switchresult'],formresult=formresult, totalentries=int(result['totalentries']),pageoffset=int(result['pageoffset']),entryperpage=int(result['entryperpage']), authOK=authOK, sysvars=sysvars)
+        else:
+            return render_template("noaccess.html",authOK=authOK, sysvars=sysvars)
+    else:
+        return render_template("login.html")
+
 
 @deviceupgrades.route("/imageInfo", methods=['GET','POST'])
 def imageInfo ():

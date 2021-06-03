@@ -69,7 +69,7 @@
                 </td>
                 <td colspan="5"></td>
                 <td align="right">
-                    <input type="submit" name="searchAction" value="Search" class="button" id="searchDevice" onclick="cleardeviceRow(this);">
+                    <input type="submit" name="searchAction" value="Search" class="button" id="searchDevice" onclick="clearRow(this);">
                 </td>
             </tr>
         </form>
@@ -107,12 +107,14 @@
                     </font>
                 </td>
                 <td align="right">
-                    <span class="startWS" id="startws{{ info['id'] }}"></span><input type="button" name="monitor" value="Monitor" data-username="{{ info['ipaddress'] }}" data-deviceid="{{info['id']}}" id="monitor{{info['id']}}" class="monitorSubscription" onclick="highlightdeviceRow(this);"><input type="button" name="managesubscription" value="Manage subscriptions" data-deviceid="{{info['id']}}" class="manageSubscription" onclick="highlightdeviceRow(this);" {% if va("telemetrysubscriptionaccess","feature")==False %} style="opacity:0.2;pointer-events:none;" {% endif %}>
+                    <input type="button" name="monitor" value="Monitor" data-username="{{ info['ipaddress'] }}" data-deviceid="{{info['id']}}" id="monitor{{info['id']}}" class="monitorSubscription" onclick="highlightRow(this);"><input type="button" name="managesubscription" value="Manage subscriptions" data-deviceid="{{info['id']}}" class="manageSubscription" onclick="highlightRow(this);" {% if va("telemetrysubscriptionaccess","feature")==False %} style="opacity:0.2;pointer-events:none;" {% endif %}>
                 </td>
             </tr>
+            <span class="startWS" id="startws{{ info['id'] }}"></span>
         </form>
         {% endfor %}
     </table>
+    
 
 
     <div id="monitorsubscription" style="display:none;" data-deviceid="">

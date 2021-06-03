@@ -109,9 +109,11 @@ def scheduledbAction(formresult):
     message=""
     # Obtain the device information
     if formresult['action']=="submitUpgrade":
+        print("Submit upgrade")
         # If there is already an upgrade entry (status set to 0 which means not active), then we should not add the upgrade
         # If the upgrade status is >0 then the upgrade is in progress and we should be able to add a new upgrade, however, this upgrade should not be executed. This is handled in the upgrade scheduler
         queryStr="select * from softwareupdate where switchid='{}' and status=0".format(formresult['switchid'])
+        print(queryStr)
         checkResult=classes.classes.sqlQuery(queryStr,"select")
         if checkResult:
             message="There is already an upgrade entry"
@@ -124,7 +126,7 @@ def scheduledbAction(formresult):
                     queryStr="insert into softwareupdate (switchid,software,imagepartition,activepartition,schedule,reboot,policy,upgradefrom, upgradeto,softwareinfo,softwareinfoafter,status) values ('{}','{}','{}','{}','{}','{}','','','','','',0)".format(formresult['switchid'],formresult['software'],formresult['imagepartition'],formresult['activepartition'],formresult['schedule'],formresult['reboot'])
             else:
                 queryStr="insert into softwareupdate (switchid,software,imagepartition,activepartition,reboot,policy,upgradefrom, upgradeto,softwareinfo,softwareinfoafter,status) values ('{}','{}','{}','{}','{}','','','','','',1)".format(formresult['switchid'],formresult['software'],formresult['imagepartition'],formresult['activepartition'],formresult['reboot'])
-
+            print(queryStr)
             classes.classes.sqlQuery(queryStr,"insert")
     elif formresult['action']=="submitupgradeChanges":
         if formresult['schedule']!="":

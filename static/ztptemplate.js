@@ -61,37 +61,6 @@ $(document).ready(function () {
     });
 });
 
-function highlighttemplateRow(e) {
-    var tr = e.parentNode.parentNode;
-    var table = e.parentNode.parentNode.parentNode;
-    //set current backgroundColor
-    var len = table.childNodes.length;
-    for (var i = 0; i < len; i++) {
-        if (table.childNodes[i].nodeType == 1) {
-            table.childNodes[i].style.backgroundColor = 'transparent';
-        }
-    }
-    tr.style.backgroundColor = 'darkorange';
-    var tableTitles = document.getElementsByClassName('tableTitle');
-    for (var i = 0; i < tableTitles.length; i++) {
-        tableTitles[i].style.backgroundColor = 'grey';
-    }
-}
-
-function cleartemplateRow(e) {
-    var tr = e.parentNode.parentNode;
-    var table = e.parentNode.parentNode.parentNode;
-    var len = table.childNodes.length;
-    for (var i = 0; i < len; i++) {
-        if (table.childNodes[i].nodeType == 1) {
-            table.childNodes[i].style.backgroundColor = 'transparent';
-        }
-    }
-    var tableTitles = document.getElementsByClassName('tableTitle');
-    for (var i = 0; i < tableTitles.length; i++) {
-        tableTitles[i].style.backgroundColor = 'grey';
-    }
-}
 
 $(document).on("click", "#addztpTemplate", function () {
     document.getElementById("addTemplate").style.display = "block";

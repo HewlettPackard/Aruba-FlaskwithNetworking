@@ -70,7 +70,9 @@ $(document).ready(function () {
 
 
     $('#wsClient').ready(function () {
-        uri = "ws://" + $('#wsClient').data('hostip') + ":5000";
+
+        uri = "ws://" + $('#wsClient').attr('data-hostip') + ":5000";
+        console.log(uri);
         const socket = new WebSocket(uri);
         // Connection opened
         socket.addEventListener('open', function (event) {

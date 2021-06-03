@@ -116,7 +116,7 @@ $(document).ready(function () {
 
     $(".editDevice").click(async function () {
         deviceid = $(this).attr('data-deviceid');
-        $('#editdeviceAttributes').attr('data-deviceid', deviceid);
+        $('#manageAttributes').attr('data-deviceid', deviceid);
         document.getElementById("liProgress").style.display = "none";
         document.getElementById("monitordevice").style.display = "none";
         document.getElementById("configurationManager").style.display = "none";
@@ -209,7 +209,7 @@ $(document).ready(function () {
 
 
     $(document).on("click", "#editdeviceAttributes", async function () {
-        manageAttributes($(this).attr('data-deviceid'));      
+        manageAttributes($('#manageAttributes').attr('data-deviceid'));      
     });
 
     
@@ -248,15 +248,13 @@ $(document).ready(function () {
         var attributeList = [];
         $('.changeAttribute').each(function () {
             var attributeSet = "{\"id\":" + $(this).data('id') + ", \"value\": \"" + $(this).val() + "\"}";
-            //attributeSet.id = $(this).data('id');
-            //attributeSet.value = $(this).val();
             attributeList.push(attributeSet);
         });
         // Store the attribute in the device table
         attributeList = attributeList.toString();
         await $.ajax({
             type: "POST",
-            data: { 'deviceid': $('#editdeviceAttributes').data('deviceid'), 'attributeList': attributeList },
+            data: { 'deviceid': $('#manageAttributes').attr('data-deviceid'), 'attributeList': attributeList },
             url: "/submitswitchAttributes",
             success: function (response) {
             },
@@ -296,9 +294,6 @@ $(document).ready(function () {
                                 $("#monitor" + deviceid).prop('disabled', false);
                                 $("#monitor" + deviceid).css('opacity', '1');
                                 $("#monitor" + deviceid).css('pointer-events', 'auto');
-                                $("#deviceupgrade" + deviceid).prop('disabled', false);
-                                $("#deviceupgrade" + deviceid).css('opacity', '1');
-                                $("#deviceupgrade" + deviceid).css('pointer-events', 'auto');
                                 $("#configuration" + deviceid).prop('disabled', false);
                                 $("#configuration" + deviceid).css('opacity', '1');
                                 $("#configuration" + deviceid).css('pointer-events', 'auto');
@@ -313,9 +308,6 @@ $(document).ready(function () {
                                 $("#monitor" + deviceid).prop('disabled', true);
                                 $("#monitor" + deviceid).css('opacity', '0.1');
                                 $("#monitor" + deviceid).css('pointer-events', 'none');
-                                $("#deviceupgrade" + deviceid).prop('disabled', true);
-                                $("#deviceupgrade" + deviceid).css('opacity', '0.1');
-                                $("#deviceupgrade" + deviceid).css('pointer-events', 'none');
                                 $("#configuration" + deviceid).prop('disabled', true);
                                 $("#configuration" + deviceid).css('opacity', '0.1');
                                 $("#configuration" + deviceid).css('pointer-events', 'none');
@@ -330,9 +322,6 @@ $(document).ready(function () {
                                 $("#monitor" + deviceid).prop('disabled', true);
                                 $("#monitor" + deviceid).css('opacity', '0.1');
                                 $("#monitor" + deviceid).css('pointer-events', 'none');
-                                $("#deviceupgrade" + deviceid).prop('disabled', true);
-                                $("#deviceupgrade" + deviceid).css('opacity', '0.1');
-                                $("#deviceupgrade" + deviceid).css('pointer-events', 'none');
                                 $("#configuration" + deviceid).prop('disabled', true);
                                 $("#configuration" + deviceid).css('opacity', '0.1');
                                 $("#configuration" + deviceid).css('pointer-events', 'none');

@@ -331,7 +331,6 @@ def showassignedAttributes ():
 @devices.route("/submitswitchAttributes", methods=['GET','POST'])
 def submitswitchAttributes ():
     queryStr="update devices set deviceattributes='[{}]' where id='{}'".format(request.form['attributeList'],request.form['deviceid'])
-    print(queryStr)
     result=classes.sqlQuery(queryStr,"update")
     return result
 

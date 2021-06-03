@@ -86,7 +86,7 @@
                     </select>
                 </td>
                 <td align="right">
-                    <input type="button" class="button" value="Add device attribute" id="adddeviceAttribute" onclick="cleardeviceRow(this);" {% if va("deviceattributeaccess","feature")==False %} style="opacity:0.2;pointer-events:none;" {% endif %}><input type="submit" name="searchAction" value="Search" class="button" id="searchRole" onclick="cleardeviceRow(this);">
+                    <input type="button" class="button" value="Add device attribute" id="adddeviceAttribute" onclick="clearRow(this);" {% if va("deviceattributeaccess","feature")==False %} style="opacity:0.2;pointer-events:none;" {% endif %}><input type="submit" name="searchAction" value="Search" class="button" id="searchRole" onclick="clearRow(this);">
                 </td>
             </tr>
         </form>
@@ -103,12 +103,12 @@
             <input type="hidden" name="searchAssigned" value="{{ formresult.searchAssigned }}">
             <input type="hidden" name="id" value="{{ info['id'] }}" />
             <tr>
-                <td class="whiteBG"><font class="font12px">{{ loop.index }}</font></td>
-                <td class="whiteBG" nowrap><font class="font12px">{{ info['name'] }}</font></td>
-                <td class="whiteBG"><font class="font12px">{{ sentence_case(info['type']) }}</font></td>
-                <td class="whiteBG"><font class="font12px">{% if info['type']=="list" %}{{ info['attributelist'][1:-1] | replace('"', '') }}{% endif %}</font></td>
-                <td class="whiteBG"><font class="font12px">{% if info['isassigned']!="[]" %} Assigned {% else %} Not assigned {%endif %} </td>
-                <td align="right" class="whiteBG"><input type="button" value="Edit" id="editdeviceAttribute{{ info['id'] }}" class="editdeviceAttribute" data-attributeid="{{ info['id'] }}" {% if va("deviceattributesaccess","feature")==False  %} style="opacity:0.2;pointer-events:none;" {% endif %} /><input type="submit" name="action" value="Delete" class="button" data-deviceattributeid="{{info['id']}}" class="deleteAttribute" id="deleteAttribute{{ info['id'] }}" onclick="return confirm('Are you sure you want to delete {{ info['name'] }}?')" {% if va("deviceattributesaccess","feature")==False or info['isassigned']!="[]" %} style="opacity:0.2;pointer-events:none;" {% endif %}></td>
+                <td><font class="font12px">{{ loop.index }}</font></td>
+                <td nowrap><font class="font12px">{{ info['name'] }}</font></td>
+                <td><font class="font12px">{{ sentence_case(info['type']) }}</font></td>
+                <td><font class="font12px">{% if info['type']=="list" %}{{ info['attributelist'][1:-1] | replace('"', '') }}{% endif %}</font></td>
+                <td><font class="font12px">{% if info['isassigned']!="[]" %} Assigned {% else %} Not assigned {%endif %} </td>
+                <td align="right"><input type="button" value="Edit" id="editdeviceAttribute{{ info['id'] }}" class="editdeviceAttribute"  onclick="highlightRow(this);" data-attributeid="{{ info['id'] }}" {% if va("deviceattributesaccess","feature")==False  %} style="opacity:0.2;pointer-events:none;" {% endif %}><input type="submit" name="action" value="Delete" class="button" data-deviceattributeid="{{info['id']}}" class="deleteAttribute" id="deleteAttribute{{ info['id'] }}" onclick="return confirm('Are you sure you want to delete {{ info['name'] }}?')" {% if va("deviceattributesaccess","feature")==False or info['isassigned']!="[]" %} style="opacity:0.2;pointer-events:none;" {% endif %}></td>
             </tr>
         </form>
             {% endfor %}
