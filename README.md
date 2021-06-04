@@ -5,6 +5,8 @@
 - Simple topology view
 - SNMP, Syslog and DHCP tracker
 - Role Based Access Control
+- Software upgrades on AOS-Switch and AOS-CX
+- Configuration backups on AOS-Swtich and AOS-CX
 - And more...
 
 Supported Operating System is Ubuntu LTS 18.x, 19.x or 20.x
