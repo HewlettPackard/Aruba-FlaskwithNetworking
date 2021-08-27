@@ -110,30 +110,30 @@ $(document).on("mouseenter mouseleave", ".attributeTooltip", async function (eve
             paddingTop: 0,
             paddingRight: 0,
             paddingBottom: 0,
-            backgroundColor: 'white',
+            backgroundColor: 'transparent',
             "text-align": "center",
             width: '350px',
         });
         // Construct the innerHTML
         attrsetHTML = "<table class='tablewithborder' style='max-width: 350px;'>";
         attrsetHTML += "<tr class='tableTitle'>";
-        attrsetHTML += "<td width='20%' align='left' nowrap><font class='font12pxwhite'>Attribute name</font></td>";
+        attrsetHTML += "<td width='40%' align='left' nowrap><font class='font12pxwhite'>Attribute name</font></td>";
         attrsetHTML += "<td width='20%' align='left' nowrap><font class='font12pxwhite'>Type</font></td>";
-        attrsetHTML += "<td width='60%' align='left' nowrap><font class='font12pxwhite'>Value</font></td>";
+        attrsetHTML += "<td width='40%' align='left' nowrap><font class='font12pxwhite'>Value</font></td>";
         attrsetHTML += "</tr>";
         assignedattrInfo = JSON.parse(assignedattrInfo);
         for (var i = 0; i < assignedattrInfo.length; i++) {
             attrsetHTML += "<tr>";
-            attrsetHTML += "<td class='whiteBG'><font class='font12pxgrey'>" + assignedattrInfo[i]['name'] + "</font></td>";
-            attrsetHTML += "<td class='whiteBG'><font class='font12pxgrey'>" + assignedattrInfo[i]['type'].charAt(0).toUpperCase() + assignedattrInfo[i]['type'].slice(1) + "</font></td>";
+            attrsetHTML += "<td class='whiteBG' nowrap><font class='font10px'>" + assignedattrInfo[i]['name'] + "</font></td>";
+            attrsetHTML += "<td class='whiteBG'><font class='font10px'>" + assignedattrInfo[i]['type'].charAt(0).toUpperCase() + assignedattrInfo[i]['type'].slice(1) + "</font></td>";
             if (assignedattrInfo[i]['type'] == "boolean" && assignedattrInfo[i]['value'] == "1") {
-                attrsetHTML += "<td class='whiteBG'><font class='font12pxgrey'>True</font></td>";
+                attrsetHTML += "<td class='whiteBG' nowrap><font class='font10px'>True</font></td>";
             }
             else if (assignedattrInfo[i]['type'] == "boolean" && assignedattrInfo[i]['value'] == "0") {
-                attrsetHTML += "<td class='whiteBG'><font class='font12pxgrey'>True</font></td>"
+                attrsetHTML += "<td class='whiteBG' nowrap><font class='font10px'>True</font></td>"
             }
             else {
-                attrsetHTML += "<td class='whiteBG'><font class='font12pxgrey'>" + assignedattrInfo[i]['value'] + "</font></td>";
+                attrsetHTML += "<td class='whiteBG' nowrap><font class='font10px'>" + assignedattrInfo[i]['value'] + "</font></td>";
             }
             attrsetHTML += "</tr>";
         }
@@ -189,9 +189,9 @@ $(document).on("mouseenter mouseleave", ".showupgradeprofileDevices", async func
         pdHTML += "</tr>";
         for (var i = 0; i < profileDevices.length; i++) {
             pdHTML += "<tr>";
-            pdHTML += "<td class='whiteBG'><font class='font12pxgrey'>" + profileDevices[i]['ipaddress'] + "</font></td>";
-            pdHTML += "<td class='whiteBG' nowrap><font class='font12pxgrey'>" + profileDevices[i]['description'] + "</font></td>";
-            pdHTML += "<td class='whiteBG' nowrap><font class='font12pxgrey'>" + profileDevices[i]['ostype'] + "</font></td>";         
+            pdHTML += "<td class='whiteBG'><font class='font10px'>" + profileDevices[i]['ipaddress'] + "</font></td>";
+            pdHTML += "<td class='whiteBG' nowrap><font class='font10px'>" + profileDevices[i]['description'] + "</font></td>";
+            pdHTML += "<td class='whiteBG' nowrap><font class='font10px'>" + profileDevices[i]['ostype'] + "</font></td>";         
             pdHTML += "</tr>";
         }
         pdHTML += "</table>";
