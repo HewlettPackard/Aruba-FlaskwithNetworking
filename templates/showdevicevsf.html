@@ -213,7 +213,7 @@
                 {% for portitems in bladeitems.data_ports %}
                 {% if portitems['port_name'] == items['port_id'] %}
                 <td><font class="font12pxwhite">Port speed</font></td>
-                <td class="whiteBG"><font face="arial" size="1">{{ portitems['oper_mode'][3:] }}</font></td>
+                <td class="whiteBG"><font face="arial" size="1">{% if portitems['opermode'] %}{{ portitems['oper_mode'][3:] }}{% endif %}</font></td>
                 {% endif %}
                 {% endfor %}
                 {% for portitems in bladeitems.data_ports %}

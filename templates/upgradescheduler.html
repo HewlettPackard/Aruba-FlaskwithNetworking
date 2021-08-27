@@ -28,7 +28,7 @@
         <table class="tablenoborder" id="scheduleTable">
             <tr>
                 <td width="20%" align="right">
-                    <font class="font13pxgrey">
+                    <font class="font11pxgrey">
                         Show <select name="entryperpage" onchange="this.form.submit()">
                             <option value="5" {% if entryperpage|int==5 or entryperpage is not defined %} selected {% endif %}>5</option>
                             <option value="10" {% if entryperpage|int==10 %} selected {% endif %}>10</option>
@@ -54,9 +54,10 @@
                 <td width="2%" align="left" nowrap><font class="font13pxgrey">ID</font></td>
                 <td width="10%" align="left" nowrap><font class="font13pxgrey">Device</font></td>
                 <td width="8%" align="left" nowrap><font class="font13pxgrey">IP address</font></td>
-                <td width="10%" align="left"><font class="font13pxgrey">Upgrade(d) from</font></td>
-                <td width="10%" align="left"><font class="font13pxgrey">Upgrade(d) to</font></td>
-                <td width="12%" align="left"><font class="font13pxgrey">On partition</font></td>
+                <td width="8%" align="left"><font class="font13pxgrey">Upgrade(d) from</font></td>
+                <td width="8%" align="left"><font class="font13pxgrey">Upgrade(d) to</font></td>
+                <td width="8%" align="left"><font class="font13pxgrey">On partition</font></td>
+                <td width="8%" align="left"><font class="font13pxgrey">Upgrade profile</font></td>
                 <td width="10%" align="left"><font class="font13pxgrey">Scheduled</font></td>
                 <td width="14%" align="left"><font class="font13pxgrey">Upgrade duration</font></td>
                 <td width="20%" align="left"><font class="font13pxgrey">Status</font></td>
@@ -65,26 +66,28 @@
 
             <tr style="background-color: grey;" class="tableTitle">
                 <td align="left" nowrap>&nbsp;</td>
-                <td align="left" valign="top"><input type="text" name="searchName" value="{{ formresult.searchName }}" size="15"></td>
-                <td align="left" valign="top"><input type="text" name="searchIpaddress" value="{{ formresult.searchIpaddress }}" size="10"></td>
-                <td align="left" valign="top"><input type="text" name="searchupgradeFrom" value="{{ formresult.searchupgradeFrom }}" size="10"></td>
-                <td align="left" valign="top"><input type="text" name="searchupgradeTo" value="{{ formresult.searchupgradeTo }}" size="10"></td>
-                <td align="left" valign="top"><input type="text" name="searchPartition" value="{{ formresult.searchPartition }}" size="10"></td>
+                <td align="left" valign="top"><input type="text" name="searchName" value="{{ formresult.searchName }}" size="10"></td>
+                <td align="left" valign="top"><input type="text" name="searchIpaddress" value="{{ formresult.searchIpaddress }}" size="8"></td>
+                <td align="left" valign="top"><input type="text" name="searchupgradeFrom" value="{{ formresult.searchupgradeFrom }}" size="8"></td>
+                <td align="left" valign="top"><input type="text" name="searchupgradeTo" value="{{ formresult.searchupgradeTo }}" size="8"></td>
+                <td align="left" valign="top"><input type="text" name="searchPartition" value="{{ formresult.searchPartition }}" size="8"></td>
+                <td></td>
                 <td></td>
                 <td></td>
                 <td align="left" valign="top">
                     <select name="searchStatus">
-                        <option value="0">Not started</option>
-                        <option value="5">Copy software to the switch</option>
-                        <option value="10">Software copied onto the switch</option>
-                        <option value="20">Switch is rebooted</option>
-                        <option value="50">Another software upgrade in progress</option>
-                        <option value="100">Completed</option>
-                        <option value="110">Completed, reboot required</option>
+                        <option value="" {% if formresult.searchStatus=="" %} selected {% endif %}>Select</option>
+                        <option value="0" {% if formresult.searchStatus=="0" %} selected {% endif %}>Not started</option>
+                        <option value="5" {% if formresult.searchStatus=="5" %} selected {% endif %}>Copy software to the switch</option>
+                        <option value="10" {% if formresult.searchStatus=="10" %} selected {% endif %}>Software copied onto the switch</option>
+                        <option value="20" {% if formresult.searchStatus=="20" %} selected {% endif %}>Switch is rebooted</option>
+                        <option value="50" {% if formresult.searchStatus=="50" %} selected {% endif %}>Another software upgrade in progress</option>
+                        <option value="100" {% if formresult.searchStatus=="100" %} selected {% endif %}>Completed</option>
+                        <option value="110" {% if formresult.searchStatus=="110" %} selected {% endif %}>Completed, reboot required</option>
                     </select>
                 </td>
                 <td align="right">
-                    <input type="submit" name="searchAction" value="Search" class="button" id="searchSchedule" onclick="clearRow(this);">
+                    <button type="submit" name="searchAction" value="Search" class="transparent-button" id="searchSchedule" onclick="clearRow(this);"><img src="static/images/search.svg" width="12" height="12" class="showtitleTooltip" data-title="Search"></button>
                 </td>
             </tr>
     </form>
@@ -124,10 +127,11 @@
                 </div>
             </td>
             <td><font class="font10px">{{ sentence_case(info['activepartition']) }}</font></td>
+            <td>{% if info['upgradeprofile'] !=0 %}<font class="font10px">{{upgradeprofileName(info['upgradeprofile'])}}</font>{% endif %}</td>
             <td><font class="font10px">{% if info['schedule'] %}{{ info['schedule'] }}{% endif %}</font></td>
             <td><div id="upgradeduration{{ info['id'] }}"><font class="font10px">{% if info['status']|int > 99 %}{{ timeDuration (info['starttime'],info['endtime']) }}{% endif %}</font></div></td>
             <td><div id="upgradestatus{{info['id']}}" data-id="{{info['id']}}" class="statusOverview"><font class="font10px">{{ upgradestatus[info['status']] }}</font></div></td>
-            <td align="right" nowrap><span id="rebootSwitch{{ info['id'] }}">{% if info['status']==110 %}<input type="button"  onclick="switchReboot({{ info['switchid'] }},{{ info['id'] }} );"class="button" value="Reboot" />{% endif %}</span><input type="button" id="showupgradeDetails{{ info['id'] }}" onclick="showupgradeDetails( {{ info['id'] }} );highlightRow(this);" class="button" value="Show details"><span id="removescheduleSpan{{ info['id'] }}">{% if info['status']==0 %}<input type="button" id="removescheduleUpgrade{{ info['id'] }}" onclick="removescheduleUpgrade( {{ info['id'] }} );" class="button" value="Remove" />{% endif %}</span></td>
+            <td align="right" nowrap><span id="rebootSwitch{{ info['id'] }}">{% if info['status']==110 %}<button type="button" onclick="switchReboot({{ info['switchid'] }},{{ info['id'] }} );" class="transparent-button" value="Reboot"><img src="static/images/power-reset.svg" width="12" height="12" class="showtitleTooltip" data-title="Reboot switch"></button>{% endif %}</span><button type="button" id="showupgradeDetails{{ info['id'] }}" onclick="showupgradeDetails( {{ info['id'] }} );highlightRow(this);" class="transparent-button" value="Show details"><img src="static/images/information.svg" width="12" height="12" class="showtitleTooltip" data-title="Show upgrade status"></button><span id="removescheduleSpan{{ info['id'] }}">{% if info['status']==0 %}<button type="button" id="removescheduleUpgrade{{ info['id'] }}" onclick="removescheduleUpgrade( {{ info['id'] }} );" class="transparent-button" value="Remove"><img src="static/images/trash.svg" width="12" height="12" class="showtitleTooltip" data-title="Delete upgrade job"></button>{% endif %}</span></td>
         </tr>
     </form>
     {% endfor %}
@@ -154,7 +158,7 @@
                 <td class="whiteBG"><div class="asecondaryImage"></div></td>
                 <td><font class="font12pxwhite">Active partition after upgrade</font></td>
                 <td class="whiteBG"><div class="adefaultImage"></div></td>
-                <td class="whiteBG" colspan="2"><div class="showschedulerebootSwitch" id="showschedulerebootSwitch"></div></td>
+                <td class="whiteBG" colspan="2"><span class="showschedulerebootSwitch" id="showschedulerebootSwitch"></span></td>
             </tr>
             <tr>
                 <td><font class="font12pxwhite">Upgrade schedule time</font></td>
@@ -172,8 +176,8 @@
             </tr>
         </table>
     </div>
-
-
+    
 </div>
+<div id="showdaTooltip" type="display:none;"></div>
 
-    {% endblock %}
+{% endblock %}

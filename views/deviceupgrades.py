@@ -72,16 +72,16 @@ def upgradescheduler ():
 
 @deviceupgrades.route("/upgradeprofiles", methods=['GET','POST'])
 def upgradeprofiles ():
-    authOK=classes.checkAuth("upgradescheduleraccess","submenu")
+    authOK=classes.checkAuth("upgradeprofilesaccess","submenu")
     message=""
     filename=""
     if authOK!=0:
         sysvars=classes.globalvars()
         formresult=request.form
-        result=classes.upgradescheduledbAction(formresult)
+        result=classes.upgradeprofiledbAction(formresult)
         if authOK['hasaccess']==True:
             authOK['hasaccess']="true"
-            return render_template("upgradeprofiles.html",upgraderesult=result['upgraderesult'], switchresult=result['switchresult'],formresult=formresult, totalentries=int(result['totalentries']),pageoffset=int(result['pageoffset']),entryperpage=int(result['entryperpage']), authOK=authOK, sysvars=sysvars)
+            return render_template("upgradeprofiles.html",profileresult=result['profileresult'], formresult=formresult, totalentries=int(result['totalentries']),pageoffset=int(result['pageoffset']),entryperpage=int(result['entryperpage']), authOK=authOK, sysvars=sysvars)
         else:
             return render_template("noaccess.html",authOK=authOK, sysvars=sysvars)
     else:
@@ -112,6 +112,16 @@ def upgradeStatus ():
     return json.dumps(upgraderesult)
 
 
+@deviceupgrades.route("/upgradeprofileStatus", methods=['GET','POST'])
+def upgradeprofileStatus ():
+    formresult=request.form
+    sysvars=classes.globalvars()
+    queryStr="select * from upgradeprofiles where id='{}'".format(formresult['profileid'])
+    # Obtain the relevant software update information from the database
+    profileInfo=classes.sqlQuery(queryStr,"selectone")
+    return json.dumps(profileInfo)
+
+
 @deviceupgrades.route("/switchReboot", methods=['GET','POST'])
 def switchReboot ():
     formresult=request.form
@@ -137,13 +147,41 @@ def switchReboot ():
 def deleteupgrade ():
     formresult=request.form
     sysvars=classes.globalvars()
-    print(formresult)
     queryStr="delete from softwareupdate where id='{}'".format(formresult['id'])
-    print(queryStr)
     try:
         response=classes.sqlQuery(queryStr,"selectone")
     except:
         response={"message":"Scheduled upgrade removal failed"}
     return json.dumps(response)
-    
 
+
+@deviceupgrades.route("/upgradeprofilesearchDevice", methods=['GET','POST'])
+def upgradeprofilesearchDevice ():
+    return classes.upgradeprofilesearchDevices(request.form)
+
+
+@deviceupgrades.route("/getsoftwareimageList", methods=['GET','POST'])
+def getsoftwareimageList ():
+    return classes.getsoftwareimageList(request.form.to_dict(flat=False))
+
+
+@deviceupgrades.route("/upgradeprofileInfo", methods=['GET','POST'])
+def upgradeprofileInfo ():
+    result = classes.getupgradeprofileInfo(request.form['profileid'])
+    result['schedule']=str(result['schedule'])
+    return json.dumps(result)
+
+
+@deviceupgrades.route("/upgradeprofileDevices", methods=['GET','POST'])
+def upgradeprofileDevices ():
+    return classes.getupgradeprofileDevices(request.form['profileid'])
+
+
+@deviceupgrades.route("/upgradeprofiledeviceInfo", methods=['GET','POST'])
+def upgradeprofiledeviceInfo ():
+    return json.dumps(classes.getupgradeprofiledeviceInfo(request.form['profileid']))
+
+
+@deviceupgrades.route("/viewupgradeprofileInfo", methods=['GET','POST'])
+def viewupgradeprofileInfo ():
+    return render_template("upgradeprofileinfo.html",upgradeInfo=json.dumps(classes.getupgradeprofileStatus(request.args.get('profileid'))))  

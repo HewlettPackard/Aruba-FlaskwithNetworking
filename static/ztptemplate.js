@@ -1,4 +1,4 @@
-// (C) Copyright 2020 Hewlett Packard Enterprise Development LP.
+// (C) Copyright 2021 Hewlett Packard Enterprise Development LP.
 
 
 $(document).ready(function () {
@@ -48,9 +48,7 @@ $(document).ready(function () {
                 // Obtaining the ZTP template was successful
             },
             error: function () {
-                document.getElementById("liProgress").style.display = "block";
-                document.getElementById("progresstooltip").style.display = "none";
-                progressInfo.innerHTML = "Error finding ZTP Template information";
+                showmessageBar("Error finding ZTP Template information");
             }
         });
         templateInfo = JSON.parse(templateInfo);

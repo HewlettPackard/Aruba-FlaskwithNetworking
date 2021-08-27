@@ -163,9 +163,14 @@ def getendpointInfo(deviceid,epEntryperpage,epPageoffset, searchMacaddress, sear
         # Something went wrong with the query. Obtain the information without search criteria
         url="endpoint?sort=%2Bid&offset=" + str(pageOffset) + "&limit=" + str(epEntryperpage) + "&calculate_count=true"
         endpointInfo=classes.classes.getRESTcp(deviceid,url)
-        return {'endpointInfo': endpointInfo,'deviceInfo': deviceInfo, 'epTotalentries': endpointInfo['count'], 'epEntryperpage': epEntryperpage, 'epPageoffset': epPageoffset , 'searchMacaddress': searchMacaddress, 'searchDescription': searchDescription, 'searchStatus': searchStatus }
+        return {'endpointInfo': endpointInfo,'deviceInfo': deviceInfo, 'epTotalentries': endpointInfo['count'], 'epEntryperpage': epEntryperpage, 'epPageoffset': 0 , 'searchMacaddress': searchMacaddress, 'searchDescription': searchDescription, 'searchStatus': searchStatus }
+    elif len(endpointInfo)==0:
+        # It might also be that the pageOffset is too far off finding information, if that is the case, set the pageOffset to 0 and query again
+        url="endpoint?filter=" + searchFilter + "&sort=%2Bid&offset=0&limit=" + str(epEntryperpage) + "&calculate_count=true"
+        endpointInfo=classes.classes.getRESTcp(deviceid,url)
+        return {'endpointInfo': endpointInfo,'deviceInfo': deviceInfo, 'epTotalentries': endpointInfo['count'], 'epEntryperpage': epEntryperpage, 'epPageoffset': 0 , 'searchMacaddress': searchMacaddress, 'searchDescription': searchDescription, 'searchStatus': searchStatus }
     else:
-        return {'endpointInfo': endpointInfo,'deviceInfo': deviceInfo, 'epTotalentries': endpointInfo['count'], 'epEntryperpage': epEntryperpage, 'epPageoffset': epPageoffset , 'searchMacaddress': searchMacaddress, 'searchDescription': searchDescription, 'searchStatus': searchStatus }
+        return {'endpointInfo': endpointInfo,'deviceInfo': deviceInfo, 'epTotalentries': endpointInfo['count'], 'epEntryperpage': epEntryperpage, 'epPageoffset': pageOffset , 'searchMacaddress': searchMacaddress, 'searchDescription': searchDescription, 'searchStatus': searchStatus }
 
 def gettrustInfo(deviceid,trEntryperpage,trPageoffset, searchSubject, searchValid, searchStatus):
     if not trEntryperpage:
@@ -177,7 +182,7 @@ def gettrustInfo(deviceid,trEntryperpage,trPageoffset, searchSubject, searchVali
     queryStr="select id, ipaddress, description from devices where id='{}'".format(deviceid)
     deviceInfo=classes.classes.sqlQuery(queryStr,"selectone")
     # Obtain the ClearPass trusted certificates information from ClearPass
-    url="cert-trust-list-details?filter=%7B%7D&sort=%2Bid&offset=0&limit=1000&calculate_count=true"
+    url="cert-trust-list-details?filter=%7B%7D&sort=%2Bid&offset=" + str(pageOffset) + "&limit=" + str(trEntryperpage) + "&calculate_count=true"
     trustInfo=classes.classes.getRESTcp(deviceid,url)
     trustItems=[]
     # Now that we have all the certs, check whether we need to filter based on search criteria and adapt the counts
@@ -187,7 +192,6 @@ def gettrustInfo(deviceid,trEntryperpage,trPageoffset, searchSubject, searchVali
             if searchSubject in li['subject_DN']:
                 trustItems.append(li)
             trustInfo['_embedded']['items']=trustItems
-            trustInfo['count']=len(trustItems)
         trustItems=[]
     if searchStatus:
         # We need to filter the items
@@ -195,18 +199,21 @@ def gettrustInfo(deviceid,trEntryperpage,trPageoffset, searchSubject, searchVali
             if li['enabled'] == str_to_bool(searchStatus):
                 trustItems.append(li)
             trustInfo['_embedded']['items']=trustItems
-            trustInfo['count']=len(trustItems)
         trustItems=[]
     if searchValid:
         for li in trustInfo['_embedded']['items']:
             if searchValid in li['valid']:
                 trustItems.append(li)
             trustInfo['_embedded']['items']=trustItems
-            trustInfo['count']=len(trustItems)
         trustItems=[]
     if trustInfo==401:
         trustInfo={}
-        return {'trustInfo': trustInfo,'deviceInfo': deviceInfo, 'trTotalentries': 0, 'trEntryperpage': trEntryperpage, 'trPageoffset': trPageoffset , 'searchSubject': searchSubject, 'searchValid': searchValid, 'searchStatus': searchStatus }
+        return {'trustInfo': trustInfo,'deviceInfo': deviceInfo, 'trTotalentries': 0, 'trEntryperpage': trEntryperpage, 'trPageoffset': 0 , 'searchSubject': searchSubject, 'searchValid': searchValid, 'searchStatus': searchStatus }
+    elif len(trustInfo)==0:
+        # It might also be that the pageOffset is too far off finding information, if that is the case, set the pageOffset to 0 and query again
+        url="cert-trust-list-details?filter=%7B%7D&sort=%2Bid&offset=0&limit=" + str(trEntryperpage) + "&calculate_count=true"
+        trustInfo=classes.classes.getRESTcp(deviceid,url)
+        return {'trustInfo': trustInfo,'deviceInfo': deviceInfo, 'trTotalentries': trustInfo['count'], 'trEntryperpage': trEntryperpage, 'trPageoffset': 0 , 'searchSubject': searchSubject, 'searchValid': searchValid, 'searchStatus': searchStatus }
     else:
         return {'trustInfo': trustInfo,'deviceInfo': deviceInfo, 'trTotalentries': trustInfo['count'], 'trEntryperpage': trEntryperpage, 'trPageoffset': trPageoffset , 'searchSubject': searchSubject, 'searchValid': searchValid, 'searchStatus': searchStatus }
 
@@ -220,7 +227,7 @@ def getservicesInfo(deviceid,seEntryperpage,sePageoffset, searchName, searchType
     queryStr="select id, ipaddress, description from devices where id='{}'".format(deviceid)
     deviceInfo=classes.classes.sqlQuery(queryStr,"selectone")
     # Obtain the ClearPass services information from ClearPass
-    url="config/service?filter=%7B%7D&sort=%2Bid&offset=0&limit=1000&calculate_count=true"
+    url="config/service?filter=%7B%7D&sort=%2Bid&offset=" + str(pageOffset) + "&limit=" + str(seEntryperpage) + "&calculate_count=true"
     servicesInfo=classes.classes.getRESTcp(deviceid,url)
     servicesItems=[]
     # Now that we have all the certs, check whether we need to filter based on search criteria and adapt the counts
@@ -230,33 +237,32 @@ def getservicesInfo(deviceid,seEntryperpage,sePageoffset, searchName, searchType
             if searchName in li['name']:
                 servicesItems.append(li)
             servicesInfo['_embedded']['items']=servicesItems
-            servicesInfo['count']=len(servicesItems)
         servicesItems=[]
     if searchStatus:
         # We need to filter the items
         for li in servicesInfo['_embedded']['items']: 
-            print(searchStatus)
             if li['enabled'] == str_to_bool(searchStatus):
                 servicesItems.append(li)
             servicesInfo['_embedded']['items']=servicesItems
-            servicesInfo['count']=len(servicesItems)
         servicesItems=[]
     if searchTemplate:
         for li in servicesInfo['_embedded']['items']:
             if searchTemplate in li['template']:
                 servicesItems.append(li)
             servicesInfo['_embedded']['items']=servicesItems
-            servicesInfo['count']=len(servicesItems)
         servicesItems=[]
     if searchType:
         for li in servicesInfo['_embedded']['items']:
             if searchType in li['type']:
                 servicesItems.append(li)
-            servicesInfo['_embedded']['items']=servicesItems
-            servicesInfo['count']=len(servicesItems)
         servicesItems=[]
     if servicesInfo==401:        
         servicesInfo={}
-        return {'servicesInfo': servicesInfo,'deviceInfo': deviceInfo, 'seTotalentries': 0, 'seEntryperpage': seEntryperpage, 'sePageoffset': sePageoffset, 'searchName':searchName, 'searchType': searchType,'searchTemplate': searchTemplate,'searchStatus':searchStatus }
+        return {'servicesInfo': servicesInfo,'deviceInfo': deviceInfo, 'seTotalentries': 0, 'seEntryperpage': seEntryperpage, 'sePageoffset': 0, 'searchName':searchName, 'searchType': searchType,'searchTemplate': searchTemplate,'searchStatus':searchStatus }
+    elif len(servicesInfo)==0:
+        # It might also be that the pageOffset is too far off finding information, if that is the case, set the pageOffset to 0 and query again
+        url="config/service?filter=%7B%7D&sort=%2Bid&offset=0&limit=" + str(seEntryperpage) + "&calculate_count=true"
+        servicesInfo=classes.classes.getRESTcp(deviceid,url)
+        return {'servicesInfo': servicesInfo,'deviceInfo': deviceInfo, 'seTotalentries': servicesInfo['count'], 'seEntryperpage': seEntryperpage, 'sePageoffset': 0, 'searchName':searchName, 'searchType': searchType,'searchTemplate': searchTemplate,'searchStatus':searchStatus }
     else:
-        return {'servicesInfo': servicesInfo,'deviceInfo': deviceInfo, 'seTotalentries': servicesInfo['count'], 'seEntryperpage': seEntryperpage, 'sePageoffset': sePageoffset, 'searchName':searchName, 'searchType': searchType,'searchTemplate': searchTemplate,'searchStatus':searchStatus }
+        return {'servicesInfo': servicesInfo,'deviceInfo': deviceInfo, 'seTotalentries': servicesInfo['count'], 'seEntryperpage': seEntryperpage, 'sePageoffset': pageOffset, 'searchName':searchName, 'searchType': searchType,'searchTemplate': searchTemplate,'searchStatus':searchStatus }

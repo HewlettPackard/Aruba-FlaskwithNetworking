@@ -15,9 +15,7 @@ $(".mobilityRoles").click(async function () {
         success: function () {
         },
         error: function () {
-            document.getElementById("liProgress").style.display = "block";
-            document.getElementById("progresstooltip").style.display = "none";
-            progressInfo.innerHTML = "Error finding role information";
+            showmessageBar("Error finding role information");
         }
     });
 
@@ -30,9 +28,7 @@ $(".mobilityRoles").click(async function () {
 
         },
         error: function () {
-            document.getElementById("liProgress").style.display = "block";
-            document.getElementById("progresstooltip").style.display = "none";
-            progressInfo.innerHTML = "Error finding device information";
+            showmessageBar("Error finding device information");
         }
     });
     roleInfo = JSON.parse(roleInfo);

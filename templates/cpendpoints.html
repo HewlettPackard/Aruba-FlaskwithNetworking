@@ -1,68 +1,74 @@
-<!-- (C) Copyright 2020 Hewlett Packard Enterprise Development LP. -->
+<!-- (C) Copyright 2021 Hewlett Packard Enterprise Development LP. -->
+{% block scripts %}
+<script type="text/javascript">
+var url = "static/main.js";
+$.getScript(url);
+</script>
+{% endblock %}
 {% block content %}
 
-    <div id="maincontainer">
-        <table class="tablewithborder">
-            <tr><td colspan='6' align='center'><font class="font13pxwhite">Endpoint information from {{deviceInfo['ipaddress']}} ({{deviceInfo['description']}})</font></td></tr>
-            <tr>
-                <td nowrap><font class='font12pxwhite'>ID</font></td>
-                <td nowrap><font class='font12pxwhite'>MAC address</font></td>
-                <td nowrap><font class='font12pxwhite'>Description</font></td>
-                <td nowrap><font class='font12pxwhite'>Status</font></td>
-                <td nowrap colspan="2"><font class='font12pxwhite'>Attributes</font></td>
-            </tr>
-            <form>
-                <input type="hidden" name="currentepEntryperpage" id="currentepEntryperpage" value="{{ epEntryperpage }}" />
-                <tr style="background-color: grey;" class="tableTitle">
-                    <td nowrap></td>
-                    <td nowrap><font class='font13px'><input type="text" name="searchMacaddress" id="searchMacaddress" value="{{ searchMacaddress }}" /></font></td>
-                    <td nowrap><font class='font13px'><input type="text" name="searchDescription" id="searchDescription" value="{{ searchDescription }}" /></font></td>
-                    <td nowrap>
-                        <select name="searchStatus" onchange="showEndpoints({{ deviceInfo['id'] }})" id="searchStatus">
-                            <option value="" {% if searchStatus=="" %} selected {% endif %}>Select</option>
-                            <option value="Known" {% if searchStatus=="Known" %} selected {% endif %}>Known</option>
-                            <option value="Unknown" {% if searchStatus=="Unknown" %} selected {% endif %}>Unknown</option>
-                            <option value="Disabled" {% if searchStatus=="Disabled" %} selected {% endif %}>Disabled</option>
-                        </select>
-                    </td>
-                    <td colspan="2" align="right">
-                        <font class="font12pxwhite">
-                            Show <select name="epEntryperpage" id="epEntryperpage" class="showEndpoints" onchange="showEndpoints({{ deviceInfo['id'] }})">
-                                <option value="10" {% if epEntryperpage==10 %} selected {% endif %}>10</option>
-                                <option value="25" {% if epEntryperpage==25 or epEntryperpage is not defined %} selected {% endif %}>25</option>
-                                <option value="50" {% if epEntryperpage==50 %} selected {% endif %}>50</option>
-                                <option value="100" {% if epEntryperpage==100 %} selected {% endif %}>100</option>
-                            </select> entries per page (page <select name="epPageoffset" id="epPageoffset" class="showEndpoints" onchange="showEndpoints({{ deviceInfo['id'] }})">
-                                {% if epTotalentries==0 %}
-                                <option value="1" selected>1</option>
-                                {% else %}
-                                {% for i in  range((epTotalentries/epEntryperpage)|round(0,'ceil')|int) %}
-                                <option value="{{ i }}" {% if epPageoffset==i %}selected{% endif %}>{{ i+1 }}</option>
-                                {% endfor %}
-                                {% endif %}
-                            </select> of {% if epTotalentries==0 %} 1 {% else %} {{ (epTotalentries/epEntryperpage)|round(0,'ceil')|int }} {% endif %} pages)
-                        </font><input type="button" name="searchAction" value="Search" class="button" id="searchEndpoint" onclick="showEndpoints({{ deviceInfo['id'] }})"/>
-                    </td>
-                </tr>
-            </form>
-            {% for items in endpointInfo['_embedded']['items'] %}
-
-            <tr>
-                <td class="whiteBG"><font class='font11px'>{{ items['id'] }}</font></td>
-                <td class="whiteBG"><font class='font11px'>{{ items['mac_address'] }}</font></td>
-                <td class="whiteBG"><font class='font11px'>{{ items['description'] }}</font></td>
-                <td class="whiteBG"><font class='font11px'>{{ items['status'] }}</font></td>
-                <td class="whiteBG" colspan="2">
-                    <font class='font11px'>
-                        {% for key,value in items['attributes'].items() %}
-                        {{ key }}: {{ value }}  &nbsp;&nbsp;
-                        {% endfor %}
-                    </font>
+<div id="maincontainer">
+    <table class="tablewithborder">
+        <tr><td colspan='6' align='center'><font class="font13pxwhite">Endpoint information from {{deviceInfo['ipaddress']}} ({{deviceInfo['description']}})</font></td></tr>
+        <tr>
+            <td nowrap><font class='font12pxwhite'>ID</font></td>
+            <td nowrap><font class='font12pxwhite'>MAC address</font></td>
+            <td nowrap><font class='font12pxwhite'>Description</font></td>
+            <td nowrap><font class='font12pxwhite'>Status</font></td>
+            <td nowrap colspan="2"><font class='font12pxwhite'>Attributes</font></td>
+        </tr>
+        <form>
+            <input type="hidden" name="currentepEntryperpage" id="currentepEntryperpage" value="{{ epEntryperpage }}" />
+            <tr style="background-color: grey;" class="tableTitle">
+                <td nowrap></td>
+                <td nowrap><font class='font13px'><input type="text" name="searchMacaddress" id="searchMacaddress" value="{{ searchMacaddress }}" /></font></td>
+                <td nowrap><font class='font13px'><input type="text" name="searchDescription" id="searchDescription" value="{{ searchDescription }}" /></font></td>
+                <td nowrap>
+                    <select name="searchStatus" onchange="showEndpoints({{ deviceInfo['id'] }})" id="searchStatus">
+                        <option value="" {% if searchStatus=="" %} selected {% endif %}>Select</option>
+                        <option value="Known" {% if searchStatus=="Known" %} selected {% endif %}>Known</option>
+                        <option value="Unknown" {% if searchStatus=="Unknown" %} selected {% endif %}>Unknown</option>
+                        <option value="Disabled" {% if searchStatus=="Disabled" %} selected {% endif %}>Disabled</option>
+                    </select>
+                </td>
+                <td colspan="2" align="right">
+                    <font class="font12pxwhite">
+                        Show <select name="epEntryperpage" id="epEntryperpage" class="showEndpoints" onchange="showEndpoints({{ deviceInfo['id'] }})">
+                            <option value="10" {% if epEntryperpage==10 %} selected {% endif %}>10</option>
+                            <option value="25" {% if epEntryperpage==25 or epEntryperpage is not defined %} selected {% endif %}>25</option>
+                            <option value="50" {% if epEntryperpage==50 %} selected {% endif %}>50</option>
+                            <option value="100" {% if epEntryperpage==100 %} selected {% endif %}>100</option>
+                        </select> entries per page (page <select name="epPageoffset" id="epPageoffset" class="showEndpoints" onchange="showEndpoints({{ deviceInfo['id'] }})">
+                            {% if epTotalentries==0 %}
+                            <option value="1" selected>1</option>
+                            {% else %}
+                            {% for i in  range((epTotalentries/epEntryperpage)|round(0,'ceil')|int) %}
+                            <option value="{{ i }}" {% if epPageoffset==i %}selected{% endif %}>{{ i+1 }}</option>
+                            {% endfor %}
+                            {% endif %}
+                        </select> of {% if epTotalentries==0 %} 1 {% else %} {{ (epTotalentries/epEntryperpage)|round(0,'ceil')|int }} {% endif %} pages)
+                    </font><button type="button" name="searchAction" value="Search" id="searchEndpoint" class="transparent-button" onclick="showEndpoints({{ deviceInfo['id'] }})"><img src="static/images/search.svg" width="12" height="12" class="showtitleTooltip" data-title="Search"></button>
                 </td>
             </tr>
+        </form>
+        {% for items in endpointInfo['_embedded']['items'] %}
 
-            {% endfor %}
+        <tr>
+            <td class="whiteBG"><font class='font11px'>{{ items['id'] }}</font></td>
+            <td class="whiteBG"><font class='font11px'>{{ items['mac_address'] }}</font></td>
+            <td class="whiteBG"><font class='font11px'>{{ items['description'] }}</font></td>
+            <td class="whiteBG"><font class='font11px'>{{ items['status'] }}</font></td>
+            <td class="whiteBG" colspan="2">
+                <font class='font11px'>
+                    {% for key,value in items['attributes'].items() %}
+                    {{ key }}: {{ value }}  &nbsp;&nbsp;
+                    {% endfor %}
+                </font>
+            </td>
+        </tr>
 
-        </table>
-     </div>
+        {% endfor %}
+
+    </table>
+</div>
 {% endblock %}

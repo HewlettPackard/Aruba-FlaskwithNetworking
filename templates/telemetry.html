@@ -4,6 +4,11 @@
 <link href="static/stylesheet.css" rel="stylesheet" />
 <script type="text/javascript" src="static/main.js"></script>
 <script type="text/javascript" src="static/telemetry.js"></script>
+
+<script type="text/javascript">
+    var url = "static/main.js";
+    $.getScript(url);
+</script>
 {% endblock %}
 
 {% block content %}
@@ -21,27 +26,9 @@
     <div id="wsClient" data-hostip="{% if sysvars['telemetrysource']=="" %}{{ hostip }}{% else %}{{ sysvars['telemetrysource'] }}{% endif %}"></div>
     <table class="tablenoborder">
         <form method="post">
-            <input id='orderBy' name='orderBy' type='hidden' value="{{ orderBy }}" />
-            <input id='descascDescription' name='descascDescription' type='hidden' value="{{ descascDescription }}" />
-            <input id='descascIpaddress' name='descascIpaddress' type='hidden' value="{{ descascIpaddress }}" />
-            <input id='currentpageoffset' name='currentpageoffset' type='hidden' value="{{pageoffset}}" />
-            <input id='currenttotalentries' name='currenttotalentries' type='hidden' value="{{totalentries}}" />
-            <input id="totalpages" name="totalpages" type="hidden" value="{{ totalpages }}" />
-            <input name='currententryperpage' type='hidden' value="{{ entryperpage }}" />
-            <input name="action" type="hidden" value="navigation" />
             <tr>
-                <td width="2%"><font class="font13pxgrey">Item</font></td>
-                <td width="6%" nowrap align="center"><font class="font13pxgrey">Client status</font></td>
-                <td width="9%" align="left" nowrap><font class="font13pxgrey">IP address</font></td>
-                <td width="9%"><font class="font13pxgrey">Description</font></td>
-                <td width="9%" nowrap><font class="font13pxgrey">Software version</font></td>
-                <td width="9%" nowrap><font class="font13pxgrey">Subscriber ID</font></td>
-                <td width="9%" nowrap><font class="font13pxgrey">Subscription count</font></td>
-                <td width="9%" nowrap><font class="font13pxgrey">Activated subscriptions</font></td>
-                <td width="9%" nowrap><font class="font13pxgrey">Active subscriptions</font></td>
-                <td width="9%" nowrap><font class="font13pxgrey">Received notifications</font></td>
-                <td width="21%" align="right" nowrap>
-                    <font class="font13pxgrey">
+                <td align="right" nowrap>
+                    <font class="font11pxgrey">
                         Show <select name="entryperpage" id="deviceEntryperpage" onchange="this.form.submit()">
                             <option value="5" {% if entryperpage==5 %} selected {% endif %}>5</option>
                             <option value="10" {% if entryperpage==10 %} selected {% endif %}>10</option>
@@ -56,22 +43,45 @@
                     </font>
                 </td>
             </tr>
-            <tr style="background-color: grey;" class="tableTitle">
-                <td colspan="2">&nbsp;</td>
-                <td align="left" valign="top">
-                    <input type="text" name="searchIPaddress" id="searchIPaddress" size="15" value="{{ formresult['searchIPaddress'] }}">
-                </td>
-                <td align="left" valign="top">
-                    <input type="text" name="searchDescription" id="searchDescription" size="15" value="{{ formresult['searchDescription'] }}">
-                </td>
-                <td align="left" valign="top">
-                    <input type="text" name="searchVersion" value="{{ formresult.searchVersion }}" size="15">
-                </td>
-                <td colspan="5"></td>
-                <td align="right">
-                    <input type="submit" name="searchAction" value="Search" class="button" id="searchDevice" onclick="clearRow(this);">
-                </td>
-            </tr>
+    </table>
+    <table class="tablenoborder">
+        <input id='orderBy' name='orderBy' type='hidden' value="{{ orderBy }}" />
+        <input id='descascDescription' name='descascDescription' type='hidden' value="{{ descascDescription }}" />
+        <input id='descascIpaddress' name='descascIpaddress' type='hidden' value="{{ descascIpaddress }}" />
+        <input id='currentpageoffset' name='currentpageoffset' type='hidden' value="{{pageoffset}}" />
+        <input id='currenttotalentries' name='currenttotalentries' type='hidden' value="{{totalentries}}" />
+        <input id="totalpages" name="totalpages" type="hidden" value="{{ totalpages }}" />
+        <input name='currententryperpage' type='hidden' value="{{ entryperpage }}" />
+        <input name="action" type="hidden" value="navigation" />
+        <tr>
+            <td width="2%"><font class="font13pxgrey">Item</font></td>
+            <td width="5%" nowrap><font class="font13pxgrey">Client status</font></td>
+            <td nowrap><font class="font13pxgrey">IP address</font></td>
+            <td><font class="font13pxgrey">Description</font></td>
+            <td nowrap><font class="font13pxgrey">Software version</font></td>
+            <td nowrap><font class="font13pxgrey">Subscriber ID</font></td>
+            <td nowrap><font class="font13pxgrey">Subscription count</font></td>
+            <td nowrap><font class="font13pxgrey">Activated subscriptions</font></td>
+            <td nowrap><font class="font13pxgrey">Active subscriptions</font></td>
+            <td nowrap><font class="font13pxgrey">Received notifications</font></td>
+            <td></td>
+        </tr>
+        <tr style="background-color: grey;" class="tableTitle">
+            <td colspan="2">&nbsp;</td>
+            <td align="left" valign="top">
+                <input type="text" name="searchIPaddress" id="searchIPaddress" size="15" value="{{ formresult['searchIPaddress'] }}">
+            </td>
+            <td align="left" valign="top">
+                <input type="text" name="searchDescription" id="searchDescription" size="15" value="{{ formresult['searchDescription'] }}">
+            </td>
+            <td align="left" valign="top">
+                <input type="text" name="searchVersion" value="{{ formresult.searchVersion }}" size="15">
+            </td>
+            <td colspan="5"></td>
+            <td align="right">
+                <button type="submit" name="searchAction" value="Search" class="transparent-button" id="searchDevice" onclick="clearRow(this);"><img src="static/images/search.svg" width="12" height="12" class="showtitleTooltip" data-title="Search"></button>
+            </td>
+        </tr>
         </form>
         {% for info in result %}
         <form method="post">
@@ -88,7 +98,7 @@
                 <td><font class="font12px">{{ loop.index }}</font></td>
                 <td align="center">
                     <font class="font12px">
-                        <div class="telemetryOnline" id="telemetryOnline{{info['id']}}" data-deviceid="{{info['id']}}"><img src='static/images/risk.png' height='15' width='15'></div>
+                        <div class="telemetryOnline" id="telemetryOnline{{info['id']}}" data-deviceid="{{info['id']}}"><img src="static/images/status-unknown.svg" height="12" width="12"  class="showtitleTooltip" data-title="Telemetry status unknown"></div>
                     </font>
                 </td>
                 <td><font class="font12px">{{ info['ipaddress'] }}</font></td>
@@ -107,14 +117,14 @@
                     </font>
                 </td>
                 <td align="right">
-                    <input type="button" name="monitor" value="Monitor" data-username="{{ info['ipaddress'] }}" data-deviceid="{{info['id']}}" id="monitor{{info['id']}}" class="monitorSubscription" onclick="highlightRow(this);"><input type="button" name="managesubscription" value="Manage subscriptions" data-deviceid="{{info['id']}}" class="manageSubscription" onclick="highlightRow(this);" {% if va("telemetrysubscriptionaccess","feature")==False %} style="opacity:0.2;pointer-events:none;" {% endif %}>
+                    <button type="button" name="monitor" value="Monitor" data-username="{{ info['ipaddress'] }}" data-deviceid="{{info['id']}}" id="monitor{{info['id']}}" class="transparent-button monitorSubscription" onclick="highlightRow(this);"><img src="static/images/monitor.svg" width="12" height="12" class="showtitleTooltip" data-title="Monitor telemetry"></button><button type="button" name="managesubscription" value="Manage subscriptions" data-deviceid="{{info['id']}}" class="transparent-button manageSubscription" onclick="highlightRow(this);" {% if va("telemetrysubscriptionaccess","feature")==False %} style="opacity:0.2;pointer-events:none;" {% endif %}><img src="static/images/subscriptions.svg" width="12" height="12" class="showtitleTooltip" data-title="Manage subscriptions"></button>
                 </td>
             </tr>
             <span class="startWS" id="startws{{ info['id'] }}"></span>
         </form>
         {% endfor %}
     </table>
-    
+
 
 
     <div id="monitorsubscription" style="display:none;" data-deviceid="">
@@ -128,4 +138,5 @@
 
 
 </div>
+<div id="showdaTooltip" type="display:none;"></div>
 {% endblock %}

@@ -22,18 +22,9 @@
 <div id="maincontainer">
     <table class="tablenoborder" id="roleTable">
         <form method="post" name="roleForm" id="roles">
-            <input name="action" type="hidden" value="navigation" />
-            <input name='currentpageoffset' type='hidden' value="{{pageoffset}}" />
-            <input name='currenttotalentries' type='hidden' value="{{totalentries}}" />
-            <input name='totalpages' type="hidden" value="{{ totalpages }}" />
-            <input name='currententryperpage' type='hidden' value="{{ entryperpage }}" />
             <tr>
-                <td width="2%" align="left" nowrap><font class="font13pxgrey">ID</font></td>
-                <td width="8%" align="left" nowrap><font class="font13pxgrey">Name</font></td>
-                <td width="65%" align="left" nowrap><font class="font13pxgrey">Access rights</font></td>
-                <td width="5%" align="left" nowrap><font class="font13pxgrey">Status</font></td>
-                <td width="20%" align="right">
-                    <font class="font13pxgrey">
+                <td align="right">
+                    <font class="font11pxgrey">
                         Show <select name="entryperpage" onchange="this.form.submit()">
                             <option value="5" {% if entryperpage|int==5 or entryperpage is not defined %} selected {% endif %}>5</option>
                             <option value="10" {% if entryperpage|int==10 %} selected {% endif %}>10</option>
@@ -48,13 +39,27 @@
                     </font>
                 </td>
             </tr>
+        </table>
+    <table class="tablenoborder" id="roleTable">
+            <input name="action" type="hidden" value="navigation" />
+            <input name='currentpageoffset' type='hidden' value="{{pageoffset}}" />
+            <input name='currenttotalentries' type='hidden' value="{{totalentries}}" />
+            <input name='totalpages' type="hidden" value="{{ totalpages }}" />
+            <input name='currententryperpage' type='hidden' value="{{ entryperpage }}" />
+            <tr>
+                <td width="2%" align="left" nowrap><font class="font13pxgrey">ID</font></td>
+                <td align="left"><font class="font13pxgrey">Name</font></td>
+                <td align="left" nowrap><font class="font13pxgrey">Access rights</font></td>
+                <td><font class="font13pxgrey">Status</font></td>
+                <td></td>
+            </tr>
             <tr style="background-color: grey;" class="tableTitle">
                 <td align="left" nowrap>&nbsp;</td>
                 <td align="left" valign="top"><input type="text" name="searchName" value="{{ formresult.searchName }}" size="10"></td>
                 <td></td>
                 <td></td>
                 <td align="right">
-                    <input type="button" class="button" value="Add role" id="addRole" onclick="cleardeviceRow(this);" {% if va("sysroleaccess","feature")==False %} style="opacity:0.2;pointer-events:none;" {% endif %}><input type="submit" name="searchAction" value="Search" class="button" id="searchRole" onclick="clearRow(this);">
+                    <button type="button" class="transparent-button" value="Add role" id="addRole" onclick="clearRow(this);" {% if va("sysroleaccess","feature")==False %} style="opacity:0.2;pointer-events:none;" {% endif %}><img src="static/images/add.svg" width="12" height="12" class="showtitleTooltip" data-title="Add role"></button><button type="submit" name="searchAction" value="Search" class="transparent-button" id="searchRole" onclick="clearRow(this);"><img src="static/images/search.svg" width="12" height="12" class="showtitleTooltip" data-title="Search"></button>
                 </td>
             </tr>
         </form>
@@ -72,7 +77,7 @@
                 <td nowrap><font class="font12px">{{ info['name'] }}</font></td>
                 <td><font class="font12px">{% for key, value in converttoJSON(info['accessrights']).items() %}{% if value=="on" %}{{ key }}&nbsp;{% endif %}{% endfor%}</font></td>
                 <td><font class="font12px">{% if info['status']==0 %} Not assigned {% else %} Assigned {% endif %}</font></td>
-                <td align="right"><input type="button" value="Edit" id="editRole{{ info['id'] }}" class="editRole" data-roleid="{{ info['id'] }}" {% if info['name']=="Administrator" %} disabled style="opacity:0.3;pointer-events:none;" {% endif %} {% if va("sysroleaccess","feature")==False %} style="opacity:0.2;pointer-events:none;" {% endif %} onclick="highlightRow(this);"><input type="submit" name="action" value="Delete" class="button" data-deviceid="{{info['id']}}" class="deleteRole" id="deleteRole{{ info['id'] }}" onclick="return confirm('Are you sure you want to delete {{ info['name'] }}?')" {% if info['name']=="Administrator" or info['status']==1 %} disabled style="pointer-events:none;"  {% endif %} {% if va("sysroleaccess","feature")==False %} style="opacity:0.2;pointer-events:none;" {% endif %}></td>
+                <td align="right"><button type="button" value="Edit" id="editRole{{ info['id'] }}" class="transparent-button editRole" data-roleid="{{ info['id'] }}" {% if info['name']=="Administrator" %} disabled style="opacity:0.3;" {% endif %} {% if va("sysroleaccess","feature")==False %} disabled style="opacity:0.2;" {% endif %} onclick="highlightRow(this);"><img src="static/images/edit.svg" width="12" height="12" class="showtitleTooltip" data-title="Edit role"></button><button type="submit" name="action" value="Delete" class="transparent-button" data-deviceid="{{info['id']}}" class="deleteRole" id="deleteRole{{ info['id'] }}" onclick="return confirm('Are you sure you want to delete {{ info['name'] }}?')" {% if info['name']=="Administrator" or info['status']==1 %} disabled style="opacity:0.2;"  {% endif %} {% if va("sysroleaccess","feature")==False %} disabled style="opacity:0.2;" {% endif %}><img src="static/images/trash.svg" width="12" height="12" class="showtitleTooltip" {% if info['name']=="Administrator" %} data-title="Cannot delete administrator role" {% elif info['status']==1 %} data-title="Role is assigned" {% else %} data-title="Delete role" {% endif %}></button></td>
             </tr>
         </form>
         {% endfor %}
@@ -233,33 +238,8 @@
         <p>
             <table class="tablewithborder">
                 <tr style="background-color: grey;">
-                    <td align="left" width="10%" nowrap><font class="font12pxwhite">Dynamic segmentation:</font></td>
-                    <td class="whiteBG" width="2%"><input type="checkbox" id="ubt" name="ubt" class="input"></td>
-                    <td align="right" width="10%"><font class="font12pxwhite">Profiles:</font></td>
-                    <td align="left" class="whiteBG" width="2%">
-                        <select name="ubtprofileaccess" id="ubtprofileaccess">
-                            <option value="0">No access</option>
-                            <option value="1">Read only</option>
-                            <option value="2">Read write</option>
-                        </select>
-                    </td>
-                    <td align="right" width="10%"><font class="font12pxwhite">Services:</font></td>
-                    <td align="left" class="whiteBG" width="2%">
-                        <select name="ubtserviceaccess" id="ubtserviceaccess">
-                            <option value="0">No access</option>
-                            <option value="1">Read only</option>
-                            <option value="2">Read write</option>
-                        </select>
-                    </td>
-                    <td class="whiteBG"></td>
-                </tr>
-            </table>
-        </p>
-        <p>
-            <table class="tablewithborder">
-                <tr style="background-color: grey;">
-                    <td align="left" width="10%"><font class="font12pxwhite">Trackers:</font></td>
-                    <td class="whiteBG" width="2%"><input type="checkbox" id="trackers" name="trackers" class="input"></td>
+                    <td align="left" width="10%"><font class="font12pxwhite">Tools:</font></td>
+                    <td class="whiteBG" width="2%"><input type="checkbox" id="tools" name="tools" class="input"></td>
                     <td align="right" width="10%"><font class="font12pxwhite">DHCP:</font></td>
                     <td align="left" class="whiteBG" width="2%">
                         <select name="dhcptrackeraccess" id="dhcptrackeraccess">
@@ -284,16 +264,7 @@
                             <option value="2">Read write</option>
                         </select>
                     </td>
-                    <td class="whiteBG"></td>
-                </tr>
-            </table>
-        </p>
-        <p>
-            <table class="tablewithborder">
-                <tr style="background-color: grey;">
-                    <td align="left" width="10%"><font class="font12pxwhite">Tools:</font></td>
-                    <td class="whiteBG" width="2%"><input type="checkbox" id="tools" name="tools" class="input"></td>
-                    <td align="right" width="10%"><font class="font12pxwhite">Anycli:</font></td>
+                    <td align="right" width="10%" nowrap><font class="font12pxwhite">Anycli:</font></td>
                     <td align="left" class="whiteBG" width="2%">
                         <select name="anycliaccess" id="anycliaccess">
                             <option value="0">No access</option>
@@ -368,5 +339,5 @@
     </form>
 
 </div>
-
+<div id="showdaTooltip" type="display:none;"></div>
 {% endblock %}

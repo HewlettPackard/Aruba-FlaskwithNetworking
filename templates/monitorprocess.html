@@ -1,4 +1,4 @@
-<!-- (C) Copyright 2019 Hewlett Packard Enterprise Development LP. -->
+<!-- (C) Copyright 2021 Hewlett Packard Enterprise Development LP. -->
 {% block content %}
 <form method="POST" name="{{ name }}">
     <input type="hidden" name="name" value="{{ name }}" />
@@ -8,15 +8,16 @@
             <td width="10%" align="left" nowrap><font class="font11px">{% if status==True %}Started{% else %}Stopped{% endif %}</font></td>
             <td width="10%" align="left" nowrap><font class="font11px">{{ cpu }}%</font></td>
             <td width="10%" align="left" nowrap><font class="font11px">{{ memory }}%</font></td>
-            <td width="10%" align="left" nowrap>
-                <input type="button" name="Clear log" id="clearLogclick" data-processname="{{ name|lower }}" value="Clear log" class="button clearLog" {% if va("servicesstatusaccess","feature")==False %} style="opacity:0.2;pointer-events:none;" {% endif %} />
-                <input type="button" name="Download log" value="Download log" class="button downloadLog" id="{{ name|lower}}showLog" data-processname="{{ name|lower }}">           
+            <td width="10%" align="center" nowrap>
+                <button type="button" name="Clear log" id="clearLogclick" data-processname="{{ name|lower }}" value="Clear log" class="transparent-button clearLog" {% if va("servicesstatusaccess","feature")==False %} style="opacity:0.2;pointer-events:none;" {% endif %}><img src="static/images/clear.svg" width="12" height="12" class="showtitleTooltip" data-title="Clear log"></button>
+                <button type="button" name="Download log" value="Download log" class="transparent-button downloadLog" id="{{ name|lower}}showLog" data-processname="{{ name|lower }}"><img src="static/images/download.svg" width="12" height="12" class="showtitleTooltip" data-title="Download log"></button>
                 {% if status==True %}
-                <input type="submit" name="action" value="Stop" {% if va("servicesstatusaccess","feature")==False %} style="opacity:0.2;pointer-events:none;" {% endif %}/>
+                <button type="submit" class="transparent-button" name="action" value="Stop" {% if va("servicesstatusaccess","feature")==False %} style="opacity:0.2;pointer-events:none;" {% endif %}><img src="static/images/stop.svg" width="12" height="12" class="showtitleTooltip" data-title="Stop process"></button>
                 {% else %}
-                <input type="submit" name="action" value="Start" {% if va("servicesstatusaccess","feature")==False %} style="opacity:0.2;pointer-events:none;" {% endif %}/>
+                <button type="submit" class="transparent-button" name="action" value="Start" {% if va("servicesstatusaccess","feature")==False %} style="opacity:0.2;pointer-events:none;" {% endif %}><img src="static/images/launch.svg" width="12" height="12" class="showtitleTooltip" data-title="Start process"></button>
                 {% endif %}
             </td>
+            <td></td>
         </tr>
     </table>
 </form>

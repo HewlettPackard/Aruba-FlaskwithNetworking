@@ -42,7 +42,8 @@ fi
 
 UbuntuRelease=$(lsb_release -rs)
 
-if [ "`echo "${UbuntuRelease} < 18.04" | bc`" -eq 1 ]; then
+
+if [ "`echo "${UbuntuRelease} < 18.04" | bc`" -eq 1  ]; then
 echo "System requirement is Ubuntu LTS 18.04 or higher"
 exit
 else
@@ -111,6 +112,7 @@ service tftpd-hpa restart
 (pip3 install --default-timeout=100 flask> /dev/null) & spinner $! "Installing Python3 flask library....."
 (pip3 install --default-timeout=100 flask-bootstrap > /dev/null) & spinner $! "Installing Python3 flask bootstrap library....."
 (pip3 install --default-timeout=100 flask-login > /dev/null) & spinner $! "Installing Python3 flask login library....."
+(pip3 install --default-timeout=100 pyopenssl > /dev/null) & spinner $! "Installing Python3 OpenSSL library....."
 (pip3 install --default-timeout=100 pycryptodome > /dev/null) & spinner $! "Installing Python3 pycryptodome library....."
 (pip3 install --default-timeout=100 pymysql > /dev/null) & spinner $! "Installing Python3 pymysql library....."
 (pip3 install --default-timeout=100 schedule > /dev/null) & spinner $! "Installing Python3 schedule library....."

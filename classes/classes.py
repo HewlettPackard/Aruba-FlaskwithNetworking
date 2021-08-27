@@ -2,9 +2,9 @@
 from classes.clearpass import clearpassdbAction, getRESTcp, checkcpOnline, getendpointInfo, getservicesInfo, gettrustInfo
 from classes.arubaoscx import getcxInfo, getcxREST, postcxREST, checkcxCookie
 from classes.arubaosswitch import getswitchInfo,anycli,anycliProvision,checkswitchCookie, getswitchREST, postswitchREST
-from classes.switch import checkifOnline, discoverModel, devicedbAction, interfacedbAction, showLinechart, portAccess, portAccesscx, clearClient
+from classes.switch import checkifOnline, discoverModel, devicedbAction, interfacedbAction, showLinechart, portAccess, portAccesscx, clearClient, getswitchFamily
 from classes.deviceattributes import deviceattributesdbAction, assignedAttributes, assignswitchAttribute, removeswitchAttribute, showassignedAttributes
-from classes.deviceupgrades import upgradescheduledbAction, scheduledbAction, getupgradeInfo, bootSwitch
+from classes.deviceupgrades import upgradescheduledbAction, upgradeprofiledbAction, scheduledbAction, getupgradeInfo, bootSwitch, upgradeprofilesearchDevices, getsoftwareimageList, getupgradeprofileName, getupgradeprofileInfo, getupgradeprofileDevices, getupgradeprofiledeviceInfo, getupgradeprofileStatus
 from classes.mobility import mobilitydbAction, loginmc, logoutmc, getRESTmc, mcinterfaceInfo, mcroleInfo,mcpolicyInfo, checkmcOnline
 from classes.dsprofile import dsprofiledbAction,dsprofileInfo
 from classes.trackers import dhcpdbAction, snmpdbAction, syslogdbAction

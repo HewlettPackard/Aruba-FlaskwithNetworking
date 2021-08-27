@@ -1,0 +1,41 @@
+<!-- (C) Copyright 2021 Hewlett Packard Enterprise Development LP. -->
+{% block content %}
+
+{% if upgradeInfo|string %}
+{% set upgradeInfo=converttoJSON(upgradeInfo) %}
+{% endif %}
+
+<div id="maincontainer">
+    <table class='tablenoborder'>
+        <tr>
+            <td colspan='10' align='center'><font class='font13pxgrey'>Upgrade profile information</font></td>
+        </tr>
+        <tr style='background-color:grey;'>
+            <td nowrap><font class='font12pxwhite'>IP Address</font></td>
+            <td><font class='font12pxwhite'>Description</font></td>
+            <td nowrap><font class='font12pxwhite'>OS type</font></td>
+            <td><font class='font12pxwhite'>Platform</font></td>
+            <td nowrap><font class='font12pxwhite'>Upgrade from</font></td>
+            <td nowrap><font class='font12pxwhite'>Upgrade to</font></td>
+            <td nowrap><font class='font12pxwhite'>Start time</font></td>
+            <td nowrap><font class='font12pxwhite'>End time</font></td>
+            <td><font class='font12pxwhite'>Duration</font></td>
+            <td><font class='font12pxwhite'>Status</font></td>
+        </tr>
+        {% for items in upgradeInfo %}
+        <tr>
+            <td class='whiteBG'><font class='font10px'>{{ items['ipaddress'] }}</font></td>
+            <td class='whiteBG'><font class='font10px'>{{ items['description'] }}</font></td>
+            <td class='whiteBG'><font class='font10px'>{{ items['ostype'] }}</font></td>
+            <td class='whiteBG'><font class='font10px'>{{ items['platform'] }}</font></td>
+            <td class='whiteBG'><font class='font10px'>{{ items['upgradefrom'] }}</font></td>
+            <td class='whiteBG'><font class='font10px'>{{ items['upgradeto'] }}</font></td>
+            <td class='whiteBG'><font class='font10px'>{{ items['starttime'] }}</font></td>
+            <td class='whiteBG'><font class='font10px'>{{ items['endtime'] }}</font>
+            <td class='whiteBG'><font class='font10px'>{{ items['duration'] }}</font></td>
+            <td class='whiteBG'><font class='font10px'>{{ items['status'] }}</font></td>
+        </tr>
+        {% endfor %}
+    </table>
+</div>
+{% endblock %}

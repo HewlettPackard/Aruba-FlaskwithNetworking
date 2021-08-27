@@ -1,4 +1,10 @@
-<!-- (C) Copyright 2019 Hewlett Packard Enterprise Development LP. -->
+<!-- (C) Copyright 2021 Hewlett Packard Enterprise Development LP. -->
+{% block scripts %}
+<script type="text/javascript">
+    var url = "static/main.js";
+    $.getScript(url);
+</script>
+{% endblock %}
 {% block content %}
 
 {% if configtotalentries|int % configentryperpage|int == 0 %}
@@ -6,123 +12,124 @@
 {% else %}
 {% set configtotalpages=(configtotalentries|int/configentryperpage|int)|int +1 %}
 {% endif %}
-    <div id="maincontainer">
-        <table class="tablenoborder" id="backupTable">
-            <form method="post" name="configMgr" id="configMgr">
-                <input type="hidden" name="currentconfigentryperpage" id="currentconfigentryperpage" value="{{ configentryperpage }}" />
-                <input type="hidden" name="deviceid" id="deviceid" value="{{ deviceinfo['id']}}" />
-                <tr style="background-color: grey;" class="tableTitle">
-                    <td colspan="7">
-                        <center><font class="font13pxwhite">Configuration manager for {{ deviceinfo['ipaddress'] }}  ({{ deviceinfo['description'] }})</font></center>
-                    </td>
+<div id="maincontainer">
+    <table class="tablenoborder" id="backupTable">
+        <form method="post" name="configMgr" id="configMgr">
+            <input type="hidden" name="currentconfigentryperpage" id="currentconfigentryperpage" value="{{ configentryperpage }}" />
+            <input type="hidden" name="deviceid" id="deviceid" value="{{ deviceinfo['id']}}" />
+            <tr style="background-color: grey;" class="tableTitle">
+                <td colspan="7">
+                    <center><font class="font13pxwhite">Configuration manager for {{ deviceinfo['ipaddress'] }}  ({{ deviceinfo['description'] }})</font></center>
+                </td>
 
-                </tr>
-                <tr>
-                    <td><font class="font13pxgrey">Backup ID</font></td>
-                    <td><font class="font13pxgrey">Creation date</font></td>
-                    <td><font class="font13pxgrey">Description</font></td>
-                    <td><font class="font13pxgrey">Configuration type</font></td>
-                    <td><font class="font13pxgrey">Backup type</font></td>
-                    <td><font class="font13pxgrey">Owner</font></td>
-                    <td width="30%" align="right" nowrap>
-                        {% if result %}
-                        <font class="font13pxgrey">
-                            Show <select name="configentryperpage" id="configentryperpage" onchange="configentryperPage();">
-                                <option value="5" {% if configentryperpage=="5" %} selected {% endif %}>5</option>
-                                <option value="10" {% if configentryperpage=="10" %} selected {% endif %}>10</option>
-                                <option value="25" {% if configentryperpage=="25" or configentryperpage is not defined %} selected {% endif %}>25</option>
-                                <option value="50" {% if configentryperpage=="50" %} selected {% endif %}>50</option>
-                                <option value="100" {% if configentryperpage=="100" %} selected {% endif %}>100</option>
-                            </select> entries per page (page <select name="configpageoffset" id="configpageoffset" onchange="configpageNumber();">
-                                {% for i in  range(configtotalpages) %}
-                                <option value="{{ (i)*configentryperpage|int }}" {% if (configpageoffset|int)/(configentryperpage|int)==(i) %}selected{% endif %}>{{ i+1 }}</option>
-                                {% endfor %}
-                            </select> of {{ configtotalpages }} pages)
-                        </font>
-                        {% endif %}
-                    </td>
-                </tr>
-
-                <tr>
-
-                    <td colspan="2"></td>
-                    <td align="left" valign="top">
-                        <input type="text" name="searchdescription" id="searchdescription" value="{{ searchdescription }}" size="30">
-                    </td>
-                    <td align="left" valign="top">
-                        <select name="searchbackuptype" id="searchbackuptype" onchange="changeSearch();">
-                            <option value="">Select</option>
-                            <option value="Running configuration" {% if searchbackuptype=='Running configuration' %} selected {% endif %}>Running configuration</option>
-                            <option value="Startup configuration" {% if searchbackuptype=='Startup configuration' %} selected {% endif %}>Startup configuration</option>
-                        </select>
-                    </td>
-                    <td align="left" valign="top">
-                        <select name="searchmasterbackup" id="searchmasterbackup" onchange="changeSearch();">
-                            <option value="">Select</option>
-                            <option value="Master backup" {% if searchmasterbackup=='Master backup' %} selected {% endif %}>Master backup</option>
-                            <option value="Branch backup" {% if searchmasterbackup=='Branch backup' %} selected {% endif %}>Branch backup</option>
-                        </select>
-                    </td>
-                    <td align="left" valign="top">
-                        <select name="searchowner" id="searchowner" onchange="changeSearch();">
-                            <option value="">Select</option>
-                            {% for owneritems in ownerinfo %}
-                            <option value="{{ owneritems['owner'] }}" {% if searchowner==owneritems['owner'] %} selected {% endif %}>{{ owneritems['owner'] }}</option>
+            </tr>
+            <tr>
+                <td><font class="font13pxgrey">Backup ID</font></td>
+                <td><font class="font13pxgrey">Creation date</font></td>
+                <td><font class="font13pxgrey">Description</font></td>
+                <td><font class="font13pxgrey">Configuration type</font></td>
+                <td><font class="font13pxgrey">Backup type</font></td>
+                <td><font class="font13pxgrey">Owner</font></td>
+                <td width="30%" align="right" nowrap>
+                    {% if result %}
+                    <font class="font13pxgrey">
+                        Show <select name="configentryperpage" id="configentryperpage" onchange="configentryperPage();">
+                            <option value="5" {% if configentryperpage=="5" %} selected {% endif %}>5</option>
+                            <option value="10" {% if configentryperpage=="10" %} selected {% endif %}>10</option>
+                            <option value="25" {% if configentryperpage=="25" or configentryperpage is not defined %} selected {% endif %}>25</option>
+                            <option value="50" {% if configentryperpage=="50" %} selected {% endif %}>50</option>
+                            <option value="100" {% if configentryperpage=="100" %} selected {% endif %}>100</option>
+                        </select> entries per page (page <select name="configpageoffset" id="configpageoffset" onchange="configpageNumber();">
+                            {% for i in  range(configtotalpages) %}
+                            <option value="{{ (i)*configentryperpage|int }}" {% if (configpageoffset|int) /(configentryperpage|int) ==(i) %}selected{% endif %}>{{ i+1 }}</option>
                             {% endfor %}
-                        </select>
-                    </td>
+                        </select> of {{ configtotalpages }} pages)
+                    </font>
+                    {% endif %}
+                </td>
+            </tr>
 
-                    <td align="right">
-                        
-                        <input type="submit" class="button" value="Running configuration backup" id="runningBackup" {% if va("switchaccess","feature")== False %} style="opacity:0.2;pointer-events:none;" {% endif %} /><input type="submit" class="button" value="Startup configuration backup" id="startupBackup" {% if va("switchaccess","feature")== False %} style="opacity:0.2;pointer-events:none;" {% endif %} /><input type="button" name="searchConfig" value="Search" class="button" onclick="changeSearch();">
+            <tr>
+
+                <td colspan="2"></td>
+                <td align="left" valign="top">
+                    <input type="text" name="searchdescription" id="searchdescription" value="{{ searchdescription }}" size="30">
+                </td>
+                <td align="left" valign="top">
+                    <select name="searchbackuptype" id="searchbackuptype" onchange="changeSearch();">
+                        <option value="">Select</option>
+                        <option value="Running configuration" {% if searchbackuptype=='Running configuration' %} selected {% endif %}>Running configuration</option>
+                        <option value="Startup configuration" {% if searchbackuptype=='Startup configuration' %} selected {% endif %}>Startup configuration</option>
+                    </select>
+                </td>
+                <td align="left" valign="top">
+                    <select name="searchmasterbackup" id="searchmasterbackup" onchange="changeSearch();">
+                        <option value="">Select</option>
+                        <option value="Master backup" {% if searchmasterbackup=='Master backup' %} selected {% endif %}>Master backup</option>
+                        <option value="Branch backup" {% if searchmasterbackup=='Branch backup' %} selected {% endif %}>Branch backup</option>
+                    </select>
+                </td>
+                <td align="left" valign="top">
+                    <select name="searchowner" id="searchowner" onchange="changeSearch();">
+                        <option value="">Select</option>
+                        {% for owneritems in ownerinfo %}
+                        <option value="{{ owneritems['owner'] }}" {% if searchowner==owneritems['owner'] %} selected {% endif %}>{{ owneritems['owner'] }}</option>
+                        {% endfor %}
+                    </select>
+                </td>
+
+                <td align="right">
+                    <button type="button" value="Running configuration backup" id="runningBackup" class="transparent-button" onclick="clearRow(this);" {% if va("switchaccess","feature")==False %} disabled style="opacity:0.2;pointer-events:none;" {% endif %}><img src="static/images/run.svg" width="12" height="12" class="showtitleTooltip" data-title="Create running configuration backup"></button>
+                    <button type="button" value="Startup configuration backup" id="startupBackup" class="transparent-button" onclick="clearRow(this);" {% if va("switchaccess","feature")==False %} disabled style="opacity:0.2;pointer-events:none;" {% endif %}><img src="static/images/save.svg" width="12" height="12" class="showtitleTooltip" data-title="Create startup configuration backup"></button>
+                    <button type="button" name="searchConfig" class="transparent-button" onclick="changeSearch()"><img src="static/images/search.svg" width="12" height="12" class="showtitleTooltip" data-title="Search"></button>
+                </td>
+            </tr>
+
+            {% for items in result %}
+            <tr>
+                <td><font class="font12px"> {{ items['id'] }} </font></td>
+                <td><font class="font12px"> {{ ctime(items['utctime']) }}  </font></td>
+                <td><font class="font12px"> {{items['description']}} </font></td>
+                <td><font class="font12px"> {{items['backuptype']}} </font></td>
+                <td><font class="font12px"> {% if items['masterbackup'] == 0 %}Master{% else %}Branch{% endif %}</font></td>
+                <td><font class="font12px"> {{items['owner']}} </font></td>
+                <td align="right">
+                    <button type="submit" name="action" value="Restore" id="restoreConfig" data-id="{{items['id']}}" class="transparent-button" {% if va("switchaccess","feature")==False %} disabled style="opacity:0.2;pointer-events:none;" {% endif %}><img src="static/images/copy.svg" width="12" height="12" class="showtitleTooltip" data-title="Restore configuration"></button><button type="submit" name="action" value="View" id="viewConfig" data-id="{{items['id']}}" class="transparent-button"><img src="static/images/view.svg" width="12" height="12" class="showtitleTooltip" data-title="View configuration"></button>{% if items['masterbackup'] == 0 %}<button type="submit" name="action" value="Create branch" id="createbranchBackup" data-masterbackup="{{items['id']}}" class="transparent-button" {% if va("switchaccess","feature")==False %} disabled style="opacity:0.2;pointer-events:none;" {% endif %}><img src="static/images/share-option.svg" width="12" height="12" class="showtitleTooltip" data-title="Create branch backup"></button>{% else %}<button type="button" name="action" value="Edit" class="transparent-button" id="editConfig" data-id="{{items['id']}}" data-masterbackup="{{items['masterbackup']}}" {% if va("switchaccess","feature")==False %} style="opacity:0.2;pointer-events:none;" {% endif %}><img src="static/images/edit.svg" width="12" height="12" class="showtitleTooltip" data-title="Edit backup"></button>{% endif %}<button type="submit" name="action" id="deleteConfig" data-id="{{items['id']}}" value="Delete" class="transparent-button" {% if va("switchaccess","feature")==False %} disabled style="opacity:0.2;pointer-events:none;" {% endif %}><img src="static/images/trash.svg" width="12" height="12" class="showtitleTooltip" data-title="Delete backup"></button>
+                </td>
+            </tr>
+            {% endfor %}
+            <tbody id="showbranchBackup"></tbody>
+        </form>
+
+    </table>
+    <div id="editBackup" style="display:none;">
+
+        <table class="tablenoborder">
+            <form method="post" id="editbackupContent">
+                <input type="hidden" name="branchmasterbackup" id="branchmasterbackup" value="" />
+                <input type="hidden" name="branchbackuptype" id="branchbackuptype" value="" />
+                <input type="hidden" name="branchdeviceid" id="branchdeviceid" value="" />
+                <tr style="background-color: grey;" class="tableTitle">
+                    <td colspan="2">
+                        <center><div id="backupTitle"></div></center>
                     </td>
                 </tr>
-
-                {% for items in result %}
-                    <tr>
-                        <td><font class="font12px"> {{ items['id'] }} </font></td>
-                        <td><font class="font12px"> {{ ctime(items['utctime']) }}  </font></td>
-                        <td><font class="font12px"> {{items['description']}} </font></td>
-                        <td><font class="font12px"> {{items['backuptype']}} </font></td>
-                        <td><font class="font12px"> {% if items['masterbackup'] == 0 %}Master{% else %}Branch{% endif %}</font></td>
-                        <td><font class="font12px"> {{items['owner']}} </font></td>
-                        <td align="right">
-                            <input type="submit" name="action" value="Restore" class="button" id="restoreConfig" data-id="{{items['id']}}" {% if va("switchaccess","feature")== False %} style="opacity:0.2;pointer-events:none;" {% endif %} /><input type="submit" name="action" value="View" class="button" id="viewConfig" data-id="{{items['id']}}" />{% if items['masterbackup'] == 0 %}<input type="submit" name="action" value="Create branch" class="button" id="createbranchBackup" data-masterbackup="{{items['id']}}" {% if va("switchaccess","feature")== False %} style="opacity:0.2;pointer-events:none;" {% endif %} />{% else %}<input type="submit" name="action" value="Edit" class="button" id="editConfig" data-id="{{items['id']}}" data-masterbackup="{{items['masterbackup']}}" {% if va("switchaccess","feature")== False %} style="opacity:0.2;pointer-events:none;" {% endif %} />{% endif %}<input type="submit" name="action" value="Delete" id="deleteConfig" class="button" data-id="{{items['id']}}" {% if va("switchaccess","feature")== False %} style="opacity:0.2;pointer-events:none;" {% endif %}>
-                        </td>
-                    </tr>
-                 {% endfor %}
-                <tbody id="showbranchBackup"></tbody>
+                <tr style="line-height:30px;">
+                    <td width="10%"><font class="font13pxgrey">Description</font></td>
+                    <td>
+                        <input type="text" name="backupDescription" id="backupDescription" size="150"></input>
+                    </td>
+                </tr>
+                <tr>
+                    <td colspan="2">
+                        <textarea name="backupContent" id="backupContent" rows="20" style="white-space:pre;white-space:pre-line;"></textarea>
+                    </td>
+                </tr>
+                <tr>
+                    <td colspan="2" align="center"><span id="backupAction"></span></td>
+                </tr>
             </form>
-
         </table>
-        <div id="editBackup" style="display:none;">
-
-            <table class="tablenoborder">
-                <form method="post" id="editbackupContent">
-                    <input type="hidden" name="branchmasterbackup" id="branchmasterbackup" value="" />
-                    <input type="hidden" name="branchbackuptype" id="branchbackuptype" value="" />
-                    <input type="hidden" name="branchdeviceid" id="branchdeviceid" value="" />
-                    <tr style="background-color: grey;" class="tableTitle">
-                        <td colspan="2">
-                            <center><div id="backupTitle"></div></center>
-                        </td>
-                    </tr>
-                    <tr style="line-height:30px;">
-                        <td width="10%"><font class="font13pxgrey">Description</font></td>
-                        <td>
-                            <input type="text" name="backupDescription" id="backupDescription" size="150"></input>
-                        </td>
-                    </tr>
-                    <tr>
-                        <td colspan="2">
-                            <textarea name="backupContent" id="backupContent" rows="20" style="white-space:pre;white-space:pre-line;"></textarea>
-                        </td>
-                    </tr>
-                    <tr>
-                        <td colspan="2" align="center"><span id="backupAction"></span></td>
-                    </tr>
-                </form>
-            </table>
-        </div>
     </div>
+</div>
         {% endblock %}

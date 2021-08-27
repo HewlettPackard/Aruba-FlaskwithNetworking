@@ -18,20 +18,11 @@
 
 <div id="maincontainer">
     {% if formresult['selectauthsource']=="ldap" %}
-    <table class="tablenoborder" id="localldapuserTable">
+    <table class="tablenoborder">
         <form method="post" name="localldapusertemplate" id="localldapusertemplate">
-            <input name="action" type="hidden" value="navigation" />
-            <input name='currentpageoffset' type='hidden' value="{{pageoffset}}" />
-            <input name='currenttotalentries' type='hidden' value="{{totalentries}}" />
-            <input name='totalpages' type="hidden" value="{{ totalpages }}" />
-            <input name='currententryperpage' id="currententryperpage" type='hidden' value="{{ entryperpage }}" />
             <tr>
-                <td width="2%" align="left" nowrap><font class="font13pxgrey">ID</font></td>
-                <td width="25%" align="left" nowrap><font class="font13pxgrey">Common name</font></td>
-                <td width="25%" align="left" nowrap><font class="font13pxgrey">Distinguished name</font></td>
-                <td width="25%" align="left" nowrap><font class="font13pxgrey">Principal name</font></td>
-                <td width="20%" align="right">
-                    <font class="font13pxgrey">
+                <td align="right">
+                    <font class="font11pxgrey">
                         Show <select name="entryperpage" id="entryperpage" onchange="this.form.submit()">
                             <option value="5" {% if entryperpage|int==5 or entryperpage is not defined %} selected {% endif %}>5</option>
                             <option value="10" {% if entryperpage|int==10 %} selected {% endif %}>10</option>
@@ -46,6 +37,20 @@
                     </font>
                 </td>
             </tr>
+            </table>
+    <table class="tablenoborder">
+            <input name="action" type="hidden" value="navigation" />
+            <input name='currentpageoffset' type='hidden' value="{{pageoffset}}" />
+            <input name='currenttotalentries' type='hidden' value="{{totalentries}}" />
+            <input name='totalpages' type="hidden" value="{{ totalpages }}" />
+            <input name='currententryperpage' id="currententryperpage" type='hidden' value="{{ entryperpage }}" />
+            <tr>
+                <td width="5%" align="left"><font class="font13pxgrey">ID</font></td>
+                <td nowrap><font class="font13pxgrey">Common name</font></td>
+                <td nowrap><font class="font13pxgrey">Distinguished name</font></td>
+                <td nowrap><font class="font13pxgrey">Principal name</font></td>
+                <td></td>
+            </tr>
             <tr style="background-color: grey;" class="tableTitle">
                 <td align="left" nowrap>&nbsp;</td>
                 <td align="left" valign="top"><input type="text" id="searchName" name="searchName" value="{{ formresult.searchName }}" size="15"></td>
@@ -58,7 +63,7 @@
                             <option value="ldap" {% if formresult['selectauthsource']=="ldap" %} selected {% endif %}>LDAP</option>
                         </select>
                     </font>{% endif %}
-                    <input type="submit" name="searchAction" value="Search" class="button" id="searchTemplate" onclick="cleartemplateRow(this);">
+                    <button type="submit" name="searchAction" value="Search" class="transparent-button" id="searchTemplate" onclick="cleartemplateRow(this);"><img src="static/images/search.svg" width="12" height="12" class="showtitleTooltip" data-title="Search"></button>
                 </td>
             </tr>
 
@@ -74,20 +79,11 @@
             {% endfor %}
     </table>  
     {% else %}
-    <table class="tablenoborder" id="localsysuserTable">
+    <table class="tablenoborder">
         <form method="post" name="localsysusertemplate" id="localsysusertemplate">
-            <input name="action" type="hidden" value="navigation" />
-            <input name='currentpageoffset' type='hidden' value="{{pageoffset}}" />
-            <input name='currenttotalentries' type='hidden' value="{{totalentries}}" />
-            <input name='totalpages' type="hidden" value="{{ totalpages }}" />
-            <input name='currententryperpage' id="currententryperpage" type='hidden' value="{{ entryperpage }}" />
             <tr>
-                <td width="5%" align="left" nowrap><font class="font13pxgrey">ID</font></td>
-                <td width="25%" align="left"><font class="font13pxgrey">User name</font></td>
-                <td width="25%" align="left" nowrap><font class="font13pxgrey">e-Mail address</font></td>
-                <td width="25%" align="left" nowrap><font class="font13pxgrey">Role</font></td>
                 <td width="20%" align="right">
-                    <font class="font13pxgrey">
+                    <font class="font11pxgrey">
                         Show <select name="entryperpage" id="entryperpage" onchange="this.form.submit()">
                             <option value="5" {% if entryperpage|int==5 or entryperpage is not defined %} selected {% endif %}>5</option>
                             <option value="10" {% if entryperpage|int==10 %} selected {% endif %}>10</option>
@@ -102,6 +98,20 @@
                     </font>
                 </td>
             </tr>
+        </table>
+    <table class="tablenoborder">
+            <input name="action" type="hidden" value="navigation" />
+            <input name='currentpageoffset' type='hidden' value="{{pageoffset}}" />
+            <input name='currenttotalentries' type='hidden' value="{{totalentries}}" />
+            <input name='totalpages' type="hidden" value="{{ totalpages }}" />
+            <input name='currententryperpage' id="currententryperpage" type='hidden' value="{{ entryperpage }}" />
+            <tr>
+                <td width="5%"><font class="font13pxgrey">ID</font></td>
+                <td nowrap><font class="font13pxgrey">User name</font></td>
+                <td nowrap><font class="font13pxgrey">e-Mail address</font></td>
+                <td nowrap><font class="font13pxgrey">Role</font></td>
+                <td></td>
+            </tr>
             <tr style="background-color: grey;" class="tableTitle">
                 <td align="left" nowrap>&nbsp;</td>
                 <td align="left" valign="top"><input type="text" id="searchName" name="searchName" value="{{ formresult.searchName }}" size="15"></td>
@@ -114,7 +124,7 @@
                             <option value="ldap" {% if formresult['selectauthsource']=="ldap" %} selected {% endif %}>LDAP</option>
                         </select>
                     </font>{% endif %}
-                    <input type="button" class="button" value="Add user" id="addUser" onclick="clearuserRow(this);" {% if va("sysuseraccess","feature")==False %} style="opacity:0.2;pointer-events:none;" {% endif %}><input type="submit" name="searchAction" value="Search" class="button" id="searchTemplate" onclick="cleartemplateRow(this);">
+                    <button type="button" class="transparent-button" value="Add user" id="addUser" onclick="clearuserRow(this);" {% if va("sysuseraccess","feature")==False %} style="opacity:0.2;pointer-events:none;" {% endif %}><img src="static/images/add.svg" width="12" height="12" class="showtitleTooltip" data-title="Add user"></button><button type="submit" name="searchAction" value="Search" class="transparent-button" id="searchTemplate" onclick="cleartemplateRow(this);"><img src="static/images/search.svg" width="12" height="12" class="showtitleTooltip" data-title="Search"></button>
                 </td>
             </tr>
         </form>
@@ -141,7 +151,7 @@
                     </font>
                 </td>
                 <td align="right">
-                    <input type="button" name="editUser" value="Edit" data-userid="{{info['id']}}" class="editUser" onclick="highlightuserRow(this);" {% if va("sysuseraccess","feature")==False %} style="opacity:0.2;pointer-events:none;" {% endif %}><input type="submit" name="action" value="Delete" class="button" onclick="return confirm('Are you sure you want to delete {{ info['name'] }}?')" {% if va("sysuseraccess","feature")==False %} style="opacity:0.2;pointer-events:none;" {% endif %} {% if info['username']=="admin" %} disabled {% endif%}>
+                    <button type="button" name="editUser" value="Edit" data-userid="{{info['id']}}" class="transparent-button editUser" onclick="highlightuserRow(this);" {% if va("sysuseraccess","feature")==False %} style="opacity:0.2;pointer-events:none;" {% endif %}><img src="static/images/edit.svg" width="12" height="12" class="showtitleTooltip" data-title="Edit user {{ info['name'] }}"></button><button type="submit" name="action" value="Delete" class="transparent-button" onclick="return confirm('Are you sure you want to delete {{ info['name'] }}?')" {% if va("sysuseraccess","feature")==False %} style="opacity:0.2;pointer-events:none;" {% endif %} {% if info['username']=="admin" %} disabled {% endif%}><img src="static/images/trash.svg" width="12" height="12" class="showtitleTooltip" data-title="Delete user {{ info['name'] }}"></button>
                 </td>
             </tr>
         </form>
@@ -255,5 +265,5 @@
     </div>
 </div>
 
-
+<div id="showdaTooltip" type="display:none;"></div>
 {% endblock %}

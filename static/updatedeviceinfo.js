@@ -1,4 +1,4 @@
-// (C) Copyright 2019 Hewlett Packard Enterprise Development LP.
+// (C) Copyright 2021 Hewlett Packard Enterprise Development LP.
 
 $('.updatedeviceinfo').ready(function () {
     var refresh = function () {

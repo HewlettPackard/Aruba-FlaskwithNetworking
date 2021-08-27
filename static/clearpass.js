@@ -50,9 +50,7 @@ $(document).ready(function () {
                 // Obtaining ClearPass information was successful
             },
             error: function () {
-                document.getElementById("liProgress").style.display = "block";
-                document.getElementById("progresstooltip").style.display = "none";
-                progressInfo.innerHTML = "Error finding device information";
+                showmessageBar("Error finding device information");
             }
         });
         deviceInfo = JSON.parse(deviceInfo);
@@ -161,8 +159,6 @@ function showServices(deviceid) {
     var epp_select = document.getElementById('seEntryperpage');
     var seEntryperpage = epp_select.options[epp_select.selectedIndex].value;
     var currentseEntryperpage = document.getElementById('currentseEntryperpage').value;
-    var sestatus_select = document.getElementById('searchStatus');
-    var searchStatus = sestatus_select.options[sestatus_select.selectedIndex].value;
     var searchName = document.getElementById('searchName').value;
     var searchType = document.getElementById('searchType').value;
     var searchTemplate = document.getElementById('searchTemplate').value;
@@ -178,7 +174,7 @@ function showServices(deviceid) {
     document.getElementById("showServices").style.display = "block";
     document.getElementById("adddeviceForm").style.display = "none";
     document.getElementById("editdeviceForm").style.display = "none";
-    $('#showServices').load('cpServices?deviceid=' + deviceid + "&seEntryperpage=" + seEntryperpage + "&sePageoffset=" + sePageoffset + "&searchName=" + searchName + "&searchType=" + searchType + "&searchTemplate=" + searchTemplate + "&searchStatus=" + searchStatus);
+    $('#showServices').load('cpServices?deviceid=' + deviceid + "&seEntryperpage=" + seEntryperpage + "&sePageoffset=" + sePageoffset + "&searchName=" + searchName + "&searchType=" + searchType + "&searchTemplate=" + searchTemplate + "&searchStatus=" + $('#searchStatus').val());
 }
 
 
@@ -213,10 +209,10 @@ $('.cpStatus').ready(function () {
                 success: function (response) {
                     response = JSON.parse(response);
                     if (response['status'] == "Online") {
-                        document.getElementById('cpStatus' + deviceid).innerHTML = "<img src='static/images/ok.png' height='15' width='15'>";
+                        document.getElementById('cpStatus' + deviceid).innerHTML = "<img src='static/images/status-good.svg' height='12' width='12'  class='showtitleTooltip' data-title='Device is online'>";
                     }
                     else {
-                        document.getElementById('cpStatus' + deviceid).innerHTML = "<img src='static/images/notok.png' height='15' width='15'>";
+                        document.getElementById('cpStatus' + deviceid).innerHTML = "<img src='static/images/status-critical.png' height='12' width='12'  class='showtitleTooltip' data-title='Device is not reachable'>";
                     }
                 }
 

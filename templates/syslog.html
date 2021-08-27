@@ -27,53 +27,62 @@
             <input id='currentpageoffset' name='currentpageoffset' type='hidden' value="{{pageoffset}}" />
             <input id="totalpages" name="totalpages" type="hidden" value="{{ totalpages }}" />
             <tr>
-                <td width="10%" align="left" nowrap><font class="font13pxgrey">Timestamp</font></td>
-                <td width="5%" align="left"><font class="font13pxgrey">Source</font></td>
-                <td width="5%" align="left" nowrap><font class="font13pxgrey">Facility</font></td>
-                <td width="5%" align="left"><font class="font13pxgrey">Severity</font></td>
-                <td width="45%"><font class="font13pxgrey">Information</font></td>
-                <td width="30%" align="right" colspan="2">
+                <td align="right">
                     <div id="navPage">
-                    <font class="font13pxgrey">
-                        Show <select name="entryperpage" onchange="navigation()" id="entryperpage">
-                            <option value="10" {% if formresult.entryperpage=="10" %} selected {% endif %}>10</option>
-                            <option value="25" {% if formresult.entryperpage=="25" or formresult.entryperpage is not defined %} selected {% endif %}>25</option>
-                            <option value="50" {% if formresult.entryperpage=="50" %} selected {% endif %}>50</option>
-                            <option value="100" {% if formresult.entryperpage=="100" %} selected {% endif %}>100</option>
-                        </select> entries per page (page <select name="pageoffset" id="pageoffset">
-                            {% for i in  range(totalpages) %}
-                            <option value="{{ i+1 }}" {% if (pageoffset|int)/(entryperpage|int)==(i) %}selected{% endif %}>{{ i+1 }}</option>
-                            {% endfor %}
-                        </select> of <span id="totalpagesph">{{ totalpages }}</span> pages)
-                    </font>
+                        <font class="font11pxgrey">
+                            Show <select name="entryperpage" onchange="navigation()" id="entryperpage">
+                                <option value="10" {% if formresult.entryperpage=="10" %} selected {% endif %}>10</option>
+                                <option value="25" {% if formresult.entryperpage=="25" or formresult.entryperpage is not defined %} selected {% endif %}>25</option>
+                                <option value="50" {% if formresult.entryperpage=="50" %} selected {% endif %}>50</option>
+                                <option value="100" {% if formresult.entryperpage=="100" %} selected {% endif %}>100</option>
+                            </select> entries per page (page <select name="pageoffset" id="pageoffset">
+                                {% for i in  range(totalpages) %}
+                                <option value="{{ i+1 }}" {% if (pageoffset|int) /(entryperpage|int) ==(i) %}selected{% endif %}>{{ i+1 }}</option>
+                                {% endfor %}
+                            </select> of <span id="totalpagesph">{{ totalpages }}</span> pages)
+                        </font>
                     </div>
                 </td>
             </tr>
-            <tr style="background-color: grey;">
-                <td align="left" nowrap>&nbsp;</td>
-                <td align="left" valign="top"><input type="text" name="searchSource" id="searchSource"value="{{ formresult.searchSource }}" size="12"></td>
-                <td align="left" valign="top">
-                    <select name="searchFacility" id="searchFacility" onchange="this.form.submit()">
-                        <option value="">Select</option>
-                        {% for facilities in facilityInfo %}
-                        <option value="{{ facilities['facility'] }}" {% if formresult.searchFacility==facilities['facility'] %} selected {% endif %}>{{ facilities['facility'] }}</option>
-                        {% endfor %}
-                    </select>
-                </td>
-                <td align="left" valign="top">
-                    <select name="searchSeverity" id="searchSeverity" onchange="this.form.submit()">
-                        <option value="">Select</option>
-                        {% for severities in severityInfo %}
-                        <option value="{{ severities['severity'] }}" {% if formresult.searchSeverity==severities['severity'] %} selected {% endif %}>{{ severities['severity'] }}</option>
-                        {% endfor %}
-                    </select>
-                </td>
-                <td align="left" valign="top" colspan="2"><input type="text" name="searchInfo" id="searchInfo" value="{{ formresult.searchInfo }}" size="30"></td>
-                <td width="5%" align="right">&nbsp;</td>
-            </tr>
-        </form>
-        <tbody id="logList"></tbody>
-    </table>
-    </div>
+            </table>
+            <table class="tablenoborder" id="logTable">
+                    <input id='action' name='action' type='hidden' />
+                    <input id='currentpageoffset' name='currentpageoffset' type='hidden' value="{{pageoffset}}" />
+                    <input id="totalpages" name="totalpages" type="hidden" value="{{ totalpages }}" />
+                    <tr>
+                        <td><font class="font13pxgrey">Timestamp</font></td>
+                        <td><font class="font13pxgrey">Source</font></td>
+                        <td><font class="font13pxgrey">Facility</font></td>
+                        <td><font class="font13pxgrey">Severity</font></td>
+                        <td><font class="font13pxgrey">Information</font></td>
+                        <td></td>
+                    </tr>
+                    <tr style="background-color: grey;">
+                        <td align="left" nowrap>&nbsp;</td>
+                        <td align="left" valign="top"><input type="text" name="searchSource" id="searchSource" value="{{ formresult.searchSource }}" size="12"></td>
+                        <td align="left" valign="top">
+                            <select name="searchFacility" id="searchFacility" onchange="this.form.submit()">
+                                <option value="">Select</option>
+                                {% for facilities in facilityInfo %}
+                                <option value="{{ facilities['facility'] }}" {% if formresult.searchFacility==facilities['facility'] %} selected {% endif %}>{{ facilities['facility'] }}</option>
+                                {% endfor %}
+                            </select>
+                        </td>
+                        <td align="left" valign="top">
+                            <select name="searchSeverity" id="searchSeverity" onchange="this.form.submit()">
+                                <option value="">Select</option>
+                                {% for severities in severityInfo %}
+                                <option value="{{ severities['severity'] }}" {% if formresult.searchSeverity==severities['severity'] %} selected {% endif %}>{{ severities['severity'] }}</option>
+                                {% endfor %}
+                            </select>
+                        </td>
+                        <td align="left" valign="top"><input type="text" name="searchInfo" id="searchInfo" value="{{ formresult.searchInfo }}" size="30"></td>
+                        <td></td>
+                    </tr>
+                </form>
+                <tbody id="logList"></tbody>
+            </table>
+</div>
+<div id="showdaTooltip" type="display:none;"></div>
 
     {% endblock %}

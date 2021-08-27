@@ -57,8 +57,7 @@ $(document).ready(function () {
                 // Obtaining the device image information was successful
             },
             error: function () {
-                document.getElementById("liProgress").style.display = "block";
-                progressInfo.innerHTML = "Error finding scheduler information";
+                showmessageBar("Error finding scheduler information");
             }
         });
         scheduleInfo = JSON.parse(scheduleInfo);
@@ -87,8 +86,7 @@ $(document).on("click", "#submitUpgrade", async function () {
     });
     scheduleInfo = JSON.parse(scheduleInfo);
     if (scheduleInfo['message'] != "") {
-        document.getElementById("liProgress").style.display = "block";
-        progressInfo.innerHTML = scheduleInfo['message'];
+        showmessageBar(scheduleInfo['message']);
     }
     $('#upgradeExists').data('id', scheduleInfo['activeUpdate']['id']);
     monitorUpgrade(scheduleInfo);
@@ -128,8 +126,7 @@ $(document).on("click", ".editdeviceupgrade", async function () {
             document.getElementById("liProgress").style.display = "none";
         },
         error: function () {
-            document.getElementById("liProgress").style.display = "block";
-            progressInfo.innerHTML = "Error finding scheduler information";
+            showmessageBar("Error finding scheduler information");
         }
     });
     if (scheduleInfo != "") {
@@ -163,16 +160,14 @@ $(document).on("click", ".removedeviceUpgrade", async function () {
         success: function () {
             //Clear the data value of the upgrade status because I don't want the app to check the scheduled upgrade anymore. It has been deleted.
             $('#upgradeExists').data('id', '');
-            document.getElementById("liProgress").style.display = "block";
-            progressInfo.innerHTML = "Scheduled upgrade has been removed";
+            showmessageBar("Scheduled upgrade has been removed");
             if ($('#initmonitorUpgrade').length) {
                 document.getElementById("initmonitorUpgrade").style.display = "none";
             }
             document.getElementById("monitorUpgrade").style.display = "none";
         },
         error: function () {
-            document.getElementById("liProgress").style.display = "block";
-            progressInfo.innerHTML = "Error removing schedule upgrade";
+            showmessageBar("Error removing schedule upgrade");
         }
     });
 }); 
@@ -199,8 +194,7 @@ $(document).on("click", "#submitupgradeChanges", async function () {
     });
     scheduleInfo = JSON.parse(scheduleInfo);
     if (scheduleInfo['message'] != "") {
-        document.getElementById("liProgress").style.display = "block";
-        progressInfo.innerHTML = scheduleInfo['message'];
+        showmessageBar(scheduleInfo['message']);
     }
     // Update the fields in the form. If the initmonitorupgrade div exists, we need to update the initmonitorupgrade entries
     $('#monitorupgradepartition').empty().append("<font class='font11px'>" + scheduleInfo['activeUpdate']['imagepartition'].charAt(0).toUpperCase() + scheduleInfo['activeUpdate']['imagepartition'].slice(1) + "</font>");
@@ -214,6 +208,7 @@ $(document).on("click", "#submitupgradeChanges", async function () {
 
 
 async function switchReboot(deviceid, id) {
+    $('#showdaTooltip').hide();
     rebootInfo = await $.ajax({
         url: "/switchReboot",
         type: "POST",
@@ -230,14 +225,14 @@ async function switchReboot(deviceid, id) {
             }
         },
         error: function () {
-            //document.getElementById("liProgress").style.display = "block";
-            //progressInfo.innerHTML = "Error rebooting switch";
+            showmessageBar("Error rebooting switch");
         }
     });
 }
 
 
 async function removescheduleUpgrade(id) {
+    $('#showdaTooltip').hide();
     scheduleInfo = await $.ajax({
         url: "/deleteUpgrade",
         type: "POST",
@@ -247,13 +242,10 @@ async function removescheduleUpgrade(id) {
             $('#scheduletableRow'+ id).remove();
         },
         error: function () {
-            document.getElementById("liProgress").style.display = "block";
-            progressInfo.innerHTML = "Error removing schedule upgrade";
+            showmessageBar("Error removing schedule upgrade");
         }
     });
 } 
-
-
 
 
 function entryperPage() {
@@ -270,6 +262,7 @@ function entryperPage() {
     var pageoffset = 0;
     $("div[data-imagemgr='imagemgr']").load('upgradescheduler?entryperpage=' + entryperpage + '&pageoffset=' + pageoffset + '&action=searchImage');
 }
+
 
 function pageNumber() {
     document.getElementById("editSchedule").style.display = "none";
@@ -313,6 +306,7 @@ function checkupgradeForm(elementinfo) {
     }
 };
 
+
 function monitorUpgrade(scheduleInfo) {
     document.getElementById("monitorUpgrade").style.display = "block";
     document.getElementById("editupgradeEnable").style.display = "none";
@@ -338,11 +332,7 @@ function monitorUpgrade(scheduleInfo) {
 async function showupgradeDetails(id) {
     $('#showSchedule').data('id', id);
     var refresh = async function () {
-
         if ($('#showSchedule').data('id') == id) {
-
-
-
             var upgradestatus = { '0': 'Not started', '1': 'Upgrade initiated', '5': 'Copy software onto the switch', '10': 'Software copied successfully', '20': 'Software copied successfully: switch is rebooted', '50': 'There is another software upgrade in progress', '100': 'Software upgrade completed successfully', '110': 'Software upgrade completed successfully: reboot is required' };
             scheduleInfo = await $.ajax({
                 url: "/upgradeStatus",
@@ -352,8 +342,7 @@ async function showupgradeDetails(id) {
                     // Obtaining the software update information was successful
                 },
                 error: function () {
-                    document.getElementById("liProgress").style.display = "block";
-                    progressInfo.innerHTML = "Error finding software upgrade information";
+                    showmessageBar("Error finding software upgrade information");
                 }
             });
             scheduleInfo = JSON.parse(scheduleInfo);
@@ -414,14 +403,11 @@ async function showupgradeDetails(id) {
             };
             if (scheduleInfo['status'] == 110) {
                 // This was an upgrade without reboot. Need to add a button that allows manual reboot
-                $('.showschedulerebootSwitch').empty().append("<input type='button' name='rebootSwitch' class='button' class='switchReboot' onClick='switchReboot(" + scheduleInfo['switchid'] + "," + scheduleInfo['id'] + ");' value='Reboot'>");
+                pHTML = "<button type='button' class='switchReboot transparent-button' value='Reboot' onClick='switchReboot(" + scheduleInfo['switchid'] + "," + scheduleInfo['id'] + ");'><img src='static/images/power-reset.svg' width='12' height='12' class='showtitleTooltip' data-title='Reboot switch' title='Reboot switch'></button>";
+                $('.showschedulerebootSwitch').empty().append(pHTML);
             }
             $('.upgradeStatus').empty().append("<font class='font10px'>" + upgradestatus[scheduleInfo['status']] + "</font>");
-
-
         }
-
-
     }
     setInterval(refresh, 5000);
     refresh();
@@ -516,8 +502,7 @@ $('.upgradeStatus').ready(function () {
                     document.getElementById("liProgress").style.display = "none";
                 },
                 error: function () {
-                    document.getElementById("liProgress").style.display = "block";
-                    progressInfo.innerHTML = "Error finding scheduler information";
+                    showmessageBar("Error finding scheduler information");
                 }
             });
             if (scheduleInfo != "null") {
@@ -544,11 +529,11 @@ $('.upgradeStatus').ready(function () {
                         $('.monitordatetime').empty().append("<font class='font11px'>Completed</font>");
                         if (scheduleInfo['status'] == 110) {
                             // This was an upgrade without reboot. Need to add a button that allows manual reboot
-                            $('.upgradeStatus').html("<font class='font11px'>" + upgradestatus[scheduleInfo['status']] + "</font><input type='button' name='rebootSwitch' class='button' class='switchReboot' onClick='switchReboot(" + scheduleInfo['switchid'] + "," + scheduleInfo['id'] + ");' value='Reboot'>");
+                            $('.upgradeStatus').html("<font class='font11px'>" + upgradestatus[scheduleInfo['status']] + "</font><button type='button' name='rebootSwitch' class='transparent-button switchReboot' onClick='switchReboot(" + scheduleInfo['switchid'] + "," + scheduleInfo['id'] + ");' value='Reboot'><img src='static/images/power-reset.svg' width='12' height='12' class='showtitleTooltip' data-title='Reboot switch'></button>");
                         }
                         if (scheduleInfo['status'] > 0) {
-                            if ($('#removescheduleSpan' + id)) {
-                                $('#removescheduleSpan' + id).empty();
+                            if ($('#removescheduleSpan' + $('#upgradeExists').data('id'))) {
+                                $('#removescheduleSpan' + $('#upgradeExists').data('id')).empty();
                             }
                         }
 
@@ -556,6 +541,7 @@ $('.upgradeStatus').ready(function () {
                 }
                 else {
                     //We should not show the edit button immediately because it could be that the scheduler has not set the status to >0 yet.
+                    $('.upgradeStatus').empty();
                     if (scheduleInfo['schedule'] !== "" || scheduleInfo['schedule'] !== None) {
                         $("#submitupgradeChanges").prop('disabled', false);
                         if ($('#initmonitorUpgrade').length) {

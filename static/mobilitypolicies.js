@@ -1,4 +1,4 @@
-// (C) Copyright 2019 Hewlett Packard Enterprise Development LP.
+// (C) Copyright 2021 Hewlett Packard Enterprise Development LP.
 
 $(".mobilityPolicies").on('click', async function () {
     deviceid = $(this).attr('data-deviceid');
@@ -15,9 +15,7 @@ $(".mobilityPolicies").on('click', async function () {
         success: function () {
         },
         error: function () {
-            document.getElementById("liProgress").style.display = "block";
-            document.getElementById("progresstooltip").style.display = "none";
-            progressInfo.innerHTML = "Error finding policy information";
+            showmessageBar("Error finding policy information");
         }
     });
 
@@ -30,9 +28,7 @@ $(".mobilityPolicies").on('click', async function () {
 
         },
         error: function () {
-            document.getElementById("liProgress").style.display = "block";
-            document.getElementById("progresstooltip").style.display = "none";
-            progressInfo.innerHTML = "Error finding device information";
+            showmessageBar("Error finding policy information");
         }
     });
     policyInfo = JSON.parse(policyInfo);
@@ -51,9 +47,7 @@ $(document).on("change", "#filterPolicy", async function () {
         success: function () {
         },
         error: function () {
-            document.getElementById("liProgress").style.display = "block";
-            document.getElementById("progresstooltip").style.display = "none";
-            progressInfo.innerHTML = "Error finding policy information";
+            showmessageBar("Error finding policy information");
         }
     });
     deviceInfo = await $.ajax({
@@ -65,9 +59,7 @@ $(document).on("change", "#filterPolicy", async function () {
 
         },
         error: function () {
-            document.getElementById("liProgress").style.display = "block";
-            document.getElementById("progresstooltip").style.display = "none";
-            progressInfo.innerHTML = "Error finding device information";
+            showmessageBar("Error finding device information");
         }
     });
     policyInfo = JSON.parse(policyInfo);

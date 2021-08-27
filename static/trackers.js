@@ -1,4 +1,4 @@
-// (C) Copyright 2020 Hewlett Packard Enterprise Development LP.
+// (C) Copyright 2021 Hewlett Packard Enterprise Development LP.
 
 
 $('#updateTracker').ready(function () {
@@ -31,15 +31,15 @@ $('#updateTracker').ready(function () {
                     for (var i = 0; i < response.length; i++) {
                         listHTML += "<form method='post'><input type='hidden' name='id' value='" + response[i]['id'] + "' /><tr>";
                         var ts = new Date(response[i]['utctime']*1000);
-                        listHTML += "<td><font class='font12px'>" + ts.toLocaleDateString() + " " + ts.toLocaleTimeString()  + "</font></td>";
-                        listHTML += "<td><font class='font12px'>" + response[i]['dhcptype'] + "</font></td>";
-                        listHTML += "<td colspan='2' nowrap><font class='font12px'>" + response[i]['information'] + "</font></td>";
+                        listHTML += "<td><font class='font10px'>" + ts.toLocaleDateString() + " " + ts.toLocaleTimeString()  + "</font></td>";
+                        listHTML += "<td><font class='font10px'>" + response[i]['dhcptype'] + "</font></td>";
+                        listHTML += "<td width='60%' nowrap><font class='font10px'>" + response[i]['information'] + "</font></td>";
                         listHTML += "<td align='right'>";
                         if (result['accessright'] == true) {
-                            listHTML += "<button name='action' value='Delete' class='button' onclick=\"if (confirm('Are you sure?')) deleteEntry(" + response[i]['id'] + ",'dhcptracker');\">Delete</button></td></tr></form>";
+                            listHTML += "<button name='action' value='Delete' class='transparent-button' onclick=\"if (confirm('Are you sure?')) deleteEntry(" + response[i]['id'] + ",'dhcptracker');\"><img src='static/images/trash.svg' width='12' height='12' class='showtitleTooltip' data-title='Delete'></button></td></tr></form>";
                         }
                         else {
-                            listHTML += "<button name='action' value='Delete' class='button' style='opacity:0.2;pointer-events:none;'>Delete</button></td></tr></form>";
+                            listHTML += "<button name='action' value='Delete' class='transparent-button' style='opacity:0.2;pointer-events:none;'><img src='static/images/trash.svg' width='12' height='12' class='showtitleTooltip' data-title='Delete'></button></td></tr></form>";
                         }
                     }
                     document.getElementById("logList").innerHTML = listHTML;
@@ -65,17 +65,17 @@ $('#updateTracker').ready(function () {
                     for (var i = 0; i < response.length; i++) {
                         listHTML += "<form method='post'><input type='hidden' name='id' value='" + response[i]['id'] + "' /><tr>";
                         var ts = new Date(response[i]['utctime'] * 1000);
-                        listHTML += "<td><font class='font12px'>" + ts.toLocaleDateString() + " " + ts.toLocaleTimeString() + "</font></td>";
-                        listHTML += "<td><font class='font12px'>" + response[i]['source'] + "</font></td>";
-                        listHTML += "<td><font class='font12px'>" + response[i]['version'] + "</font></td>";
-                        listHTML += "<td><font class='font12px'>" + response[i]['community'] + "</font></td>";
-                        listHTML += "<td colspan='2' nowrap><font class='font12px'>" + response[i]['information'] + "</font></td>";
+                        listHTML += "<td><font class='font10px'>" + ts.toLocaleDateString() + " " + ts.toLocaleTimeString() + "</font></td>";
+                        listHTML += "<td><font class='font10px'>" + response[i]['source'] + "</font></td>";
+                        listHTML += "<td><font class='font10px'>" + response[i]['version'] + "</font></td>";
+                        listHTML += "<td><font class='font10px'>" + response[i]['community'] + "</font></td>";
+                        listHTML += "<td width='60%' nowrap><font class='font10px'>" + response[i]['information'] + "</font></td>";
                         listHTML += "<td align='right'>";
                         if (result['accessright'] == true) {
-                        listHTML += "<button name='action' value='Delete' class='button' onclick=\"if (confirm('Are you sure?')) deleteEntry(" + response[i]['id'] + ", 'snmptracker' );\">Delete</button></td></tr></form>";
+                            listHTML += "<button name='action' value='Delete' class='transparent-button' onclick=\"if (confirm('Are you sure?')) deleteEntry(" + response[i]['id'] + ", 'snmptracker' );\"><img src='static/images/trash.svg' width='12' height='12' class='showtitleTooltip' data-title='Delete'></button></td></tr></form>";
                         }
                         else {
-                    listHTML += "<button name='action' value='Delete' class='button' style='opacity:0.2;pointer-events:none;'>Delete</button></td></tr></form>";
+                            listHTML += "<button name='action' value='Delete' class='transparent-button' style='opacity:0.2;pointer-events:none;'><img src='static/images/trash.svg' width='12' height='12' class='showtitleTooltip' data-title='Delete'></button></td></tr></form>";
                         }
                     }
                     document.getElementById("logList").innerHTML = listHTML;
@@ -101,17 +101,17 @@ $('#updateTracker').ready(function () {
                     for (var i = 0; i < response.length; i++) {
                         listHTML += "<form method='post'><input type='hidden' name='id' value='" + response[i]['id'] + "' /><tr>";
                         var ts = new Date(response[i]['utctime'] * 1000);
-                        listHTML += "<td><font class='font12px'>" + ts.toLocaleDateString() + " " + ts.toLocaleTimeString() + "</font></td>";
-                        listHTML += "<td><font class='font12px'>" + response[i]['source'] + "</font></td>";
-                        listHTML += "<td><font class='font12px'>" + response[i]['facility'] + "</font></td>";
-                        listHTML += "<td><font class='font12px'>" + response[i]['severity'] + "</font></td>";
-                        listHTML += "<td colspan='2'><font class='font12px'>" + response[i]['information'] + "</font></td>";
+                        listHTML += "<td><font class='font10px'>" + ts.toLocaleDateString() + " " + ts.toLocaleTimeString() + "</font></td>";
+                        listHTML += "<td><font class='font10px'>" + response[i]['source'] + "</font></td>";
+                        listHTML += "<td><font class='font10px'>" + response[i]['facility'] + "</font></td>";
+                        listHTML += "<td><font class='font10px'>" + response[i]['severity'] + "</font></td>";
+                        listHTML += "<td width='60%' nowrap><font class='font10px'>" + response[i]['information'] + "</font></td>";
                         listHTML += "<td align='right'>";
                         if (result['accessright'] == true) {
-                            listHTML += "<button name='action' value='Delete' class='button' onclick=\"if (confirm('Are you sure?')) deleteEntry(" + response[i]['id'] + ",'syslog' );\">Delete</button></td></tr></form>";
+                            listHTML += "<button name='action' value='Delete' class='transparent-button' onclick=\"if (confirm('Are you sure?')) deleteEntry(" + response[i]['id'] + ",'syslog' );\"><img src='static/images/trash.svg' width='12' height='12' class='showtitleTooltip' data-title='Delete'></button></td></tr></form>";
                         }
                         else {
-                            listHTML += "<button name='action' value='Delete' class='button' style='opacity: 0.2;pointer-events:none;'>Delete</button></td></tr></form>";
+                            listHTML += "<button name='action' value='Delete' class='transparent-button' style='opacity: 0.2;pointer-events:none;'><img src='static/images/trash.svg' width='12' height='12' class='showtitleTooltip' data-title='Delete'></button></td></tr></form>";
                         }
                     }
                     document.getElementById("logList").innerHTML = listHTML;

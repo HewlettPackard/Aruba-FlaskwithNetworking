@@ -40,74 +40,52 @@ def checkifOnline(deviceid,ostype):
             return "Unstable"
     queryStr="select ipaddress,switchstatus from devices where id='{}'".format(deviceid)
     response=classes.classes.sqlQuery(queryStr,'selectone')
-    if response['switchstatus']==200:
-        return "Online"
-    elif response['switchstatus']==101 or response['switchstatus']==102:
-        return "Unstable"
+    if response:
+        if "switchstatus" in response:
+            if response['switchstatus']==200 or response['switchstatus']==201:
+                return "Online"
+            elif response['switchstatus']==101 or response['switchstatus']==102:
+                return "Unstable"
+            else:
+                return "Offline"
+        else:
+            return "Offline"
     else:
         return "Offline"
 
 def discoverModel(deviceid):
     # Performing REST calls to discover what switch model we are dealing with
     discoverSuccess=0
-    # Check whether the device is ArubaOS-Switch by obtaining the local lldp and system information 
-    try:
-        url="lldp/local_device/info"
-        response =classes.classes.getswitchREST(url,deviceid)
-        if 'system_description' in response:
-            # This is an ArubaOS-Switch switch. System description is a comma separated string that contains product and version information
-            # Splitting the string into a list and then assign the values  
-            deviceInfo=response['system_description'].split(",")
-            hostname=response['system_name']
-            # Obtaining system information. This information also contains port information
-            url="system/status/switch"
-            sysinfo =classes.classes.getswitchREST(url,deviceid)
-            # Check whether the device is configured for VSF or BPS, or whether it's a stand alone switch. If the latter is the case, the vsf and bps fields remain empty
-            try:
-                if sysinfo['switch_type']=="ST_STACKED":
-                    url="stacking/vsf/members"
-                    vsfinfo =classes.classes.getswitchREST(url,deviceid)
-                    # Getting the member information, this information contains which device is the master/commander. This is for running VSF
-                    if 'message' in vsfinfo:
-                        vsfinfo={}
-                    else:
-                        sysinfo= {**sysinfo,**vsfinfo}
-                    # If there is no response, this means that the switches are running BPS
-                    url="stacking/bps/members"
-                    bpsinfo =classes.classes.getswitchREST(url,deviceid)
-                    if 'message' in bpsinfo:
-                        bpsinfo={}
-                    else:
-                        sysinfo= {**sysinfo,**bpsinfo}
-                    # Updating the database with all the gathered information
-            except:
-                pass
-            queryStr="update devices set description='{}', ostype='arubaos-switch', platform='{}', osversion='{}', sysinfo='{}' where id='{}'".format(hostname,deviceInfo[0],deviceInfo[1],json.dumps(sysinfo),deviceid)
-            try:
-                classes.classes.sqlQuery(queryStr,"update")
-            except:
-                pass
-            discoverSuccess=1
-    except:
-        pass
-    # Now check whether this might be an AOS-CX switch
-    if discoverSuccess==0:
-        try:
-            url="system?attributes=boot_time%2Chostname%2Cmgmt_intf%2Cmgmt_intf_status%2Cplatform_name%2Csoftware_images%2Csoftware_info%2Csoftware_version%2Cstatus%2Csubsystems&depth=1"
+    # Check whether this might be an AOS-CX switch
+    try: 
+        url="system?attributes=platform_name&depth=1"
+        response =classes.classes.getcxREST(deviceid,url)
+        if 'platform_name' in response:
+            if response['platform_name']=="6100":
+                # The 6100 does not have a management (OOB) interface, so we have to issue a different REST call
+                url="system?attributes=boot_time%2Chostname%2Cplatform_name%2Csoftware_images%2Csoftware_info%2Csoftware_version%2Cstatus%2Csubsystems&depth=1"
+            else:
+                url="system?attributes=boot_time%2Chostname%2Cmgmt_intf%2Cmgmt_intf_status%2Cplatform_name%2Csoftware_images%2Csoftware_info%2Csoftware_version%2Cstatus%2Csubsystems&depth=1"
             response =classes.classes.getcxREST(deviceid,url)
-            if 'platform_name' in response:
-                sysinfo=json.dumps(response)
-                # It is an ArubaOS-CX device. Check whether it's running in VSF, obtain the interface information and then update the database
-                try:
-                    url="system/vsf_members?attributes=id%2Clinks%2Crole%2Cstatus&depth=2"
-                    vsfInfo=classes.classes.getcxREST(deviceid,url)
-                    if vsfInfo is None:
-                        vsfInfo=json.dumps({})
-                    else:
-                        vsfInfo=json.dumps(vsfInfo)
-                except:
+            sysinfo=json.dumps(response)
+            # It is an ArubaOS-CX device. Check whether it's running in VSF, obtain the interface information and then update the database
+            try:
+                url="system/vsf_members?attributes=id%2Clinks%2Crole%2Cstatus&depth=2"
+                vsfInfo=classes.classes.getcxREST(deviceid,url)
+                if vsfInfo is None:
                     vsfInfo=json.dumps({})
-                try:
+                else:
+                    vsfInfo=json.dumps(vsfInfo)
+            except:
+                vsfInfo=json.dumps({})
+            try:
+                # Checking the hostname on a 6100 is different, there is no management (OOB) interface
+                if response['platform_name']=="6100":
+                    if "hostname" in response:
+                        hostname=response['hostname']
+                    else:
+                        hostname=response['platform_name']
+                else:
                     if "hostname" in response:
                         hostname=response['hostname']
                     elif "hostname" in response['mgmt_intf_status']:
@@ -115,18 +93,60 @@ def discoverModel(deviceid):
                         hostname=response['mgmt_intf_status']['hostname']
                     else:
                         hostname=response['platform_name']
-                    queryStr="update devices set description='{}',ostype='arubaos-cx', platform='{}', osversion='{}', sysinfo='{}', vsf='{}' where id='{}'".format(hostname,response['platform_name'], response['software_version'], sysinfo,vsfInfo,deviceid)
-                    classes.classes.sqlQuery(queryStr,"update")
-                    discoverSuccess=1
+                queryStr="update devices set description='{}',ostype='arubaos-cx', platform='{}', osversion='{}', sysinfo='{}', vsf='{}' where id='{}'".format(hostname,response['platform_name'], response['software_version'], sysinfo,vsfInfo,deviceid)
+                classes.classes.sqlQuery(queryStr,"update")
+                discoverSuccess=1
+            except:
+                pass
+    except:
+        pass
+    # Check whether the device is ArubaOS-Switch by obtaining the local lldp and system information 
+    if discoverSuccess==0:
+        try:
+            url="lldp/local_device/info"
+            response =classes.classes.getswitchREST(url,deviceid)
+            if 'system_description' in response:
+                # This is an ArubaOS-Switch switch. System description is a comma separated string that contains product and version information
+                # Splitting the string into a list and then assign the values  
+                deviceInfo=response['system_description'].split(",")
+                hostname=response['system_name']
+                # Obtaining system information. This information also contains port information
+                url="system/status/switch"
+                sysinfo =classes.classes.getswitchREST(url,deviceid)
+                # Check whether the device is configured for VSF or BPS, or whether it's a stand alone switch. If the latter is the case, the vsf and bps fields remain empty
+                try:
+                    if sysinfo['switch_type']=="ST_STACKED":
+                        url="stacking/vsf/members"
+                        vsfinfo =classes.classes.getswitchREST(url,deviceid)
+                        # Getting the member information, this information contains which device is the master/commander. This is for running VSF
+                        if 'message' in vsfinfo:
+                            vsfinfo={}
+                        else:
+                            sysinfo= {**sysinfo,**vsfinfo}
+                        # If there is no response, this means that the switches are running BPS
+                        url="stacking/bps/members"
+                        bpsinfo =classes.classes.getswitchREST(url,deviceid)
+                        if 'message' in bpsinfo:
+                            bpsinfo={}
+                        else:
+                            sysinfo= {**sysinfo,**bpsinfo}
+                        # Updating the database with all the gathered information
                 except:
                     pass
+                queryStr="update devices set description='{}', ostype='arubaos-switch', platform='{}', osversion='{}', sysinfo='{}' where id='{}'".format(hostname,deviceInfo[0],deviceInfo[1],json.dumps(sysinfo),deviceid)
+                try:
+                    classes.classes.sqlQuery(queryStr,"update")
+                except:
+                    pass
+                discoverSuccess=1
         except:
-            pass
+            pass  
     # Device has not been discovered. We have to set the ostype, platform and osversion to unknown
     if discoverSuccess==0:
         queryStr="update devices set ostype='Unknown', platform='Unknown', osversion='Unknown' where id='{}'".format(deviceid)
         classes.classes.sqlQuery(queryStr,"update")
-    
+ 
+        
 def devicedbAction(formresult):
     # This definition is for all the database actions for switches, based on the user click on the pages
     queryStr="select distinct ostype from devices where ostype='arubaos-cx' or ostype='arubaos-switch' or ostype='Unknown'"
@@ -211,9 +231,12 @@ def devicedbAction(formresult):
             # Delete from the software upgrades table
             queryStr="delete from softwareupdate where switchid='{}'".format(formresult['deviceid'])
             classes.classes.sqlQuery(queryStr,"delete")
+            # Remove the switch from the device attributes, if assigned to any
+            cleardevicefromAttributes(formresult['deviceid'])
             # Delete from the devices table
             queryStr="delete from devices where id='{}'".format(formresult['deviceid'])
             classes.classes.sqlQuery(queryStr,"delete")
+            
         try:
             searchAction=formresult['searchAction']
         except:
@@ -438,6 +461,7 @@ def clearClient(deviceid,macaddress,port,authmethod):
         result=classes.classes.anycli(cmd,deviceid)
     return result
 
+
 def clearWS(id):
     for proc in psutil.process_iter():
         processname="/var/www/html/bash/wsclient"
@@ -449,3 +473,41 @@ def clearWS(id):
                     # Update the database and clear the subscriber information
                     queryStr="update devices set subscriber='' where id='{}'".format(id)
                     classes.classes.sqlQuery(queryStr,"update")
+
+
+def cleardevicefromAttributes(deviceid):
+    queryStr="select deviceattributes from devices where id='{}'".format(deviceid)
+    attributeResult=classes.classes.sqlQuery(queryStr,"selectone")
+    attributeResult=json.loads(attributeResult['deviceattributes'])
+    for items in attributeResult:
+        # Go through the attribute list (based on the id in the items) and remove the device from the isassigned column
+        queryStr="select isassigned from deviceattributes where id='{}'".format(items['id'])
+        assignResult=classes.classes.sqlQuery(queryStr,"selectone")
+        assignResult=json.loads(assignResult['isassigned'])
+        assignResult.remove(deviceid)
+        # And update the device attributes table again
+        queryStr="update deviceattributes set isassigned='{}' where id='{}'".format(json.dumps(assignResult), items['id'])
+        classes.classes.sqlQuery(queryStr,"update")
+
+
+def getswitchFamily(deviceid):
+    queryStr="select osversion from devices where id='{}'".format(deviceid)
+    result=classes.classes.sqlQuery(queryStr,"selectone")
+    if "WC" in result['osversion']:
+        return "2930"
+    elif "KB" in result['osversion']:
+        return "3810/5400"
+    elif "FL" in result['osversion']:
+        return "6300/6400"
+    elif "ML" in result['osversion']:
+        return "6200"
+    elif "PL" in result['osversion']:
+        return "6100"
+    elif "TL" in result['osversion']:
+        return "8320"
+    elif "GL" in result['osversion']:
+        return "8320"
+    elif "LL" in result['osversion']:
+       return "8360"
+    else:
+        return "none"

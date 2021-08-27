@@ -5,6 +5,11 @@
 
 $(document).ready(function () {
 
+    $(".file-upload").change(function () {
+        //$(".file-name").text(this.files[0].name);
+        $(".file-name").html("<font class='font12px'>" + this.files[0].name + "</font>");
+    });
+
     $('.editField input').keyup(function () {
         var fieldisEmpty = false;
         $('.editField input').keyup(function () {
@@ -51,9 +56,7 @@ $(document).ready(function () {
                 // Obtaining the device image information was successful
             },
             error: function () {
-                document.getElementById("liProgress").style.display = "block";
-                document.getElementById("progresstooltip").style.display = "none";
-                progressInfo.innerHTML = "Error finding software image information";
+                showmessageBar("Error finding software image information");
             }
         });
         imageInfo = JSON.parse(imageInfo);

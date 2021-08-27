@@ -1,23 +1,29 @@
-<!-- (C) Copyright 2020 Hewlett Packard Enterprise Development LP. -->
+<!-- (C) Copyright 2021 Hewlett Packard Enterprise Development LP. -->
+{% block scripts %}
+<script type="text/javascript">
+var url = "static/main.js";
+$.getScript(url);
+</script>
+{% endblock %}
 {% block content %}
-    <div id="maincontainer">
-        <table class='tablewithborder' id="ztplogtable">
-            <tr><td colspan='2'><font class='font13pxwhite'><center>ZTP log information for device {{deviceInfo['ipaddress']}} ({{deviceInfo['name']}})</center></font></td><td width="2%"><input type="button" name="clearLog" id="clearLog" data-deviceid="{{ deviceInfo['id'] }}"value="Clear" {% if va("ztpdeviceaccess","feature")==False %} style="opacity:0.2;pointer-events:none;" {% endif %}/></td></tr>
-            <tr>
-                <td nowrap><font class='font12pxwhite'>Date</font></td>
-                <td nowrap><font class='font12pxwhite'>Information</font></td>
-                <td></td>
-            </tr>
-            {% if logInfo %}
-            {% for items in logInfo %}
-            <tr>
-                <td style="background-color:#ffffff;" nowrap><font class='font11px'>{{ items['datetime'] }}</font></td>
-                <td style="background-color:#ffffff;" nowrap><font class='font11px'>{{ items['logEntry'] }}</font></td>
-                <td style="background-color:#ffffff;" ></tdstyle="background-color:#ffffff;">
-            </tr>
+<div id="maincontainer">
+    <table class='tablewithborder' id="ztplogtable">
+        <tr><td colspan='2'><font class='font13pxwhite'><center>ZTP log information for device {{deviceInfo['ipaddress']}} ({{deviceInfo['name']}})</center></font></td><td width="2%"><button type="button" name="clearLog" class="transparent-button" id="clearLog" data-deviceid="{{ deviceInfo['id'] }}" value="Clear" {% if va("ztpdeviceaccess","feature")==False %} style="opacity:0.2;pointer-events:none;" {% endif %}><img src="static/images/clear.svg" width="12" height="12" class="showtitleTooltip" data-title="Clear log"></button></td></tr>
+        <tr>
+            <td nowrap><font class='font12pxwhite'>Date</font></td>
+            <td nowrap><font class='font12pxwhite'>Information</font></td>
+            <td></td>
+        </tr>
+        {% if logInfo %}
+        {% for items in logInfo %}
+        <tr>
+            <td style="background-color:#ffffff;" nowrap><font class='font11px'>{{ items['datetime'] }}</font></td>
+            <td style="background-color:#ffffff;" nowrap><font class='font11px'>{{ items['logEntry'] }}</font></td>
+            <td style="background-color:#ffffff;"></tdstyle="background-color:#ffffff;">
+        </tr>
 
-           {% endfor %}
-            {% endif %}
-        </table>
-        </div>
-        {% endblock %}
+        {% endfor %}
+        {% endif %}
+    </table>
+</div>
+{% endblock %}

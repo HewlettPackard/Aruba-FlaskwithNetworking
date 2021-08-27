@@ -334,3 +334,11 @@ def ztpCredentials ():
     formresult=request.form
     response=classes.verifyCredentials(formresult['deviceid'],formresult['username'],formresult['password'],sysvars)
     return json.dumps(response)
+
+@ztp.route("/deleteztpDevice", methods=['GET','POST'])
+def deleteztpdevice ():
+    sysvars=classes.globalvars()
+    formresult=request.form
+    queryStr="delete from ztpdevices where id='{}'".format(request.form['deviceid'])
+    response=classes.sqlQuery(queryStr,"delete")
+    return json.dumps(response)

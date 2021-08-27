@@ -1,4 +1,11 @@
-<!-- (C) Copyright 2020 Hewlett Packard Enterprise Development LP. -->
+<!-- (C) Copyright 2021 Hewlett Packard Enterprise Development LP. -->
+
+{% block scripts %}
+<script type="text/javascript">
+    var url = "static/main.js";
+    $.getScript(url);
+</script>
+{% endblock %}
 {% block content %}
 
 <div id="maincontainer" style="background-color: mintcream;">
@@ -43,11 +50,11 @@
                             {% endif %}
 
                         </select> of {% if seTotalentries==0 %} 1 {% else %}{{ (seTotalentries/seEntryperpage)|round(0,'ceil')|int }} {% endif %} pages)
-                    </font><input type="button" name="searchAction" value="Search" class="button" id="searchServices" onclick="showServices({{ deviceInfo['id'] }})" />
+                    </font><button type="button" name="searchAction" value="Search" id="searchServices" class="transparent-button" onclick="showServices({{ deviceInfo['id'] }})"><img src="static/images/search.svg" width="12" height="12" class="showtitleTooltip" data-title="Search"></button>                    
                 </td>
             </tr>
         </form>
-        {% for items in servicesInfo['_embedded']['items']|sort(attribute='orderNo') %}
+        {% for items in servicesInfo['_embedded']['items']|sort(attribute='order_no') %}
         <tr>
             <td class="whiteBG" nowrap><font class='font11px'>{{ items['id'] }}</font></td>
             <td class="whiteBG" nowrap><font class='font11px'>{{ items['name'] }}</font></td>
@@ -55,7 +62,7 @@
             <td class="whiteBG" nowrap><font class='font11px'>{{ items['template'] }}</font></td>
             <td class="whiteBG" nowrap><font class='font11px'>{% if items['enabled']==False %}Disabled{% else %}Enabled{% endif %}</font></td>
             <td class="whiteBG" nowrap colspan="2">
-                <font class='font11px'>{{ items['orderNo'] }}</font>
+                <font class='font11px'>{{ items['order_no'] }}</font>
             </td>
         </tr>
 

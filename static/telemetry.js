@@ -1,4 +1,4 @@
-// (C) Copyright 2020 Hewlett Packard Enterprise Development LP.
+// (C) Copyright 2021 Hewlett Packard Enterprise Development LP.
 
 
 $(document).ready(function () {
@@ -21,7 +21,7 @@ $(document).ready(function () {
                             //We can show the status
                             if (response['isRunning'] == "Online") {
                                 //The websocket client is running
-                                document.getElementById('telemetryOnline' + deviceid).innerHTML = "<img src='static/images/ok.png' height='15' width='15'>";
+                                document.getElementById('telemetryOnline' + deviceid).innerHTML = "<img src='static/images/status-good.svg' height='12' width='12' class='showtitleTooltip' data-title='Device is online'>";
                                 $('#telemetryOnline' + deviceid).attr('data-status', '2');
                                 $('#monitor' + deviceid).attr('disabled', false);
                                 document.getElementById("subscriber" + deviceid).innerHTML = subscriptions['subscriber'];
@@ -32,7 +32,7 @@ $(document).ready(function () {
                             }
                             else if (response['isRunning'] == "Offline" && subscriptions['devicestatus'] == "Online") {
                                 //The websocket client is not running but the device is online
-                                document.getElementById('telemetryOnline' + deviceid).innerHTML = "<img src='static/images/risk.png' height='15' width='15'>";
+                                document.getElementById('telemetryOnline' + deviceid).innerHTML = "<img src='static/images/status-unknown.svg' height='12' width='12'  class='showtitleTooltip' data-title='Device is online, no subscriptions'>";
                                 $('#telemetryOnline' + deviceid).attr('data-status', '1');
                                 document.getElementById("subscriber" + deviceid).innerHTML = "";
                                 document.getElementById("subscriptions" + deviceid).innerHTML = subscriptions['totaldbsubs'];
@@ -41,7 +41,7 @@ $(document).ready(function () {
                                 document.getElementById("startws" + deviceid).innerHTML = "";
                             }
                             else if (response['isRunning'] == "Offline" && subscriptions['devicestatus'] == "Offline") {
-                                document.getElementById('telemetryOnline' + deviceid).innerHTML = "<img src='static/images/notok.png' height='15' width='15'>";
+                                document.getElementById('telemetryOnline' + deviceid).innerHTML = "<img src='static/images/status-critical.svg' height='12' width='12'  class='showtitleTooltip' data-title='Device is offline'>";
                                 $('#telemetryOnline' + deviceid).attr('data-status', '0');
                                 $('#monitor' + deviceid).attr('disabled', true);
                                 document.getElementById("subscriber" + deviceid).innerHTML = "Offline";
@@ -107,9 +107,7 @@ $(document).ready(function () {
 
         // Connection closed
         socket.addEventListener('close', function (event) {
-            document.getElementById("liProgress").style.display = "block";
-            document.getElementById("progresstooltip").style.display = "none";
-            progressInfo.innerHTML = "Disconnected from the websocket server";
+            showmessageBar("Disconnected from the websocket server");
         });
         const sendMsg = () => {
             socket.send("Hello from client...");
@@ -192,11 +190,11 @@ $(document).on("click", ".manageSubscription", async function () {
                 msHTML += "<td class='whiteBG'><font class='font11px'>" + subscriptions[0][i]['message'] + "</font></td>";
                 msHTML += "<td class='whiteBG' width='10%' nowrap align='right'>";
                 if (subscriptions[0][i]['status'] == "0") {
-                    msHTML += "<input type='button' class='button manageSubscription' value='Subscribe' data-deviceid='" + response['deviceinfo']['id'] + "' data-subscriber='" + response['deviceinfo']['subscriber'] + "' data-resource='" + subscriptions[0][i]['resource'] + "'>";
-                    msHTML += "<input type='button' class='button manageSubscription' value='Delete'  data-deviceid='" + response['deviceinfo']['id'] + "' data-subscriber='" + response['deviceinfo']['subscriber'] + "' data-resource='" + subscriptions[0][i]['resource'] + "'>";
+                    msHTML += "<button type='button' class='transparent-button manageSubscription' value='Subscribe' data-deviceid='" + response['deviceinfo']['id'] + "' data-subscriber='" + response['deviceinfo']['subscriber'] + "' data-resource='" + subscriptions[0][i]['resource'] + "'><img src='static/images/link.svg' width='12' height='12' class='showtitleTooltip' data-title='Subscribe'></button>";
+                    msHTML += "<button type='button' class='transparent-button manageSubscription' value='Delete'  data-deviceid='" + response['deviceinfo']['id'] + "' data-subscriber='" + response['deviceinfo']['subscriber'] + "' data-resource='" + subscriptions[0][i]['resource'] + "'><img src='static/images/trash.svg' width='12' height='12' class='showtitleTooltip' data-title='Delete subscription'></button>";
                 }
                 else if (subscriptions[0][i]['status'] == "1") {
-                    msHTML += "<input type='button' class='button manageSubscription' value='Unsubscribe' data-deviceid='" + response['deviceinfo']['id'] + "' data-subscriber='" + response['deviceinfo']['subscriber'] + "' data-resource='" + subscriptions[0][i]['resource'] + "'>";
+                    msHTML += "<button type='button' class='transparent-button manageSubscription' value='Unsubscribe' data-deviceid='" + response['deviceinfo']['id'] + "' data-subscriber='" + response['deviceinfo']['subscriber'] + "' data-resource='" + subscriptions[0][i]['resource'] + "'><img src='static/images/unlink.svg' width='12' height='12' class='showtitleTooltip' data-title='Unsubscribe'></button>";
                 }
                 else if (subscriptions[0][i]['status'] == "2") {
                     msHTML += "Subscription error";
@@ -205,7 +203,7 @@ $(document).on("click", ".manageSubscription", async function () {
             }
             msHTML += "<tr><td class='whiteBG'><font class='font11px'><input type='text' name='addSubscription' id='addSubscription' value='' size='100'></font></td><td class='whiteBG'></td>";
             msHTML += "<td class='whiteBG' width='10%' nowrap align='right'>";
-            msHTML += "<input type='button' class='button manageSubscription' value='Add subscription' data-deviceid='" + response['deviceinfo']['id'] + "' data-subscriber='" + response['deviceinfo']['subscriber'] + "'></td ></tr >";
+            msHTML += "<button type='button' class='transparent-button manageSubscription' value='Add subscription' data-deviceid='" + response['deviceinfo']['id'] + "' data-subscriber='" + response['deviceinfo']['subscriber'] + "'><img src='static/images/add.svg' width='12' height='12' class='showtitleTooltip' data-title='Add subscription'></button></td></tr >";
 
             msHTML += "</table>";
             document.getElementById('managesubscription').innerHTML = msHTML;
@@ -216,6 +214,7 @@ $(document).on("click", ".manageSubscription", async function () {
         }
     });
 });
+
 
 function clearTextArea(element) {
     element.innerHTML = "";

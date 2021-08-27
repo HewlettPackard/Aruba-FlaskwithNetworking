@@ -22,9 +22,7 @@ $(".mobilityInterfaces").click(async function () {
 
         },
         error: function () {
-            document.getElementById("liProgress").style.display = "block";
-            document.getElementById("progresstooltip").style.display = "none";
-            progressInfo.innerHTML = "Error finding interface information";
+            showmessageBar("Error finding interface information");
         }
     });
     mobilityInfo = await $.ajax({
@@ -36,9 +34,7 @@ $(".mobilityInterfaces").click(async function () {
 
         },
         error: function () {
-            document.getElementById("liProgress").style.display = "block";
-            document.getElementById("progresstooltip").style.display = "none";
-            progressInfo.innerHTML = "Error finding device information";
+            showmessageBar("Error finding device information");
         }
     });
     interfaceInfo = JSON.parse(interfaceInfo);

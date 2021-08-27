@@ -26,7 +26,7 @@
             </tr>
             <tr>
                 <td><font class="font12pxwhite">Hostname</font></td>
-                <td class="whiteBG"><font face="arial" size="1"> {% if sysinfo['hostname'] %}{{ sysinfo['hostname'] }} {% elif sysinfo['mgmt_intf_status']['hostname'] %} {{ sysinfo['mgmt_intf_status']['hostname'] }} {% else %} {{ sysinfo['platform_name'] }} {% endif %}  </font></td>
+                <td class="whiteBG"><font face="arial" size="1"> {% if sysinfo['hostname'] %}{{ sysinfo['hostname'] }} {% elif "mgmt_intf_status" in sysinfo %} {% if sysinfo['mgmt_intf_status']['hostname'] %} {{ sysinfo['mgmt_intf_status']['hostname'] }} {%endif%} {% else %} {{ sysinfo['platform_name'] }} {% endif %}  </font></td>
                 <td><font class="font12pxwhite">Part number(s)</font></td>
                 <td class="whiteBG">
                     <font face="arial" size="1">
@@ -44,13 +44,13 @@
                 <td><font class="font12pxwhite">Serial Number(s)</font></td>
                 <td class="whiteBG">
                     <font face="arial" size="1">
-                            {% if vsfinfo|length %}
-                            VSF
-                            {% else %}
-                            {% for sn in serialnumber|unique %}
-                            {{ sn }}<br />
-                            {% endfor %}
-                            {% endif %}
+                        {% if vsfinfo|length %}
+                        VSF
+                        {% else %}
+                        {% for sn in serialnumber|unique %}
+                        {{ sn }}<br />
+                        {% endfor %}
+                        {% endif %}
                     </font>
                 </td>
                 <td><font class="font12pxwhite">Interface Count</font></td>
@@ -88,20 +88,24 @@
                     <font face="arial" size="1">{% if 'boot_time' in sysinfo %}{{ timeDelta(sysinfo['boot_time']) }} {% endif %}</font>
                 </td>
             </tr>
+            {% if 'mgmt_intf_status' in sysinfo %}
+
             <tr>
                 <td><font class="font12pxwhite">Management Interface</font></td>
-                <td class="whiteBG"><font face="arial" size="1"> {{ sysinfo['mgmt_intf_status']['link_state'] }} </font></td>
+                <td class="whiteBG"><font face="arial" size="1">{{ sysinfo['mgmt_intf_status']['link_state'] }}</font></td>
                 <td><font class="font12pxwhite">MAC Address</font></td>
-                <td class="whiteBG"><font face="arial" size="1"> {{ sysinfo['mgmt_intf_status']['mac_address'] }} </font></td>
+                <td class="whiteBG"><font face="arial" size="1">{{ sysinfo['mgmt_intf_status']['mac_address'] }}</font></td>
                 <td><font class="font12pxwhite">IP Address</font></td>
-                <td class="whiteBG"><font face="arial" size="1"> {{ sysinfo['mgmt_intf_status']['ip'] }} </font></td>
+                <td class="whiteBG"><font face="arial" size="1">{{ sysinfo['mgmt_intf_status']['ip'] }}</font></td>
                 <td><font class="font12pxwhite">Subnet Mask</font></td>
-                <td class="whiteBG"><font face="arial" size="1"> {{ sysinfo['mgmt_intf_status']['subnet_mask'] }} </font></td>
+                <td class="whiteBG"><font face="arial" size="1">{{ sysinfo['mgmt_intf_status']['subnet_mask'] }}</font></td>
                 <td><font class="font12pxwhite"> &nbsp;</font></td>
                 <td class="whiteBG"><font face="arial" size="1"> &nbsp; </font></td>
                 <td><font class="font12pxwhite"> &nbsp;</font></td>
                 <td class="whiteBG"><font face="arial" size="1"> &nbsp; </font></td>
             </tr>
+            {% endif %}
+
             {% for items in sysinfo.subsystems %}
             {% if items['type'] == "chassis" %}
             <!-- Check if sysinfo contains power supply information -->

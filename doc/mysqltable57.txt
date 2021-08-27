@@ -49,38 +49,8 @@ CREATE TABLE IF NOT EXISTS dhcptracker (
 ) ENGINE=MyISAM AUTO_INCREMENT=1563 DEFAULT CHARSET=latin1;
 
 DROP TABLE IF EXISTS dsprofiles;
-CREATE TABLE IF NOT EXISTS dsprofiles (
-  id bigint(20) NOT NULL AUTO_INCREMENT,
-  name text NOT NULL,
-  members text NOT NULL,
-  ports text NOT NULL,
-  macauth int(11) NOT NULL,
-  maclimit int(11) NOT NULL,
-  dot1x int(11) NOT NULL,
-  dot1xlimit int(11) NOT NULL,
-  clearpass text NOT NULL,
-  radiussecret text NOT NULL,
-  duradmin text NOT NULL,
-  durpassword text NOT NULL,
-  macauthsource text NOT NULL,
-  macauthmethod text NOT NULL,
-  dot1xsource text NOT NULL,
-  dot1xmethod text NOT NULL,
-  ntpserver text NOT NULL,
-  ntpauth text NOT NULL,
-  primarycontroller text NOT NULL,
-  backupcontroller text NOT NULL,
-  PRIMARY KEY (id)
-) ENGINE=MyISAM AUTO_INCREMENT=24 DEFAULT CHARSET=latin1;
 
 DROP TABLE IF EXISTS dsservices;
-CREATE TABLE IF NOT EXISTS dsservices (
-  id bigint(20) NOT NULL AUTO_INCREMENT,
-  name text NOT NULL,
-  profile text NOT NULL,
-  policies text NOT NULL,
-  PRIMARY KEY (id)
-) ENGINE=MyISAM AUTO_INCREMENT=26 DEFAULT CHARSET=latin1;
 
 DROP TABLE IF EXISTS snmptracker;
 CREATE TABLE IF NOT EXISTS snmptracker (
@@ -188,9 +158,27 @@ CREATE TABLE `softwareupdate` (
   `softwareinfoafter` text NOT NULL,
   `starttime` datetime DEFAULT NULL,
   `endtime` datetime DEFAULT NULL,
+  `upgradeprofile` bigint UNSIGNED DEFAULT NULL,
   `status` int UNSIGNED NOT NULL,
   PRIMARY KEY (`id`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+) ENGINE=InnoDB DEFAULT CHARSET=latin1;
+
+
+DROP TABLE IF EXISTS `upgradeprofiles`;
+CREATE TABLE `upgradeprofiles` (
+  `id` bigint UNSIGNED NOT NULL AUTO_INCREMENT,
+  `name` text NOT NULL,
+  `devicelist` text NOT NULL,
+  `activepartition` text NOT NULL,
+  `upgradepartition` text NOT NULL,
+  `schedule` datetime DEFAULT NULL,
+  `reboot` int UNSIGNED NOT NULL,
+  `softwareimages` text NOT NULL,
+  `starttime` datetime DEFAULT NULL,
+  `endtime` datetime DEFAULT NULL,
+  `status` int UNSIGNED NOT NULL,
+  PRIMARY KEY (`id`)
+) ENGINE=InnoDB DEFAULT CHARSET=latin1;
 
 
 DROP TABLE IF EXISTS `ztptemplates`;
@@ -231,7 +219,7 @@ CREATE TABLE `sysrole` (
   `accessrights` text NOT NULL,
   `status` int NOT NULL,
    PRIMARY KEY (`id`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+) ENGINE=InnoDB DEFAULT CHARSET=latin1;
 
 DROP TABLE IF EXISTS `deviceattributes`;
 CREATE TABLE `deviceattributes` (
@@ -241,11 +229,11 @@ CREATE TABLE `deviceattributes` (
   `attributelist` text NOT NULL,
   `isassigned` text NOT NULL,
   PRIMARY KEY (`id`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+) ENGINE=InnoDB DEFAULT CHARSET=latin1;
 
 INSERT INTO `sysuser` (`username`, `email`,`password`,`cookie`,`role`) VALUES
 ('admin', 'admin@carius.org', '', '','1');
 
 INSERT INTO `sysrole` (`name`, `accessrights`, `status`) VALUES
-('Administrator', '{\"devices\": \"on\", \"switchaccess\": \"2\", \"mobilityaccess\": \"2\", \"clearpassaccess\": \"2\", \"ztp\": \"on\", \"ztptemplateaccess\": \"2\", \"ztpdeviceaccess\": \"2\",\"deviceupdates\": \"on\", \"imageaccess\": \"2\", \"upgradescheduleraccess\": \"2\",\"upgradeprofilesaccess\": \"2\", \"topology\": \"on\", \"telemetry\": \"on\", \"telemetrymonitoraccess\": \"2\", \"telemetrysubscriptionaccess\": \"2\", \"ubt\": \"on\", \"ubtprofileaccess\": \"2\", \"ubtserviceaccess\": \"2\", \"trackers\": \"on\", \"dhcptrackeraccess\": \"2\", \"snmptrackeraccess\": \"2\", \"syslogtrackeraccess\": \"2\", \"tools\": \"on\", \"anycliaccess\": \"2\", \"administration\": \"on\", \"sysuseraccess\": \"2\", \"sysroleaccess\": \"2\", \"deviceattributesaccess\": \"2\", \"sysadminaccess\": \"2\", \"servicesstatusaccess\": \"2\"}', 1);
+('Administrator', '{\"devices\": \"on\", \"switchaccess\": \"2\", \"mobilityaccess\": \"2\", \"clearpassaccess\": \"2\", \"ztp\": \"on\", \"ztptemplateaccess\": \"2\", \"ztpdeviceaccess\": \"2\",\"deviceupdates\": \"on\", \"imageaccess\": \"2\", \"upgradescheduleraccess\": \"2\",\"upgradeprofilesaccess\": \"2\", \"topology\": \"on\", \"telemetry\": \"on\", \"telemetrymonitoraccess\": \"2\", \"telemetrysubscriptionaccess\": \"2\", \"tools\": \"on\", \"dhcptrackeraccess\": \"2\", \"snmptrackeraccess\": \"2\", \"syslogtrackeraccess\": \"2\", \"anycliaccess\": \"2\", \"administration\": \"on\", \"sysuseraccess\": \"2\", \"sysroleaccess\": \"2\", \"deviceattributesaccess\": \"2\", \"sysadminaccess\": \"2\", \"servicesstatusaccess\": \"2\"}', 1);
 

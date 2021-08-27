@@ -70,12 +70,14 @@ def showGraph ():
     queryStr="select id,sysinfo,ostype,ports,vsx,vsxlags,vrf,vsf,bps from devices where id='{}'".format(request.args.get('deviceid'))
     deviceinfo=classes.sqlQuery(queryStr,"selectone")
     sysinfo=json.loads(deviceinfo['sysinfo'])
-
-    if 'vsf_member_element' in sysinfo:
-        stacktype="vsf"
-        title="CPU Utilization"
-    elif 'bps_member_element' in sysinfo:
-        stacktype="bps"
+    if sysinfo:
+        if 'vsf_member_element' in sysinfo:
+            stacktype="vsf"
+            title="CPU Utilization"
+        elif 'bps_member_element' in sysinfo:
+            stacktype="bps"
+        else:
+            stacktype="standalone"
     else:
         stacktype="standalone"
 
@@ -101,10 +103,13 @@ def updatedeviceinfo ():
     queryStr="select sysinfo,ostype from devices where id='{}'".format(request.args.get('deviceid'))
     deviceinfo=classes.sqlQuery(queryStr,"selectone")
     sysinfo=json.loads(deviceinfo['sysinfo'])
-    if 'vsf_member_element' in sysinfo:
-        stacktype="vsf"
-    elif 'bps_member_element' in sysinfo:
-        stacktype="bps"
+    if sysinfo:
+        if 'vsf_member_element' in sysinfo:
+            stacktype="vsf"
+        elif 'bps_member_element' in sysinfo:
+            stacktype="bps"
+        else:
+            stacktype="standalone"
     else:
         stacktype="standalone"
     if deviceinfo['ostype']=="arubaos-cx":

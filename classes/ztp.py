@@ -122,9 +122,6 @@ def ztpdevicedbAction(formresult):
             netmask,gateway,vrf,softwareimage,template,formresult['parameterValues'],vsfenabled,vsfrole, \
             vsfmember,vsfmaster,int(switchtype),link1,link2,ztpdhcp,json.dumps(ztpvlan),formresult['deviceid'])
             classes.classes.sqlQuery(queryStr,"update")
-        elif (formresult['action']=="Delete"):
-            queryStr="delete from ztpdevices where id='{}'".format(formresult['deviceid'])
-            classes.classes.sqlQuery(queryStr,"delete")
         try:
             searchAction=formresult['searchAction']
         except:
@@ -254,6 +251,7 @@ def ztpActivate(formresult):
     response=["ZTP Provisioning enabled",formresult['id']]
     return response
 
+
 def ztpDeactivate(formresult):
     queryStr="update ztpdevices set enableztp='0',ztpstatus='Disabled' where id='{}'".format(formresult['id'])
     classes.classes.sqlQuery(queryStr,"update")
@@ -263,8 +261,9 @@ def ztpDeactivate(formresult):
             os.remove(filename)
         except OSError as e:
             print (e.filename,e.strerror)
-    response=["ZTP Provisioning disabled",formresult['id']]
+    response=["ZTP Provisioning disabled",formresult['id'], formresult['macaddress'], formresult['name']]
     return response
+
 
 def verifyCredentials(id,username,password, sysvars):
     # Obtain the switch information, like IP address

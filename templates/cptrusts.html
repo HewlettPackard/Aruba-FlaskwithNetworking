@@ -1,4 +1,13 @@
-<!-- (C) Copyright 2020 Hewlett Packard Enterprise Development LP. -->
+<!-- (C) Copyright 2021 Hewlett Packard Enterprise Development LP. -->
+
+{% block scripts %}
+<script type="text/javascript">
+var url = "static/main.js";
+$.getScript(url);
+</script>
+{% endblock %}
+
+
 {% block content %}
 <div id="maincontainer" style="background-color: mintcream;">
     <table class="tablewithborder">
@@ -39,15 +48,16 @@
                             <option value="50" {% if trEntryperpage==50 %} selected {% endif %}>50</option>
                             <option value="100" {% if trEntryperpage==100 %} selected {% endif %}>100</option>
                         </select> entries per page (page <select name="trPageoffset" id="trPageoffset" class="showTrusts" onchange="showTrusts({{ deviceInfo['id'] }})">
-    {% if trTotalentries==0 %}
-    <option value="1" selected>1</option>
-    {% else %}
-    {% for i in  range((trTotalentries/trEntryperpage)|round(0,'ceil')|int) %}
-    <option value="{{ i }}" {% if trPageoffset==i %}selected{% endif %}>{{ i+1 }}</option>
-    {% endfor %}
-    {% endif %}
-</select> of {% if trTotalentries==0 %} 1 {% else %}{{ (trTotalentries/trEntryperpage)|round(0,'ceil')|int }} {% endif %} pages)
-                    </font><input type="button" name="searchAction" value="Search" class="button" id="searchTrusts" onclick="showTrusts({{ deviceInfo['id'] }})"/>
+                            {% if trTotalentries==0 %}
+                            <option value="1" selected>1</option>
+                            {% else %}
+                            {% for i in  range((trTotalentries/trEntryperpage)|round(0,'ceil')|int) %}
+                            <option value="{{ i }}" {% if trPageoffset==i %}selected{% endif %}>{{ i+1 }}</option>
+                            {% endfor %}
+                            {% endif %}
+                        </select> of {% if trTotalentries==0 %} 1 {% else %}{{ (trTotalentries/trEntryperpage)|round(0,'ceil')|int }} {% endif %} pages)
+                    </font>
+                    <button type="button" name="searchAction" value="Search" id="searchTrusts" class="transparent-button" onclick="showTrusts({{ deviceInfo['id'] }})"><img src="static/images/search.svg" width="12" height="12" class="showtitleTooltip" data-title="Search"></button>
                 </td>
             </tr>
         </form>

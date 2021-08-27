@@ -16,21 +16,13 @@
 {% set totalpages=(totalentries|int/entryperpage|int)|int +1 %}
 {% endif %}
 <div id="maincontainer">
+
     <table class="tablenoborder" id="imagesTable">
         <form method="post" name="deviceimage" id="deviceimage">
-            <input name="action" type="hidden" value="navigation" />
-            <input name='currentpageoffset' type='hidden' value="{{pageoffset}}" />
-            <input name='currenttotalentries' type='hidden' value="{{totalentries}}" />
-            <input name='totalpages' type="hidden" value="{{ totalpages }}" />
-            <input name='currententryperpage' type='hidden' value="{{ entryperpage }}" />
             <tr>
-                <td width="5%" align="left" nowrap><font class="font13pxgrey">ID</font></td>
-                <td width="15%" align="left"><font class="font13pxgrey">Name</font></td>
-                <td width="15%" align="left" nowrap><font class="font13pxgrey">Device family</font></td>
-                <td width="15%" align="left"><font class="font13pxgrey">Version</font></td>
-                <td width="15%" align="left"><font class="font13pxgrey">Image name</font></td>
-                <td width="20%" align="right">
-                    <font class="font13pxgrey">
+
+                <td align="right">
+                    <font class="font11pxgrey">
                         Show <select name="entryperpage" onchange="this.form.submit()">
                             <option value="5" {% if entryperpage|int==5 or entryperpage is not defined %} selected {% endif %}>5</option>
                             <option value="10" {% if entryperpage|int==10 %} selected {% endif %}>10</option>
@@ -39,173 +31,202 @@
                             <option value="100" {% if entryperpage|int==100 %} selected {% endif %}>100</option>
                         </select> entries per page (page <select name="pageoffset" onchange="this.form.submit()">
                             {% for i in  range(totalpages) %}
-                            <option value="{{ (i)*entryperpage|int }}" {% if (pageoffset|int)/(entryperpage|int)==(i) %}selected{% endif %}>{{ i+1 }}</option>
+                            <option value="{{ (i)*entryperpage|int }}" {% if (pageoffset|int) /(entryperpage|int) ==(i) %}selected{% endif %}>{{ i+1 }}</option>
                             {% endfor %}
                         </select> of {{ totalpages }} pages)
                     </font>
                 </td>
             </tr>
-            <tr style="background-color: grey;" class="tableTitle">
-                <td align="left" nowrap>&nbsp;</td>
-                <td align="left" valign="top"><input type="text" name="searchName" value="{{ formresult.searchName }}" size="15"></td>
-                <td align="left" valign="top">
-                    <select name="searchDevicefamily" onchange="this.form.submit();">
-                        <option value="">Select</option>
-                        <option value="2930" {% if formresult.searchDevicefamily=="2930" %} selected {% endif %}>2930</option>
-                        <option value="3810/5400" {% if formresult.searchDevicefamily=="3810/5400" %} selected {% endif %}>3810/5400</option>
-                        <option value="6200" {% if formresult.searchDevicefamily=="6200" %} selected {% endif %}>6200</option>
-                        <option value="6300/6400" {% if formresult.searchDevicefamily=="6300/6400" %} selected {% endif %}>6300/6400</option>
-                        <option value="8320" {% if formresult.searchDevicefamily=="8320" %} selected {% endif %}>8320</option>
-                        <option value="8325" {% if formresult.searchDevicefamily=="8325" %} selected {% endif %}>8325</option>
-                        <option value="8360" {% if formresult.searchDevicefamily=="8360" %} selected {% endif %}>8360</option>
-                        <option value="8400" {% if formresult.searchDevicefamily=="8400" %} selected {% endif %}>8400</option>
-                    </select>
-                </td>
-                <td align="left" valign="top"><input type="text" name="searchVersion" value="{{ formresult.searchVersion }}" size="15"></td>
-                <td></td>
-                <td align="right">
-                    <input type="button" class="button" value="Add image" id="adddeviceImage" onclick="clearRow(this);"  {% if va("imageaccess","feature")==False %} style="opacity:0.2;pointer-events:none;" {% endif %}><input type="submit" name="searchAction" value="Search" class="button" id="searchImage" onclick="clearRow(this);">
-                </td>
-            </tr>
-        </form>
-        {% for info in result %}
-        <form method="post">
-            <input name='currentpageoffset' type='hidden' value="{{pageoffset}}" />
-            <input name='currenttotalentries' type='hidden' value="{{totalentries}}" />
-            <input name='totalpages' type="hidden" value="{{ totalpages }}" />
-            <input name='entryperpage' type='hidden' value="{{ entryperpage }}" />
-            <input name='currententryperpage' type='hidden' value="{{ entryperpage }}" />
-            <input type="hidden" name="searchName" value="{{ formresult.searchName }}">
-            <input type="hidden" name="searchDevicefamily" value="{{ formresult.searchDevicefamily }}">
-            <input type="hidden" name="searchVersion" value="{{ formresult.searchVersion }}">
-            <input type="hidden" name="imageid" value="{{ info['id'] }}">
-            <tr>
-                <td><font class="font12px">{{ loop.index }}</font></td>
-                <td><font class="font12px">{{ info['name'] }}</font></td>
-                <td><font class="font12px">{{ info['devicefamily'] }}</font></td>
-                <td><font class="font12px">{{ info['version'] }}</font></td>
-                <td><font class="font12px">{{ info['filename'] }}</font></td>
-                <td align="right">
-                    <input type="button" name="editdeviceImage" value="Edit" data-imageid="{{info['id']}}" class="editdeviceImage" onclick="highlightRow(this);"  {% if va("imageaccess","feature")==False %} style="opacity:0.2;pointer-events:none;" {% endif %}><input type="submit" name="action" value="Delete" class="button" onclick="return confirm('Are you sure you want to delete {{ info['name'] }}?')"  {% if va("imageaccess","feature")==False %} style="opacity:0.2;pointer-events:none;" {% endif %}>
-                </td>
-            </tr>
-        </form>
-        {% endfor %}
-
     </table>
-
-    <div id="addImage" style="display:none;" data-id="">
-        <p>
-            <table class="tablenoborder">
-                <tr style="background-color: grey;" class="tableTitle">
-                    <td colspan="9"><font class="font13pxwhite"><center>Add software image</center></font></td>
-                </tr>
-                <tr style="line-height:20px;">
-                    <td width="12%" align="left" nowrap><font class="font13pxgrey">Name</font></td>
-                    <td width="12%"><font class="font13pxgrey">Device family</font></td>
-                    <td width="12%"><font class="font13pxgrey">Software version</font></td>
-                    <td width="12%"><font class="font13pxgrey">Upload image source</font></td>
-                </tr>
-                <tr>
-                    <form method="post" action="deviceimages" enctype="multipart/form-data">
-                        <input name='currentpageoffset' type='hidden' value="{{pageoffset}}" />
-                        <input name='currenttotalentries' type='hidden' value="{{totalentries}}" />
-                        <input name='totalpages' type="hidden" value="{{ totalpages }}" />
-                        <input name='entryperpage' type='hidden' value="{{ entryperpage }}" />
-                        <input name='currententryperpage' type='hidden' value="{{ entryperpage }}" />
-                        <input type="hidden" name="searchName" value="{{ formresult.searchName }}">
-                        <input type="hidden" name="searchDevicefamily" value="{{ formresult.searchDevicefamily }}">
-                        <input type="hidden" name="searchVersion" value="{{ formresult.searchVersion }}">
-                        <td><div class="addField"><input type="text" name="name" class="input" size="30"></div></td>
-                        <td>
-                            <div class="addField">
-                                <select name="devicefamily">
-                                    <option value="">Select</option>
-                                    <option value="2930">2930</option>
-                                    <option value="3810/5400">3810/5400</option>
-                                    <option value="6200">6200</option>
-                                    <option value="6300/6400">6300/6400</option>
-                                    <option value="8320">8320</option>
-                                    <option value="8325">8325</option>
-                                    <option value="8360">8360</option>
-                                    <option value="8400">8400</option>
-                                </select>
-                            </div>
+    <table class="tablenoborder" id="imagesTable">
+                    <input name="action" type="hidden" value="navigation" />
+                    <input name='currentpageoffset' type='hidden' value="{{pageoffset}}" />
+                    <input name='currenttotalentries' type='hidden' value="{{totalentries}}" />
+                    <input name='totalpages' type="hidden" value="{{ totalpages }}" />
+                    <input name='currententryperpage' type='hidden' value="{{ entryperpage }}" />
+                    <tr>
+                        <td width="2%" align="left" nowrap><font class="font13pxgrey">ID</font></td>
+                        <td><font class="font13pxgrey">Name</font></td>
+                        <td><font class="font13pxgrey">Device family</font></td>
+                        <td><font class="font13pxgrey">Version</font></td>
+                        <td><font class="font13pxgrey">Image name</font></td>
+                        <td></td>
+                    </tr>
+                    <tr style="background-color: grey;" class="tableTitle">
+                        <td align="left" nowrap>&nbsp;</td>
+                        <td align="left" valign="top"><input type="text" name="searchName" value="{{ formresult.searchName }}" size="15"></td>
+                        <td align="left" valign="top">
+                            <select name="searchDevicefamily" onchange="this.form.submit();">
+                                <option value="">Select</option>
+                                <option value="2930" {% if formresult.searchDevicefamily=="2930" %} selected {% endif %}>2930</option>
+                                <option value="3810/5400" {% if formresult.searchDevicefamily=="3810/5400" %} selected {% endif %}>3810/5400</option>
+                                <option value="6100" {% if formresult.searchDevicefamily=="6100" %} selected {% endif %}>6100</option>
+                                <option value="6200" {% if formresult.searchDevicefamily=="6200" %} selected {% endif %}>6200</option>
+                                <option value="6300/6400" {% if formresult.searchDevicefamily=="6300/6400" %} selected {% endif %}>6300/6400</option>
+                                <option value="8320" {% if formresult.searchDevicefamily=="8320" %} selected {% endif %}>8320</option>
+                                <option value="8325" {% if formresult.searchDevicefamily=="8325" %} selected {% endif %}>8325</option>
+                                <option value="8360" {% if formresult.searchDevicefamily=="8360" %} selected {% endif %}>8360</option>
+                                <option value="8400" {% if formresult.searchDevicefamily=="8400" %} selected {% endif %}>8400</option>
+                            </select>
                         </td>
-                        <td><div><input type="text" name="version" class="input"></div></td>
-                        <td>
-                            <input type="file" name="softwareimage" id="softwareimage" />
-
-                        </td>
+                        <td align="left" valign="top"><input type="text" name="searchVersion" value="{{ formresult.searchVersion }}" size="15"></td>
+                        <td></td>
                         <td align="right">
-                            <div class="addActions">
-                                <input type="submit" disabled name="action" value="Submit image" class="button" />
-                            </div>
+                            <button type="button" class="transparent-button" value="Add image" id="adddeviceImage" onclick="clearRow(this);" {% if va("imageaccess","feature")==False %} style="opacity:0.2;pointer-events:none;" {% endif %}><img src="static/images/add.svg" width="12" height="12" class="showtitleTooltip" data-title="Add device image"></button><button type="submit" name="searchAction" value="Search" class="transparent-button" id="searchImage" onclick="clearRow(this);"><img src="static/images/search.svg" width="12" height="12" class="showtitleTooltip" data-title="Search"></button>
                         </td>
-                    </form>
-                </tr>
-            </table>
-        </p>
-    </div>
-
-    <div id="editImage" style="display:none;" data-id="">
-        <p>
-            <table class="tablenoborder">
-                <tr style="background-color: grey;" class="tableTitle">
-                    <td colspan="9"><font class="font13pxwhite"><center>Edit software image</center></font></td>
-                </tr>
-                <tr style="line-height:20px;">
-                    <td width="12%" align="left" nowrap><font class="font13pxgrey">Name</font></td>
-                    <td width="12%"><font class="font13pxgrey">Device family</font></td>
-                    <td width="12%"><font class="font13pxgrey">Software version</font></td>
-                    <td width="25%"><font class="font13pxgrey">Image name</font></td>
-                    <td width="12%"><font class="font13pxgrey">Upload image source</font></td>
-                </tr>
-                <tr>
-                    <form method="post" action="deviceimages" enctype="multipart/form-data">
-                        <input name='currentpageoffset' type='hidden' value="{{pageoffset}}" />
-                        <input name='currenttotalentries' type='hidden' value="{{totalentries}}" />
-                        <input name='totalpages' type="hidden" value="{{ totalpages }}" />
-                        <input name='entryperpage' type='hidden' value="{{ entryperpage }}" />
-                        <input name='currententryperpage' type='hidden' value="{{ entryperpage }}" />
-                        <input type="hidden" name="imageid" id="imageid" value="{{ formresult.imageid }}">
-                        <input type="hidden" name="searchName" value="{{ formresult.searchName }}">
-                        <input type="hidden" name="searchDevicefamily" value="{{ formresult.searchDevicefamily }}">
-                        <input type="hidden" name="searchVersion" value="{{ formresult.searchVersion }}">
-                        <input type="hidden" name="filename" id="editFilename" value="{{ formresult.filename }}">
-                        <td><div class="editField"><input type="text" name="name" class="input" id="editName" size="30" value="{{ formresult.name }}"></div></td>
-                        <td>
-                            <div class="editField">
-                                <select name="devicefamily" id="editDevicefamily">
-                                    <option value="">Select</option>
-                                    <option value="2930">2930</option>
-                                    <option value="3810/5400">3810/5400</option>
-                                    <option value="6200">6200</option>
-                                    <option value="6300/6400">6300/6400</option>
-                                    <option value="8320">8320</option>
-                                    <option value="8325">8325</option>
-                                    <option value="8360">8360</option>
-                                    <option value="8400">8400</option>
-                                </select>
-                            </div>
-                        </td>
-                        <td><div class="editField"><input type="text" id="editVersion" name="version" class="input" value="{{ formresult.version }}"></div></td>
-                        <td><div id="editImagename"></div></td>
-                        <td>
-                            <div class="editField">
-                                <input type="file" name="softwareimage" />
-                            </div>
-                        </td>
+                    </tr>
+                </form>
+                {% for info in result %}
+                <form method="post">
+                    <input name='currentpageoffset' type='hidden' value="{{pageoffset}}" />
+                    <input name='currenttotalentries' type='hidden' value="{{totalentries}}" />
+                    <input name='totalpages' type="hidden" value="{{ totalpages }}" />
+                    <input name='entryperpage' type='hidden' value="{{ entryperpage }}" />
+                    <input name='currententryperpage' type='hidden' value="{{ entryperpage }}" />
+                    <input type="hidden" name="searchName" value="{{ formresult.searchName }}">
+                    <input type="hidden" name="searchDevicefamily" value="{{ formresult.searchDevicefamily }}">
+                    <input type="hidden" name="searchVersion" value="{{ formresult.searchVersion }}">
+                    <input type="hidden" name="imageid" value="{{ info['id'] }}">
+                    <tr>
+                        <td><font class="font10px">{{ loop.index }}</font></td>
+                        <td><font class="font10px">{{ info['name'] }}</font></td>
+                        <td><font class="font10px">{{ info['devicefamily'] }}</font></td>
+                        <td><font class="font10px">{{ info['version'] }}</font></td>
+                        <td><font class="font10px">{{ info['filename'] }}</font></td>
                         <td align="right">
-                            <div class="editActions">
-                                <input type="submit" name="action" value="Submit changes" class="button" />
-                            </div>
+                            <button type="button" name="editdeviceImage" value="Edit" data-imageid="{{info['id']}}" class="transparent-button editdeviceImage" onclick="highlightRow(this);" {% if va("imageaccess","feature")==False %} style="opacity:0.2;pointer-events:none;" {% endif %}><img src="static/images/edit.svg" width="12" height="12" class="showtitleTooltip" data-title"Edit device image"></button><button type="submit" name="action" value="Delete" class="transparent-button" onclick="return confirm('Are you sure you want to delete {{ info['name'] }}?')" {% if va("imageaccess","feature")==False %} style="opacity:0.2;pointer-events:none;" {% endif %}><img src="static/images/trash.svg" width="12" height="12" class="showtitleTooltip" data-title="Delete device image"></button>
                         </td>
-                    </form>
-                </tr>
+                    </tr>
+                </form>
+                {% endfor %}
+
             </table>
-        </p>
-    </div>
+
+            <div id="addImage" style="display:none;" data-id="">
+                <p>
+                    <table class="tablenoborder">
+                        <tr style="background-color: grey;" class="tableTitle">
+                            <td colspan="9"><font class="font13pxwhite"><center>Add software image</center></font></td>
+                        </tr>
+                        <tr style="line-height:20px;">
+                            <td align="left" nowrap><font class="font13pxgrey">Name</font></td>
+                            <td><font class="font13pxgrey">Device family</font></td>
+                            <td><font class="font13pxgrey">Software version</font></td>
+                            <td><font class="font13pxgrey">Upload image source</font></td>
+                        </tr>
+                        <tr>
+                            <form method="post" action="deviceimages" enctype="multipart/form-data">
+                                <input name='currentpageoffset' type='hidden' value="{{pageoffset}}" />
+                                <input name='currenttotalentries' type='hidden' value="{{totalentries}}" />
+                                <input name='totalpages' type="hidden" value="{{ totalpages }}" />
+                                <input name='entryperpage' type='hidden' value="{{ entryperpage }}" />
+                                <input name='currententryperpage' type='hidden' value="{{ entryperpage }}" />
+                                <input type="hidden" name="searchName" value="{{ formresult.searchName }}">
+                                <input type="hidden" name="searchDevicefamily" value="{{ formresult.searchDevicefamily }}">
+                                <input type="hidden" name="searchVersion" value="{{ formresult.searchVersion }}">
+                                <td><div class="addField"><input type="text" name="name" class="input" size="30"></div></td>
+                                <td>
+                                    <div class="addField">
+                                        <select name="devicefamily">
+                                            <option value="">Select</option>
+                                            <option value="2930">2930</option>
+                                            <option value="3810/5400">3810/5400</option>
+                                            <option value="6100">6100</option>
+                                            <option value="6200">6200</option>
+                                            <option value="6300/6400">6300/6400</option>
+                                            <option value="8320">8320</option>
+                                            <option value="8325">8325</option>
+                                            <option value="8360">8360</option>
+                                            <option value="8400">8400</option>
+                                        </select>
+                                    </div>
+                                </td>
+                                <td><div><input type="text" name="version" class="input"></div></td>
+                                <td>
+                                    <div class="image-upload" style="cursor:pointer;">
+                                        <label for="addFileupload">
+                                            <img src="static/images/attachment.svg" width="12" height="12">
+                                        </label>
+                                        <input class="file-upload" id="addFileupload" type="file" style="display:none;" name="softwareimage">
+                                        <span class="file-name"></span>
+                                    </div>
+                                </td>
+                                <td align="right">
+                                    <div class="addActions">
+                                        <input type="submit" disabled name="action" value="Submit image" class="button" />
+                                    </div>
+                                </td>
+                            </form>
+                        </tr>
+                    </table>
+                </p>
+            </div>
+
+            <div id="editImage" style="display:none;" data-id="">
+                <p>
+                    <table class="tablenoborder">
+                        <tr style="background-color: grey;" class="tableTitle">
+                            <td colspan="9"><font class="font13pxwhite"><center>Edit software image</center></font></td>
+                        </tr>
+                        <tr style="line-height:20px;">
+                            <td align="left" nowrap><font class="font13pxgrey">Name</font></td>
+                            <td><font class="font13pxgrey">Device family</font></td>
+                            <td><font class="font13pxgrey">Software version</font></td>
+                            <td><font class="font13pxgrey">Image name</font></td>
+                            <td><font class="font13pxgrey">Upload image source</font></td>
+                        </tr>
+                        <tr>
+                            <form method="post" action="deviceimages" enctype="multipart/form-data">
+                                <input name='currentpageoffset' type='hidden' value="{{pageoffset}}" />
+                                <input name='currenttotalentries' type='hidden' value="{{totalentries}}" />
+                                <input name='totalpages' type="hidden" value="{{ totalpages }}" />
+                                <input name='entryperpage' type='hidden' value="{{ entryperpage }}" />
+                                <input name='currententryperpage' type='hidden' value="{{ entryperpage }}" />
+                                <input type="hidden" name="imageid" id="imageid" value="{{ formresult.imageid }}">
+                                <input type="hidden" name="searchName" value="{{ formresult.searchName }}">
+                                <input type="hidden" name="searchDevicefamily" value="{{ formresult.searchDevicefamily }}">
+                                <input type="hidden" name="searchVersion" value="{{ formresult.searchVersion }}">
+                                <input type="hidden" name="filename" id="editFilename" value="{{ formresult.filename }}">
+                                <td><div class="editField"><input type="text" name="name" class="input" id="editName" size="30" value="{{ formresult.name }}"></div></td>
+                                <td>
+                                    <div class="editField">
+                                        <select name="devicefamily" id="editDevicefamily">
+                                            <option value="">Select</option>
+                                            <option value="2930">2930</option>
+                                            <option value="3810/5400">3810/5400</option>
+                                            <option value="6100">6100</option>
+                                            <option value="6200">6200</option>
+                                            <option value="6300/6400">6300/6400</option>
+                                            <option value="8320">8320</option>
+                                            <option value="8325">8325</option>
+                                            <option value="8360">8360</option>
+                                            <option value="8400">8400</option>
+                                        </select>
+                                    </div>
+                                </td>
+                                <td><div class="editField"><input type="text" id="editVersion" name="version" class="input" value="{{ formresult.version }}"></div></td>
+                                <td><div id="editImagename"></div></td>
+                                <td>
+                                    <div class="editField">
+                                        <div class="image-upload" style="cursor:pointer;">
+                                            <label for="addFileupload">
+                                                <img src="static/images/attachment.svg" width="12" height="12">
+                                            </label>
+                                            <input class="file-upload" id="addFileupload" type="file" style="display:none;" name="softwareimage">
+                                            <span class="file-name"></span>
+                                        </div>
+                                    </div>
+                                </td>
+                                <td align="right">
+                                    <div class="editActions">
+                                        <input type="submit" name="action" value="Submit changes" class="button" />
+                                    </div>
+                                </td>
+                            </form>
+                        </tr>
+                    </table>
+                </p>
+            </div>
 
 </div>
 

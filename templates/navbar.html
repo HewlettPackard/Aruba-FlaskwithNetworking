@@ -1,4 +1,4 @@
-    <!-- (C) Copyright 2020 Hewlett Packard Enterprise Development LP. -->
+    <!-- (C) Copyright 2021 Hewlett Packard Enterprise Development LP. -->
 
 <script>updateCookie({{ authOK | safe }}, {{ sysvars['idle_timeout'] }})</script>
 {% set userinfo="Logout" %}
@@ -12,7 +12,7 @@
     {% if va("devices","menu")== True %}
     <li class="menu_item">
         <a href="#" class="drop">Devices</a>
-        <div class="dropdown align_left">
+        <div class="dropdown">
             <div class="col_1">
                 <ul class="simple">
                     {% if va("switchaccess","submenu")== True %}
@@ -32,7 +32,7 @@
     {% if va("ztp","menu")== True %}
     <li class="menu_item">
         <a href="#" class="drop">ZTP</a>
-        <div class="dropdown align_left">
+        <div class="dropdown">
             <div class="col_1">
                 <ul class="simple">
                     {% if va("ztptemplateaccess","submenu")== True %}
@@ -49,16 +49,18 @@
     {% if va("deviceupdates","menu")== True %}
     <li class="menu_item">
         <a href="#" class="drop">Device updates</a>
-        <div class="dropdown align_left">
+        <div class="dropdown">
             <div class="col_1">
                 <ul class="simple">
                     {% if va("imageaccess","submenu")== True %}
                     <li><a href="/deviceimages">Image repository</a></li>
                     {% endif %}
                     {% if va("upgradescheduleraccess","submenu")== True %}
-                    <li><a href="/upgradescheduler">Upgrade information</a></li>
+                    <li><a href="/upgradescheduler">Upgrade monitor</a></li>
                     {% endif %}
-
+                    {% if va("upgradeprofilesaccess","submenu")== True %}
+                    <li><a href="/upgradeprofiles">Upgrade profiles</a></li>
+                    {% endif %}
                 </ul>
             </div>
         </div>
@@ -74,27 +76,10 @@
         <a href="/telemetry">Telemetry</a>
     </li>
     {% endif %}
-    {% if va("ubt","menu")== True %}
-    <li>
-        <a href="#" class="drop">UBT</a>
-        <div class="submenu dropdown align_left">
-            <div class="col_1">
-                <ul class="simple">
-                    {% if va("ubtprofileaccess","submenu")== True %}
-                    <li><a href="/dsprofile">Profiles</a></li>
-                    {% endif %}
-                    {% if va("ubtserviceaccess","submenu")== True %}
-                    <li><a href="/dsservice">Services</a></li>
-                    {% endif %}
-                </ul>
-            </div>
-        </div>
-    </li>
-    {% endif %}
-    {% if va("trackers","menu")== True %}
+    {% if va("tools","menu")== True %}
     <li class="menu_item">
-        <a href="#" class="drop">Trackers</a>
-        <div class="dropdown align_left">
+        <a href="#" class="drop">Tools</a>
+        <div class="dropdown">
             <div class="col_1">
                 <ul class="simple">
                     {% if va("dhcptrackeraccess","submenu")== True %}
@@ -106,17 +91,6 @@
                     {% if va("syslogtrackeraccess","submenu")== True %}
                     <li><a href="/syslog">Syslog</a></li>
                     {% endif %}
-                </ul>
-            </div>
-        </div>
-    </li>
-    {% endif %}
-    {% if va("tools","menu")== True %}
-    <li class="menu_item">
-        <a href="#" class="drop">Tools</a>
-        <div class="dropdown align_left">
-            <div class="col_1">
-                <ul class="simple">
                     {% if va("anycliaccess","submenu")== True %}
                     <li><a href="/anycli">AnyCLI</a></li>
                     {% endif %}
@@ -128,7 +102,7 @@
     {% if va("administration","menu")== True %}
     <li class="menu_item">
         <a href="#" class="drop">Administration</a>
-        <div class="dropdown align_left">
+        <div class="dropdown">
             <div class="col_1">
                 <ul class="simple">
                     {% if va("sysuseraccess","submenu")== True %}
@@ -141,7 +115,7 @@
                     <li><a href="/deviceattributes">Device attributes</a></li>
                     {% endif %}
                     {% if va("sysadminaccess","submenu")== True %}
-                    <li><a href="/sysconf">System configuration</a></li>
+                    <li><a href="/sysconf">System settings</a></li>
                     {% endif %}
                     {% if va("servicesstatusaccess","submenu")== True %}
                     <li><a href="/sysmon">Services status</a></li>
@@ -153,23 +127,19 @@
     {% endif %}
 
 
-    <li id="liProgress" class="nav-float" style="width: 300px;display: none; overflow: visible;text-decoration: none;pointer-events:none;">
+    <li id="liProgress" style="width: 350px; display: none; overflow: visible;text-decoration: none;pointer-events:none;">
         <div class="progressContainer" id="progressContainer">
             <div class="progressInfo" id="progressInfo"></div>
-            <div class="progressBar" id="progressBar"></div>
         </div>
     </li>
 
-    
-
     <li class="menu_right">
-        <a title="Logout"></a>
-        <div id="userInfo">
+        <div id="userInfo" class="transparent-button">
             <script>getCookie('username');</script>
         </div>
     </li>
-    <li class="menu_right no_event" style="top:0px;">
-        <div>
+    <li class="menu_right no_event">
+        <div class="transparent-button">
             {{ pagename }}
         </div>
     </li>

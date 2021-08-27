@@ -36,7 +36,7 @@ def checkcxCookie(deviceid):
                     if "set-cookie" in response.headers:
                         cookie_header = {'Cookie': response.headers['set-cookie']}
                     else:
-                        cookie_header=""
+                        cookie_header={}
             else:
                 queryStr="update devices set switchstatus='{}' where id='{}'".format(response.status_code,deviceid)
                 classes.classes.sqlQuery(queryStr,"update")
@@ -48,7 +48,7 @@ def checkcxCookie(deviceid):
             # Something went wrong with the login
             queryStr="update devices set switchstatus=100 where id='{}'".format(deviceid)
             classes.classes.sqlQuery(queryStr,"update")
-            return
+            return {}
     else :
         try:
             if type(deviceCreds['secinfo']) is dict:
@@ -73,7 +73,7 @@ def checkcxCookie(deviceid):
                         if "set-cookie" in response.headers:
                             cookie_header = {'Cookie': response.headers['set-cookie']}
                         else:
-                            cookie_header=""                       
+                            cookie_header={}                      
                         queryStr="update devices set secinfo='{}', switchstatus=200 where id='{}'".format(json.dumps(cookie_header),deviceid)
                         classes.classes.sqlQuery(queryStr,"update")
                         return cookie_header
@@ -84,7 +84,7 @@ def checkcxCookie(deviceid):
                             if "set-cookie" in response.headers:
                                 cookie_header = {'Cookie': response.headers['set-cookie']}
                             else:
-                                cookie_header=""                       
+                                cookie_header={}                     
                             queryStr="update devices set secinfo='{}', switchstatus=200 where id='{}'".format(json.dumps(cookie_header),deviceid)
                             classes.classes.sqlQuery(queryStr,"update")
                             return cookie_header
@@ -101,20 +101,20 @@ def checkcxCookie(deviceid):
                     switchstatus=100
                 queryStr="update devices set switchstatus={} where id='{}'".format(switchstatus,deviceid)
                 classes.classes.sqlQuery(queryStr,"update")
-                return switchstatus
+                return {}
         except:
             if deviceCreds['switchstatus']>100 and deviceCreds['switchstatus']<103:
                 switchstatus=deviceCreds['switchstatus']-1
             else:
-                switchstatus=100
+                switchstatus={}
             queryStr="update devices set switchstatus={} where id='{}'".format(switchstatus,deviceid)
             classes.classes.sqlQuery(queryStr,"update")
-            return switchstatus   
-    # 100 means that the switch is not reachable at all
-    return 100
+            return {}   
+    # An empty dict means that the switch is not reachable at all
+    return {}
 
 def getcxREST(deviceid,url):
-    response={}
+    response={}   
     cookie_header=checkcxCookie(deviceid)
     if type(cookie_header) is dict:
         header=cookie_header
@@ -125,15 +125,15 @@ def getcxREST(deviceid,url):
         deviceCreds=classes.classes.sqlQuery(queryStr,"selectone")
         baseurl="https://{}/rest/v1/".format(deviceCreds['ipaddress'])
         try:
-            response=requests.get(baseurl + url,headers=header,verify=False, timeout=10)
+            response=requests.get(baseurl + url,headers=header,verify=False, timeout=5)
             try:
                 # If the response contains information, the content is converted to json format
                 response=json.loads(response.content.decode('utf-8'))
                 return response
             except:
-                return
+                return {}
         except:
-            return
+            return {}
     return
 
 
@@ -168,11 +168,17 @@ def getcxInfo(deviceid):
     vrfinfo={}
     vsxlags={}
     vsfinfo={}
+    routeinfo={}
     cpuValappend=""
     memValappend=""
     try:
-        #This definition obtains all the relevant information from the cx device and then stores this in the database
-        urllist=["system/interfaces?attributes=admin_state%2Cduplex%2Chw_intf_info%2Clink_speed%2Clink_state%2Clink_state_hw%2Clldp_statistics%2Cmtu%2Cname%2Cstatistics&depth=2","system/ports?attributes=applied_vlan_trunks%2Cip4_address%2Cip4_address_secondary%2Cip6_addresses%2Cname%2Cvrf&depth=1","system/subsystems?attributes=resource_utilization&depth=2","system?attributes=capabilities%2Ccapacities%2Ccapacities_status%2Cboot_time%2Chostname%2Cmgmt_intf%2Cmgmt_intf_status%2Cplatform_name%2Csoftware_images%2Csoftware_info%2Csoftware_version%2Csubsystems&depth=2","system/vsx?depth=3","system/vrfs?depth=2","system/vsx_remote_lags?depth=2","system/vrfs/default/routes?depth=1"]
+        # This definition obtains all the relevant information from the cx device and then stores this in the database
+        # If we are dealing with a 6100, we need a different set of URL's
+        deviceFamily=classes.classes.getswitchFamily(deviceid)
+        if deviceFamily=="6100":
+            urllist=["system/interfaces?attributes=admin_state%2Cduplex%2Chw_intf_info%2Clink_speed%2Clink_state%2Clink_state_hw%2Clldp_statistics%2Cmtu%2Cname%2Cstatistics&depth=2","system/ports?attributes=applied_vlan_trunks%2Cip4_address%2Cip6_addresses%2Cname%2Cvrf&depth=1","system/vrfs?depth=2", "system/subsystems?attributes=resource_utilization&depth=2"]
+        else:
+            urllist=["system/interfaces?attributes=admin_state%2Cduplex%2Chw_intf_info%2Clink_speed%2Clink_state%2Clink_state_hw%2Clldp_statistics%2Cmtu%2Cname%2Cstatistics&depth=2","system/ports?attributes=applied_vlan_trunks%2Cip4_address%2Cip4_address_secondary%2Cip6_addresses%2Cname%2Cvrf&depth=1","system/subsystems?attributes=resource_utilization&depth=2","system/vsx?depth=3","system/vrfs?depth=2","system/vsx_remote_lags?depth=2","system/vrfs/default/routes?depth=1"]
         for items in urllist:
             try:
                 result=getcxREST(deviceid,items)
@@ -182,10 +188,15 @@ def getcxInfo(deviceid):
             if items=="system/vsx?depth=3":         
                 vsxinfo=json.dumps(result, separators=(',',':'))
             elif items=="system/vrfs?depth=2":
-                vrfinfo=json.dumps(result, separators=(',',':'))
+                if deviceFamily=="6100":
+                    vrfinfo="{}"
+                else:
+                    vrfinfo=json.dumps(result, separators=(',',':'))
             elif items=="system/vsx_remote_lags?depth=2":
                 vsxlags=json.dumps(result, separators=(',',':'))
             elif items=="system/ports?attributes=applied_vlan_trunks%2Cip4_address%2Cip4_address_secondary%2Cip6_addresses%2Cname%2Cvrf&depth=1":
+                portinfo=json.dumps(result, separators=(',',':'))
+            elif items=="system/ports?attributes=applied_vlan_trunks%2Cip4_address%2Cip6_addresses%2Cname%2Cvrf&depth=1":
                 portinfo=json.dumps(result, separators=(',',':'))
             elif items=="system/vrfs/default/routes?depth=1":
                 routeinfo=json.dumps(result, separators=(',',':'))
@@ -239,18 +250,33 @@ def getcxInfo(deviceid):
                 #Store the last 30 values in the database, this value contains timestamp as key value and CPU or memory as value
                 cpuVallist=json.dumps(cpuVallist[-30:])
                 memVallist=json.dumps(memVallist[-30:])
-            else:
-                # sysinfo=json.dumps(result, separators=(',',':'))
-                sysinfo=json.dumps(result)
+        # Now obtain sysinfo
+        if deviceFamily=="6100":
+            url="system?attributes=boot_time%2Ccapabilities%2Ccapacities%2Ccapacities_status%2Chostname%2Cplatform_name%2Csoftware_images%2Csoftware_info%2Csoftware_version%2Csubsystems&depth=2"
+        else:
+            url="system?attributes=capabilities%2Ccapacities%2Ccapacities_status%2Cboot_time%2Chostname%2Cmgmt_intf%2Cmgmt_intf_status%2Cplatform_name%2Csoftware_images%2Csoftware_info%2Csoftware_version%2Csubsystems&depth=2"
+        try:
+            result=getcxREST(deviceid,url)
+            sysinfo=json.dumps(result)
+        except:
+            pass           
         # Only update the database when we have system information, port and VRF information, otherwise don't update
         # When the switch has a clean configuration there is no interface and vsx information
         isOnline=classes.classes.checkifOnline(deviceid,"arubaos-cx")
-        if len(sysinfo)>2 and len(portinfo)>2 and len(vrfinfo)>2:
-            queryStr="update devices set cpu='{}', memory='{}', sysInfo='{}', ports='{}', interfaces='{}', vsx='{}',vsxlags='{}', vrf='{}', routeinfo='{}', vsf='{}' where id='{}'".format(cpuVallist, memVallist, sysinfo, portinfo, interfaces, vsxinfo, vsxlags, vrfinfo,routeinfo,vsfinfo,str(deviceid))
-            try:
-                classes.classes.sqlQuery(queryStr,"update")
-            except:
-                pass
+        if deviceFamily=="6100":
+            if len(sysinfo)>2 and len(portinfo)>2:
+                queryStr="update devices set cpu='{}', memory='{}', sysInfo='{}', ports='{}', interfaces='{}' where id={}".format(cpuVallist, memVallist, sysinfo, portinfo, interfaces,deviceid)
+                try:
+                    classes.classes.sqlQuery(queryStr,"update")
+                except:
+                    pass
+        else:
+            if len(sysinfo)>2 and len(portinfo)>2 and len(vrfinfo)>2:
+                queryStr="update devices set cpu='{}', memory='{}', sysInfo='{}', ports='{}', interfaces='{}', vsx='{}',vsxlags='{}', vrf='{}', routeinfo='{}', vsf='{}' where id='{}'".format(cpuVallist, memVallist, sysinfo, portinfo, interfaces, vsxinfo, vsxlags, vrfinfo,routeinfo,vsfinfo,str(deviceid))
+                try:
+                    classes.classes.sqlQuery(queryStr,"update")
+                except:
+                    pass
         # If this switch is running VSF, we also need to obtain the VSF information, only update if there is VSF information
         try:
             url="system?attributes=vsf_config%2Cvsf_status&depth=3"

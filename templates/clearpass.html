@@ -20,21 +20,9 @@
 <div id="maincontainer">
     <table class="tablenoborder" />
     <form method="post">
-
-        <input name="action" type="hidden" value="navigation" />
-        <input name='currentpageoffset' type='hidden' value="{{pageoffset}}" />
-        <input name='currenttotalentries' type='hidden' value="{{totalentries}}" />
-        <input name='totalpages' type="hidden" value="{{ totalpages }}" />
-        <input name='currententryperpage' type='hidden' value="{{ entryperpage }}" />
         <tr>
-            <td width="5%" align="left" nowrap><font class="font13pxgrey">Item</font></td>
-            <td width="5%" align="left"><font class="font13pxgrey">API</font></td>
-            <td width="10%" align="left" nowrap><font class="font13pxgrey">IP address</font></td>
-            <td width="20%" align="left"><font class="font13pxgrey">Description</font></td>
-            <td width="10%"><font class="font13pxgrey">Platform</font></td>
-            <td width="10%"><font class="font13pxgrey">Software version</font></td>
-            <td width="30%" align="right">
-                <font class="font13pxgrey">
+            <td align="right">
+                <font class="font11pxgrey">
                     Show <select name="entryperpage" onchange="this.form.submit()">
                         <option value="10" {% if entryperpage|int==10 or entryperpage is not defined %} selected {% endif %}>10</option>
                         <option value="25" {% if entryperpage|int==25 %} selected {% endif %}>25</option>
@@ -47,6 +35,24 @@
                     </select> of {{ totalpages }} pages)
                 </font>
             </td>
+        </tr>
+        </table>
+        <table class="tablenoborder" />
+
+        <input name="action" type="hidden" value="navigation" />
+        <input name='currentpageoffset' type='hidden' value="{{pageoffset}}" />
+        <input name='currenttotalentries' type='hidden' value="{{totalentries}}" />
+        <input name='totalpages' type="hidden" value="{{ totalpages }}" />
+        <input name='currententryperpage' type='hidden' value="{{ entryperpage }}" />
+        <tr>
+            <td width="2%" align="left" nowrap><font class="font13pxgrey">Item</font></td>
+            <td width="2%" align="left"><font class="font13pxgrey">API</font></td>
+            <td align="left" nowrap><font class="font13pxgrey">IP address</font></td>
+            <td align="left"><font class="font13pxgrey">Description</font></td>
+            <td><font class="font13pxgrey">Platform</font></td>
+            <td><font class="font13pxgrey">Software version</font></td>
+            <td></td>
+
         </tr>
         <tr style="background-color: grey;" class="tableTitle">
             <td align="left" colspan="2">&nbsp;</td>
@@ -68,7 +74,9 @@
                     {% endfor %}
                 </select>
             </td>
-            <td align="right"><input type="button" class="button" value="Add device" id="addDevice" onclick="clearRow(this);" {% if va("clearpassaccess","feature")== False %} style="opacity:0.2;pointer-events:none;" {% endif %}><input type="submit" name="searchAction" value="Search" class="button" id="searchDevice" onclick="clearRow(this);" /></td>
+            <td align="right">
+                <button type="button" id="addDevice" class="transparent-button" onclick="clearRow(this);" {% if va("clearpassaccess","feature")==False %} disabled style="opacity:0.2;pointer-events:none;" {% endif %}><img src="static/images/add.svg" width="12" height="12" class="showtitleTooltip" data-title="Add device"></button><button type="submit" name="searchAction" id="searchDevice" class="transparent-button" onclick="clearRow(this);"><img src="static/images/search.svg" width="12" height="12" class="showtitleTooltip" data-title="Search"></button>
+            </td>
         </tr>
     </form>
     {% for info in result %}
@@ -81,9 +89,10 @@
         <input type="hidden" name="searchDescription" value="{{ formresult.searchDescription }}">
         <input type="hidden" name="searchOsversion" value="{{ formresult.searchVersion }}">
         <input type="hidden" name="searchPlatform" value="{{ formresult.searchPlatform }}">
+        <input type="hidden" name="id" value="{{ info['id'] }}">
         <tr>
-            <td scope="row"><font class="font10px"> {{ loop.index }} </font></td>
-            <td>
+            <td width="2%" scope="row"><font class="font10px"> {{ loop.index }} </font></td>
+            <td width="2%">
                 <font class="font10px">
                     <div class="cpStatus" id="cpStatus{{info['id']}}" data-deviceid="{{info['id']}}"></div>
                 </font>
@@ -93,10 +102,11 @@
             <td><font class="font10px"> {{ info['platform_name'] }} {{ info['platform'] }} </font></td>
             <td><font class="font10px"> {{ info['swversion'] }} {{ info['osversion'] }} </font></td>
             <td align="right">
-
-                <input type="button" name="action" value="Endpoints" class="showEndpoints" data-deviceid="{{ info['id'] }}" onclick="highlightRow(this);" ><input type="button" name="action" value="Certificate Trusts" class="showTrust" data-deviceid="{{ info['id'] }}" onclick="highlightRow(this);" ><input type="button" name="action" value="Services" class="showServices" data-deviceid="{{ info['id'] }}" onclick="highlightRow(this);" ><input type="button" name="action" value="Edit" class="editDevice" data-deviceid="{{ info['id'] }}" onclick="highlightRow(this);" {% if va("clearpassaccess","feature")== False %} style="opacity:0.2;pointer-events:none;" {% endif %}><input type="submit" name="action" value="Delete" class="button" onclick="return confirm('Are you sure you want to delete this item?')" {% if va("clearpassaccess","feature")== False %} style="opacity:0.2;pointer-events:none;" {% endif %}>
-                <input type="hidden" name="id" value="{{ info['id'] }}">
-
+                <button type="button" name="action" value="Endpoints" data-deviceid="{{info['id']}}" class="showEndpoints transparent-button" onclick="highlightRow(this);"><img src="static/images/device.svg" width="12" height="12" class="showtitleTooltip" data-title="Show endpoints"></button>
+                <button type="button" name="action" value="Certificate Trusts" data-deviceid="{{info['id']}}" class="showTrust transparent-button" onclick="highlightRow(this);"><img src="static/images/certificate.svg" width="12" height="12" class="showtitleTooltip" data-title="Show certificate trusts"></button>
+                <button type="button" name="action" value="Services" data-deviceid="{{info['id']}}" class="showServices transparent-button" onclick="highlightRow(this);"><img src="static/images/services.svg" width="12" height="12" class="showtitleTooltip" data-title="Show services"></button>
+                <button type="button" name="editDevice" value="Edit" data-deviceid="{{info['id']}}" class="editDevice transparent-button" {% if va("clearpassaccess","feature")==False %} style="opacity:0.2;pointer-events:none;" {% endif %} onclick="highlightRow(this);"><img src="static/images/edit.svg" width="12" height="12" class="showtitleTooltip" data-title="Edit ClearPass"></button>
+                <button type="submit" name="action" value="Delete" class="transparent-button" onclick="return confirm('Are you sure you want to delete {{ info['ipaddress'] }}?')" {% if va("clearpassaccess","feature")==False %} disabled style="opacity:0.2;pointer-events:none;" {% endif %}><img src="static/images/trash.svg" width="12" height="12" class="showtitleTooltip" data-title="Delete ClearPass"></button>
             </td>
         </tr>
     </form>
@@ -179,4 +189,6 @@
     <div id="showEndpoints" style="display:none;">Show Endpoints</div>
     <div id="showTrust" style="display:none;">Show Trusted Certificates</div>
     <div id="showServices" style="display:none;">Show Services</div>
+    <div id="showdaTooltip" type="display:none;"></div>
+
     {% endblock %}

@@ -64,6 +64,7 @@ app.jinja_env.globals.update(provisionSwitch=classes.provisionSwitch)
 app.jinja_env.globals.update(sysTime=classes.sysTime)
 app.jinja_env.globals.update(timeDelta=classes.timeDelta)
 app.jinja_env.globals.update(timeDuration=classes.timeDuration)
+app.jinja_env.globals.update(upgradeprofileName=classes.getupgradeprofileName)
 app.jinja_env.globals.update(va=classes.verifyAccess)
 
 

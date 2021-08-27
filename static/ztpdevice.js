@@ -1,6 +1,4 @@
-// (C) Copyright 2020 Hewlett Packard Enterprise Development LP.
-
-
+// (C) Copyright 2021 Hewlett Packard Enterprise Development LP.
 
 
 $(document).ready(function () {
@@ -21,15 +19,13 @@ $(document).ready(function () {
                     // Obtaining the ZTP template was successful
                 },
                 error: function () {
-                    document.getElementById("liProgress").style.display = "block";
-                    document.getElementById("progresstooltip").style.display = "none";
-                    progressInfo.innerHTML = "Error finding ZTP template information";
+                    showmessageBar("Error finding ZTP template information");
                 }
             });
             templateInfo = JSON.parse(templateInfo);
             templateHTML = "<table class='tablenoborder' cellpadding='2'><tr style='background-color: grey'><td colspan='2'><center><font class='font13pxwhite'>Template parameters</white></center></td></tr>";
             for (var i = 0; i < templateInfo.length; i++) {
-                templateHTML += "<tr><td width='10%'><font class='font12pxgrey'>" + Object.keys(templateInfo[i]) + "</font></td ><td><input type='text' name='parameterValues[" + Object.keys(templateInfo[i]) + "]'></td></tr>";
+                templateHTML += "<tr><td width='10%'><font class='font10pxgrey'>" + Object.keys(templateInfo[i]) + "</font></td ><td><input type='text' name='parameterValues[" + Object.keys(templateInfo[i]) + "]'></td></tr>";
             }
             templateHTML += "</table>";
             document.getElementById(templateDiv).style.display = "block";
@@ -89,6 +85,7 @@ $(document).ready(function () {
 
     $(document).on('change', ".ztpdhcp", function () {
         if (document.getElementById("editztpdhcp").checked == true) {
+            $('#editVrf option').attr('disabled', true);
             if ($('#editipamsubnet').length) {
                 $('#editipamsubnet option:not(:selected)').attr('disabled', true);
             }
@@ -115,6 +112,7 @@ $(document).ready(function () {
             }
         }
         else {
+            $('#editVrf option').attr('disabled', false);
             if ($('#editipamsubnet').length) {
                 $('#editipamsubnet option:not(:selected)').attr('disabled', false);
                 $('#editipamsubnet').attr('disabled', false);
@@ -140,8 +138,10 @@ $(document).ready(function () {
             if ($('#editSelectswitchtype').length) {
                 $('#editSelectswitchtype option:not(:selected)').attr('disabled', false);
             }
+            
         }
         if (document.getElementById("addztpdhcp").checked == true) {
+            $('#addVrf option').attr('disabled', true);
             if ($('#addipamsubnet').length) {
                 $('#addipamsubnet option:not(:selected)').attr('disabled', true);
             }
@@ -192,6 +192,7 @@ $(document).ready(function () {
             if ($('#addSelectswitchtype').length) {
                 $('#addSelectswitchtype option:not(:selected)').attr('disabled', false);
             }
+            $('#addVrf option').attr('disabled', false);
         }
     });
 
@@ -307,7 +308,7 @@ $(document).ready(function () {
                     }
                     document.getElementById(netmaskField).value = ipamsubnet['calculation']['Subnet bitmask'];
                     if ("gateway" in ipamsubnet) {
-                        document.getElementById(gatewayDiv).innerHTML = "<font class='font12px'>" + ipamsubnet['gateway']['ip_addr'] + "</font>";
+                        document.getElementById(gatewayDiv).innerHTML = "<font class='font10px'>" + ipamsubnet['gateway']['ip_addr'] + "</font>";
                         document.getElementById(gatewayField).value = ipamsubnet['gateway']['ip_addr'];
                         // Assign the gateway value to the gateway field
                     }
@@ -338,7 +339,7 @@ $(document).ready(function () {
                     // Check if there are router options in the ipamsubnet
                     for (var k = 0; k < ipamsubnet['options'].length; k++) {
                         if (ipamsubnet['options'][k]['name'] == "routers") {
-                            document.getElementById(gatewayDiv).innerHTML = "<font class='font12px'>" + ipamsubnet['options'][k]['value'] + "</font>";
+                            document.getElementById(gatewayDiv).innerHTML = "<font class='font10px'>" + ipamsubnet['options'][k]['value'] + "</font>";
                             document.getElementById(gatewayField).value = ipamsubnet['options'][k]['value'];
                             // Assign the gateway value to the gateway field
                         }
@@ -377,19 +378,20 @@ $(document).ready(function () {
                 // If it's 0 then we can set the edit button, otherwise we should only show the "show" button
                 if (enableztp == "0") {
                     //Show the edit button
-                    editshowHTML = "<input type='button' name='editDevice' value='Edit' data-deviceid='" + deviceid + "' class='editDevice' id='editDevice" + deviceid + "'";
-                    editshowHTML += "onclick = 'highlightdeviceRow(" + editShow.item(i).id + ");'";
+                    editshowHTML = "<button type='button' name='editDevice' value='Edit' data-deviceid='" + deviceid + "' class='transparent-button editDevice' id='editDevice" + deviceid + "'";
+                    editshowHTML += "onclick='highlightRow(" + editShow.item(i).id + ");'";
                     if (ipamstatus == "Offline") {
                         editshowHTML += " style='opacity:0.3;pointer-events:none;'";
                     }
                     editshowHTML += ">";
-                    editshowHTML += "<input type='button' name='showDevice' value='Show' data-deviceid='" + deviceid + "' class='showDevice' id='showDevice" + deviceid + "'";
-                    editshowHTML += "onclick = 'highlightdeviceRow(" + editShow.item(i).id + ");'>";
+                    editshowHTML += "<img src='static/images/edit.svg' width='12' height='12' class='showtitleTooltip' data-title='Edit ZTP device'></button>";
+                    editshowHTML += "<button type='button' name='showDevice' value='Show' data-deviceid='" + deviceid + "' class='transparent-button showDevice' id='showDevice" + deviceid + "'";
+                    editshowHTML += "onclick = 'highlightRow(" + editShow.item(i).id + ");'><img src='static/images/view.svg' width='12' height='12' class='showtitleTooltip' data-title='Show ZTP device'></button>";
                 }
                 else {
                     //Show the show button
-                    editshowHTML = "<input type='button' name='showDevice' value='Show' data-deviceid='" + deviceid + "' class='showDevice' id='showDevice" + deviceid + "'";
-                    editshowHTML += "onclick = 'highlightdeviceRow(" + editShow.item(i).id + ");'>";
+                    editshowHTML = "<button type='button' name='showDevice' value='Show' data-deviceid='" + deviceid + "' class='transparent-button showDevice' id='showDevice" + deviceid + "'";
+                    editshowHTML += "onclick = 'highlightRow(" + editShow.item(i).id + ");'><img src='static/images/view.svg' width='12' height='12' class='showtitleTooltip' data-title='Show ZTP device'></button>";
                 }
                 document.getElementById('editShow' + deviceid).innerHTML = editshowHTML;
 
@@ -421,21 +423,21 @@ $(document).ready(function () {
                                         response = JSON.parse(response);
                                         deviceInfo = response['deviceInfo'];
                                         if (deviceInfo['ipaddress'] == "0.0.0.0") {
-                                            document.getElementById('ipaddress' + deviceInfo['id']).innerHTML = "<font class='font12px'>DHCP</font>";
-                                            document.getElementById('gateway' + deviceInfo['id']).innerHTML = "<font class='font12px'>DHCP</font>";
-                                            document.getElementById('vrf' + deviceInfo['id']).innerHTML = "<font class='font12px'>DHCP</font>";
+                                            document.getElementById('ipaddress' + deviceInfo['id']).innerHTML = "<font class='font10px'>DHCP</font>";
+                                            document.getElementById('gateway' + deviceInfo['id']).innerHTML = "<font class='font10px'>DHCP</font>";
+                                            document.getElementById('vrf' + deviceInfo['id']).innerHTML = "<font class='font10px'>DHCP</font>";
                                         }
                                         else {
-                                            document.getElementById('ipaddress' + deviceInfo['id']).innerHTML = "<font class='font12px'>" + deviceInfo['ipaddress'] + "/" + deviceInfo['netmask'] + "</font>";
-                                            document.getElementById('gateway' + deviceInfo['id']).innerHTML = "<font class='font12px'>" + deviceInfo['gateway'] + "</font>";
+                                            document.getElementById('ipaddress' + deviceInfo['id']).innerHTML = "<font class='font10px'>" + deviceInfo['ipaddress'] + "/" + deviceInfo['netmask'] + "</font>";
+                                            document.getElementById('gateway' + deviceInfo['id']).innerHTML = "<font class='font10px'>" + deviceInfo['gateway'] + "</font>";
                                             if (deviceInfo['vrf'] == "0") {
-                                                document.getElementById('vrf' + deviceInfo['id']).innerHTML = "<font class='font12px'>Not set</font>";
+                                                document.getElementById('vrf' + deviceInfo['id']).innerHTML = "<font class='font10px'>Not set</font>";
                                             }
                                             else if (deviceInfo['vrf'] == "default") {
-                                                document.getElementById('vrf' + deviceInfo['id']).innerHTML = "<font class='font12px'>Default</font>";
+                                                document.getElementById('vrf' + deviceInfo['id']).innerHTML = "<font class='font10px'>Default</font>";
                                             }
                                             else if (deviceInfo['vrf'] == "default") {
-                                                document.getElementById('vrf' + deviceInfo['id']).innerHTML = "<font class='font12px'>Management</font>";
+                                                document.getElementById('vrf' + deviceInfo['id']).innerHTML = "<font class='font10px'>Management</font>";
                                             }
                                         }
                                         // If the ztpenabled status is 9, we have to popup (only when the popup does not exist yet) and allow admin to test the credentials
@@ -445,13 +447,13 @@ $(document).ready(function () {
                                         if (deviceInfo['enableztp'] == 9) {
                                             if ($('#checkusername' + deviceInfo['id']).length === 0) {
                                                 sleep(2000);
-                                                credentialCheck = "<font class='font12px'>Username <input type='text' name='checkuser' id='checkusername" + deviceInfo['id'] + "' data-deviceid='" + deviceInfo['id'] + "' size='10'>";
+                                                credentialCheck = "<font class='font10px'>Username <input type='text' name='checkuser' id='checkusername" + deviceInfo['id'] + "' data-deviceid='" + deviceInfo['id'] + "' size='10'>";
                                                 credentialCheck += "&nbsp;&nbsp;Password <input type='password' name='checkPassword' id='checkpassword" + deviceInfo['id'] + "' size='15'><input type='button' name='checkCredentials' class='checkCredentials' value='Verify administrative access' data-deviceid='" + deviceInfo['id'] + "'></font>";
                                                 document.getElementById('ztpStatus' + deviceInfo['id']).innerHTML = credentialCheck;
                                             }
                                         }
                                         else {
-                                            document.getElementById('ztpStatus' + deviceInfo['id']).innerHTML = "<font class='font12px'>" + deviceInfo['ztpstatus'] + "</font>";
+                                            document.getElementById('ztpStatus' + deviceInfo['id']).innerHTML = "<font class='font10px'>" + deviceInfo['ztpstatus'] + "</font>";
                                         }
                                     }
                                     catch{
@@ -476,6 +478,53 @@ $(document).ready(function () {
             }
         });
 
+
+    $('.actionButtons').each(function () {
+        pHTML = "<button type='button' class='transparent-button showztplog' value='Show log' id='showztplog" + $(this).data('deviceid') + "' data-deviceid='" + $(this).data('deviceid') + "' onclick='highlightRow(this);'><img src='static/images/log.svg' width='12' height='12' class='showtitleTooltip' data-title='Show ZTP log'></button>";
+        if ($(this).data('enableztp') == 1) {
+            pHTML += "<button type='transparent-button' name='disableZTP' value='Disable ZTP' id='disableZTP" + $(this).data('deviceid') + "' data-macaddress='" + $(this).data('macaddress') + "' data-name='" + $(this).data('name') + "' data-deviceid='" + $(this).data('deviceid') + "' class='disableZTP' onclick='highlightRow(this);'";
+            if ($(this).data('ztpdeviceaccess') == "False") {
+                pHTML += " style='opacity:0.2;pointer-events:none;'>";
+            }
+            else {
+                pHTML += ">";
+            }
+            pHTML += "<img src='static/images/disable.svg' width='12' height='12' class='showtitleTooltip' data-title='Disable ZTP'></button>";
+        }
+        else {
+            pHTML += "<button type='button' name='enableZTP' value='Enable ZTP' id='enableZTP" + $(this).data('deviceid') + "' data-macaddress='" + $(this).data('macaddress') + "' data-name='" + $(this).data('name') + "' data-deviceid='" + $(this).data('deviceid') + "' class='transparent-button enableZTP' onclick='highlightRow(this);'";
+            if ($(this).data('gateway') == '') {
+                pHTML += "disabled style='opacity:0.3;' ";
+            }
+            if ($(this).data('ztpdeviceaccess') == "False") {
+                pHTML += " style='opacity:0.2;pointer-events:none;'>";
+            }
+            else {
+                pHTML += ">";
+            }
+            pHTML += "<img src='static/images/start.svg' width='12' height='12' class='showtitleTooltip' data-title='Enable ZTP'></button>";
+        }
+        if ($(this).data('ztpdeviceaccess') == "False") {
+            pHTML += "<button type='transparent-button' name='Edit' value='Edit' style='opacity: 0.2; pointer-events: none;'><img src='static/images/edit.svg' width='12' height='12' class='showtitleTooltip' data-title='Edit'></button>";
+            pHTML += "<button type='transparent-button' name='showDevice' value='Show' data-deviceid='" + $(this).data('deviceid') + "' class='showDevice' id='showDevice" + $(this).data('deviceid') + "' onclick='highlightRow(this);'><img src='static/images/view.svg' width='12' height='12' class='showtitleTooltip' data-title='Show ZTP device'></button>";
+        }
+        else {
+            pHTML += "<span class='editShow' data-enableztp='" + $(this).data('enableztp') + "' data-ipamstatus='" + $(this).data('ipamstatus') + "' data-deviceid='" + $(this).data('deviceid') + "' id='editShow" + $(this).data('deviceid') + "'></span>";
+        }
+        if ($(this).data('enableztp') == 0) {
+            pHTML += "<button type='submit' name='action' value='Delete' class='transparent-button' data-deviceid='" + $(this).data('deviceid') + "' class='transparent-button deleteDevice' id='deleteDevice" + $(this).data('deviceid') + "' onclick='deleteztpDevice(\"" + $(this).data('deviceid') + "\",\"" + $(this).data('name') + "\");' ";
+            if ($(this).data('ztpdeviceaccess') == "False") {
+                pHTML += " style='opacity:0.2;pointer-events:none;'>";
+            }
+            else {
+                pHTML += ">";
+            }
+            pHTML += "<img src='static/images/trash.svg' width='12' height='12' class='showtitleTooltip' data-title='Delete ZTP device'></button>";
+        }
+        $('#actionButtons' + $(this).data('deviceid')).empty().append(pHTML);
+    });
+
+
     $('.ipamStatus').ready(
         function () {
             setInterval(async function () {
@@ -497,9 +546,7 @@ $(document).ready(function () {
                                     $(".addDevice").prop('disabled', true);
                                     $(".editDevice").css("opacity", "0.3");
                                     $(".addDevice").css("opacity", "0.3");
-                                    document.getElementById("liProgress").style.display = "block";
-                                    document.getElementById("progresstooltip").style.display = "none";
-                                    progressInfo.innerHTML = "IPAM is not reachable";
+                                    showmessageBar("IPAM is not reachable");
                                 }
 
                             }
@@ -521,32 +568,28 @@ $(document).ready(function () {
             success: function (ztpStatus) {
                 // Activating the ZTP device was successful
                 response = JSON.parse(ztpStatus);
-                document.getElementById('ztpStatus' + response[1]).innerHTML = "<font class='font12px'>Enabled, start initialization</font>";
+                document.getElementById('ztpStatus' + response[1]).innerHTML = "<font class='font10px'>Enabled, start initialization</font>";
                 //Also need to change the button from edit to show
-                console.log(response);
-                editshowHTML = "<input type='button' class='button showztplog' value='Show log' id='showztplog" + response[1] + "' data-deviceid='" + response[1] + "' onclick='highlightdeviceRow(this);'>";
-                editshowHTML +="<input type='button' name='disableZTP' value='Disable ZTP' id='disableZTP" + response[1] + "' data-macaddress='{{info['macaddress']}}' data-deviceid='{{info['id']}}' class='disableZTP' onclick='highlightdeviceRow(this);'>";
-                editshowHTML += "<input type='button' name='showDevice' value='Show' data-deviceid='" + response[1] + "' class='showDevice' id='showDevice" + response[1] + "' onclick='highlightdeviceRow(this);'>";
-
-                //editshowHTML = "<input type='button' name='showDevice' value='Show' data-deviceid='" + response[1] + "' class='showDevice' id='showDevice" + response[1] + "'";
-                //editshowHTML += "onclick = 'highlightdeviceRow(" + $("#ztpStatus" + response[1]).attr('id') + ");'>";
+                editshowHTML = "<button type='button' class='transparent-button showztplog' value='Show log' id='showztplog" + response[1] + "' data-deviceid='" + response[1] + "' onclick='highlightRow(this);'><img src='static/images/log.svg' width='12' height='12' class='showtitleTooltip' data-title='Show ZTP log'></button>";
+                editshowHTML += "<button type='button' name='disableZTP' value='Disable ZTP' id='disableZTP" + response[1] + "' data-macaddress='{{info['macaddress']}}'  data-name='{{info['name']}}' data-deviceid='{{info['id']}}' class='transparent-button disableZTP' onclick='highlightRow(this);'><img src='static/images/disable.svg' width='12' height='12' class='showtitleTooltip' data-title='Disable ZTP'></button>";
+                editshowHTML += "<button type='button' name='showDevice' value='Show' data-deviceid='" + response[1] + "' class='transparent-button showDevice' id='showDevice" + response[1] + "' onclick='highlightRow(this);'><img src='static/images/view.svg' width='12' height='12' class='showtitleTooltip' data-title='Show ZTP device'></button>";
                 $('#deviceItem' + response[1]).html(editshowHTML);
                 //document.getElementById('editOrshow' + response[1]).innerHTML = editshowHTML;
 
             },
             error: function () {
-                document.getElementById("liProgress").style.display = "block";
-                document.getElementById("progresstooltip").style.display = "none";
-                progressInfo.innerHTML = "Error activating the ZTP Device";
+                showmessageBar("Error activating the ZTP Device");
             }
         });
-        document.getElementById("enableZTP" + $(this).attr('data-deviceid')).className = "disableZTP";
-        document.getElementById("enableZTP" + $(this).attr('data-deviceid')).value = "Disable ZTP";
-        document.getElementById('enableZTP' + $(this).attr('data-deviceid')).setAttribute('id', 'disableZTP' + $(this).attr('data-deviceid'));
-        document.getElementById('disableZTP' + $(this).attr('data-deviceid')).setAttribute('data-macaddress', $(this).attr('data-macaddress'));
-        document.getElementById("addDevice").style.display = "none";
-        document.getElementById("editDevice").style.display = "none";
-        document.getElementById("ztplog").style.display = "none"; 
+        $("#enableZTP" + $(this).attr('data-deviceid')).attr('class', 'disableZTP');
+        $("#enableZTP" + $(this).attr('data-deviceid')).attr('value', 'Disable ZTP');
+        $("#enableZTP" + $(this).attr('data-deviceid')).attr('id', 'disableZTP' + $(this).attr('data-deviceid'));
+        $("#disableZTP" + $(this).attr('data-deviceid')).attr('data-macaddress', $(this).attr('data-macaddress'));
+        $("#disableZTP" + $(this).attr('data-deviceid')).attr('data-deviceid', $(this).attr('data-deviceid'));
+        $('#addDevice').hide();
+        $('#editDevice').hide();
+        $('#ztplog').hide();
+        $('#showdaTooltip').hide();
     });
 
     $(document).on("click", ".checkCredentials", async function () {
@@ -561,12 +604,10 @@ $(document).ready(function () {
             success: function (response) {
                 // Credential verification was successful, but there might be a validation error. This is checked in the Python definition
                 response = JSON.parse(response);
-                document.getElementById('ztpStatus' + response[1]).innerHTML = "<font class='font12px'>" + response[0] + "</font>";
+                document.getElementById('ztpStatus' + response[1]).innerHTML = "<font class='font10px'>" + response[0] + "</font>";
             },
             error: function () {
-                document.getElementById("liProgress").style.display = "block";
-                document.getElementById("progresstooltip").style.display = "none";
-                progressInfo.innerHTML = "Credential verification failure";
+                showmessageBar("Credential verification failure");
             }
         });
     });
@@ -593,36 +634,33 @@ $(document).ready(function () {
     });
 
     $(document).on("click", ".disableZTP", async function (disableZTP) {
-
         ztpStatus = await $.ajax({
             url: "/ztpDeactivate",
             type: "POST",
-            data: { id: $(this).attr('data-deviceid'), macaddress: $(this).attr('data-macaddress') },
+            data: { id: $(this).attr('data-deviceid'), macaddress: $(this).attr('data-macaddress'), name: $(this).attr('data-name') },
             success: function (ztpStatus) {
                 // Deactivating the ZTP device was successful
                 response = JSON.parse(ztpStatus);
-                document.getElementById('ztpStatus' + response[1]).innerHTML = "<font class='font12px'>Disabled</font>";
+                document.getElementById('ztpStatus' + response[1]).innerHTML = "<font class='font10px'>Disabled</font>";
                 // Change the button to Edit button
-                editshowHTML = "<input type='button' name='editDevice' value='Edit' data-deviceid='" + response[1] + "' class='editDevice' id='editDevice" + response[1] + "'";
-                editshowHTML += "onclick = 'highlightdeviceRow(" + $("#ztpStatus" + response[1]).attr('id') + ");'";
-                editshowHTML += ">";
-                editshowHTML += "<input type='button' name='showDevice' value='Show' data-deviceid='" + response[1] + "' class='showDevice' id='showDevice" + response[1] + "'";
-                editshowHTML += "onclick = 'highlightdeviceRow(" + $("#ztpStatus" + response[1]).attr('id') + ");'>";
+                editshowHTML = "<button type='button' class='transparent-button showztplog' value='Show log' id='showztplog" + response[1] + "' data-deviceid='" + response[1] + "' onclick='highlightRow(this);'><img src='static/images/log.svg' width='12' height='12' class='showtitleTooltip' data-title='Show ZTP log'></button>";
+                editshowHTML += "<button type='button' name='enableZTP' value='Enable ZTP' id='enableZTP" + response[1] + "' data-macaddress='" + response[2] + "' data-deviceid='" + response[1] + "' class='transparent-button enableZTP' onclick='highlightRow(this);'><img src='static/images/start.svg' width='12' height='12' class='showtitleTooltip' data-title='Enable ZTP'></button>";
+                editshowHTML += "<button type='button' name='editDevice' value='Edit' data-deviceid='" + response[1] + "' class='transparent-button editDevice' id='editDevice" + response[1] + "'";
+                editshowHTML += "onclick='highlightRow(" + $("#ztpStatus" + response[1]).attr('id') + ");'";
+                editshowHTML += "><img src='static/images/edit.svg' width='12' height='12' class='showtitleTooltip' data-title='Edit ZTP device'></button>";
+                editshowHTML += "<button type='button' name='showDevice' value='Show' data-deviceid='" + response[1] + "' class='transparent-button showDevice' id='showDevice" + response[1] + "'";
+                editshowHTML += "onclick='highlightRow(" + $("#ztpStatus" + response[1]).attr('id') + ");'><img src='static/images/view.svg' width='12' height='12' class='showtitleTooltip' data-title='Show ZTP device'></button>";
+                editshowHTML += "<button type='submit' name='action' value='Delete' class='transparent-button' data-deviceid='" + response[1] + "' class='deleteDevice' id='deleteDevice" + response[1] + "' onclick='deleteztpDevice(\"" + response[1] + "\",\"" + response[3] + "\");'><img src='static/images/trash.svg' width='12' height='12' class='showtitleTooltip' data-title='Delete ZTP device'></button>";
                 $('#deviceItem'+ response[1]).html(editshowHTML);
             },
             error: function () {
-                document.getElementById("liProgress").style.display = "block";
-                document.getElementById("progresstooltip").style.display = "none";
-                progressInfo.innerHTML = "Error deactivating the ZTP Device";
+                showmessageBar("Error deactivating the ZTP Device");
             }
         });
-        document.getElementById("disableZTP" + $(this).attr('data-deviceid')).className = "enableZTP";
-        document.getElementById("disableZTP" + $(this).attr('data-deviceid')).value = "Enable ZTP";
-        document.getElementById('disableZTP' + $(this).attr('data-deviceid')).setAttribute('id', 'enableZTP' + $(this).attr('data-deviceid'));
-        document.getElementById('enableZTP' + $(this).attr('data-deviceid')).setAttribute('data-macaddress', $(this).attr('data-macaddress'));
-        document.getElementById("addDevice").style.display = "none";
-        document.getElementById("editDevice").style.display = "none";
-        document.getElementById("ztplog").style.display = "none"; 
+        $('#addDevice').hide();
+        $('#editDevice').hide();
+        $('#ztplog').hide();
+        $('#showdaTooltip').hide();
     });
 
 
@@ -682,9 +720,7 @@ $(document).ready(function () {
                 // Obtaining the ZTP device was successful
             },
             error: function () {
-                document.getElementById("liProgress").style.display = "block";
-                document.getElementById("progresstooltip").style.display = "none";
-                progressInfo.innerHTML = "Error finding ZTP Device information";
+                showmessageBar("Error finding ZTP Device information");
             }
         });
         response = JSON.parse(response);
@@ -715,13 +751,11 @@ $(document).ready(function () {
                 }
             }
             else {
-                document.getElementById("liProgress").style.display = "block";
-                document.getElementById("progresstooltip").style.display = "none";
-                progressInfo.innerHTML = "IPAM is not reachable";
+                showmessageBar("IPAM is not reachable");
             }
             document.getElementById('editipamnetmaskvalue').value = deviceInfo['netmask'];
             document.getElementById('editipamgatewayvalue').value = deviceInfo['gateway'];
-            document.getElementById('editipamgatewayDiv').innerHTML = "<font class='font12px'>" + deviceInfo['gateway'] + "</font>";
+            document.getElementById('editipamgatewayDiv').innerHTML = "<font class='font10px'>" + deviceInfo['gateway'] + "</font>";
 
             // Only show IPv4 subnets
             if (sysvars['ipamsystem'] == "PHPIPAM") {
@@ -964,37 +998,7 @@ function cidrToRange(CIDR) {
 
 }
 
-function highlightdeviceRow(e) {
-    var tr = e.parentNode.parentNode;
-    var table = e.parentNode.parentNode.parentNode;
-    //set current backgroundColor
-    var len = table.childNodes.length;
-    for (var i = 0; i < len; i++) {
-        if (table.childNodes[i].nodeType == 1) {
-            table.childNodes[i].style.backgroundColor = 'transparent';
-        }
-    }
-    tr.style.backgroundColor = 'darkorange';
-    var tableTitles = document.getElementsByClassName('tableTitle');
-    for (var i = 0; i < tableTitles.length; i++) {
-        tableTitles[i].style.backgroundColor = 'grey';
-    }
-}
 
-function cleardeviceRow(e) {
-    var tr = e.parentNode.parentNode;
-    var table = e.parentNode.parentNode.parentNode;
-    var len = table.childNodes.length;
-    for (var i = 0; i < len; i++) {
-        if (table.childNodes[i].nodeType == 1) {
-            table.childNodes[i].style.backgroundColor = 'transparent';
-        }
-    }
-    var tableTitles = document.getElementsByClassName('tableTitle');
-    for (var i = 0; i < tableTitles.length; i++) {
-        tableTitles[i].style.backgroundColor = 'grey';
-    }
-}
 
 $(document).on("click", "#searchDevice", function () {
     document.getElementById("editDevice").style.display = "none";
@@ -1035,9 +1039,7 @@ $(document).on("click", "#addztpDevice", async function () {
             // Obtaining the IPAM information was successful
         },
         error: function () {
-            document.getElementById("liProgress").style.display = "block";
-            document.getElementById("progresstooltip").style.display = "none";
-            progressInfo.innerHTML = "Error finding IPAM information";
+            showmessageBar("Error finding IPAM information");
         }
 
 
@@ -1089,6 +1091,27 @@ function sleep(milliseconds) {
     do {
         currentDate = Date.now();
     } while (currentDate - date < milliseconds);
+}
+
+
+async function deleteztpDevice(deviceid, devicename) {
+    if (confirm("Are you sure that you want to delete " + devicename + "?") == true) {
+        deleteResult = await $.ajax({
+            url: "/deleteztpDevice",
+            type: "POST",
+            data: {deviceid: deviceid},
+            success: function () {
+                // Successfully deleted the ZTP device
+            },
+            error: function () {
+                showmessageBar("Error deleting ZTP device" + devicename);
+            }
+        });
+        document.getElementById('actionButtons' + deviceid).closest("tr").remove();
+    }
+    document.getElementById("addDevice").style.display = "none";
+    document.getElementById("editDevice").style.display = "none";
+    document.getElementById("ztplog").style.display = "none"; 
 }
 
 

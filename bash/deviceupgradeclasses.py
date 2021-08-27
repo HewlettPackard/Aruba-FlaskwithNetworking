@@ -1,4 +1,4 @@
-# (C) Copyright 2020 Hewlett Packard Enterprise Development LP.
+# (C) Copyright 2021 Hewlett Packard Enterprise Development LP.
 
 from datetime import datetime, time, timedelta
 import time
@@ -91,6 +91,7 @@ def stageOne(cursor, hostip,upgradeInfo,switchInfo,softwareInfo, upgradelog):
             queryStr="update softwareupdate set status=5, upgradefrom='{}', softwareinfo='{}', starttime='{}' where id='{}'".format(response['current_version'],json.dumps(response),datetime.now(),upgradeInfo['id'])
             cursor.execute(queryStr)
             upgradelog.write('{}: Copy software {} onto {}. \n'.format(datetime.now(),softwareInfo['filename'],switchInfo['ipaddress']))
+            upgradeprofileCheck(cursor,upgradeInfo)
         elif pResponse==400:
             # There already seems to be a software upgrade in progress. Setting the stage to 50
             queryStr="update softwareupdate set status=50 where id='{}'".format(upgradeInfo['id'])
@@ -122,6 +123,7 @@ def stageOne(cursor, hostip,upgradeInfo,switchInfo,softwareInfo, upgradelog):
                         queryStr="update softwareupdate set status=5, upgradefrom='{}', softwareinfo='{}', starttime='{}' where id='{}'".format(originalVersion, json.dumps(versionInfo),datetime.now(),upgradeInfo['id'])
                         cursor.execute(queryStr)
                         upgradelog.write('{}: Copy software {} onto {}. \n'.format(datetime.now(),softwareInfo['filename'],switchInfo['ipaddress']))
+                        upgradeprofileCheck(cursor,upgradeInfo)
 
 
 def stageFive(cursor, hostip,upgradeInfo,switchInfo,softwareInfo, upgradelog):
@@ -135,12 +137,12 @@ def stageFive(cursor, hostip,upgradeInfo,switchInfo,softwareInfo, upgradelog):
                 cursor.execute(queryStr)
                 # Software has been upgraded successfully. Go to stage 10
                 upgradelog.write('{}: Software {} uploaded successfully onto {}. \n'.format(datetime.now(),softwareInfo['filename'],switchInfo['ipaddress']))
+                upgradeprofileCheck(cursor,upgradeInfo)
             elif response['status']=="none":
                 queryStr="update softwareupdate set status=1 where id='{}'".format(upgradeInfo['id'])
                 cursor.execute(queryStr)
                 # Software has not been upgraded. Go back to stage 1
                 upgradelog.write('{}: Error copying software {} onto {}. Retrying... \n'.format(datetime.now(),softwareInfo['filename'],switchInfo['ipaddress']))
-
         else:
             pass
     elif switchInfo['ostype']=="arubaos-switch":
@@ -151,11 +153,13 @@ def stageFive(cursor, hostip,upgradeInfo,switchInfo,softwareInfo, upgradelog):
             queryStr="update softwareupdate set status=10 where id='{}'".format(upgradeInfo['id'])
             cursor.execute(queryStr)
             upgradelog.write('{}: Software {} uploaded successfully onto {}. \n'.format(datetime.now(),softwareInfo['filename'],switchInfo['ipaddress']))
+            upgradeprofileCheck(cursor,upgradeInfo)
         else:
             queryStr="update softwareupdate set status=1 where id='{}'".format(upgradeInfo['id'])
             cursor.execute(queryStr)
             # Software has not been upgraded. Go back to stage 1
             upgradelog.write('{}: Error copying software {} onto {}. Retrying... \n'.format(datetime.now(),softwareInfo['filename'],switchInfo['ipaddress']))
+
 
 def stageTen(cursor, hostip,upgradeInfo,switchInfo,softwareInfo, upgradelog):
     # Software has been uploaded successfully. Setting boot parameters
@@ -168,6 +172,7 @@ def stageTen(cursor, hostip,upgradeInfo,switchInfo,softwareInfo, upgradelog):
             queryStr="update softwareupdate set status=20 where id='{}'".format(upgradeInfo['id'])
             cursor.execute(queryStr)
             upgradelog.write('{}: Reboot {} on partition {}. \n'.format(datetime.now(),switchInfo['ipaddress'],upgradeInfo['activepartition'] ))
+            upgradeprofileCheck(cursor,upgradeInfo)
         else:
             # No reboot, however we do have to tell the system that the switch has to be rebooted. The upgrade job is completed, setting the status to 110
             url="firmware"
@@ -176,6 +181,7 @@ def stageTen(cursor, hostip,upgradeInfo,switchInfo,softwareInfo, upgradelog):
             queryStr="update softwareupdate set status=110, upgradeto='{}', softwareinfoafter='{}', endtime='{}' where id='{}'".format(response['current_version'],json.dumps(response),datetime.now(),upgradeInfo['id'])
             cursor.execute(queryStr)
             upgradelog.write('{}: No reboot for {} on partition {} as configured in upgrade job. \n'.format(datetime.now(),switchInfo['ipaddress'],upgradeInfo['activepartition'] ))
+            upgradeprofileCheck(cursor,upgradeInfo)
     elif switchInfo['ostype']=="arubaos-switch":
         # Need to check whether the switch has to be rebooted as instructed by the upgrade job
         if upgradeInfo['reboot']==1:
@@ -190,6 +196,7 @@ def stageTen(cursor, hostip,upgradeInfo,switchInfo,softwareInfo, upgradelog):
             queryStr="update softwareupdate set status=20 where id='{}'".format(upgradeInfo['id'])
             cursor.execute(queryStr)
             upgradelog.write('{}: Reboot {} on partition {}. \n'.format(datetime.now(),switchInfo['ipaddress'],upgradeInfo['imagepartition'] ))
+            upgradeprofileCheck(cursor,upgradeInfo)
         else:
             # No reboot, however we do have to tell the system that the switch has to be rebooted. The upgrade job is completed, setting the status to 110
             # We need to format the version in formation and convert to a dict 
@@ -205,6 +212,7 @@ def stageTen(cursor, hostip,upgradeInfo,switchInfo,softwareInfo, upgradelog):
                     queryStr="update softwareupdate set status=110, upgradeto='{}', softwareinfoafter='{}', endtime='{}' where id='{}'".format(newVersion, json.dumps(versionInfo),datetime.now(),upgradeInfo['id'])
                     cursor.execute(queryStr)
                     upgradelog.write('{}: No reboot for {} on partition {}. \n'.format(datetime.now(),switchInfo['ipaddress'],upgradeInfo['imagepartition'] ))
+                    upgradeprofileCheck(cursor,upgradeInfo)
 
 
 
@@ -222,6 +230,7 @@ def stageTwenty(cursor, hostip,upgradeInfo,switchInfo,softwareInfo, upgradelog):
                 queryStr="update softwareupdate set status=100, upgradeto='{}', softwareinfoafter='{}', endtime='{}' where id='{}'".format(response['current_version'],json.dumps(response),datetime.now(),upgradeInfo['id'])
                 cursor.execute(queryStr)
                 upgradelog.write('{}: Switch {} is back online. Upgrade finished. \n'.format(datetime.now(),switchInfo['ipaddress'] ))
+                upgradeprofileCheck(cursor,upgradeInfo)
     elif switchInfo['ostype']=="arubaos-switch":
         # Need to check whether the switch has to be rebooted as instructed by the upgrade job
         cmd="show flash"
@@ -239,6 +248,7 @@ def stageTwenty(cursor, hostip,upgradeInfo,switchInfo,softwareInfo, upgradelog):
                 queryStr="update softwareupdate set status=100, upgradeto='{}', softwareinfoafter='{}', endtime='{}' where id='{}'".format(newVersion, json.dumps(versionInfo),datetime.now(),upgradeInfo['id'])
                 cursor.execute(queryStr)
                 upgradelog.write('{}: Switch {} is back online. Upgrade to {} finished. \n'.format(datetime.now(),switchInfo['ipaddress'], newVersion ))
+                upgradeprofileCheck(cursor,upgradeInfo)
             else:
                 # If there is an error in the response, we try again in the next iteration
                 pass
@@ -542,6 +552,32 @@ def checkswitchCookie(cursor, id, ipaddress, username, password, secinfo, secret
         except:
             return {} 
     return {}
+
+
+def upgradeprofileCheck(cursor,upgradeProfile):
+    # Obtain upgrade profile information
+    countFinished=0
+    queryStr="select * from upgradeprofiles where id='{}'".format(upgradeProfile['upgradeprofile'])
+    cursor.execute(queryStr)
+    profileInfo = cursor.fetchall() 
+    # Obtain all software updates that are tied to this profile
+    queryStr="select * from softwareupdate where upgradeprofile={}".format(upgradeProfile['upgradeprofile'])
+    cursor.execute(queryStr)
+    upgradeInfo = cursor.fetchall() 
+    # Now, go through the upgradeInfo and check whether all the upgrades have been completed (status > 99). If that is the case, then we can mark the upgrade profile to finished
+    # If the upgrade is still in progress, we need to keep or set the status of the upgrade profile accordingly (profile in progress status is 60)
+    for items in upgradeInfo:
+        if items['status']>99:
+            countFinished=countFinished+1
+    # If the total number of entries in upgradeInfo is the same as countFinished, then all the switches in the profile have been upgraded and we can set the status in the upgradeprofile to 100 (completed)
+    if countFinished==len(upgradeInfo):
+        queryStr="update upgradeprofiles set status=100 where id={}".format(upgradeProfile['upgradeprofile'])
+        cursor.execute(queryStr)
+    else:
+        if profileInfo:
+            if profileInfo[0]['status']==0:
+                queryStr="update upgradeprofiles set status=60 where id={}".format(upgradeProfile['upgradeprofile'])
+                cursor.execute(queryStr)
 
 
 def resetRest(ipaddress,username,password,secret_key):

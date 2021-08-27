@@ -40,7 +40,7 @@ def checkswitchCookie(deviceid):
     credentials = {"userName": deviceCreds['username'], "password": classes.classes.decryptPassword(globalsconf['secret_key'], deviceCreds['password']) }
     url="login-sessions"
     # First, let's check if we can perform a REST call and get a response 200
-    if deviceCreds['secinfo'] is None:
+    if deviceCreds['secinfo'] is None or deviceCreds['secinfo']=="":
         # There is no cookie in the secinfo field, we HAVE to login
         try:
             # Login to the switch. The cookie value is stored in the session cookie jar
@@ -57,7 +57,7 @@ def checkswitchCookie(deviceid):
         except:
             # Something went wrong with the login
             return
-    else :
+    else:
         try:
             response=requests.get(baseurl+"system",headers=json.loads(deviceCreds['secinfo']),verify=False,timeout=5)
             if response.status_code==200:
@@ -122,7 +122,7 @@ def getswitchREST(url,deviceid):
     url="http://{}/rest/v7/".format(deviceCreds['ipaddress']) + url
     header=checkswitchCookie(deviceid)
     try:
-        response=requests.get(url, verify=False, headers=header)
+        response=requests.get(url, verify=False, headers=header, timeout=5)
         # If the response contains information, the content is converted to json format
         response=json.loads(response.content.decode('utf-8'))
         return response
@@ -138,7 +138,7 @@ def postswitchREST(deviceid,url,parameters):
     url="http://{}/rest/v7/".format(deviceCreds['ipaddress']) + url
     header=checkswitchCookie(deviceid)
     try:
-        response = requests.post(url, verify=False, data=json.dumps(parameters), headers=header, timeout=20)
+        response = requests.post(url, verify=False, data=json.dumps(parameters), headers=header, timeout=10)
         # If the response contains information, the content is converted to json format
         response=json.loads(response.content.decode('utf-8'))
     except:

@@ -22,7 +22,7 @@
             <tr>
                 <td>
 
-                    Select device:
+                    <font class="font11pxgrey">Select device:</font>
                     <select name="deviceid">
                         {% for info in devicelist %}
                         {% if info['ostype'] == "arubaos-switch" %}
@@ -32,7 +32,7 @@
                     </select>
                     <input type="text" size="80" name="cmd" />
                     <input type="hidden" name="action" value="Send command" />
-                    <input type="submit" name="submit" value="Send Command" class="button" {% if va("anycliaccess","feature")==False %} style="opacity:0.2;pointer-events:none;" {% endif %}/>
+                    <button type="submit" name="submit" value="Send Command" class="transparent-button" {% if va("anycliaccess","feature")==False %} style="opacity:0.2;pointer-events:none;" {% endif %}><img src="static/images/send.svg" width="12" height="12" class="showtitleTooltip" data-title="Send command"></button>
 
                 </td>
             </tr>
@@ -63,6 +63,6 @@ Result: Command "{{ cmdResult['cmd'] }}" failed.
 
     {% endif %}
 
-    </div>
-
-    {% endblock %}
+</div>
+<div id="showdaTooltip" type="display:none;"></div>
+{% endblock %}

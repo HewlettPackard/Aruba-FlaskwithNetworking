@@ -52,7 +52,7 @@
                 <tr>
                     <td><font class="font12pxwhite">Schedule upgrade</font></td>
                     <td class="whiteBG">
-                        <input name="editdatetime" class="form-control" id="editdatetime" readonly="readonly">&nbsp; <img src="static/images/clear.png" width="12" height="12" onclick="editclearTime();" alt="Clear schedule" title="Clear schedule">
+                        <input name="editdatetime" class="form-control" id="editdatetime" readonly="readonly">&nbsp; <img src="static/images/clear.svg" width="12" height="12" onclick="editclearTime();" alt="Clear schedule" title="Clear schedule">
                         
                     </td>
                     <td><font class="font12pxwhite">Upgrade status</font></td>
@@ -135,7 +135,7 @@
 
                     <td><font class="font12pxwhite">Schedule upgrade</font></td>
                     <td class="whiteBG">
-                        <input name="adddatetime" class="form-control" id="adddatetime" readonly="readonly" />&nbsp; <img src="static/images/clear.png" width="12" height="12" onclick="addclearTime();" alt="Clear schedule" title="Clear schedule">
+                        <input name="adddatetime" class="form-control" id="adddatetime" readonly="readonly" />&nbsp; <img src="static/images/clear.svg" width="12" height="12" onclick="addclearTime();" alt="Clear schedule" title="Clear schedule">
                     </td>
                     <td><font class="font12pxwhite">Upgrade status</font></td>
                     <td colspan="5" class="whiteBG"><div class="upgradeStatus"><font class="font11px">Not created</font></div></td>
@@ -170,18 +170,18 @@
             <tr style="background-color:grey;"><td colspan="8"><font class="font13pxwhite"><center>Software upgrade</center></font></td></tr>
             <tr>
                 <td><font class="font12pxwhite">Primary image</font></td>
-                <td class="whiteBG"><div class="monitorprimaryImage"><font class="font11px">{{ bootInfo['primaryImage'] }}</font></div></td>
+                <td class="whiteBG"><div class="monitorprimaryImage"><font class="font11px">{% if bootInfo['primaryImage']!="" %}{{ bootInfo['primaryImage'] }} {% else %} Pending {% endif %}</font></div></td>
                 <td><font class="font12pxwhite">Secondary image</font></td>
-                <td class="whiteBG"><div class="monitorsecondaryImage"><font class="font11px">{{ bootInfo['secondaryImage'] }}</font></div></td>
+                <td class="whiteBG"><div class="monitorsecondaryImage"><font class="font11px">{% if bootInfo['secondaryImage']!="" %}{{ bootInfo['secondaryImage'] }} {% else %} Pending {% endif %}</font></div></td>
                 <td><font class="font12pxwhite">Active image</font></td>
-                <td class="whiteBG"><div class="monitordefaultImage"><font class="font11px">{{ sentence_case(bootInfo['defaultImage']) }}</font></div></td>
+                <td class="whiteBG"><div class="monitordefaultImage"><font class="font11px">{% if bootInfo['defaultImage']!="" %}{{ sentence_case(bootInfo['defaultImage']) }} {% else %} Pending {% endif %}</font></div></td>
                 <td colspan="2"></td>
             </tr>
             <tr>
                 <td><font class="font12pxwhite">Upgrade on partition</font></td>
-                <td class="whiteBG"><div class="monitorupgradepartition"><font class="font11px">{{ sentence_case(bootInfo['activeUpdate']['imagepartition']) }}</font></div></td>
+                <td class="whiteBG"><div class="monitorupgradepartition"><font class="font11px">{% if bootInfo['activeUpdate']['imagepartition']!="" %}{{ sentence_case(bootInfo['activeUpdate']['imagepartition']) }} {% else %} Pending {% endif %}</font></div></td>
                 <td><font class="font12pxwhite">Active partition</font></td>
-                <td class="whiteBG"><div class="monitoractivepartition"><font class="font11px">{{ sentence_case(bootInfo['activeUpdate']['activepartition']) }}</font></div></td>
+                <td class="whiteBG"><div class="monitoractivepartition"><font class="font11px">{% if bootInfo['activeUpdate']['activepartition']!="" %}{{ sentence_case(bootInfo['activeUpdate']['activepartition']) }} {% else %} Pending {% endif %}</font></div></td>
                 <td><font class="font12pxwhite">Software image</font></td>
                 <td class="whiteBG"><div class="monitorsoftwareimage"><font class="font11px">
                     {% for items in bootInfo['images'] %}
@@ -196,7 +196,7 @@
                 <td><font class="font12pxwhite">Schedule upgrade</font></td>
                 <td class="whiteBG"><div class="monitordatetime"><font class="font11px">{% if bootInfo['activeUpdate']['schedule'] %} {{ bootInfo['activeUpdate']['schedule'] }} {% endif %}</font></div></td>
                 <td><font class="font12pxwhite">Upgrade status</font></td>
-                <td class="whiteBG" colspan="5"><div class="upgradeStatus" style="display:inline;"><font class="font11px">Checking...</font></div><div id="initeditupgradeEnable" style="display:none;"><input type="button" name="monitoreditdeviceupgrade" value="Edit" data-id="{{bootInfo['activeUpdate']['id']}}" class="editdeviceupgrade"><input type="button" name="removedeviceUpgrade" value="Remove" data-id="{{bootInfo['activeUpdate']['id']}}" class="removedeviceUpgrade"></div></td>
+                <td class="whiteBG" colspan="5"><div class="upgradeStatus" style="display:inline;"><font class="font11px">Checking...</font></div><div id="initeditupgradeEnable" style="display:none;"><button type="button" name="monitoreditdeviceupgrade" value="Edit" data-id="{{bootInfo['activeUpdate']['id']}}" class="transparent-button editdeviceupgrade"><img src="static/images/edit.svg" width="12" height="12" class="showtitleTooltip" data-title="Edit upgrade job"></button><button type="button" name="removedeviceUpgrade" value="Remove" data-id="{{bootInfo['activeUpdate']['id']}}" class="transparent-button removedeviceUpgrade"><img src="static/images/trash.svg" width="12" height="12" class="showtitleTooltip" data-title="Delete upgrade job"></button></div></td>
             </tr>
         </table>
     </div>
@@ -212,11 +212,11 @@
             <tr style="background-color:grey;"><td colspan="8"><font class="font13pxwhite"><center>Software upgrade</center></font></td></tr>
             <tr>
                 <td><font class="font12pxwhite">Primary image</font></td>
-                <td class="whiteBG"><div class="monitorprimaryImage"><font class="font11px">{{ bootInfo['primaryImage'] }}</font></div></td>
+                <td class="whiteBG"><div class="monitorprimaryImage"><font class="font11px">{% if bootInfo['primaryImage']!="" %}{{ bootInfo['primaryImage'] }} {{ bootInfo['primaryImage'] }} {% else %} Pending {% endif %}</font></div></td>
                 <td><font class="font12pxwhite">Secondary image</font></td>
-                <td class="whiteBG"><div class="monitorsecondaryImage"><font class="font11px">{{ bootInfo['secondaryImage'] }}</font></div></td>
+                <td class="whiteBG"><div class="monitorsecondaryImage"><font class="font11px">{% if bootInfo['secondaryImage']!="" %}{{ bootInfo['primaryImage'] }} {{ bootInfo['secondaryImage'] }} {% else %} Pending {% endif %}</font></div></td>
                 <td><font class="font12pxwhite">Active image</font></td>
-                <td class="whiteBG"><div class="monitordefaultImage"><font class="font11px">{{ sentence_case(bootInfo['defaultImage']) }}</font></div></td>
+                <td class="whiteBG"><div class="monitordefaultImage"><font class="font11px">{% if bootInfo['defaultImage']!="" %}{{ bootInfo['primaryImage'] }} {{ sentence_case(bootInfo['defaultImage']) }} {% else %} Pending {% endif %}</font></div></td>
                 <td colspan="2"></td>
             </tr>
             <tr>
@@ -232,7 +232,7 @@
                 <td><font class="font12pxwhite">Schedule upgrade</font></td>
                 <td class="whiteBG"><div class="monitordatetime" id="monitordatetime"></div></td>
                 <td><font class="font12pxwhite">Upgrade status</font></td>
-                <td class="whiteBG" colspan="5"><div class="upgradeStatus" style="display:inline;"><font class="font11px">Checking...</font></div><div id="editupgradeEnable" style="display:none;"><input type="button" name="monitoreditdeviceupgrade" value="Edit" data-id="{{bootInfo['activeUpdate']['id']}}" class="editdeviceupgrade"><input type="button" name="removedeviceUpgrade" value="Remove" data-id="{{bootInfo['activeUpdate']['id']}}" class="removedeviceUpgrade"></div></td>
+                <td class="whiteBG" colspan="5"><div class="upgradeStatus" style="display:inline;"><font class="font11px">Checking...</font></div><div id="editupgradeEnable" style="display:none;"><button type="button" name="monitoreditdeviceupgrade" value="Edit" data-id="{{bootInfo['activeUpdate']['id']}}" class="transparent-button editdeviceupgrade"><img src="static/images/edit.svg" width="12" height="12" class="showtitleTooltip" data-title="Edit upgrade job"><button type="button" name="removedeviceUpgrade" value="Remove" data-id="{{bootInfo['activeUpdate']['id']}}" class="transparent-button removedeviceUpgrade"><img src="static/images/trash.svg" width="12" height="12" class="showtitleTooltip" data-title="Delete upgrade job"></button></div></td>
             </tr>
         </table>
     </div>

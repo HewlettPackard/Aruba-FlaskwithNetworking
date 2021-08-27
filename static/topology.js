@@ -1,4 +1,4 @@
-// (C) Copyright 2020 Hewlett Packard Enterprise Development LP.
+// (C) Copyright 2021 Hewlett Packard Enterprise Development LP.
 
 $(document).ready(function () {
 
@@ -19,18 +19,19 @@ $(document).ready(function () {
             });
             endpointHTML = endpointInfo;
             endpointInfo = JSON.parse(endpointInfo);
-            endpointHTML = "<table class='tablenoborder'><tr style='background-color: grey;'>";
-            endpointHTML += "<td colspan='5'><font class='font13pxwhite'><center>Connections of " + endpointInfo[0]['hostname'] + ": " + endpointInfo[0]['switchip'] + " (" + endpointInfo[0]['systemmac'] + ")</center></font></td></tr>";
-            endpointHTML += "<tr><td><font class='font13pxgrey'>Local interface</font></td><td><font class='font13pxgrey'>Remote hostname</font></td><td><font class='font13pxgrey'>Remote interface</font></td><td><font class='font13pxgrey'>Remote IP address</font></td><td><font class='font13pxgrey'>Remote System MAC address</font></td></tr>";
-            for (var i = 0; i < endpointInfo.length; i++) {
-                 endpointHTML += "<tr><td><font class='font11px'>" + endpointInfo[i]['interface'] + "</font></td><td><font class='font11px'>" + endpointInfo[i]['remotehostname'] + "</font></td><td><font class='font11px'>" + endpointInfo[i]['remoteinterface'] + "</font></td><td><font class='font11px'>" + endpointInfo[i]['remoteswitchip'] + "</font></td><td><font class='font11px'>" + endpointInfo[i]['remotesystemmac']  + "</font></td></tr>";
+            if (endpointInfo.length > 0) {
+                endpointHTML = "<table class='tablenoborder'><tr style='background-color: grey;'>";
+                endpointHTML += "<td colspan='5'><font class='font13pxwhite'><center>Connections of " + endpointInfo[0]['hostname'] + ": " + endpointInfo[0]['switchip'] + " (" + endpointInfo[0]['systemmac'] + ")</center></font></td></tr>";
+                endpointHTML += "<tr><td><font class='font13pxgrey'>Local interface</font></td><td><font class='font13pxgrey'>Remote hostname</font></td><td><font class='font13pxgrey'>Remote interface</font></td><td><font class='font13pxgrey'>Remote IP address</font></td><td><font class='font13pxgrey'>Remote System MAC address</font></td></tr>";
+                for (var i = 0; i < endpointInfo.length; i++) {
+                    endpointHTML += "<tr><td><font class='font11px'>" + endpointInfo[i]['interface'] + "</font></td><td><font class='font11px'>" + endpointInfo[i]['remotehostname'] + "</font></td><td><font class='font11px'>" + endpointInfo[i]['remoteinterface'] + "</font></td><td><font class='font11px'>" + endpointInfo[i]['remoteswitchip'] + "</font></td><td><font class='font11px'>" + endpointInfo[i]['remotesystemmac'] + "</font></td></tr>";
+                }
+                endpointHTML += "</table>";
+                document.getElementById("showEndpoints").innerHTML = endpointHTML;
             }
-            endpointHTML += "</table>";   
-
-            document.getElementById("showEndpoints").innerHTML = endpointHTML;  
-            }
-            setInterval(refresh, 10000);
-            refresh();
+        }
+        setInterval(refresh, 10000);
+        refresh();
         });
     
     
@@ -46,8 +47,7 @@ $(document).ready(function () {
 
             },
             error: function () {
-                document.getElementById("liProgress").style.display = "block";
-                progressInfo.innerHTML = "Error finding topology information";
+                showmessageBar("Error finding topology information");
             }
         });
         topoInfo = JSON.parse(topoInfo);
@@ -145,10 +145,10 @@ $(document).ready(function () {
                     url: "/topodeviceStatus",
                     success: function (response) {
                         if (response == "Online") {
-                            document.getElementById('deviceStatus' + deviceid).innerHTML = "<img src='static/images/ok.png' data-deviceStatus" + deviceid + "='1' height='15' width='15'>";
+                            document.getElementById('deviceStatus' + deviceid).innerHTML = "<img src='static/images/status-good.svg' height='12' width='12' class='showtitleTooltip' data-title='Device is online'>";
                         }
                         else {
-                            document.getElementById('deviceStatus' + deviceid).innerHTML = "<img src='static/images/notok.png' data-deviceStatus" + deviceid + "='0' height='15' width='15'>";
+                            document.getElementById('deviceStatus' + deviceid).innerHTML = "<img src='static/images/status-critical.svg' height='12' width='12'  class='showtitleTooltip' data-title='Device is offline'>";
                         }
                     }
                 });

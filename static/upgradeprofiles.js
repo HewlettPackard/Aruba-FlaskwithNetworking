@@ -2,496 +2,57 @@
 
 $(document).ready(function () {
 
-    $('.editField input').keyup(function () {
+    $('.requiredField input').keyup(function () {
         var fieldisEmpty = false;
-        $('.editField input').keyup(function () {
-            $('.editField input').each(function () {
+        $('.requiredField input').keyup(function () {
+            $('.requiredField input').each(function () {
                 if ($(this).val().length == 0) {
                     fieldisEmpty = true;
                 }
             });
             if (fieldisEmpty) {
-                $('.editActions input').attr('disabled', 'disabled');
+                $('.requiredActions').attr('disabled', 'disabled');
+                $('.requiredActions').css('text-decoration', 'none');
+                $('.requiredActions').css('opacity', '0.1');
             } else {
-                $('.editActions input').attr('disabled', false);
+                $('.requiredActions').attr('disabled', false);
+                $('.requiredActions').css('opacity', '1');
             }
         });
     });
-
-    $('.addField input').keyup(function () {
-        var fieldisEmpty = false;
-        $('.addField input').keyup(function () {
-            $('.addField input').each(function () {
-                if ($(this).val().length == 0) {
-                    fieldisEmpty = true;
-                }
-            });
-            if (fieldisEmpty) {
-                $('.addActions input').attr('disabled', 'disabled');
-            } else {
-                $('.addActions input').attr('disabled', false);
-            }
-        });
-    });
-
-
-    $(".addScheduler").click(async function () {
-        document.getElementById("addSchedule").style.display = "block";
-        document.getElementById("editSchedule").style.display = "none";
-        document.getElementById("liProgress").style.display = "none";
-        document.getElementById("monitorUpgrade").style.display = "none";
-    });
-
-    $(".editScheduler").click(async function () {
-        scheduleid = $(this).attr('data-scheduleid');
-        document.getElementById("editSchedule").style.display = "block";
-        document.getElementById("addSchedule").style.display = "none";
-        document.getElementById("liProgress").style.display = "none";
-        document.getElementById("monitorUpgrade").style.display = "none";
-        tableRow = $(this).closest('tr').index();
-        scheduleInfo = await $.ajax({
-            url: "/scheduleInfo",
-            type: "POST",
-            data: { id: scheduleid },
-            success: function () {
-                // Obtaining the device image information was successful
-            },
-            error: function () {
-                document.getElementById("liProgress").style.display = "block";
-                progressInfo.innerHTML = "Error finding scheduler information";
-            }
-        });
-        scheduleInfo = JSON.parse(scheduleInfo);
-    });  
-
- });
-
-
-
-$(document).on("click", "#submitUpgrade", async function () {
-    if ($("#addrebootafterUpgrade").prop("checked")) {
-        var reboot = 1;
-    }
-    else {
-        var reboot = 0;
-    }
-    scheduleInfo = await $.ajax({
-        url: "/deviceupgradeActions",
-        type: "POST",
-        data: { action: "submitUpgrade", switchid: $('#deviceupgrade').attr('data-deviceid'), schedule: document.getElementById("adddatetime").value, software: $("#addsoftwareimage option:selected").val(), imagepartition: $("#addupgradepartition option:selected").val(), activepartition: $("#addactivepartition option:selected").val(), reboot: reboot },
-        success: function () {
-            document.getElementById("addUpgrade").style.display = "none";
-        },
-        error: function () {
-            // Error handling
-        }
-    });
-    scheduleInfo = JSON.parse(scheduleInfo);
-    if (scheduleInfo['message'] != "") {
-        document.getElementById("liProgress").style.display = "block";
-        progressInfo.innerHTML = scheduleInfo['message'];
-    }
-    $('#upgradeExists').data('id', scheduleInfo['activeUpdate']['id']);
-    monitorUpgrade(scheduleInfo);
-});
-
-
-$(document).on("click", "#searchScheduler", function () {
-    document.getElementById("editSchedule").style.display = "none";
-    document.getElementById("addSchedule").style.display = "none";
-    document.getElementById("liProgress").style.display = "none";
-    if (document.getElementById("entryperpage")) {
-        var e = document.getElementById("entryperpage");
-        var entryperpage = e.options[e.selectedIndex].value;
-    }
-    else {
-        entryperpage = 10;
-    }
-    if (document.getElementById("pageoffset")) {
-        var e = document.getElementById("pageoffset");
-        var pageoffset = e.options[e.selectedIndex].value;
-    }
-    else {
-        pageoffset = 0;
-    }
-    $("div[data-imagemgr='imagemgr']").load('upgradescheduler?entryperpage=' + entryperpage + '&pageoffset=' + pageoffset + '&action=searchImage');
 });
 
 
 
-$(document).on("click", ".editdeviceupgrade", async function () {
-    scheduleInfo = await $.ajax({
-        url: "/checkupgradeStatus",
-        type: "POST",
-        data: { id: $('#upgradeExists').data('id') },
-        success: function () {
-            // Obtaining the device image information was successful
-            document.getElementById("liProgress").style.display = "none";
-        },
-        error: function () {
-            document.getElementById("liProgress").style.display = "block";
-            progressInfo.innerHTML = "Error finding scheduler information";
-        }
-    });
-    if (scheduleInfo != "") {
-        scheduleInfo = JSON.parse(scheduleInfo);
-        $("#editupgradepartition").val(scheduleInfo['imagepartition']);
-        $("#editactivepartition").val(scheduleInfo['activepartition']);
-        $("#editsoftwareimage").val(scheduleInfo['software']);
-        $('#upgradeExists').data('id', scheduleInfo['id']);
-
-        if (scheduleInfo['schedule'] != "null") {
-            document.getElementById("editdatetime").value = scheduleInfo['schedule'];
-        }
-        if (scheduleInfo['reboot'] == 1) {
-            $("#editrebootafterUpgrade").prop("checked", true);
-        }
-    }
-    document.getElementById("editUpgrade").style.display = "block";
-    if ($('#initmonitorUpgrade').length) {
-        document.getElementById("initmonitorUpgrade").style.display = "none";
-    }
-    document.getElementById("monitorUpgrade").style.display = "none";
-});
-
-
-$(document).on("click", ".removedeviceUpgrade", async function () {
-    id = $('#upgradeExists').data('id');
-    scheduleInfo = await $.ajax({
-        url: "/deleteUpgrade",
-        type: "POST",
-        data: { id: id },
-        success: function () {
-            //Clear the data value of the upgrade status because I don't want the app to check the scheduled upgrade anymore. It has been deleted.
-            $('#upgradeExists').data('id', '');
-            document.getElementById("liProgress").style.display = "block";
-            progressInfo.innerHTML = "Scheduled upgrade has been removed";
-            if ($('#initmonitorUpgrade').length) {
-                document.getElementById("initmonitorUpgrade").style.display = "none";
-            }
-            document.getElementById("monitorUpgrade").style.display = "none";
-        },
-        error: function () {
-            document.getElementById("liProgress").style.display = "block";
-            progressInfo.innerHTML = "Error removing schedule upgrade";
-        }
-    });
-}); 
-
-
-$(document).on("click", "#submitupgradeChanges", async function () {
-    if ($("#editrebootafterUpgrade").prop("checked")) {
-        var reboot = 1;
-    }
-    else {
-        var reboot = 0;
-    }
-    scheduleInfo = await $.ajax({
-        url: "/deviceupgradeActions",
-        type: "POST",
-        data: { action: "submitupgradeChanges", id: $('#upgradeExists').data('id'), switchid: $('#deviceupgrade').attr('data-deviceid'), schedule: document.getElementById("editdatetime").value, software: $("#editsoftwareimage option:selected").val(), imagepartition: $("#editupgradepartition option:selected").val(), activepartition: $("#editactivepartition option:selected").val(), reboot: reboot },
-        success: function () {
-            document.getElementById("editUpgrade").style.display = "none";
-            document.getElementById("monitorUpgrade").style.display = "block";
-        },
-        error: function () {
-            //Error handling
-        }
-    });
-    scheduleInfo = JSON.parse(scheduleInfo);
-    if (scheduleInfo['message'] != "") {
-        document.getElementById("liProgress").style.display = "block";
-        progressInfo.innerHTML = scheduleInfo['message'];
-    }
-    // Update the fields in the form. If the initmonitorupgrade div exists, we need to update the initmonitorupgrade entries
-    $('#monitorupgradepartition').empty().append("<font class='font11px'>" + scheduleInfo['activeUpdate']['imagepartition'].charAt(0).toUpperCase() + scheduleInfo['activeUpdate']['imagepartition'].slice(1) + "</font>");
-    $('#monitoractivepartition').empty().append("<font class='font11px'>" + scheduleInfo['activeUpdate']['activepartition'].charAt(0).toUpperCase() + scheduleInfo['activeUpdate']['activepartition'].slice(1) + "</font>");
-    $('#monitordatetime').empty().append("<font class='font11px'>" + scheduleInfo['activeUpdate']['schedule'] + "</font>");
-    if (scheduleInfo['activeUpdate']['reboot'] == 1) {
-        $("#monitorrebootafterUpgrade").prop("checked", true);
-    }
-    monitorUpgrade(scheduleInfo);
-});
-
-
-async function switchReboot(deviceid, id) {
-    rebootInfo = await $.ajax({
-        url: "/switchReboot",
-        type: "POST",
-        data: { deviceid: deviceid, id:id },
-        success: function () {
-            // Switch rebooted successfully
-            $('.upgradeStatus').empty().append("<font class='font11px'>Switch has been rebooted</font>");
-            if ($('#rebootSwitch' + id)) {
-                $('#rebootSwitch' + id).empty();
-                document.getElementById("showSchedule").style.display = "none";
-            }
-            if ($("#showschedulerebootSwitch").length > 0) {
-                $("#showschedulerebootSwitch").empty().append("<font class='font11px'>Switch has been rebooted</font>");
-            }
-        },
-        error: function () {
-            //document.getElementById("liProgress").style.display = "block";
-            //progressInfo.innerHTML = "Error rebooting switch";
-        }
-    });
-}
-
-
-async function removescheduleUpgrade(id) {
-    scheduleInfo = await $.ajax({
-        url: "/deleteUpgrade",
-        type: "POST",
-        data: { id: id },
-        success: function () {
-            //Clear the data value of the upgrade status because I don't want the app to check the scheduled upgrade anymore. It has been deleted.
-            $('#scheduletableRow'+ id).remove();
-        },
-        error: function () {
-            document.getElementById("liProgress").style.display = "block";
-            progressInfo.innerHTML = "Error removing schedule upgrade";
-        }
-    });
-} 
-
-
-
-
-function entryperPage() {
-    document.getElementById("editSchedule").style.display = "none";
-    document.getElementById("addSchedule").style.display = "none";
-    document.getElementById("liProgress").style.display = "none";
-    if (document.getElementById("entryperpage")) {
-        var e = document.getElementById("entryperpage");
-        var entryperpage = e.options[e.selectedIndex].value;
-    }
-    else {
-        entryperpage = 10;
-    }
-    var pageoffset = 0;
-    $("div[data-imagemgr='imagemgr']").load('upgradescheduler?entryperpage=' + entryperpage + '&pageoffset=' + pageoffset + '&action=searchImage');
-}
-
-function pageNumber() {
-    document.getElementById("editSchedule").style.display = "none";
-    document.getElementById("addSchedule").style.display = "none";
-    document.getElementById("liProgress").style.display = "none";
-    if (document.getElementById("entryperpage")) {
-        var e = document.getElementById("entryperpage");
-        var entryperpage = e.options[e.selectedIndex].value;
-    }
-    else {
-        entryperpage = 10;
-    }
-    if (document.getElementById("pageoffset")) {
-        var e = document.getElementById("pageoffset");
-        var pageoffset = e.options[e.selectedIndex].value;
-    }
-    else {
-        pageoffset = 0;
-    }
-    $("div[data-imagemgr='imagemgr']").load('upgradescheduler?entryperpage=' + entryperpage + '&pageoffset=' + pageoffset + '&action=searchImage');
-}
-
-
-function checkupgradeForm(elementinfo) {
-    // Need to check if all the required fields are filled in. If that's the case, enable the submit button
-    // Update button based on the action (is it add or edit)
-    if ($(elementinfo).data("action") == "add") {
-        if ($("#addupgradepartition").val() && $("#addactivepartition").val() && $("#addsoftwareimage").val()) {
-            // Everything is selected, enable the submit button
-            $("#submitUpgrade").prop('disabled', false);
-            $("#submitUpgrade").css('opacity', '1');
-            $("#submitUpgrade").css('pointer-events', 'auto');
-        }
-        else {
-            $("#submitUpgrade").prop('disabled', true);
-            $("#submitUpgrade").css('opacity', '1');
-            $("#submitUpgrade").css('pointer-events', 'none');
-
-
-        }
-    }
-};
-
-function monitorUpgrade(scheduleInfo) {
-    document.getElementById("monitorUpgrade").style.display = "block";
-    document.getElementById("editupgradeEnable").style.display = "none";
-    $('#upgradeExists').data('id', scheduleInfo['activeUpdate']['id']);
-    $('#editUpgrade').data('id', scheduleInfo['activeUpdate']['id']);
-    $('#monitorupgradepartition').empty().append("<font class='font11px'>" + scheduleInfo['activeUpdate']['imagepartition'].charAt(0).toUpperCase() + scheduleInfo['activeUpdate']['imagepartition'].slice(1)  + "</font>");
-    $('#monitoractivepartition').empty().append("<font class='font11px'>" + scheduleInfo['activeUpdate']['activepartition'].charAt(0).toUpperCase() + scheduleInfo['activeUpdate']['activepartition'].slice(1) + "</font>");    
-
-    if (scheduleInfo['activeUpdate']['schedule']) {
-        $('#monitordatetime').empty().append("<font class='font11px'>" + scheduleInfo['activeUpdate']['schedule'].toString().slice(0, -3) + "</font>");
-    }
-    else {
-        $('#monitordatetime').empty();
-    }
-    if (scheduleInfo['activeUpdate']['reboot'] == 1) {
-        $("#monitorrebootafterUpgrade").prop("checked", true);
-    }
-    swInfo = scheduleInfo['images'].filter(function (swInfo) { return swInfo.id == scheduleInfo['activeUpdate']['software'] });
-    $('#monitorsoftwareimage').empty().append("<font class='font11px'>" + swInfo[0]['name'] + " (" + swInfo[0]['filename'] + ")</font>"); 
-}
-
-
-async function showupgradeDetails(id) {
-    $('#showSchedule').data('id', id);
+$('.profilestatusOverview').ready(function () {
     var refresh = async function () {
-
-        if ($('#showSchedule').data('id') == id) {
-
-
-
-            var upgradestatus = { '0': 'Not started', '1': 'Upgrade initiated', '5': 'Copy software onto the switch', '10': 'Software copied successfully', '20': 'Software copied successfully: switch is rebooted', '50': 'There is another software upgrade in progress', '100': 'Software upgrade completed successfully', '110': 'Software upgrade completed successfully: reboot is required' };
-            scheduleInfo = await $.ajax({
-                url: "/upgradeStatus",
-                type: "POST",
-                data: { id: id },
-                success: function () {
-                    // Obtaining the software update information was successful
-                },
-                error: function () {
-                    document.getElementById("liProgress").style.display = "block";
-                    progressInfo.innerHTML = "Error finding software upgrade information";
-                }
-            });
-            scheduleInfo = JSON.parse(scheduleInfo);
-            switchInfo = scheduleInfo['switchresult'];
-            document.getElementById("showSchedule").style.display = "block";
-            //Fill all the showschedule divs with information
-            $('#showscheduleTitle').empty().append("<font class='font13pxwhite'><center>Software upgrade information for " + switchInfo['description'] + " (" + switchInfo['ipaddress'] + ")</center></font>");
-            if (scheduleInfo['softwareinfo']) {
-                softwareInfo = scheduleInfo['softwareinfo'].replace("\\", "");
-                softwareInfo = JSON.parse(softwareInfo);
-            }
-            else {
-                softwareInfo = { primary_version: "", secondary_version: "", default_image: "" };
-            }
-            if (scheduleInfo['softwareinfoafter']) {
-                softwareinfoAfter = scheduleInfo['softwareinfoafter'].replace("\\", "");
-                softwareinfoAfter = JSON.parse(softwareinfoAfter);
-            }
-            else {
-                softwareinfoAfter = { primary_version: "", secondary_version: "", default_image: "" };
-            }
-            $('.bprimaryImage').empty().append("<font class='font10px'>" + softwareInfo['primary_version'].charAt(0).toUpperCase() + softwareInfo['primary_version'].slice(1) + "</font>");
-            $('.bsecondaryImage').empty().append("<font class='font10px'>" + softwareInfo['secondary_version'].charAt(0).toUpperCase() + softwareInfo['secondary_version'].slice(1) + "</font>");
-            $('.bdefaultImage').empty().append("<font class='font10px'>" + softwareInfo['default_image'].charAt(0).toUpperCase() + softwareInfo['default_image'].slice(1) + "</font>");
-            $('.aprimaryImage').empty().append("<font class='font10px'>" + softwareinfoAfter['primary_version'].charAt(0).toUpperCase() + softwareinfoAfter['primary_version'].slice(1) + "</font>");
-            $('.asecondaryImage').empty().append("<font class='font10px'>" + softwareinfoAfter['secondary_version'].charAt(0).toUpperCase() + softwareinfoAfter['secondary_version'].slice(1) + "</font>");
-            $('.adefaultImage').empty().append("<font class='font10px'>" + softwareinfoAfter['default_image'].charAt(0).toUpperCase() + softwareinfoAfter['default_image'].slice(1) + "</font>");
-            if (scheduleInfo['schedule']) {
-                $('.upgradeSchedule').empty().append("<font class='font10px'>" + scheduleInfo['schedule'].toString().slice(0, -3) + "</font>");
-            }
-            else {
-                $('.upgradeSchedule').empty().append("<font class='font10px'>No schedule</font>");
-            }
-            if (scheduleInfo['starttime']) {
-                $('.upgradeStart').empty().append("<font class='font10px'>" + scheduleInfo['starttime'].toString().slice(0, -3) + "</font>");
-            }
-            if (scheduleInfo['endtime']) {
-                $('.upgradeEnd').empty().append("<font class='font10px'>" + scheduleInfo['endtime'].toString().slice(0, -3) + "</font>");
-            }
-            if (scheduleInfo['starttime'] && scheduleInfo['endtime']) {
-                var duration = Math.abs((new Date(scheduleInfo['endtime']) - new Date(scheduleInfo['starttime'])) / 1000);
-                var days = Math.floor(duration / (3600 * 24));
-                duration -= days * 3600 * 24;
-                var hours = Math.floor(duration / 3600);
-                duration -= hours * 3600;
-                var minutes = Math.floor(duration / 60);
-                duration -= minutes * 60;
-                $('.upgradeduration').empty().append("<font class='font10px'>" + days + " days, " + hours + " hours, " + minutes + " minutes, " + duration + " seconds</font>");
-            }
-            else {
-                $('.upgradeDuration').empty().append("<font class='font10px'>Upgrade has not finished yet</font>");
-            }
-            if (scheduleInfo['reboot'] == 1) {
-                $('.rebootafterUpgrade').empty().append("<font class='font10px'>Yes</font>");
-            }
-            else {
-                $('.rebootafterUpgrade').empty().append("<font class='font10px'>No</font>");
-            };
-            if (scheduleInfo['status'] == 110) {
-                // This was an upgrade without reboot. Need to add a button that allows manual reboot
-                $('.showschedulerebootSwitch').empty().append("<input type='button' name='rebootSwitch' class='button' class='switchReboot' onClick='switchReboot(" + scheduleInfo['switchid'] + "," + scheduleInfo['id'] + ");' value='Reboot'>");
-            }
-            $('.upgradeStatus').empty().append("<font class='font10px'>" + upgradestatus[scheduleInfo['status']] + "</font>");
-
-
-        }
-
-
-    }
-    setInterval(refresh, 5000);
-    refresh();
-}
-
-
-$('.statusOverview').ready(function () {
-    var refresh = async function () {
-        statusOverview = document.getElementsByClassName('statusOverview');
-        for (var i = 0; i < statusOverview.length; i++) {
-            id = statusOverview.item(i).getAttribute('data-id');
+        profilestatusOverview = document.getElementsByClassName('profilestatusOverview');
+        for (var i = 0; i < profilestatusOverview.length; i++) {
+            profileid = profilestatusOverview.item(i).getAttribute('data-profileid');
             await $.ajax({
                 type: "POST",
-                data: { 'id': id },
-                url: "/upgradeStatus",
+                data: { 'profileid': profileid },
+                url: "/upgradeprofileStatus",
                 success: function (response) {
-                    var upgradestatus = {'0': 'Not started', '1': 'Upgrade initiated', '5': 'Copy software onto the switch', '10': 'Software copied successfully', '20': 'Software copied successfully: switch is rebooted', '50': 'There is another software upgrade in progress', '100': 'Software upgrade completed successfully', '110': 'Software upgrade completed successfully: reboot is required' };
+                    var upgradestatus = { '0': 'Not started', '1': 'Upgrade initiated', '5': 'Copy software onto the switch', '10': 'Software copied successfully', '20': 'Software copied successfully: switch is rebooted', '50': 'There is another software upgrade in progress', '60': 'Upgrade profile is active', '100': 'Software upgrade completed successfully', '110': 'Software upgrade completed successfully: reboot is required' };
                     response = JSON.parse(response);
                     //Update the status
                     if (typeof response['status'] !== 'undefined') {
-                        $('#upgradestatus' + id).empty().append("<font class='font10px'>" + upgradestatus[response['status']] + "</font>");
+                        $('#upgradeprofilestatus' + profileid).empty().append("<font class='font10px'>" + upgradestatus[response['status']] + "</font>");
                     }
-                    if (response["softwareinfo"] !== "") {
-                        var softwareinfo = JSON.parse(response['softwareinfo']);
-                        if ("current_version" in softwareinfo) {
-                            $('#softwareinfo' + id).empty().append("<font class='font10px'>" + softwareinfo['current_version'] + "</font>");
-                        }
-                        else {
-                            if (softwareinfo['default_image'] == "Primary") {
-                                $('#softwareinfo' + id).empty().append("<font class='font10px'>" + softwareinfo['primary_version'] + "</font>");
-                            }
-                            else {
-                                $('#softwareinfo' + id).empty().append("<font class='font10px'>" + softwareinfo['secondary_version'] + "</font>");
-                            }
-                        }
-
-                    }
-                    if (response["softwareinfoafter"] !== "") {
-                        var softwareinfoafter = JSON.parse(response['softwareinfoafter']);
-                        if ("current_version" in softwareinfoafter) {
-                            $('#softwareinfoafter' + id).empty().append("<font class='font10px'>" + softwareinfoafter['current_version'] + "</font>");
-                        }
-                        else {
-                            if (softwareinfoafter['default_image'] == "Primary") {
-                                $('#softwareinfoafter' + id).empty().append("<font class='font10px'>" + softwareinfoafter['primary_version'] + "</font>");
-                            }
-                            else {
-                                $('#softwareinfoafter' + id).empty().append("<font class='font10px'>" + softwareinfoafter['secondary_version'] + "</font>");
-                            }
-                        }
-                    }
-                    if ( response['status'] > 99) {
-                        var duration = Math.abs((new Date(response['endtime']) - new Date(response['starttime'])) / 1000);
-                        var days = Math.floor(duration / (3600 * 24));
-                        duration -= days * 3600 * 24;
-                        var hours = Math.floor(duration / 3600);
-                        duration -= hours * 3600;
-                        var minutes = Math.floor(duration / 60);
-                        duration -= minutes * 60;
-                        $('#upgradeduration' + id).empty().append("<font class='font10px'>" + days + " days, " + hours + " hours, " + minutes + " minutes, " + duration + " seconds</font>");
-                    }
-                    else {
-                        $('#upgradeduration' + id).empty();
-                    }
-                    if (response['status'] > 0) {
-                        if ($('#removescheduleSpan' + id)) {
-                            $('#removescheduleSpan' + id).empty();
-                        }
-                    }
+                    //if (response['status'] > 99) {
+                    //    var duration = Math.abs((new Date(response['endtime']) - new Date(response['starttime'])) / 1000);
+                    //    var days = Math.floor(duration / (3600 * 24));
+                    //    duration -= days * 3600 * 24;
+                    //    var hours = Math.floor(duration / 3600);
+                    //    duration -= hours * 3600;
+                    //    var minutes = Math.floor(duration / 60);
+                    //    duration -= minutes * 60;
+                    //    $('#upgradeduration' + id).empty().append("<font class='font10px'>" + days + " days, " + hours + " hours, " + minutes + " minutes, " + duration + " seconds</font>");
+                    //}
+                    //else {
+                    //    $('#upgradeduration' + id).empty();
+                    //}
                 },
                 error: function () {
                     console.log("There is an error obtaining status information");
@@ -503,77 +64,762 @@ $('.statusOverview').ready(function () {
     refresh();
 });
 
-$('.upgradeStatus').ready(function () {
-    // Only check if the upgrade is selected. The initmonitorUpgrade or monitorUpgrade div have to exist
-    var refresh = async function () {
-        if ($('#upgradeExists').data('id')) {
-            // If the status is >0 or <100, then there is an active upgrade and we need to disable the edit button. In addition, show the upgrade status
-            scheduleInfo = await $.ajax({
-                url: "/checkupgradeStatus",
-                type: "POST",
-                data: { id: $('#upgradeExists').data('id') },
-                success: function () {
-                    // Obtaining the device image information was successful
-                    document.getElementById("liProgress").style.display = "none";
-                },
-                error: function () {
-                    document.getElementById("liProgress").style.display = "block";
-                    progressInfo.innerHTML = "Error finding scheduler information";
-                }
-            });
-            if (scheduleInfo != "null") {
-                scheduleInfo = JSON.parse(scheduleInfo);
-                if (scheduleInfo['status'] > 0) {
-                    //The backup job is already running. Need to display the progress and remove the edit button
-                    var upgradestatus = { '1': 'Upgrade initiated', '5': 'Copy software onto the switch', '10': 'Software copied successfully', '20': 'Software copied successfully: switch is rebooted', '50': 'There is another software upgrade in progress', '100': 'Software upgrade completed successfully', '110': 'Software upgrade completed successfully: reboot is required' };
-                    $('.upgradeStatus').html("<font class='font11px'>" + upgradestatus[scheduleInfo['status']] + "</font>");
-                    $("#submitupgradeChanges").prop('disabled', true);
-                    if ($('#initmonitorUpgrade').length) {
-                        document.getElementById("initeditupgradeEnable").style.display = "none";
-                    }
-                    document.getElementById("editupgradeEnable").style.display = "none";
-                    // Depending on the status we might need to update some other fields
-                    if (scheduleInfo['status'] > 99) {
-                        swInfo = JSON.parse(scheduleInfo['softwareinfoafter']);
-                        // Upgrade was successful. We also need to update all the other fields in the status
-                        $('.monitordefaultImage').empty().append("<font class='font11px'>" + swInfo['default_image'].charAt(0).toUpperCase() + swInfo['default_image'].slice(1) + "</font>");
-                        $('.monitorprimaryImage').empty().append("<font class='font11px'>" + swInfo['primary_version'].charAt(0).toUpperCase() + swInfo['primary_version'].slice(1) + "</font>");
-                        $('.monitorsecondaryImage').empty().append("<font class='font11px'>" + swInfo['secondary_version'].charAt(0).toUpperCase() + swInfo['secondary_version'].slice(1) + "</font>");
-                        $('.monitorupgradepartition').empty().append("<font class='font11px'>Completed</font>");
-                        $('.monitoractivepartition').empty().append("<font class='font11px'>Completed</font>");
-                        $('.monitorsoftwareimage').empty().append("<font class='font11px'>Completed</font>");
-                        $('.monitordatetime').empty().append("<font class='font11px'>Completed</font>");
-                        if (scheduleInfo['status'] == 110) {
-                            // This was an upgrade without reboot. Need to add a button that allows manual reboot
-                            $('.upgradeStatus').html("<font class='font11px'>" + upgradestatus[scheduleInfo['status']] + "</font><input type='button' name='rebootSwitch' class='button' class='switchReboot' onClick='switchReboot(" + scheduleInfo['switchid'] + "," + scheduleInfo['id'] + ");' value='Reboot'>");
-                        }
-                        if (scheduleInfo['status'] > 0) {
-                            if ($('#removescheduleSpan' + id)) {
-                                $('#removescheduleSpan' + id).empty();
-                            }
-                        }
 
-                    }
-                }
-                else {
-                    //We should not show the edit button immediately because it could be that the scheduler has not set the status to >0 yet.
-                    if (scheduleInfo['schedule'] !== "" || scheduleInfo['schedule'] !== None) {
-                        $("#submitupgradeChanges").prop('disabled', false);
-                        if ($('#initmonitorUpgrade').length) {
-                            document.getElementById("initeditupgradeEnable").style.display = "inline";
-                        }
-                        document.getElementById("editupgradeEnable").style.display = "inline";
-                    }
-                }
+$(document).on("click", ".addProfile", async function () {
+    $('#phprofileInfo').attr('data-addoredit', 'add');
+    $('#phprofileInfo').attr('data-divname', 'addDevice');
+    $('#phprofileInfo').attr('data-assignedDevices', '[]');
+    $('#phprofileInfo').attr('data-availableDevices', '[]');
+    $("#selectdevicesDiv").empty();
+    $("#editProfile").empty();
+    $("#assignsoftwareDiv").empty();
+    $("#assigneddevicesDiv").empty();
+    $("#availabledevicesDiv").empty();
+    $('#addProfile').attr('style', 'display: block');
+    $('#assigneddevicesDiv').attr('style', 'display: none');
+    $('#availabledevicesDiv').attr('style', 'display: none');
+    $('#assignsoftwareDiv').attr('style', 'display: none');
+    $('#showprofileInfo').attr('style', 'display: none');
+    var profileInfo = {};
+    profileInfo['divname'] = "selectDevices";
+    await selectDevices(profileInfo);
+});
+
+
+$(document).on("mouseenter mouseleave", ".attributeTooltip", async function (event) {
+    if (event.type == "mouseenter") {
+        var left = event.pageX - 310;
+        var top = event.pageY + 10;
+        assignedattrInfo = await $.ajax({
+            url: "/showassignedAttributes",
+            type: "POST",
+            data: { deviceid: $(this).attr('data-deviceid') },
+            success: function () {
+            },
+            error: function () {
+                // Error obtaining device attribute list
+                $('#transparentOverlay').attr('style', 'display: none');
             }
+        });
+        $("#showdaTooltip").css({
+            position: 'absolute',
+            zIndex: 5000,
+            left: left,
+            top: top,
+            paddingLeft: 0,
+            paddingTop: 0,
+            paddingRight: 0,
+            paddingBottom: 0,
+            backgroundColor: 'white',
+            "text-align": "center",
+            width: '350px',
+        });
+        // Construct the innerHTML
+        attrsetHTML = "<table class='tablewithborder' style='max-width: 350px;'>";
+        attrsetHTML += "<tr class='tableTitle'>";
+        attrsetHTML += "<td width='20%' align='left' nowrap><font class='font12pxwhite'>Attribute name</font></td>";
+        attrsetHTML += "<td width='20%' align='left' nowrap><font class='font12pxwhite'>Type</font></td>";
+        attrsetHTML += "<td width='60%' align='left' nowrap><font class='font12pxwhite'>Value</font></td>";
+        attrsetHTML += "</tr>";
+        assignedattrInfo = JSON.parse(assignedattrInfo);
+        for (var i = 0; i < assignedattrInfo.length; i++) {
+            attrsetHTML += "<tr>";
+            attrsetHTML += "<td class='whiteBG'><font class='font12pxgrey'>" + assignedattrInfo[i]['name'] + "</font></td>";
+            attrsetHTML += "<td class='whiteBG'><font class='font12pxgrey'>" + assignedattrInfo[i]['type'].charAt(0).toUpperCase() + assignedattrInfo[i]['type'].slice(1) + "</font></td>";
+            if (assignedattrInfo[i]['type'] == "boolean" && assignedattrInfo[i]['value'] == "1") {
+                attrsetHTML += "<td class='whiteBG'><font class='font12pxgrey'>True</font></td>";
+            }
+            else if (assignedattrInfo[i]['type'] == "boolean" && assignedattrInfo[i]['value'] == "0") {
+                attrsetHTML += "<td class='whiteBG'><font class='font12pxgrey'>True</font></td>"
+            }
+            else {
+                attrsetHTML += "<td class='whiteBG'><font class='font12pxgrey'>" + assignedattrInfo[i]['value'] + "</font></td>";
+            }
+            attrsetHTML += "</tr>";
         }
-    };
-    setInterval(refresh, 3000);
-    refresh();
+        attrsetHTML += "</table>";
+        $('#showdaTooltip').empty().append(attrsetHTML);
+        $('#showdaTooltip').show();
+    } else {
+        $('#showdaTooltip').empty();
+        $('#showdaTooltip').hide();
+    }
+}); 
+
+
+$(document).on("mouseenter mouseleave", ".showupgradeprofileDevices", async function (event) {
+    if (event.type == "mouseenter") {
+        var left = event.pageX - 200;
+        var top = event.pageY + 10;
+        profileDevices = await $.ajax({
+            url: "/upgradeprofileDevices",
+            type: "POST",
+            data: { profileid: $(this).attr('data-profileid') },
+            success: function () {
+            },
+            error: function () {
+                // Error obtaining device list from profile
+                $('#transparentOverlay').attr('style', 'display: none');
+            }
+        });
+        $("#showdaTooltip").css({
+            position: 'absolute',
+            zIndex: 5000,
+            left: left,
+            top: top,
+            paddingLeft: 0,
+            paddingTop: 0,
+            paddingRight: 0,
+            paddingBottom: 0,
+            backgroundColor: 'transparent',
+            "text-align": "center",
+            width: '450px',
+        });
+        // Construct the innerHTML
+        profileDevices = JSON.parse(profileDevices);
+        if (typeof profileDevices === 'string' || profileDevices instanceof String) {
+            console.log(typeof (profileDevices['deviceattributes']));
+            profileDevices = JSON.parse(profileDevices);
+        }
+        pdHTML = "<table class='tablewithborder' style='max-width: 450px;' align='left'>";
+        pdHTML += "<tr class='tableTitle'>";
+        pdHTML += "<td width='30%' align='center' nowrap><font class='font12pxwhite'>IP address</font></td>";
+        pdHTML += "<td width='50%' align='center'><font class='font12pxwhite'>Description</font></td>";
+        pdHTML += "<td width='20%' align='center'><font class='font12pxwhite'>OS</font></td>";
+        pdHTML += "</tr>";
+        for (var i = 0; i < profileDevices.length; i++) {
+            pdHTML += "<tr>";
+            pdHTML += "<td class='whiteBG'><font class='font12pxgrey'>" + profileDevices[i]['ipaddress'] + "</font></td>";
+            pdHTML += "<td class='whiteBG' nowrap><font class='font12pxgrey'>" + profileDevices[i]['description'] + "</font></td>";
+            pdHTML += "<td class='whiteBG' nowrap><font class='font12pxgrey'>" + profileDevices[i]['ostype'] + "</font></td>";         
+            pdHTML += "</tr>";
+        }
+        pdHTML += "</table>";
+        $('#showdaTooltip').empty().append(pdHTML);
+        $('#showdaTooltip').show();
+    } else {
+        $('#showdaTooltip').hide();
+    }
 });
 
 
 
+function manageattributeDivs(showDiv) {
+    $('.sbip').attr('style', 'display: none');
+    $('.sbdescription').attr('style', 'display: none');
+    $('.sbattribute').attr('style', 'display: none');
+    $('.sbattributeValue').attr('style', 'display: none');
+    $('.sbattributeList').attr('style', 'display: none');
+    $('.sbattributeBoolean').attr('style', 'display: none');
+    $('#showdaTooltip').hide();
+    $('.searchDevice').attr('style', 'display: inline-block');
+    if (showDiv != "") {
+        $('.' + showDiv).attr('style', 'display: inline-block');
+    }
+}
+
+async function editProfile(profileid) {
+    $('#phprofileInfo').attr('data-addoredit', 'edit');
+    $('#phprofileInfo').attr('data-divname', 'editProfile');
+    $('#phprofileInfo').attr('data-availableDevices', '[]');
+    $('#phprofileInfo').attr('data-profileid', profileid);
+    showmessageBar("Obtaining profile information");
+    $('#transparentOverlay').attr('style', 'display: block');
+    $('#editProfile').attr('style', 'display: block');
+    $('#availabledevicesDiv').attr('style', 'display: none');
+    $('#showprofileInfo').attr('style', 'display: none');
+    profileInfo = await $.ajax({
+        url: "/upgradeprofileInfo",
+        type: "POST",
+          data: {profileid: profileid},
+          success: function () {
+             // Obtaining the upgrade profile was successful
+          },
+          error: function () {
+              showmessageBar("Error finding upgrade profile information");
+              $('#transparentOverlay').attr('style', 'display: none');
+          }
+      });
+    profileInfo = JSON.parse(profileInfo);
+    $('#editprofileid').val(profileInfo['id']);
+    $('#editprofilename').val(profileInfo['name']);
+    $('#editupgradepartition').val(profileInfo['upgradepartition']);
+    $('#editactivepartition').val(profileInfo['activepartition']);
+    console.log(profileInfo['schedule']);
+    $('#editscheduletime').val(profileInfo['schedule'].toString().slice(0, -3));
+    if (profileInfo['reboot'] == 1) {
+        $("#editrebootafterUpgrade").prop("checked", true);
+    }
+    profileInfo['action'] == "";
+    $('#phprofileInfo').attr('data-assignedDevices', profileInfo['devicelist']);
+    $('#phprofileInfo').attr('data-softwareimages', profileInfo['softwareimages']);
+    await devicesAssigned(profileInfo['devicelist'], "[]", profileInfo);
+    await assignsoftwaretoSwitches(profileInfo);
+}
 
 
+async function selectDevices(profileInfo) {
+    $('#phprofileInfo').attr('data-divname', 'selectDevices');
+    $('#phprofileInfo').attr('data-availableDevices','[]');
+    $('#availabledevicesDiv').empty();
+    $('#availabledevicesDiv').attr('style', 'display: none');
+    $('#assignsoftwareDiv').empty();
+    $('#assignsoftwareDiv').attr('style', 'display: none');
+    deviceAttributes = await (getdeviceAttributes());
+    if (typeof profileInfo === 'string' || profileInfo instanceof String) {
+        profileInfo = JSON.parse(profileInfo);
+    }
+    pHTML = "<hr>";
+    pHTML += "<table class='tablenoborder' id='" + $('#phprofileInfo').attr('data-addoredit') + "profileTable'>";
+    pHTML += "<tr><td width='10%' nowrap><font class='font11px'>Search devices</font></td>";
+    pHTML += "<td width='10%'><select name='searchType' id='searchType' onchange='showsearchOptions()'>";
+    pHTML += "<option value=''>Select search criteria</option>";
+    pHTML += "<option value='ipaddress'>IP address</option>";
+    pHTML += "<option value='description'>Description</option>";
+    pHTML += "<option value='attribute'>Device attribute</option>";
+    pHTML += "</select></td>";
+    pHTML += "<td nowrap>";
+    pHTML += "<div class='sbip' style='display: none;'><font class='font11px'>IP address&nbsp;</font><input type='text' name='sbip' id='sbip'></div>";
+    pHTML += "<div class='sbdescription' style='display:none;'><font class='font11px'>Device description&nbsp;</font><input type='text' name='sbdescription' id='sbdescription'></div >";
+    pHTML += "<div class='sbattribute' style='display:none;'><font class='font11px'>Select attribute&nbsp;</font>";
+    pHTML += "<select name='step1deviceAttribute' class='selectdeviceAttribute' onchange='selectattributeValue()'>";
+    pHTML += "<option value=''>Select</option>";
+    for (var i = 0; i < deviceAttributes.length; i++) {
+        pHTML += "<option value='" + deviceAttributes[i]['id'] + "' data-name='" + deviceAttributes[i]['name'] + "' data-type='" + deviceAttributes[i]['type'] + "' data-attributelist='" + deviceAttributes[i]['attributelist'] + "'>" + deviceAttributes[i]['name'] + " (" + deviceAttributes[i]['type'].charAt(0).toUpperCase() + deviceAttributes[i]['type'].slice(1) + ")</option>";
+    }
+    pHTML += "</select>";
+    pHTML += "</div>";
+    pHTML += "<div class='sbattributeValue' style='display:none;'></div><div class='sbattributeBoolean' style='display:none;'></div><div class='sbattributeList' style='display:none;'></div>";
+    pHTML += "</td>";
+    pHTML += "<td align='left'><div class='searchDevice' style='display:none;'><button type='button' name='searchDevice' class='transparent-button' id='searchDevice' value='Find device(s)' ' onclick='findDevices()'><img src='static/images/search.svg' width='12' height='12' class='showtitleTooltip' data-title='Find device(s)'></button></div></td>";
+    pHTML += "<td width='50%'></td></tr></table>";
+    pHTML += "<hr>";
+    pHTML += "<div id='searchdeviceResult' style='display:none;'></div>"
+    $('#selectdevicesDiv').empty().append(pHTML);
+    $('#selectdevicesDiv').attr('style', 'display: block');
+}
 
+
+async function showsearchOptions() {
+    if ($("#searchType option:selected").val() == "ipaddress") {
+        manageattributeDivs("sbip");
+        $("#sbip").val('');
+    }
+    else if ($("#searchType option:selected").val() == "description") {
+        manageattributeDivs("sbdescription");
+        $("#sbdescription").val('');
+    }
+    else if ($("#searchType option:selected").val() == "attribute") {
+        manageattributeDivs("sbattribute");
+        $(".selectdeviceAttribute").val('');
+    }
+    else {
+        manageattributeDivs("");
+    }
+}
+
+
+async function getdeviceAttributes() {
+    attributeInfo = await $.ajax({
+        url: "/deviceattributesList",
+        type: "POST",
+        data: {},
+        success: function () {
+            // Obtaining the device attribute list was successful
+        },
+        error: function () {
+            showmessageBar("Error finding device attributes");
+            $('#transparentOverlay').attr('style', 'display: none');
+        }
+    });
+    attributeInfo = JSON.parse(attributeInfo);
+    return attributeInfo;
+}
+
+async function backtofindDevices(profileInfo) {
+    $('#showdaTooltip').hide();
+    $('#transparentOverlay').attr('style', 'display: block');
+    assigneddeviceInfo = JSON.parse($('#phprofileInfo').attr('data-assignedDevices'));
+    if ($('#phprofileInfo').attr('data-availableDevices')) {
+        availabledeviceInfo = JSON.parse($('#phprofileInfo').attr('data-availableDevices'));
+    }
+    else {
+        availabledeviceInfo = [];
+    }
+    selectDevices(profileInfo);
+    //if ($.isEmptyObject(availabledeviceInfo) ==false) {
+    //    await availableDevices(availabledeviceInfo);
+    //}
+    if ($.isEmptyObject(assigneddeviceInfo) == false) {
+        await devicesAssigned(assigneddeviceInfo, '[]', profileInfo);
+    }
+    $('#transparentOverlay').attr('style', 'display: none');
+}
+
+
+async function findDevices() {
+    $('#showdaTooltip').hide();
+    $('#transparentOverlay').attr('style', 'display: block');
+    var ipaddress, description, ostype, attribute, attributeType, searchType, attributevalueValue, attributebooleanValue, attributelistValue;
+    if ($("#searchType option:selected").val() == "ipaddress") {
+        searchType = "ipaddress";
+        ipaddress = $("#sbip").val();
+        description = attribute = attributeType = attributevalueValue = attributebooleanValue = attributelistValue = ostype = "";
+    }
+    else if ($("#searchType option:selected").val() == "description") {
+        searchType = "description";
+        description = $("#sbdescription").val();
+        ipaddress = attribute = attributeType = attributevalueValue = attributebooleanValue = attributelistValue = ostype = "";
+    }
+    else if ($("#searchType option:selected").val() == "ostype") {
+        searchType = "ostype";
+        ostype = $("#sbostype").val();
+        ipaddress = description = attribute = attributeType = attributevalueValue = attributebooleanValue = attributelistValue = "";
+    }
+    else if ($("#searchType option:selected").val() == "attribute") {
+        attribute = $(".selectdeviceAttribute option:selected").val();
+        searchType = "attribute";
+        if ($(".selectdeviceAttribute option:selected").attr('data-type') == "list") {
+            attributeType = "list";
+            attributelistValue = $("#attributelistValue option:selected").val() ;
+            ipaddress = description = attributevalueValue = attributebooleanValue  = "";
+        }
+        else if ($(".selectdeviceAttribute option:selected").attr('data-type') == "boolean") {
+            attributeType = "boolean";
+            attributebooleanValue = $("#attributebooleanValue option:selected").val();
+            ipaddress = description = attributevalueValue = attributelistValue = "";
+        }
+        else if ($(".selectdeviceAttribute option:selected").attr('data-type') == "value") {
+            attributeType = "value";
+            attributevalueValue = $("#attributevalueValue").val();
+            ipaddress = description = attributebooleanValue = attributelistValue = "";
+        }
+    }
+    else {
+        manageattributeDivs("");
+    }
+    searchResult = await $.ajax({
+        url: "/upgradeprofilesearchDevice",
+        type: "POST",
+        data: {searchType: searchType, ipaddress: ipaddress, description: description, ostype: ostype, attribute: attribute, attributeType: attributeType, attributevalueValue: attributevalueValue, attributebooleanValue: attributebooleanValue, attributelistValue: attributelistValue},
+        success: function () {
+            // Obtaining the device information was successful
+        },
+        error: function () {
+            showmessageBar("Error finding devices for upgrade profile");
+            $('#transparentOverlay').attr('style', 'display: none');
+        }
+    });
+    // Filling the table
+    console.log(searchResult);
+    assigneddeviceInfo = $('#phprofileInfo').attr('data-assignedDevices');
+    if (typeof assigneddeviceInfo === 'string' || assigneddeviceInfo instanceof String) {
+        assigneddeviceInfo = JSON.parse(assigneddeviceInfo);
+    }
+    searchResult = JSON.parse(searchResult);   
+    // If there are already assigned devices, we need to filter those out of the searchResult
+    if (typeof assigneddeviceInfo === 'object' && typeof searchResult === 'object') {
+        for (var i = 0; i < searchResult.length; i++) {
+            for (var ii = 0; ii < assigneddeviceInfo.length; ii++) {
+                if (searchResult[i]['id'] == assigneddeviceInfo[ii]['id']) {
+                    //This is the item that we have to remove from the object
+                    searchResult.splice(i, 1);
+                }
+            }
+        }
+    }
+    $('#phprofileInfo').attr('data-availableDevices', JSON.stringify(searchResult));
+    $('#phprofileInfo').attr('divname','findDevice');
+    if (assigneddeviceInfo.length > 0) {
+        profileInfo = {};
+        await devicesAssigned(assigneddeviceInfo, searchResult, profileInfo);
+    } 
+    await availableDevices(searchResult);
+    $('#transparentOverlay').attr('style', 'display: none');
+}
+
+
+async function selectattributeValue() {
+    $('#showdaTooltip').hide();
+    $('.sbattributeValue').attr('style', 'display: none');
+    $('.sbattributeBoolean').attr('style', 'display: none');
+    $('.sbattributeList').attr('style', 'display: none');
+    if ($(".selectdeviceAttribute option:selected").attr('data-type') == "list") {
+        pHTML = "";
+        pHTML += "<font class='font11px'>&nbsp;&nbsp;Value&nbsp;</font><select name='attributelistValue' id='attributelistValue'>";
+        attributeList = JSON.parse($(".selectdeviceAttribute option:selected").attr('data-attributelist'));
+        for (var i = 0; i < attributeList.length; i++) {
+            pHTML += "<option value='" + attributeList[i] + "'>" + attributeList[i] + "</option>";
+        }
+        pHTML += "</select>";
+        $('.sbattributeList').empty().append(pHTML);
+        $('.sbattributeList').attr('style', 'display: inline-block');
+    }
+    else if ($(".selectdeviceAttribute option:selected").attr('data-type') == "boolean") {
+        pHTML = "";
+        pHTML += "<font class='font11px'>&nbsp;&nbsp;Value&nbsp;</font><select name='attributebooleanValue' id='attributebooleanValue'>";
+        pHTML += "<option value=''>Select</option>";
+        pHTML += "<option value='0'>False</option>";
+        pHTML += "<option value='1'>True</option>";
+        pHTML += "</select>";
+        $('.sbattributeBoolean').empty().append(pHTML);
+        $('.sbattributeBoolean').attr('style', 'display: inline-block');
+    }
+    else if ($(".selectdeviceAttribute option:selected").attr('data-type') == "value") {
+        pHTML = "";
+        pHTML += "<font class='font11px'>&nbsp;&nbsp;Value&nbsp;</font><input type='text' name='attributevalueValue' id='attributevalueValue'>";
+        $('.sbattributeValue').empty().append(pHTML);
+        $('.sbattributeValue').attr('style', 'display: inline-block');
+    }
+}
+
+
+async function assigntoProfile(deviceInfo) {
+    $('#showdaTooltip').hide();
+    $('#phprofileInfo').attr('data-divname', 'assigntoProfile');
+    showmessageBar("Assign " + deviceInfo['ipaddress'] + " to profile");
+    profileInfo = {};
+    $('#assignsoftwareDiv').empty();
+    $('#assignsoftwareDiv').attr('style', 'display: none');
+    $('#transparentOverlay').attr('style', 'display: block');
+    $('#showdaTooltip').attr('style', 'display: none');
+    //Obtain the already assigned switch information and append the assigned switch
+    assigneddeviceInfo = $('#phprofileInfo').attr('data-assignedDevices');
+    availabledeviceInfo = $('#phprofileInfo').attr('data-availableDevices');
+    if (typeof assigneddeviceInfo === 'string' || assigneddeviceInfo instanceof String) {
+        assigneddeviceInfo = JSON.parse(assigneddeviceInfo);
+    }
+    if (typeof availabledeviceInfo === 'string' || availabledeviceInfo instanceof String) {
+        availabledeviceInfo = JSON.parse(availabledeviceInfo);
+    }
+    if (typeof deviceInfo === 'string' || deviceInfo instanceof String) {
+        deviceInfo = JSON.parse(deviceInfo);
+    }
+    assigneddeviceInfo.push(deviceInfo);
+    $('#phprofileInfo').attr('data-assignedDevices', JSON.stringify(assigneddeviceInfo));
+    for (var i = 0; i < availabledeviceInfo.length; i++) {
+        if (availabledeviceInfo[i]['id'] == deviceInfo['id']) {
+            //This is the item that we have to remove from the object
+            availabledeviceInfo.splice(i, 1);
+        }
+    }
+    if ($.isEmptyObject(assigneddeviceInfo)==false) {
+        await devicesAssigned(assigneddeviceInfo, searchResult, profileInfo);
+    }
+    $('#phprofileInfo').attr('data-availableDevices', JSON.stringify(availabledeviceInfo));
+    $('#phprofileInfo').attr('data-assignedDevices', JSON.stringify(assigneddeviceInfo));
+    await availableDevices(availabledeviceInfo);
+    $('#transparentOverlay').attr('style', 'display: none');
+}
+
+
+async function removefromProfile(deviceInfo, profileInfo) {
+    $('#showdaTooltip').hide();
+    if ($('#phprofileInfo').attr('data-divname') != "editProfile") {
+        $('#phprofileInfo').attr('data-divname', 'removefromProfile');
+    }
+    console.log($('#phprofileInfo').attr('data-divname'));
+    //Obtain the already assigned switch information and remove the selected switch
+    assigneddeviceInfo = JSON.parse($('#phprofileInfo').attr('data-assignedDevices'));
+    $('#assignsoftwareDiv').empty();
+    $('#assignsoftwareDiv').attr('style', 'display: none');
+    if ($('#phprofileInfo').attr('data-availableDevices') != "") {
+        availabledeviceInfo = JSON.parse($('#phprofileInfo').attr('data-availableDevices'));
+    }
+    else {
+        availabledeviceInfo = [];
+    }
+    if (typeof deviceInfo === 'string' || deviceInfo instanceof String) {
+        deviceInfo = JSON.parse(deviceInfo);
+    }
+    for (var i = 0; i < assigneddeviceInfo.length; i++) {
+        if (assigneddeviceInfo[i]['id'] == deviceInfo['id']) {
+            //This is the item that we have to remove from the object
+            assigneddeviceInfo.splice(i,1);
+        }
+    }
+    showmessageBar("Remove " + deviceInfo['ipaddress'] + " from profile");
+    $('#transparentOverlay').attr('style', 'display: block');
+    $("#phprofileInfo").attr('data-assignedDevices', JSON.stringify(assigneddeviceInfo));
+    if ($.isEmptyObject(assigneddeviceInfo) == false && $('#phprofileInfo').attr('data-divname')=="editProfile" ) {
+        await assignsoftwaretoSwitches(profileInfo);
+        await devicesAssigned(assigneddeviceInfo, searchResult, profileInfo);
+    }
+    else if ($.isEmptyObject(assigneddeviceInfo) == false && $('#phprofileInfo').attr('data-divname') == "removefromProfile") {
+        await devicesAssigned(assigneddeviceInfo, searchResult, profileInfo);
+    }
+    else {
+        $('#assigneddevicesDiv').empty();
+        $('#assignedDevices').attr('style', 'display: none');
+        $('#transparentOverlay').attr('style', 'display: none');
+        $('#liProgress').attr('style', 'display: none');
+    }
+    availabledeviceInfo.push(deviceInfo);
+    $('#phprofileInfo').attr('data-availableDevices', JSON.stringify(availabledeviceInfo));
+    await availableDevices(availabledeviceInfo);
+    $('#transparentOverlay').attr('style', 'display: none');
+}
+
+
+async function assignsoftwaretoSwitches(profileInfo) {
+    $('#showdaTooltip').hide();
+    showmessageBar("Obtain device information");
+    $('#transparentOverlay').attr('style', 'display: block');
+    $('#selectdevicesDiv').attr('style', 'display: none');
+    $('#availabledevicesDiv').attr('style', 'display: none');
+    //extract device id's from the assigned devices list
+    assignedDevices = $('#phprofileInfo').attr('data-assignedDevices');
+    if (typeof assignedDevices === 'string' || assignedDevices instanceof String) {
+        assignedDevices = JSON.parse(assignedDevices);
+    }
+    deviceList = [];
+    for (var i = 0; i < assignedDevices.length; i++) {
+        deviceList.push(assignedDevices[i]['id']);
+    }
+    searchResult = await $.ajax({
+        url: "/getsoftwareimageList",
+        type: "POST",
+        data: { devicelist: deviceList},
+        success: function () {
+            // Obtaining the software image information was successful
+        },
+        error: function () {
+            showmessageBar("Error finding software for upgrade profile");
+            $('#transparentOverlay').attr('style', 'display: none');
+        }
+    });
+    if ($('#phprofileInfo').attr('data-divname') != "editProfile") {
+        $('#assigneddevicesDiv').attr('style', 'display: none');
+        pHTML = "<table class='tablenoborder'><tr>";
+        pHTML += "<td colspan='5' align='center'><font class='font13pxgrey'>Selected device(s)</font></td></tr>";
+        pHTML += "<tr style='background-color:grey;'>";
+        pHTML += "<td width='20%' nowrap><font class='font12pxwhite'>IP Address</font></td>";
+        pHTML += "<td width='20%'><font class='font12pxwhite'>Description</font></td>";
+        pHTML += "<td width='10%' no wrap><font class='font12pxwhite'>Attributes</font></td>";
+        pHTML += "<td width='10%' no wrap><font class='font12pxwhite'>Status</font></td><td></td></tr>";
+        for (var i = 0; i < assignedDevices.length; i++) {
+            pHTML += "<tr><td><font class='font11pxgrey'>" + assignedDevices[i]['ipaddress'] + "</font></td><td><font class='font11pxgrey'>" + assignedDevices[i]['description'] + "</font></td>";
+            pHTML += "<td><img src='static/images/tag.svg' class='attributeTooltip' width='12' height='12' data-deviceid='" + assignedDevices[i]['id'] + "'></td>";
+            pHTML += "<td>";
+            if (searchResult['offlineDevices'].includes(assignedDevices[i]['id']) == true) {
+                pHTML += "<font class='font11pxred'>Offline</font>";
+            }
+            else {
+                pHTML += "<font class='font11pxgreen'>Online</font>";
+            }
+            pHTML += "</td >";
+            pHTML += "<td></td>";
+            pHTML += "</tr>";
+        }
+        pHTML += "</table>";
+        profileImages = [];
+    }
+    else {
+        pHTML = "";
+        var profileImages = profileInfo['softwareimages'].split(',').map(function (i) {
+            return parseInt(i, 10);
+        })       
+    }
+    pHTML += "<table class='tablenoborder'>";
+    pHTML += "<tr><td colspan='3' align='center'><font class='font13pxgrey'>Available software images</font></td></tr>";
+    pHTML += "<tr style='background-color:grey;'><td width='20%'><font class='font12pxwhite'>Device family</font></td><td width='25%'><font class='font12pxwhite'>Available software images</font></td><td></td></tr>";
+    for (var i = 0; i < searchResult['swInfo'].length; i++) {
+        pHTML += "<tr>";
+        pHTML += "<td><font class='font12pxgrey'>" + searchResult['swInfo'][i][0]['devicefamily'] + "</font></td>";
+        pHTML += "<td><select name='softwareimage[]' id='softwareimage'>";
+        for (var ii = 0; ii < searchResult['swInfo'][i].length; ii++) {
+            if (profileImages.includes(searchResult['swInfo'][i][ii]['id'])) {
+                pHTML += "<option value='" + searchResult['swInfo'][i][ii]['id'] + "' selected>" + searchResult['swInfo'][i][ii]['name'] + " (" + searchResult['swInfo'][i][ii]['filename'] + ")</option>";
+            }
+            else {
+                pHTML += "<option value='" + searchResult['swInfo'][i][ii]['id'] + "'>" + searchResult['swInfo'][i][ii]['name'] + " (" + searchResult['swInfo'][i][ii]['filename'] + ")</option>";
+            }
+        }
+        pHTML += "</select></td></tr>";      
+    }
+    pHTML += "<tr><td colspan='3' align='center'>";
+    pHTML += "<input type='button' name='backtodeviceselection' onclick='backtofindDevices(" + JSON.stringify(profileInfo) + ")' value='Back to device selection'>";
+    pHTML += "<input type='button' name='submitProfile' class='submitProfile' value='Submit profile' onclick='checkForm()'>";  
+    pHTML += "</td></tr>";
+    pHTML += "</table>"; 
+    pHTML += "<input type='hidden' name='profileAction' value='" + $('#phprofileInfo').attr('data-addoredit') + "'>";
+    pHTML += "<input type='hidden' name='softwareImages' id='softwareImages' value=''>";
+    pHTML += "<input type='hidden' name='assignedDevices' id='assignedDevices' value='" + JSON.stringify(assignedDevices) + "'>";
+    pHTML += "<input type='hidden' name='offlineDevices' id='offlinedevices' value='" + searchResult['offlineDevices'] + "'>";
+    $('#assignsoftwareDiv').empty().append(pHTML);
+    $('#assignsoftwareDiv').attr('style', 'display: block');
+    $('#transparentOverlay').attr('style', 'display: none');
+    $('#liProgress').attr('style', 'display: none');    
+}
+
+
+async function devicesAssigned(deviceInfo, searchResult, profileInfo) {
+    $('#showdaTooltip').hide();
+    if (typeof deviceInfo === 'string' || deviceInfo instanceof String) {
+        deviceInfo = JSON.parse(deviceInfo);
+    }
+    if (typeof searchResult === 'string' || searchResult instanceof String) {
+        searchResult = JSON.parse(searchResult);
+    }
+    aHTML = "<table class='tablenoborder'><tr>";
+    aHTML += "<td colspan='6' align='center'><font class='font13pxgrey'>Assigned device(s)</font></td></tr>";
+    aHTML += "<tr style='background-color:grey;'>";
+    aHTML += "<td width='10%' nowrap><font class='font12pxwhite'>IP Address</font></td>";
+    aHTML += "<td width='20%'><font class='font12pxwhite'>Description</font></td>";
+    aHTML += "<td width='20%'><font class='font12pxwhite'>OS type</font></td>";
+    aHTML += "<td width='5%' align='center'><font class='font12pxwhite'>Attributes</font></td>";
+    aHTML += "<td width='20%'><font class='font12pxwhite'>Status</font></td>";
+    aHTML += "<td width='20%' no wrap align='right'><font class='font12pxwhite'>Action</font></td></tr>";
+    for (var i = 0; i < deviceInfo.length; i++) {
+        aHTML += "<tr><td><font class='font11pxgrey'>" + deviceInfo[i]['ipaddress'] + "</font></td><td><font class='font11pxgrey'>" + deviceInfo[i]['description'] + "</font></td><td><font class='font11pxgrey'>" + deviceInfo[i]['ostype'] + "</font></td>";
+        aHTML += "<td align='center'><img src='static/images/tag.svg' class='attributeTooltip' width='12' height='12' data-deviceid='" + deviceInfo[i]['id'] + "'></td>";
+        isOnline = await $.ajax({
+            url: "/deviceStatus",
+            type: "POST",
+            data: { deviceid: deviceInfo[i]['id'], ostype: deviceInfo[i]['ostype']},
+            success: function () {
+                // Obtaining the software image information was successful
+            },
+            error: function () {
+                showmessageBar("Error finding device status of " + deviceInfo[i]['ipaddress']);
+                $('#transparentOverlay').attr('style', 'display: none');
+            }
+         });
+        aHTML += "<td>";
+        if (typeof isOnline === 'string' || isOnline instanceof String) {
+            isOnline = JSON.parse(isOnline);
+        }
+        if (isOnline['status'] == "Offline") {
+            aHTML += "<font class='font11pxred'>Offline</font>";
+        }
+        else {
+            aHTML += "<font class='font11pxgreen'>Online</font>";
+        }
+        aHTML += "</td>";
+        aHTML += "<td align='right'><button type='button' name='removefr0mProfile' class='transparent-button' value='Remove from profile' onclick='removefromProfile(" + JSON.stringify(deviceInfo[i]) + "," + JSON.stringify(profileInfo) + ")'><img src='static/images/subtract.svg' width='12' height='12' class='showtitleTooltip' data-title='Remove from profile'></button></td></tr>";
+    }
+    if (deviceInfo.length > 0  && $('#phprofileInfo').attr('data-divname') !="editProfile") {
+        aHTML += "<tr>";
+        aHTML += "<td colspan='6' align='center'><input type='button' name='assignSoftware' class='assignSoftware' value='Assign software' onclick='assignsoftwaretoSwitches(" + JSON.stringify(profileInfo) + ")'></td></tr>";
+    }
+    aHTML += "</tr></table>";
+    $('#assigneddevicesDiv').empty().append(aHTML);
+    $('#assigneddevicesDiv').attr('style', 'display: block');
+    $('#transparentOverlay').attr('style', 'display: none');
+    $('#liProgress').attr('style', 'display: none');
+}
+
+async function checkForm() {
+    // We only need to verify whether the profile name has been entered
+    if ($('#' + $('#phprofileInfo').attr('data-addoredit') + 'profilename').val().length > 0) {
+        $('#transparentOverlay').attr('style', 'display: none');
+        $('#liProgress').attr('style', 'display: none');
+        //assign all the software images to a single array
+        var values = $("select[name='softwareimage\\[\\]']")
+            .map(function () { return $(this).val(); }).get();
+        $('#softwareImages').val(values);
+        document.getElementById("manageProfile").submit();
+    }
+    else {
+        showmessageBar("Enter a profile name");
+        $('#' + $('#phprofileInfo').attr('data-addoredit') + 'profilename').attr('style', 'background-color : red');
+    }
+    
+}
+
+async function availableDevices(deviceInfo) {
+    $('#showdaTooltip').hide();
+    if (typeof deviceInfo === 'string' || deviceInfo instanceof String) {
+        deviceInfo = JSON.parse(deviceInfo);
+    }
+    pHTML = "";
+    if (deviceInfo.length > 0) {
+        pHTML = "<table class='tablenoborder'><tr>";
+        pHTML += "<td colspan='5' align='center'><font class='font13pxgrey'>Device search result</font></td></tr>";
+        pHTML += "<tr style='background-color:grey;'>";
+        pHTML += "<td width='10%' nowrap><font class='font12pxwhite'>IP Address</font></td>";
+        pHTML += "<td width='25%'><font class='font12pxwhite'>Description</font></td>";
+        pHTML += "<td width='5%' align='center'><font class='font12pxwhite'>Attributes</font></td>";
+        pHTML += "<td width='55'></td>";
+        pHTML += "<td width='5%' no wrap align='right'><font class='font12pxwhite'>Action</font></td></tr>";
+        for (var i = 0; i < deviceInfo.length; i++) {
+            pHTML += "<tr><td><font class='font11pxgrey'>" + deviceInfo[i]['ipaddress'] + "</font></td><td><font class='font11pxgrey'>" + deviceInfo[i]['description'] + "</font></td>";
+            pHTML += "<td align='center'><img src='static/images/tag.svg' class='attributeTooltip' width='12' height='12' data-deviceid='" + deviceInfo[i]['id'] + "'></td><td></td>";
+            pHTML += "<td align='right'><button type='button' name='assign2Profile' class='transparent-button' value='Assign to profile' onclick='assigntoProfile(" + JSON.stringify(deviceInfo[i]) + ");'><img src='static/images/add.svg' width='12' height='12' class='showtitleTooltip' data-title='Assign to profile'></button></td></tr>";
+        }
+        // If there are no assigned devices, we need to be able to go back and select devices
+        assignedDevices = JSON.parse($('#phprofileInfo').attr('data-assigneddevices'));
+        if (assignedDevices.length == 0 && $('#phprofileInfo').attr('data-divname') != "selectDevices") {
+            pHTML += "<tr><td colspan='5' align='center'>";
+            pHTML += "<input type='button' name='backtodeviceselection' onclick='backtofindDevices(" + JSON.stringify(profileInfo) + ")' value='Back to device selection'>";
+            pHTML += "</td></tr>";
+        }
+        pHTML += "</tr></table>";
+        $('#availabledevicesDiv').empty().append(pHTML);
+        $('#availabledevicesDiv').attr('style', 'display: block');
+    }
+    else {
+        $('#availabledevicesDiv').empty();
+    }
+}
+
+
+$('.actionButtons').ready(function () {
+    $('#showdaTooltip').hide();
+    var refresh = async function () {
+        actionButtons=document.getElementsByClassName('actionButtons');
+        for (var i = 0; i < actionButtons.length; i++) {
+            profileid=actionButtons.item(i).getAttribute('data-profileid');
+            //Check the status of the upgrade profile. If it is 0, then the profile has not started we can enable the remove button
+            profileInfo = await $.ajax({
+                url: "/upgradeprofileStatus",
+                type: "POST",
+                data: { profileid: profileid },
+                success: function () {
+                    // Obtaining the profile information was successful
+                },
+                error: function () {
+                    $('#transparentOverlay').attr('style', 'display: none');
+                }
+            });
+            profileInfo = JSON.parse(profileInfo);
+            pHTML = "<input type='hidden' name='profileid' value='" + profileInfo['id'] + "'>";
+            pHTML += "<button type='button' id='showprofileDetails" + profileInfo['id'] + "' class='transparent-button showProfile' value='Show details' onClick='highlightRow(this);showProfile(" + profileInfo['id'] + ");'><img src='static/images/info.svg' width='12' height='12' class='showtitleTooltip' data-title='Show profile'></button>";
+            if (profileInfo['status'] === 0) {
+                // Software upgrades have not started yet for this profile. Enable the edit and delete button
+                pHTML += "<button type='button' id='editprofileUpgrade" + profileInfo['id'] + "' onclick='editProfile(" + profileInfo['id'] + ");' class='transparent-button' value='Edit'><img src='static/images/edit.svg' width='12' height='12' class='showtitleTooltip' data-title='Edit profile'></button>";
+                pHTML += "<button type='submit' name='profileAction' id='removeprofileUpgrade" + profileInfo['id'] + "' onclick=\"return confirm('Are you sure you want to delete upgrade profile " + profileInfo['name'] + "?')\" data-profileid='" + profileInfo['id'] + "' class='transparent-button removeprofileButton' value='Remove'><img src='static/images/trash.svg' width='12' height='12' class='showtitleTooltip' data-title='Delete profile'></button>";
+
+            }
+            else if (profileInfo['status'] > 99) {
+                //Software upgrade job has finished, enable the delete button, disable the edit button
+                pHTML += "<button type='button' disabled style='text-decoration:none;' id='editprofileUpgrade" + profileInfo['id'] + "' onclick='editProfile(" + profileInfo['id'] + ");' class='transparent-button' value='Edit'><img src='static/images/edit.svg' width='12' height='12' class='showtitleTooltip' data-title='Upgrade job has finished'></button>";
+                pHTML += "<button type='submit' name='profileAction' id='removeprofileUpgrade" + profileInfo['id'] + "' onclick=\"return confirm('Are you sure you want to delete upgrade profile " + profileInfo['name'] + "?')\" data-profileid='" + profileInfo['id'] + "' class='transparent-button removeprofileButton' value='Remove'><img src='static/images/trash.svg' width='12' height='12' class='showtitleTooltip' data-title='Delete profile'></button>";
+            }
+            else {
+                //Software upgrade job is in progress, disable edit and delete button
+                pHTML += "<button type='button' disabled style='text-decoration:none;' id='editprofileUpgrade" + profileInfo['id'] + "' onclick='editProfile(" + profileInfo['id'] + ");' class='transparent-button' value='Edit'><img src='static/images/edit.svg' width='12' height='12' class='showtitleTooltip' data-title='Upgrade job in progress'></button>";
+                pHTML += "<button type='submit' disabled style='text-decoration:none;' id='removeprofileUpgrade" + profileInfo['id'] + "' name='profileAction' data-profileid='" + profileInfo['id'] + "' class='transparent-button removeprofileButton' value='Remove'><img src='static/images/trash.svg' width='12' height='12' class='showtitleTooltip' data-title='Upgrade job in progress'></button>";
+            }
+            $('#actionButtons'+ profileInfo['id']).empty().append(pHTML);
+        }
+    };
+    setInterval(refresh, 1000);
+    refresh();
+});
+
+
+async function showProfile(profileid) {
+    var upgradestatus = { '0': 'Not started', '1': 'Upgrade initiated', '5': 'Copy software onto the switch', '10': 'Software copied successfully', '20': 'Software copied successfully: switch is rebooted', '50': 'There is another software upgrade in progress', '60': 'Upgrade profile is active', '100': 'Software upgrade completed successfully', '110': 'Software upgrade completed successfully: reboot is required' };
+    $('#showdaTooltip').hide();
+    $('#showprofileInfo').attr('style', 'display: block');
+    $('#addProfile').attr('style', 'display: none');
+    $('#assigneddevicesDiv').attr('style', 'display: none');
+    $('#availabledevicesDiv').attr('style', 'display: none');
+    $('#assignsoftwareDiv').attr('style', 'display: none');
+    var refresh = function () {
+        $('#showprofileInfo').load('viewupgradeprofileInfo?profileid=' + profileid);
+    }
+    setInterval(refresh, 5000);
+    refresh();
+}

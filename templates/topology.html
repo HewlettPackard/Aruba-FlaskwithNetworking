@@ -23,22 +23,9 @@
 
     <table class="tablenoborder">
         <form method="post">
-            <input id='orderBy' name='orderBy' type='hidden' value="{{ orderBy }}" />
-            <input id='descascDescription' name='descascDescription' type='hidden' value="{{ descascDescription }}" />
-            <input id='descascIpaddress' name='descascIpaddress' type='hidden' value="{{ descascIpaddress }}" />
-            <input id='currentpageoffset' name='currentpageoffset' type='hidden' value="{{pageoffset}}" />
-            <input id='currenttotalentries' name='currenttotalentries' type='hidden' value="{{totalentries}}" />
-            <input id="totalpages" name="totalpages" type="hidden" value="{{ totalpages }}" />
-            <input name='currententryperpage' type='hidden' value="{{ entryperpage }}" />
-            <input name="action" type="hidden" value="navigation" />
             <tr>
-                <td width="2%"><font class="font13pxgrey">Item</font></td>
-                <td width="5%">&nbsp;</td>
-                <td width="20%"><font class="font13pxgrey">Hostname</font></td>
-                <td width="20%" align="left" nowrap><font class="font13pxgrey">IP address</font></td>
-                <td width="20%"><font class="font13pxgrey">System MAC Address</font></td>
-                <td width="35%" align="right" nowrap>
-                    <font class="font13pxgrey">
+                <td align="right" nowrap>
+                    <font class="font11pxgrey">
                         Show <select name="entryperpage" id="deviceEntryperpage" onchange="this.form.submit()">
                             <option value="5" {% if entryperpage==5 %} selected {% endif %}>5</option>
                             <option value="10" {% if entryperpage==10 %} selected {% endif %}>10</option>
@@ -47,52 +34,70 @@
                             <option value="100" {% if entryperpage==100 %} selected {% endif %}>100</option>
                         </select> entries per page (page <select name="pageoffset" id="devicePageoffset" onchange="this.form.submit();">
                             {% for i in  range(totalpages) %}
-                            <option value="{{ (i)*entryperpage|int }}" {% if (pageoffset|int)/(entryperpage|int)==(i) %}selected{% endif %}>{{ i+1 }}</option>
+                            <option value="{{ (i)*entryperpage|int }}" {% if (pageoffset|int) /(entryperpage|int) ==(i) %}selected{% endif %}>{{ i+1 }}</option>
                             {% endfor %}
                         </select> of {{ totalpages }} pages)
                     </font>
                 </td>
             </tr>
-            <tr style="background-color: grey;" class="tableTitle">
-                <td>&nbsp;</td>
-                <td>&nbsp;</td>
-                <td align="left" valign="top">
-                    <input type="text" name="searchHostname" id="searchHostname" size="30" value="{{ formresult['searchHostname'] }}">
-                </td>
-                <td align="left" valign="top">
-                    <input type="text" name="searchSwitchip" id="searchSwitchip" size="30" value="{{ formresult['searchSwitchip'] }}">
-                </td>
-                <td align="left" valign="top">
-                    <input type="text" name="searchSystemmac" id="searchSystemmac" size="30" value="{{ formresult['searchSystemmac'] }}">
-                </td>
-                <td align="right">
-                   <input type="submit" name="searchAction" value="Search" class="button" id="searchDevice" onclick="cleardeviceRow(this);">
-                </td>
-            </tr>
-        </form>
-        {% for info in result %}
-        <form method="post">
-            <input name='currentpageoffset' type='hidden' value="{{pageoffset}}" />
-            <input name='currenttotalentries' type='hidden' value="{{totalentries}}" />
-            <input name='totalpages' type="hidden" value="{{ totalpages }}" />
-            <input name='entryperpage' type='hidden' value="{{ entryperpage }}" />
-            <input name='currententryperpage' type='hidden' value="{{ entryperpage }}" />
-            <input type="hidden" name="searchHostname" value="{{ formresult.searchHostname }}">
-            <input type="hidden" name="searchSwitchip" value="{{ formresult.searchSwitchip }}">
-            <input type="hidden" name="searchSystemmac" value="{{ formresult.searchSystemmac }}">
-            <input type="hidden" name="deviceid" value="{{ info['id'] }}">
-            <tr>
-                <td><font class="font12px">{{ loop.index }}</font></td>
-                <td>
-                    <font class="font12px">
-                        <div class="deviceStatus" id="deviceStatus{{info['id']}}" data-deviceid="{{info['id']}}"></div>
-                    </font>
-                </td>
-                <td><font class="font12px">{{ info['hostname'] }}</font></td>
-                <td><font class="font12px">{{ info['switchip'] }}</font></td>
-                <td><font class="font12px">{{ info['systemmac'] }}</font></td>
-                <td align="right">
-</div><input type="button" name="showEndpoints" value="Show endpoints" data-id="{{info['id']}}" class="showendpoints" onclick="highlightdeviceRow(this);">
+            </table>
+            <table class="tablenoborder">
+                    <input id='orderBy' name='orderBy' type='hidden' value="{{ orderBy }}" />
+                    <input id='descascDescription' name='descascDescription' type='hidden' value="{{ descascDescription }}" />
+                    <input id='descascIpaddress' name='descascIpaddress' type='hidden' value="{{ descascIpaddress }}" />
+                    <input id='currentpageoffset' name='currentpageoffset' type='hidden' value="{{pageoffset}}" />
+                    <input id='currenttotalentries' name='currenttotalentries' type='hidden' value="{{totalentries}}" />
+                    <input id="totalpages" name="totalpages" type="hidden" value="{{ totalpages }}" />
+                    <input name='currententryperpage' type='hidden' value="{{ entryperpage }}" />
+                    <input name="action" type="hidden" value="navigation" />
+                    <tr>
+                        <td width="2%"><font class="font13pxgrey">Item</font></td>
+                        <td width="5%">&nbsp;</td>
+                        <td><font class="font13pxgrey">Hostname</font></td>
+                        <td><font class="font13pxgrey">IP address</font></td>
+                        <td><font class="font13pxgrey">System MAC Address</font></td>
+                        <td></td>
+                    </tr>
+                    <tr style="background-color: grey;" class="tableTitle">
+                        <td>&nbsp;</td>
+                        <td>&nbsp;</td>
+                        <td align="left" valign="top">
+                            <input type="text" name="searchHostname" id="searchHostname" size="30" value="{{ formresult['searchHostname'] }}">
+                        </td>
+                        <td align="left" valign="top">
+                            <input type="text" name="searchSwitchip" id="searchSwitchip" size="30" value="{{ formresult['searchSwitchip'] }}">
+                        </td>
+                        <td align="left" valign="top">
+                            <input type="text" name="searchSystemmac" id="searchSystemmac" size="30" value="{{ formresult['searchSystemmac'] }}">
+                        </td>
+                        <td align="right">
+                            <button type="submit" name="searchAction" value="Search" class="transparent-button" id="searchDevice" onclick="clearRow(this);"><img src="static/images/search.svg" width="12" height="12" class="showtitleTooltip" data-title="Search"></button>
+                        </td>
+                    </tr>
+                </form>
+                {% for info in result %}
+                <form method="post">
+                    <input name='currentpageoffset' type='hidden' value="{{pageoffset}}" />
+                    <input name='currenttotalentries' type='hidden' value="{{totalentries}}" />
+                    <input name='totalpages' type="hidden" value="{{ totalpages }}" />
+                    <input name='entryperpage' type='hidden' value="{{ entryperpage }}" />
+                    <input name='currententryperpage' type='hidden' value="{{ entryperpage }}" />
+                    <input type="hidden" name="searchHostname" value="{{ formresult.searchHostname }}">
+                    <input type="hidden" name="searchSwitchip" value="{{ formresult.searchSwitchip }}">
+                    <input type="hidden" name="searchSystemmac" value="{{ formresult.searchSystemmac }}">
+                    <input type="hidden" name="deviceid" value="{{ info['id'] }}">
+                    <tr>
+                        <td><font class="font10px">{{ loop.index }}</font></td>
+                        <td>
+                            <font class="font10px">
+                                <div class="deviceStatus" id="deviceStatus{{info['id']}}" data-deviceid="{{info['id']}}"></div>
+                            </font>
+                        </td>
+                        <td><font class="font10px">{{ info['hostname'] }}</font></td>
+                        <td><font class="font10px">{{ info['switchip'] }}</font></td>
+                        <td><font class="font10px">{{ info['systemmac'] }}</font></td>
+                        <td align="right">
+</div><button type="button" name="showEndpoints" value="Show endpoints" data-id="{{info['id']}}" class="transparent-button showendpoints" onclick="highlightRow(this);"><img src="static/images/network.svg" width="12" height="12" class="showtitleTooltip" data-title="Show endpoints"></button>
             </td>
         </tr>
     </form>
@@ -106,6 +111,7 @@
     <canvas id="showTopo" width="1500" height="500"></canvas>    
 </div>
 
+<div id="showdaTooltip" type="display:none;"></div>
 
 </div>
     

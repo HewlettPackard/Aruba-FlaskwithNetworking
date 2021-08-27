@@ -1,4 +1,4 @@
-// (C) Copyright 2020 Hewlett Packard Enterprise Development LP.
+// (C) Copyright 2021 Hewlett Packard Enterprise Development LP.
 
 
 
@@ -51,9 +51,7 @@ $(document).ready(function () {
                 // Obtaining the ZTP image information was successful
             },
             error: function () {
-                document.getElementById("liProgress").style.display = "block";
-                document.getElementById("progresstooltip").style.display = "none";
-                progressInfo.innerHTML = "Error finding software image information";
+                showmessageBar("Error finding software image information");
             }
         });
         imageInfo = JSON.parse(imageInfo);

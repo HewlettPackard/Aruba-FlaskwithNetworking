@@ -1,4 +1,4 @@
-# (C) Copyright 2019 Hewlett Packard Enterprise Development LP.
+# (C) Copyright 2021 Hewlett Packard Enterprise Development LP.
 
 from flask import current_app, Blueprint, request,json
 devices = Blueprint('devices', __name__)
@@ -60,7 +60,9 @@ def deviceUpgrade ():
     sysvars=classes.globalvars()
     # Obtain the device information
     queryStr="select id, ipaddress, description, ostype, platform, osversion from devices where id='{}'".format(request.args.get('deviceid'))
+    print(queryStr)
     deviceInfo=classes.sqlQuery(queryStr,"selectone")
+    print(deviceInfo)
     bootInfo=classes.getupgradeInfo(deviceInfo)
     return render_template("deviceupgrade.html",bootInfo=bootInfo, deviceInfo=deviceinfo, sysvars=sysvars)
 
@@ -173,6 +175,16 @@ def deviceInfo ():
     # Obtain the relevant device information from the database
     result=classes.sqlQuery(queryStr,"selectone")
     result['password']=classes.decryptPassword(sysvars['secret_key'],result['password'])
+    return json.dumps(result)
+
+
+@devices.route("/briefdeviceInfo", methods=['GET','POST'])
+def briefdeviceInfo ():
+    formresult=request.form
+    sysvars=classes.globalvars()
+    queryStr="select ipaddress,description,platform, osversion,ostype from devices where id='{}'".format(formresult['id'])
+    # Obtain the relevant device information from the database
+    result=classes.sqlQuery(queryStr,"selectone")
     return json.dumps(result)
 
 
@@ -306,10 +318,13 @@ def cpServices ():
 
 @devices.route("/deviceattributesList", methods=['GET','POST'])
 def deviceattributesList ():
-    if request.form['searchattributeName']!="" or request.form['searchattributeType']!="":
-        queryStr="select * from deviceattributes where name like '%" + request.form['searchattributeName'] + "%'"
-        if request.form['searchattributeType']!="":
-            queryStr += " and type='{}'".format(request.form['searchattributeType'])
+    if request.form:
+        if request.form['searchattributeName']!="" or request.form['searchattributeType']!="":
+            queryStr="select * from deviceattributes where name like '%" + request.form['searchattributeName'] + "%'"
+            if request.form['searchattributeType']!="":
+                queryStr += " and type='{}'".format(request.form['searchattributeType'])
+        else:
+            queryStr="select * from deviceattributes"
     else:
         queryStr="select * from deviceattributes"
     result=classes.sqlQuery(queryStr,"select")

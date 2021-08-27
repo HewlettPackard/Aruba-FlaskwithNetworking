@@ -1,4 +1,4 @@
-// (C) Copyright 2020 Hewlett Packard Enterprise Development LP.
+// (C) Copyright 2021 Hewlett Packard Enterprise Development LP.
 
 
 $(document).on("click", "#runningBackup", function () {
@@ -144,7 +144,6 @@ $(document).on("click", "#restoreConfig", function () {
 $(document).on("click", "#submitbackupChanges", async function () {
     document.getElementById("editBackup").style.display = "block";
     document.getElementById("liProgress").style.display = "none";
-    id = $(this).attr('data-id');
     tableRow = $(this).attr('data-tableRow');
     masterbackup = $(this).attr('data-masterbackup');
     backuptype = $(this).attr('data-backuptype');
@@ -157,56 +156,55 @@ $(document).on("click", "#submitbackupChanges", async function () {
     backupInfo = await $.ajax({
         url: "/changebranchBackup",
         type: "POST",
-        data: { id: id, backupDescription: backupDescription, backupContent: backupContent, sysuser: sysuser},
+        data: { id: $(this).attr('data-id'), backupDescription: backupDescription, backupContent: backupContent, sysuser: sysuser},
         success: function () {
             // Obtaining the backup was successful
         },
         error: function () {
-            document.getElementById("liProgress").style.display = "block";
-            document.getElementById("progresstooltip").style.display = "none";
-            progressInfo.innerHTML = "Error finding backup information";
+            showmessageBar("Error finding backup information");
         }
     });
     backupInfo = JSON.parse(backupInfo);
     utctime = new Date(1000 * backupInfo['utctime']);
     utctime = utctime.toLocaleString();
-    document.getElementById('backupContent').value = backupContent;
-    document.getElementById('backupDescription').value = backupDescription;
+    $('#backupContent').val(backupInfo['configuration']);
+    $('#backupDescription').val(backupInfo['description']);
     $("#backupDescription").prop('disabled', false);
     document.getElementById('backupTitle').innerHTML = "<font class='font13pxwhite'>Edit branch backup from master backup ID " + masterbackup + "</font>";
     document.getElementById("backupAction").style.display = "block";
     var x = document.getElementById('backupTable').rows[parseInt(tableRow, 10)].cells;
-    x[parseInt(0, 10)].innerHTML = "<font class='font12px'>" + id + "</font>";
+    x[parseInt(0, 10)].innerHTML = "<font class='font12px'>" + $(this).attr('data-id') + "</font>";
     x[parseInt(1, 10)].innerHTML = "<font class='font12px'>" + utctime + "</font>";
     x[parseInt(2, 10)].innerHTML = "<font class='font12px'>" + backupDescription + "</font>";
     x[parseInt(3, 10)].innerHTML = "<font class='font12px'>" + backuptype + "</font>";
     x[parseInt(4, 10)].innerHTML = "<font class='font12px'>Branch</font>";
     x[parseInt(5, 10)].innerHTML = "<font class='font12px'>" + sysuser + "</font>";
-    x[parseInt(6, 10)].innerHTML = "<input type='submit' name='action' class='button' value='Restore' class='button' id=restoreConfig' data-id='ID' /><input type='submit' class='button' name='action' value='View' class='button' id='viewConfig' data-id='" + backupInfo['id'] + "' /><input type='submit' name='action' value='Edit' class='button' id='editConfig' data-id='" + backupInfo['id'] + "' data-masterbackup='" + backupInfo['masterbackup'] + "' /><input type='submit' name='action' value='Delete' id='deleteConfig' class='button' data-id='" + backupInfo['id'] + "'>";
+    navHTML = "";
+    navHTML += "<button type='submit' name='action' class='transparent-button' value='Restore' class='button' id='restoreConfig' data-id='" + backupInfo['id'] + "'><img src='static/images/copy.svg' width='12' height='12' class='showtitleTooltip' data-title='Restore configuration'></button>";
+    navHTML += "<button type='submit' class='transparent-button' name='action' value='View' id='viewConfig' data-id='" + backupInfo['id'] + "'><img src='static/images/view.svg' width='12' height='12' class='showtitleTooltip' data-title='View configuration'></button>";
+    navHTML += "<button name='action' value='Edit' class='transparent-button' id='editConfig' data-id='" + backupInfo['id'] + "' data-masterbackup='" + backupInfo['masterbackup'] + "'><img src='static/images/edit.svg' width='12' height='12' class='showtitleTooltip' data-title='Edit backup'></button>";
+    navHTML += "<button type='submit' name='action' value='Delete' id='deleteConfig' class='transparent-button' data-id='" + backupInfo['id'] + "'><img src='static/images/trash.svg' width='12' height='12' class='showtitleTooltip' data-title='Delete backup'></button>";
+    x[parseInt(6, 10)].innerHTML = navHTML;
 });
 
 $(document).on("click", "#editConfig", async function () {
     document.getElementById("editBackup").style.display = "block";
     document.getElementById("liProgress").style.display = "none";
-
-    id = $(this).attr('data-id');
     tableRow = $(this).closest('tr').index();
     backupInfo = await $.ajax({
         url: "/backupInfo",
         type: "POST",
-        data: { id: id },
+        data: { id: $(this).attr('data-id') },
         success: function () {
             // Obtaining the backup was successful
         },
         error: function () {
-            document.getElementById("liProgress").style.display = "block";
-            document.getElementById("progresstooltip").style.display = "none";
-            progressInfo.innerHTML = "Error finding backup information";
+            showmessageBar("Error finding backup information");
         }
     });
     backupInfo = JSON.parse(backupInfo);
-    document.getElementById('backupContent').value = backupInfo['configuration'];
-    document.getElementById('backupDescription').value = backupInfo['description'];
+    $('#backupContent').val(backupInfo['configuration']);
+    $('#backupDescription').val(backupInfo['description']);
     $("#backupDescription").prop('disabled', false);
     $("#backupContent").prop('disabled', false);
     document.getElementById('backupTitle').innerHTML = "<font class='font13pxwhite'>Edit branch backup from master backup ID " + backupInfo['masterbackup'] + "</font>";
@@ -229,9 +227,7 @@ $(document).on("click", "#createbranchBackup", async function () {
             // Obtaining the master backup was successful
         },
         error: function () {
-            document.getElementById("liProgress").style.display = "block";
-            document.getElementById("progresstooltip").style.display = "none";
-            progressInfo.innerHTML = "Error finding backup information";
+            showmessageBar("Error finding backup information");
         }
     });
     backupInfo = JSON.parse(backupInfo);
@@ -260,9 +256,7 @@ $(document).on("click", "#submitbranchBackup", async function () {
             // Obtaining the master backup was successful
         },
         error: function () {
-            document.getElementById("liProgress").style.display = "block";
-            document.getElementById("progresstooltip").style.display = "none";
-            progressInfo.innerHTML = "Error finding backup information";
+            showmessageBar("Error finding backup information");
         }
     });
     var table = document.getElementById('backupTable');
@@ -278,7 +272,10 @@ $(document).on("click", "#submitbranchBackup", async function () {
     branchHTML += "<td><font class='font12px'>Branch</font></td >";
     branchHTML += "<td><font class='font12px'>" + backupInfo['owner'] + "</font></td>";
     branchHTML += "<td align='right'>";
-    branchHTML += "<input type='submit' name='action' value='Restore' class='button' id='restoreConfig' data-id='" + backupInfo['id'] + "' /><input type='submit' name='action' value='View' class='button' id='viewConfig' data-id='" + backupInfo['id'] + "' /><input type='submit' name='action' value='Edit' class='button' id='editConfig' data-id='" + backupInfo['id'] + "' data-masterbackup='" + backupInfo['masterbackup'] + "'/><input type='submit' name='action' value='Delete' id='deleteConfig' class='button' data-id='" + backupInfo['id'] + "'>";
+    branchHTML += "<button type='submit' name='action' class='transparent-button' value='Restore' class='button' id='restoreConfig' data-id='" + backupInfo['id'] + "'><img src='static/images/copy.svg' width='12' height='12' class='showtitleTooltip' data-title='Restore configuration'></button>";
+    branchHTML += "<button type='submit' class='transparent-button' name='action' value='View' id='viewConfig' data-id='" + backupInfo['id'] + "'><img src='static/images/view.svg' width='12' height='12' class='showtitleTooltip' data-title='View configuration'></button>";
+    branchHTML += "<button name='action' value='Edit' class='transparent-button' id='editConfig' data-id='" + backupInfo['id'] + "' data-masterbackup='" + backupInfo['masterbackup'] + "'><img src='static/images/edit.svg' width='12' height='12' class='showtitleTooltip' data-title='Edit backup'></button>";
+    branchHTML += "<button type='submit' name='action' value='Delete' id='deleteConfig' class='transparent-button' data-id='" + backupInfo['id'] + "'><img src='static/images/trash.svg' width='12' height='12' class='showtitleTooltip' data-title='Delete backup'></button>";
     branchHTML += "</td></tr>";
     $(table).append(branchHTML);
 });
@@ -305,9 +302,7 @@ $(document).on("click", "#changebranchBackup", async function () {
             // Saving the backup was successful
         },
         error: function () {
-            document.getElementById("liProgress").style.display = "block";
-            document.getElementById("progresstooltip").style.display = "none";
-            progressInfo.innerHTML = "Branch backup could not be stored";
+            showmessageBar("Branch backup could not be stored");
         }
     });
   });
@@ -326,9 +321,7 @@ $(document).on("click", "#viewConfig", async function () {
             // Obtaining the backup was successful
         },
         error: function () {
-            document.getElementById("liProgress").style.display = "block";
-            document.getElementById("progresstooltip").style.display = "none";
-            progressInfo.innerHTML = "Error finding backup information";
+            showmessageBar("Error finding backup information");
         }
     });
     backupInfo = JSON.parse(backupInfo);
@@ -358,13 +351,8 @@ $(document).on("click", "#deleteConfig", function () {
         else {
             configpageoffset = 0;
         }
-        var e = document.getElementById("searchowner");
-        var owner = e.options[e.selectedIndex].value;
-        var e = document.getElementById("backuptype");
-        var backuptype = e.options[e.selectedIndex].value;
-        id = $(this).attr('data-id');
         var currentconfigentryperpage = document.getElementById("currentconfigentryperpage").value;
-        $("div[data-configmgr='configmgr']").load('configmgr?id=' + id + '&deviceid=' + document.getElementById('configurationManager').getAttribute('data-deviceid') + '&owner=' + owner + '&backuptype=' + encodeURIComponent(backuptype) + '&searchconfigDescription=' + document.getElementById("searchconfigDescription").value + '&configentryperpage=' + configentryperpage + '&configpageoffset=' + configpageoffset + '&action=deleteBackup');
+        $("div[data-configmgr='configmgr']").load('configmgr?id=' + $(this).attr('data-id') + '&deviceid=' + $('#configurationManager').attr('data-deviceid') + '&owner=' + $('#searchowner').val() + '&backuptype=' + encodeURIComponent($('#searchbackuptype').val()) + '&searchconfigDescription=' + $('#searchdescription').val() + '&configentryperpage=' + configentryperpage + '&configpageoffset=' + configpageoffset + '&action=deleteBackup');
     }
 });
 

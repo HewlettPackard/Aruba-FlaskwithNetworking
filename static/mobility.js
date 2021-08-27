@@ -56,9 +56,7 @@ $(document).ready(function () {
                 // Obtaining switch information was successful
             },
             error: function () {
-                document.getElementById("liProgress").style.display = "block";
-                document.getElementById("progresstooltip").style.display = "none";
-                progressInfo.innerHTML = "Error finding device information";
+                showmessageBar("Error finding device information");
             }
         });
         deviceInfo = JSON.parse(deviceInfo);
@@ -100,7 +98,7 @@ $('.mcStatus').ready(function () {
                 success: function (response) {
                     response = JSON.parse(response);
                     if (response['status'] == "Online") {
-                        document.getElementById('mcStatus' + deviceid).innerHTML = "<img src='static/images/ok.png' height='15' width='15'>";
+                        document.getElementById('mcStatus' + deviceid).innerHTML = "<img src='static/images/status-good.svg' height='12' width='12' class='showtitleTooltip' data-title='Device is online'>";
                         $("#mobilityInterfaces" + deviceid).prop('disabled', false);
                         $("#mobilityInterfaces" + deviceid).css('opacity', '1');
                         $("#mobilityInterfaces" + deviceid).css('pointer-events', 'auto');
@@ -112,7 +110,7 @@ $('.mcStatus').ready(function () {
                         $("#mobilityPolicies" + deviceid).css('pointer-events', 'auto');
                     }
                     else {
-                        document.getElementById('mcStatus' + deviceid).innerHTML = "<img src='static/images/notok.png' height='15' width='15'>";
+                        document.getElementById('mcStatus' + deviceid).innerHTML = "<img src='static/images/status-critical.svg' height='12' width='12' class='showtitleTooltip' data-title='Device is unreachable'>";
                         $("#mobilityInterfaces" + deviceid).prop('disabled', true);
                         $("#mobilityInterfaces" + deviceid).css('opacity', '0.1');
                         $("#mobilityInterfaces" + deviceid).css('pointer-events', 'none');

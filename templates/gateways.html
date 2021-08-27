@@ -21,22 +21,9 @@
 <div id="maincontainer">
     <table class="tablenoborder" />
     <form method="post">
-
-        <input name="action" type="hidden" value="navigation" />
-        <input name='currentpageoffset' type='hidden' value="{{pageoffset}}" />
-        <input name='currenttotalentries' type='hidden' value="{{totalentries}}" />
-        <input name='totalpages' type="hidden" value="{{ totalpages }}" />
-        <input name='currententryperpage' type='hidden' value="{{ entryperpage }}" />
         <tr>
-            <td width="5%" align="left" nowrap><font class="font13pxgrey">Item</font></td>
-            <td width="5%" align="left"><font class="font13pxgrey">API</font></td>
-            <td width="10%" align="left" nowrap><font class="font13pxgrey">IP address</font></td>
-            <td width="20%" align="left"><font class="font13pxgrey">Description</font></td>
-            <td width="10%"><font class="font13pxgrey">Platform</font></td>
-            <td width="10%"><font class="font13pxgrey">Software version</font></td>
-            <td width="10%"><font class="font13pxgrey">Controller role</font></td>
-            <td width="30%" align="right">
-                <font class="font13pxgrey">
+            <td align="right">
+                <font class="font11pxgrey">
                     Show <select name="entryperpage" onchange="this.form.submit()">
                         <option value="10" {% if entryperpage|int==10 or entryperpage is not defined %} selected {% endif %}>10</option>
                         <option value="25" {% if entryperpage|int==25 %} selected {% endif %}>25</option>
@@ -44,11 +31,28 @@
                         <option value="100" {% if entryperpage|int==100 %} selected {% endif %}>100</option>
                     </select> entries per page (page <select name="pageoffset" onchange="this.form.submit()">
                         {% for i in  range(totalpages) %}
-                        <option value="{{ (i)*entryperpage|int }}" {% if (pageoffset|int)/(entryperpage|int)==(i) %}selected{% endif %}>{{ i+1 }}</option>
+                        <option value="{{ (i)*entryperpage|int }}" {% if (pageoffset|int) /(entryperpage|int) ==(i) %}selected{% endif %}>{{ i+1 }}</option>
                         {% endfor %}
                     </select> of {{ totalpages }} pages)
                 </font>
             </td>
+        </tr>
+        </table>
+        <table class="tablenoborder" />
+        <input name="action" type="hidden" value="navigation" />
+        <input name='currentpageoffset' type='hidden' value="{{pageoffset}}" />
+        <input name='currenttotalentries' type='hidden' value="{{totalentries}}" />
+        <input name='totalpages' type="hidden" value="{{ totalpages }}" />
+        <input name='currententryperpage' type='hidden' value="{{ entryperpage }}" />
+        <tr>
+            <td width="2%" align="left" nowrap><font class="font13pxgrey">Item</font></td>
+            <td width="2%" align="left"><font class="font13pxgrey">API</font></td>
+            <td align="left" nowrap><font class="font13pxgrey">IP address</font></td>
+            <td align="left"><font class="font13pxgrey">Description</font></td>
+            <td><font class="font13pxgrey">Platform</font></td>
+            <td><font class="font13pxgrey">Software version</font></td>
+            <td><font class="font13pxgrey">Controller role</font></td>
+            <td></td>
         </tr>
         <tr style="background-color: grey;" class="tableTitle">
             <td align="left" colspan="2">&nbsp;</td>
@@ -71,7 +75,9 @@
                 </select>
             </td>
             <td></td>
-            <td align="right"><input type="button" class="button" value="Add device" id="addDevice" onclick="clearRow(this);" {% if va("mobilityaccess","feature")== False %} style="opacity:0.2;pointer-events:none;" {% endif %}><input type="submit" name="searchAction" value="Search" class="button" id="searchDevice" onclick="clearRow(this);" /></td>
+            <td align="right">
+                <button type="button" id="addDevice" class="transparent-button" onclick="clearRow(this);" {% if va("mobilityaccess","feature")==False %} disabled style="opacity:0.2;pointer-events:none;" {% endif %}><img src="static/images/add.svg" width="12" height="12" class="showtitleTooltip" data-title="Add device"></button><button type="submit" name="searchAction" id="searchDevice" class="transparent-button" onclick="clearRow(this);"><img src="static/images/search.svg" width="12" height="12" class="showtitleTooltip" data-title="Search"></button>
+            </td>
         </tr>
     </form>
 
@@ -82,7 +88,7 @@
         {% else %}
         {% set sysinfo="Unknown" %}
         {% endif %}
-       
+
         <form method="post">
             <input name='currentpageoffset' type='hidden' data-currentpageoffset="{{pageoffset}}" />
             <input name="totalpages" type="hidden" data-totalpages="{{ totalpages }}" />
@@ -92,6 +98,7 @@
             <input type="hidden" name="searchDescription" value="{{ formresult.searchDescription }}">
             <input type="hidden" name="searchOsversion" value="{{ formresult.searchOsversion }}">
             <input type="hidden" name="searchPlatform" value="{{ formresult.searchPlatform }}">
+            <input type="hidden" name="id" value="{{ info['id'] }}">
             <tr>
                 <td scope="row"><font class="font10px"> {{ loop.index }} </font></td>
                 <td>
@@ -106,9 +113,12 @@
                 <td><font class="font10px"> {% if sysinfo=="Unknown" %}Unknown {% else %}{{ sysinfo['_global']['_switch_role'] }} {% endif %} </font></td>
                 <td align="right">
                     {% if sysinfo['mm']=="" or sysinfo['mm']=="master"   %}
-                    <input type="button" name="Interfaces" value="Interfaces" class="mobilityInterfaces" id="mobilityInterfaces{{info['id']}}" data-deviceid="{{info['id']}}" onclick="highlightRow(this);" /><input type="button" name="Roles" value="Roles" id="mobilityRoles{{info['id']}}" data-deviceid="{{info['id']}}" class="mobilityRoles" onclick="highlightRow(this);" /><input type="button" name="Policies" value="Policies" id="mobilityPolicies{{info['id']}}" data-deviceid="{{info['id']}}" class="mobilityPolicies" onclick="highlightRow(this);" />{% else %}<font class="font11px">Managed by {{ sysinfo['master'] }}</font>{% endif %}<input type="button" name="editDevice" value="Edit" data-deviceid="{{info['id']}}" class="editDevice" onclick="highlightRow(this);" {% if va("mobilityaccess","feature")==False %} style="opacity:0.2;pointer-events:none;" {% endif %}><input type="submit" name="action" value="Delete" class="button" onclick="return confirm('Are you sure you want to delete this item?')" {% if va("mobilityaccess","feature")==False %} style="opacity:0.2;pointer-events:none;" {% endif %}>
-                    <input type="hidden" name="id" value="{{ info['id'] }}">
-
+                    <button type="button" name="Interfaces" value="Interfaces" class="mobilityInterfaces transparent-button" id="mobilityInterfaces{{info['id']}}" data-deviceid="{{info['id']}}" onclick="highlightRow(this);"><img src="static/images/network.svg" width="12" height="12" class="showtitleTooltip" data-title="Gateway interfaces"></button>
+                    <button type="button" name="Roles" value="Roles" id="mobilityRoles{{info['id']}}" data-deviceid="{{info['id']}}" class="mobilityRoles transparent-button" onclick="highlightRow(this);"><img src="static/images/role.svg" width="12" height="12" class="showtitleTooltip" data-title="Gateway roles"></button>
+                    <button type="button" name="Policies" value="Policies" id="mobilityPolicies{{info['id']}}" data-deviceid="{{info['id']}}" class="mobilityPolicies transparent-button" onclick="highlightRow(this);"><img src="static/images/contract.svg" width="12" height="12" class="showtitleTooltip" data-title="Gateway policies"></button>{% else %}<font class="font11px">Managed by {{ sysinfo['master'] }}</font>
+                    {% endif %}
+                    <button type="button" name="editDevice" value="Edit" data-deviceid="{{info['id']}}" class="editDevice transparent-button" {% if va("mobilityaccess","feature")==False %} style="opacity:0.2;pointer-events:none;" {% endif %} onclick="highlightRow(this);"><img src="static/images/edit.svg" width="12" height="12" class="showtitleTooltip" data-title="Edit gateway"></button>
+                    <button type="submit" name="action" value="Delete" class="transparent-button" onclick="return confirm('Are you sure you want to delete this gateway?')" {% if va("mobilityaccess","feature")==False %} style="opacity:0.2;pointer-events:none;" {% endif %}><img src="static/images/trash.svg" width="12" height="12" class="showtitleTooltip" data-title="Delete gateway"></button>
                 </td>
             </tr>
         </form>
@@ -166,7 +176,7 @@
     <div id="editDeviceForm" style="display:none;">
         <p>
             <table class="tablenoborder">
-                <tr  style="background-color: grey;" class="tableTitle">
+                <tr style="background-color: grey;" class="tableTitle">
                     <td colspan="5"><font class="font13pxwhite"><center>Edit device <span name="titleeditDescription" id="titleeditDescription"></span> (<span name="titleeditIpaddress" id="titleeditIpaddress"></span>)</center></font></td>
                 </tr>
                 <tr style="line-height:20px;">
@@ -215,6 +225,7 @@
     </div>
     <div id="policyAction" style="display:none;">
     </div>
+    <div id="showdaTooltip" type="display:none;"></div>
 
-    </div>
+</div>
     {% endblock %}

@@ -135,8 +135,7 @@ $(document).ready(function () {
                 // Obtaining switch information was successful
             },
             error: function () {
-                document.getElementById("liProgress").style.display = "block";
-                progressInfo.innerHTML = "Error finding device information";
+                showmessageBar("Error finding device information");
             }
         });
         deviceInfo = JSON.parse(deviceInfo);
@@ -221,7 +220,7 @@ $(document).ready(function () {
             success: function (response) {
             },
             error: function () {
-                console.log("There is an error assigning the attribute");
+                //There is an error assigning the attribute
             }
         })
         manageAttributes($(this).attr('data-deviceid'));
@@ -236,7 +235,7 @@ $(document).ready(function () {
             success: function (response) {
             },
             error: function () {
-                console.log("There is an error removing the attribute");
+               //There is an error removing the attribute
             }
         })
         manageAttributes($(this).attr('data-deviceid'));
@@ -285,7 +284,7 @@ $(document).ready(function () {
                         if (response['deviceid'] == deviceid) {
                             //We can show the status
                             if (response['status'] == "Online") {
-                                document.getElementById('isOnline' + deviceid).innerHTML = "<img src='static/images/ok.png' height='15' width='15'>";
+                                document.getElementById('isOnline' + deviceid).innerHTML = "<img src='static/images/status-good.svg' height='12' width='12' class='showtitleTooltip' data-title='Device is online'>";
                                 $('#isOnline' + deviceid).attr('data-status', '2');
                                 $('#isOnline' + deviceid).attr('data-ostype', ostype);
                                 $("#portaccess" + deviceid).prop('disabled', false);
@@ -297,13 +296,9 @@ $(document).ready(function () {
                                 $("#configuration" + deviceid).prop('disabled', false);
                                 $("#configuration" + deviceid).css('opacity', '1');
                                 $("#configuration" + deviceid).css('pointer-events', 'auto');
-                                $("#deviceupgrade" + deviceid).prop('disabled', false);
-                                $("#deviceupgrade" + deviceid).css('opacity', '1');
-                                $("#deviceupgrade" + deviceid).css('pointer-events', 'auto');
-
                             }
                             if (response['status'] == "Offline") {
-                                document.getElementById('isOnline' + deviceid).innerHTML = "<img src='static/images/notok.png' height='15' width='15'>";
+                                document.getElementById('isOnline' + deviceid).innerHTML = "<img src='static/images/status-critical.svg' height='12' width='12'  class='showtitleTooltip' data-title='Device is offline'>";
                                 $('#isOnline' + deviceid).attr('data-status', '0');
                                 $('#isOnline' + deviceid).attr('data-ostype', ostype);
                                 $("#portaccess" + deviceid).prop('disabled', true);
@@ -315,12 +310,9 @@ $(document).ready(function () {
                                 $("#configuration" + deviceid).prop('disabled', true);
                                 $("#configuration" + deviceid).css('opacity', '0.1');
                                 $("#configuration" + deviceid).css('pointer-events', 'none');
-                                $("#deviceupgrade" + deviceid).prop('disabled', true);
-                                $("#deviceupgrade" + deviceid).css('opacity', '0.1');
-                                $("#deviceupgrade" + deviceid).css('pointer-events', 'none');
                             }
                             if (response['status'] == "Unstable") {
-                                document.getElementById('isOnline' + deviceid).innerHTML = "<img src='static/images/risk.png' height='15' width='15'>";
+                                document.getElementById('isOnline' + deviceid).innerHTML = "<img src='static/images/status-unknown.svg' height='12' width='12'  class='showtitleTooltip' data-title='Device status unknown'>";
                                 $('#isOnline' + deviceid).attr('data-status', '1');
                                 $('#isOnline' + deviceid).attr('data-ostype', ostype);
                                 $("#portaccess" + deviceid).prop('disabled', true);
@@ -332,9 +324,6 @@ $(document).ready(function () {
                                 $("#configuration" + deviceid).prop('disabled', true);
                                 $("#configuration" + deviceid).css('opacity', '0.1');
                                 $("#configuration" + deviceid).css('pointer-events', 'none');
-                                $("#deviceupgrade" + deviceid).prop('disabled', true);
-                                $("#deviceupgrade" + deviceid).css('opacity', '0.1');
-                                $("#deviceupgrade" + deviceid).css('pointer-events', 'none');
                             }
                         }
                     },
@@ -526,7 +515,7 @@ $(document).ready(function () {
             else if (assignedattrInfo[i - 1]['type'] == "Value") {
                 attrsetHTML += "<td><input type='text' value='" + assignedattrInfo[i - 1]['value'] + "' class='changeAttribute' data-id='" + assignedattrInfo[i - 1]['id'] + "' data-deviceid='" + deviceid + "' data-type='value' data-originalvalue='" + assignedattrInfo[i - 1]['value'] + "'></td>";
             }
-            attrsetHTML += "<td align='right'><font class='font12px'><input type='button' name='removeAttribute' value='Remove' class='removeAttribute' id='removeAttribute" + assignedattrInfo[i - 1][' value'] + "' data-id='" + assignedattrInfo[i - 1]['id'] + "' data-deviceid='" + deviceid + "'></td > ";
+            attrsetHTML += "<td align='right'><font class='font12px'><button type='button' name='removeAttribute' value='Remove' class='transparent-button removeAttribute' id='removeAttribute" + assignedattrInfo[i - 1][' value'] + "' data-id='" + assignedattrInfo[i - 1]['id'] + "' data-deviceid='" + deviceid + "'><img src='static/images/subtract.svg' height='12' width='12'  class='showtitleTooltip' data-title='Remove attribute'></button></td>";
             attrsetHTML += "</tr>";
         }
         attrsetHTML += "<tr><td align='center' colspan='5'><font class='font12px'><input type='button' name='submitAttributes' value='Submit attribute assignments' class='submitAttributes' id='submitAttributes'></td></tr>";
@@ -555,7 +544,7 @@ $(document).ready(function () {
         attrsetHTML += "<option value='list'>List</option>";
         attrsetHTML += "</select></td>";
         attrsetHTML += "<td align='left' nowrap class='whiteBG'></td>";
-        attrsetHTML += "<td align='right' class='whiteBG'><font class='font12px'><input type='button' name='searchAttribute' value='Search' class='searchAttribute' id='searchAttribute' data-deviceid='" + deviceid + "'></td>";
+        attrsetHTML += "<td align='right' class='whiteBG'><font class='font12px'><button type='button' name='searchAttribute' value='Search' class='transparent-button searchAttribute' id='searchAttribute' data-deviceid='" + deviceid + "'><img src='static/images/search.svg' height='12' width='12'  class='showtitleTooltip' data-title='Search attributes'></button</td>";
         attrsetHTML += "</tr>";
         if (attrInfo.length > 0) {
             for (var i = 1; i <= attrInfo.length; i++) {
@@ -577,7 +566,7 @@ $(document).ready(function () {
                     attrsetHTML += "<td><font class='font12px'></font></td>";
                 }
 
-                attrsetHTML += "<td align='right'><font class='font12px'><input type='button' name='assignAttribute' value='Assign' class='assignAttribute' id='assignAttribute" + attrInfo[i - 1]['id'] + "' data-id='" + attrInfo[i - 1]['id'] + "'  data-deviceid='" + deviceid + "'></td>";
+                attrsetHTML += "<td align='right'><font class='font12px'><button type='button' class='transparent-button assignAttribute' name='assignAttribute' value='Assign' id='assignAttribute" + attrInfo[i - 1]['id'] + "' data-id='" + attrInfo[i - 1]['id'] + "'  data-deviceid='" + deviceid + "'><img src='static/images/add.svg' height='12' width='12' class='showtitleTooltip' data-title='Assign attribute'></button></td>";
                 attrsetHTML += "</tr>";
             }
         }
@@ -606,28 +595,28 @@ $(document).ready(function () {
             zIndex: 5000,
             left: left,
             top: top,
-            width: '350px',
+            width: '400px',
         });
         // Construct the innerHTML
-        attrsetHTML = "<table class='tablewithborder' style='max-width: 300px;'>";
+        attrsetHTML = "<table class='tablewithborder' style='max-width: 400px;'>";
         attrsetHTML += "<tr class='tableTitle'>";
-        attrsetHTML += "<td width='20%' align='left' nowrap><font class='font12pxwhite'>Attribute name</font></td>";
+        attrsetHTML += "<td width='40%' align='left' nowrap><font class='font12pxwhite'>Attribute name</font></td>";
         attrsetHTML += "<td width='20%' align='left' nowrap><font class='font12pxwhite'>Type</font></td>";
-        attrsetHTML += "<td width='60%' align='left' nowrap><font class='font12pxwhite'>Value</font></td>";
+        attrsetHTML += "<td width='40%' align='left' nowrap><font class='font12pxwhite'>Value</font></td>";
         attrsetHTML += "</tr>";
         assignedattrInfo = JSON.parse(assignedattrInfo);
         for (var i = 0; i < assignedattrInfo.length; i++) {
             attrsetHTML += "<tr>";
-            attrsetHTML += "<td class='whiteBG'><font class='font12pxgrey'>" + assignedattrInfo[i]['name'] + "</font></td>";
-            attrsetHTML += "<td class='whiteBG'><font class='font12pxgrey'>" + assignedattrInfo[i]['type'].charAt(0).toUpperCase() + assignedattrInfo[i]['type'].slice(1) + "</font></td>";
+            attrsetHTML += "<td class='whiteBG' nowrap><font class='font10px'>" + assignedattrInfo[i]['name'] + "</font></td>";
+            attrsetHTML += "<td class='whiteBG' nowrap><font class='font10px'>" + assignedattrInfo[i]['type'].charAt(0).toUpperCase() + assignedattrInfo[i]['type'].slice(1) + "</font></td>";
             if (assignedattrInfo[i]['type'] == "boolean" && assignedattrInfo[i]['value'] == "1") {
-                attrsetHTML += "<td class='whiteBG'><font class='font12pxgrey'>True</font></td>";
+                attrsetHTML += "<td class='whiteBG' nowrap><font class='font10px'>True</font></td>";
             }
             else if (assignedattrInfo[i]['type'] == "boolean" && assignedattrInfo[i]['value'] == "0") {
-                attrsetHTML += "<td class='whiteBG'><font class='font12pxgrey'>True</font></td>"
+                attrsetHTML += "<td class='whiteBG' nowrap><font class='font10px'>True</font></td>"
             }
             else {
-                attrsetHTML += "<td class='whiteBG'><font class='font12pxgrey'>" + assignedattrInfo[i]['value'] + "</font></td>";
+                attrsetHTML += "<td class='whiteBG' nowrap><font class='font10px'>" + assignedattrInfo[i]['value'] + "</font></td>";
             }
             attrsetHTML += "</tr>";      
         }
