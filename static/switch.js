@@ -595,6 +595,7 @@ $(document).ready(function () {
             zIndex: 5000,
             left: left,
             top: top,
+            backgroundColor: 'transparent',
             width: '400px',
         });
         // Construct the innerHTML
