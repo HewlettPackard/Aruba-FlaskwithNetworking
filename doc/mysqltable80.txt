@@ -50,33 +50,19 @@ CREATE TABLE IF NOT EXISTS dhcptracker (
 ) ENGINE=MyISAM AUTO_INCREMENT=1563 DEFAULT CHARSET=latin1;
 
 DROP TABLE IF EXISTS dsprofiles;
-CREATE TABLE IF NOT EXISTS dsprofiles (
-  id bigint(20) NOT NULL AUTO_INCREMENT,
-  name text NOT NULL,
-  members text NOT NULL,
-  ports text NOT NULL,
-  macauth int(11) NOT NULL,
-  maclimit int(11) NOT NULL,
-  dot1x int(11) NOT NULL,
-  dot1xlimit int(11) NOT NULL,
-  clearpass text NOT NULL,
-  radiussecret text NOT NULL,
-  duradmin text NOT NULL,
-  durpassword text NOT NULL,
-  macauthsource text NOT NULL,
-  macauthmethod text NOT NULL,
-  dot1xsource text NOT NULL,
-  dot1xmethod text NOT NULL,
-  ntpserver text NOT NULL,
-  ntpauth text NOT NULL,
-  primarycontroller text NOT NULL,
-  backupcontroller text NOT NULL,
-  PRIMARY KEY (id)
-) ENGINE=MyISAM AUTO_INCREMENT=24 DEFAULT CHARSET=latin1;
 
 DROP TABLE IF EXISTS dsservices;
 
 DROP TABLE IF EXISTS snmptracker;
+CREATE TABLE IF NOT EXISTS snmptracker (
+  id bigint(20) UNSIGNED NOT NULL AUTO_INCREMENT,
+  utctime double NOT NULL,
+  source text NOT NULL,
+  version text NOT NULL,
+  community text NOT NULL,
+  information text NOT NULL,
+  PRIMARY KEY (id)
+) ENGINE=MyISAM AUTO_INCREMENT=628 DEFAULT CHARSET=latin1;
 
 DROP TABLE IF EXISTS syslog;
 CREATE TABLE IF NOT EXISTS syslog (
