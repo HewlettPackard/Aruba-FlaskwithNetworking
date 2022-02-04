@@ -7,12 +7,11 @@ $.getScript(url);
 </script>
 {% endblock %}
 
-
 {% block content %}
-<div id="maincontainer" style="background-color: mintcream;">
+{% if trustInfo %}
     <table class="tablewithborder">
-        <tr><td colspan='8'><font class='font13pxwhite'><center>Trust Certificate information from {{deviceInfo['ipaddress']}} ({{deviceInfo['description']}})</center></font></td></tr>
-        <tr>
+        <tr class="tableTitle"><td colspan='8'><font class='font13pxwhite'><center>Trust Certificate information from {{deviceInfo['ipaddress']}} ({{deviceInfo['description']}})</center></font></td></tr>
+        <tr class="tableTitle">
             <td nowrap><font class='font12pxwhite'>ID</font></td>
             <td nowrap><font class='font12pxwhite'>Subject DN</font></td>
             <td nowrap><font class='font12pxwhite'>Issue date</font></td>
@@ -63,7 +62,7 @@ $.getScript(url);
         </form>
         {% for items in trustInfo['_embedded']['items'] %}
 
-        <tr>
+        <tr class="tableTitle">
             <td class="whiteBG"><font class='font11px'>{{ items['id'] }}</font></td>
             <td class="whiteBG"><font class='font11px'>{{ items['subject_DN']|truncate(140, True) }}{% if items['subject_dn']|length > 140 %}...{% endif %}</font></td>
             <td class="whiteBG"><font class='font11px'>{{ items['issue_date'] }}</font></td>
@@ -80,5 +79,5 @@ $.getScript(url);
         {% endfor %}
 
     </table>
-</div>
+{% endif %}
 {% endblock %}

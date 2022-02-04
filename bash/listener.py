@@ -1,3 +1,5 @@
+# (C) Copyright 2021 Hewlett Packard Enterprise Development LP.
+
 import pyshark
 from datetime import datetime, time, timedelta
 import time
@@ -6,13 +8,10 @@ import os
 import sys
 import pymysql.cursors
 
-pathname = os.path.dirname(sys.argv[0])
-appPath = os.path.abspath(pathname) + "/globals.json"
-with open(appPath, 'r') as myfile:
-    data=myfile.read()
-globalconf=json.loads(data)
+
 listenerlog = open('/var/www/html/log/listener.log', 'a')
 activeInterface=str(sys.argv[1])
+
 
 syslogFacilities=("Kernel messages","User-level","Mail system","System daemons","Security authorization","Messages generated internally by syslogd",\
 "Line printer subsystem","Network news subsystem","UUCP subsystem","Clock daemon","Security authorization","FTP daemon","NTP subsystem",\
@@ -20,8 +19,19 @@ syslogFacilities=("Kernel messages","User-level","Mail system","System daemons",
 "Local use 5 (local5)","Local use 6 (local6)","Local use 7 (local7))")
 syslogSeverity=("Emergency","Alert","Critical","Error","Warning","Notice","Informational","Debug")
 
+
 dbconnection=pymysql.connect(host='localhost',user='aruba',password='ArubaRocks',db='aruba', autocommit=True)
 cursor=dbconnection.cursor(pymysql.cursors.DictCursor)
+queryStr="select datacontent from systemconfig where configtype='system'"
+cursor.execute(queryStr)
+result = cursor.fetchall()
+globalconf=result[0]
+if isinstance(globalconf,str):
+    globalconf=json.loads(globalconf)
+globalconf=globalconf['datacontent']
+if isinstance(globalconf,str):
+    globalconf=json.loads(globalconf)
+
 
 def capture_live_packets(network_interface,listenerlog,cursor,syslogFacilities,syslogSeverity):
     # Need to capture DHCP, SNMP and Syslog packets
@@ -100,8 +110,9 @@ def analyzeDHCP(packet,listenerlog,cursor):
                         if checkDuplicate(timestamp[0],"DHCP Offer",information,cursor,"dhcptracker")==False:
                             queryStr="insert into dhcptracker (utctime,dhcptype,information,options) values ('{}','DHCP Offer','{}','{}')".format(timestamp[0],information,options)
                             cursor.execute(queryStr)
-            except:
+            except Exception as e:
                 listenerlog.write("{}: Could not analyze DHCP Offer packet\n".format(datetime.now()))
+                listenerlog.write(e)
 
         # Match DHCP request
         elif packet.dhcp.option_value == "03":
@@ -123,8 +134,9 @@ def analyzeDHCP(packet,listenerlog,cursor):
                         if checkDuplicate(timestamp[0],"DHCP Request",information,cursor,"dhcptracker")==False:
                             queryStr="insert into dhcptracker (utctime,dhcptype,information,options) values ('{}','DHCP Request','{}','{}')".format(timestamp[0],information,options)
                             cursor.execute(queryStr)
-            except:
+            except Exception as e:
                 listenerlog.write("{}: Could not analyze DHCP Request packet\n".format(datetime.now()))
+                listenerlog.write(e)
         # Match DHCP ack
         elif packet.dhcp.option_value == "05":
             try:
@@ -173,8 +185,9 @@ def analyzeDHCP(packet,listenerlog,cursor):
                                 ztplog = open('/var/www/html/log/ztp.log', 'a')
                                 ztplog.write(logEntry)
                                 ztplog.close()
-                except:
+                except Exception as e:
                     listenerlog.write("{}: Could not analyze ZTP packet in listener\n".format(datetime.now()))
+                    listenerlog.write(e)
                 if not macaddress.startswith("204c03"):
                     information="DHCP Server " + dhcpserver + " acknowledged " + clientip                         
                     options="Subnet_mask: " + netmask + ", Lease time: " + leasetime + ", Router: " + router + ", Name Server: " + dnsserver
@@ -182,8 +195,9 @@ def analyzeDHCP(packet,listenerlog,cursor):
                     if checkDuplicate(timestamp[0],"DHCP Ack",information,cursor,"dhcptracker")==False:
                         queryStr="insert into dhcptracker (utctime,dhcptype,information,options) values ('{}','DHCP Ack','{}','{}')".format(timestamp[0],information,options)
                         cursor.execute(queryStr)
-            except:
+            except Exception as e:
                 listenerlog.write("{}: Could not analyze DHCP Ack packet\n".format(datetime.now()))
+                listenerlog.write(e)
         # Match DHCP NAK
         elif packet.dhcp.option_value == "06":
             try:
@@ -215,8 +229,9 @@ def analyzeDHCP(packet,listenerlog,cursor):
                     if checkDuplicate(timestamp[0],"DHCP NAK",information,cursor,"dhcptracker")==False:
                         queryStr="insert into dhcptracker (utctime,dhcptype,information,options) values ('{}','DHCP NAK','{}','{}')".format(timestamp[0],information,options)
                         cursor.execute(queryStr)
-            except:
+            except Exception as e:
                 listenerlog.write("{}: Could not analyze DHCP NAK packet\n".format(datetime.now()))
+                listenerlog.write(e)
         # Match DHCP release
         elif packet.dhcp.option_value == "07":
             try:
@@ -248,8 +263,9 @@ def analyzeDHCP(packet,listenerlog,cursor):
                     if checkDuplicate(timestamp[0],"DHCP Release",information,cursor,"dhcptracker")==False:
                         queryStr="insert into dhcptracker (utctime,dhcptype,information,options) values ('{}','DHCP Release','{}','{}')".format(timestamp[0],information,options)
                         cursor.execute(queryStr)
-            except:
+            except Exception as e:
                 listenerlog.write("{}: Could not analyze DHCP Release packet\n".format(datetime.now()))
+                listenerlog.write(e)
         # Match DHCP inform
         elif packet.dhcp.option_value == "08":
             try:    
@@ -259,8 +275,9 @@ def analyzeDHCP(packet,listenerlog,cursor):
                 if checkDuplicate(timestamp[0],"DHCP Inform",information,cursor,"dhcptracker")==False:
                     queryStr="insert into dhcptracker (utctime,dhcptype,information,options) values ('{}','DHCP Inform','{}','{}')".format(timestamp[0],information,options)
                     cursor.execute(queryStr)
-            except:
+            except Exception as e:
                 listenerlog.write("{}: Could not analyze DHCP Inform packet\n".format(datetime.now()))
+                listenerlog.write(e)
     else:
         # Match bootp discover
         if packet.bootp.option_value == "01":
@@ -277,8 +294,9 @@ def analyzeDHCP(packet,listenerlog,cursor):
                     if checkDuplicate(timestamp[0],"Bootp Discover",information,cursor,"dhcptracker")==False:
                         queryStr="insert into dhcptracker (utctime,dhcptype,information,options) values ('{}','Bootp Discover','{}','{}')".format(timestamp[0],information,options)
                         cursor.execute(queryStr)
-            except:
+            except Exception as e:
                 listenerlog.write("{}: Could not analyze Bootp Discover packet\n".format(datetime.now()))
+                listenerlog.write(e)
         # Match bootp offer
         elif packet.bootp.option_value == "02":
             try:
@@ -323,8 +341,9 @@ def analyzeDHCP(packet,listenerlog,cursor):
                         if checkDuplicate(timestamp[0],"Bootp Offer",information,cursor,"dhcptracker")==False:
                             queryStr="insert into dhcptracker (utctime,dhcptype,information,options) values ('{}','Bootp Offer','{}','{}')".format(timestamp[0],information,options)
                             cursor.execute(queryStr)
-            except:
+            except Exception as e:
                 listenerlog.write("{}: Could not analyze Bootp Offer packet\n".format(datetime.now()))
+                listenerlog.write(e)
         # Match bootp request
         elif packet.bootp.option_value == "03":
             try:
@@ -345,8 +364,9 @@ def analyzeDHCP(packet,listenerlog,cursor):
                         if checkDuplicate(timestamp[0],"Bootp Request",information,cursor,"dhcptracker")==False:
                             queryStr="insert into dhcptracker (utctime,dhcptype,information,options) values ('{}','Bootp Request','{}','{}')".format(timestamp[0],information,options)
                             cursor.execute(queryStr)
-            except:
+            except Exception as e:
                 listenerlog.write("{}: Could not analyze Bootp Request packet\n".format(datetime.now()))
+                listenerlog.write(e)
         # Match bootp ack
         elif packet.bootp.option_value == "05":  
             try:
@@ -387,8 +407,9 @@ def analyzeDHCP(packet,listenerlog,cursor):
                                 ztplog = open('/var/www/html/log/ztp.log', 'a')
                                 ztplog.write(logEntry)
                                 ztplog.close()
-                except:
+                except Exception as e:
                     listenerlog.write("{}: Could not analyze ZTP packet in listener\n".format(datetime.now()))
+                    listenerlog.write(e)
                 if not macaddress.startswith("204c03"):
                     information="DHCP Server " + packet.bootp.option_dhcp_server_id + " acknowledged " + packet.bootp.ip_your
                     options="Subnet_mask: " + netmask + ", Lease time: " + leasetime + ", Router: " + router + ", Name Server: " + dnsserver
@@ -396,8 +417,9 @@ def analyzeDHCP(packet,listenerlog,cursor):
                     if checkDuplicate(timestamp[0],"Bootp Ack",information,cursor,"dhcptracker")==False:
                         queryStr="insert into dhcptracker (utctime,dhcptype,information,options) values ('{}','Bootp Ack','{}','{}')".format(timestamp[0],information,options)
                         cursor.execute(queryStr)
-            except:
+            except Exception as e:
                 listenerlog.write("{}: Could not analyze Bootp Ack packet\n".format(datetime.now()))
+                listenerlog.write(e)
         # Match bootp NAK
         elif packet.bootp.option_value == "06":
             try:
@@ -429,8 +451,9 @@ def analyzeDHCP(packet,listenerlog,cursor):
                     if checkDuplicate(timestamp[0],"BootpNAK",information,cursor,"dhcptracker")==False:
                         queryStr="insert into dhcptracker (utctime,dhcptype,information,options) values ('{}','Bootp NAK','{}','{}')".format(timestamp[0],information,options)
                         cursor.execute(queryStr)
-            except:
+            except Exception as e:
                 listenerlog.write("{}: Could not analyze Bootp NAK packet\n".format(datetime.now()))
+                listenerlog.write(e)
         # Match bootp release
         elif packet.bootp.option_value == "07":
             try:
@@ -462,8 +485,9 @@ def analyzeDHCP(packet,listenerlog,cursor):
                     if checkDuplicate(timestamp[0],"Bootp Release",information,cursor,"dhcptracker")==False:
                         queryStr="insert into dhcptracker (utctime,dhcptype,information,options) values ('{}','Bootp Release','{}','{}')".format(timestamp[0],information,options)
                         cursor.execute(queryStr)
-            except:
+            except Exception as e:
                 listenerlog.write("{}: Could not analyze Bootp Release packet\n".format(datetime.now()))
+                listenerlog.write(e)
         # Match DHCP inform
         elif packet.bootp.option_value == "08":
             try:
@@ -473,8 +497,9 @@ def analyzeDHCP(packet,listenerlog,cursor):
                 if checkDuplicate(timestamp[0],"Bootp Inform",information,cursor,"dhcptracker")==False:
                     queryStr="insert into dhcptracker (utctime,dhcptype,information,options) values ('{}','Bootp Inform','{}','{}')".format(timestamp[0],information,options)
                     cursor.execute(queryStr)
-            except:
+            except Exception as e:
                 listenerlog.write("{}: Could not analyze Bootp Inform packet\n".format(datetime.now()))
+                listenerlog.write(e)
 
 def analyzeSNMP(packet,listenerlog,cursor):
     fieldnames=list(packet.snmp.field_names)
@@ -506,9 +531,14 @@ def analyzeSNMP(packet,listenerlog,cursor):
                 timestamp=packet.sniff_timestamp.split(".")
                 queryStr="insert into snmptracker (utctime,source,version,community,information) values ('{}','{}','{}','{}','{}')".format(timestamp[0],packet.ip.src_host,snmpversion,packet.snmp.community,trapMessage)
                 cursor.execute(queryStr)
-    except:
+    except Exception as e:
         listenerlog.write("{}: Could not analyze SNMP packet\n".format(datetime.now()))
-        listenerlog.write(packet)
+        listenerlog.write(e)
+        try:
+            listenerlog.write(packet)
+        except Exception as ee:
+            listenerlog.write("{}: Could not describe packet\n".format(datetime.now()))
+            listenerlog.write(ee)
 
 def analyzeSyslog(packet,listenerlog,cursor,syslogFacilities, syslogSeverity):
     try:
@@ -517,19 +547,27 @@ def analyzeSyslog(packet,listenerlog,cursor,syslogFacilities, syslogSeverity):
         timestamp=packet.sniff_timestamp.split(".")
         queryStr="insert into syslog (utctime,source,facility,severity,information) values ('{}','{}','{}','{}','{}')".format(timestamp[0],packet.ip.src_host,syslogFacilities[int(packet.syslog.facility)],syslogSeverity[int(packet.syslog.level)],message)
         cursor.execute(queryStr)
-    except:
+    except Exception as e:
         listenerlog.write("{}: Could not analyze Syslog packet\n".format(datetime.now()))
-        listenerlog.write(packet)
+        try:
+            listenerlog.write(packet)
+        except Exception as ee:
+            listenerlog.write("{}: Could not describe packet\n".format(datetime.now()))
+            listenerlog.write(ee)
 
 
 def filter_udp_traffic_file(packet,listenerlog,cursor,syslogFacilities,syslogSeverity):
     if hasattr(packet, 'udp'):
-        if packet.udp.dstport=="67" or packet.udp.dstport=="68":
-            analyzeDHCP(packet,listenerlog,cursor)
-        elif packet.udp.dstport=="161" or packet.udp.dstport=="162":
-            analyzeSNMP(packet,listenerlog,cursor)
-        elif packet.udp.dstport=="514":
-            analyzeSyslog(packet,listenerlog,cursor,syslogFacilities, syslogSeverity)
+        try:
+            if packet.udp.dstport=="67" or packet.udp.dstport=="68":
+                analyzeDHCP(packet,listenerlog,cursor)
+            elif packet.udp.dstport=="161" or packet.udp.dstport=="162":
+                analyzeSNMP(packet,listenerlog,cursor)
+            elif packet.udp.dstport=="514":
+                analyzeSyslog(packet,listenerlog,cursor,syslogFacilities, syslogSeverity)
+        except Exception as e:
+            listenerlog.write("{}: Could not filter DHCP, Syslog or SNMP packet\n".format(datetime.now()))
+            listenerlog.write(e)
 
 def checkDuplicate(utctime,dhcptype,information,cursor,dbtable):
     queryStr="select * from {} where utctime='{}' AND dhcptype='{}' AND information='{}'".format(dbtable,utctime,dhcptype,information)

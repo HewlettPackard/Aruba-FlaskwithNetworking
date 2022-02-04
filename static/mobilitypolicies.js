@@ -2,10 +2,12 @@
 
 $(".mobilityPolicies").on('click', async function () {
     deviceid = $(this).attr('data-deviceid');
-    document.getElementById("mobilityRoles").style.display = "none";
-    document.getElementById("mobilityPolicies").style.display = "block";
-    document.getElementById("mobilityInterfaces").style.display = "none";
-    document.getElementById("liProgress").style.display = "none";
+    $('#mobilityroles').hide();
+    $('#mobilityPolicies').show();
+    $('#mobilityInterfaces').hide();
+    $('#liProgress').hide();
+    $('#addDeviceForm').hide();
+    $('#editDeviceForm').hide();
     // This is an async function, we have to wait until the information is returned from the Python call. 
     // Definition found in mobility.py
     policyInfo = await $.ajax({
@@ -71,7 +73,7 @@ function showPolicies(policyInfo, deviceInfo, policy) {
     //Build the table. There are many different ACL types (session, MAC, standard, extended, route, etc)
     policyHTML = "<form method='post'><table class='tablewithborder'>";
     policyHTML +="<input type='hidden' name='deviceid' id='filterdeviceid' value='" + deviceInfo['id'] + "'>";
-    policyHTML += "<tr style='background-color: grey;'>";
+    policyHTML += "<tr class='tableTitle'>";
     policyHTML += "<td><font class='font12pxwhite'>Select Policy type:</font> <select name='filterPolicy' id='filterPolicy' class='filterPolicy'>";
     policyHTML += "<option value=''>Select</option>";
     if (policy == "acl_sess") { policyHTML += "<option value='acl_sess' selected>Session</option>"; }
@@ -100,7 +102,7 @@ function showPolicies(policyInfo, deviceInfo, policy) {
     }
     policyHTML += "</select></td> ";
     policyHTML += "<td><font class='font13pxwhite'><center>Configured policies for " + deviceInfo['ipaddress'] + " (" + deviceInfo['description'] + ")</center></font></td></tr>";
-    policyHTML += "<tr style='background-color: grey;'><td nowrap><font class='font12pxwhite'>Policy name</font></td>";
+    policyHTML += "<tr class='tableTitle'><td nowrap><font class='font12pxwhite'>Policy name</font></td>";
     policyHTML += "<td nowrap><font class='font12pxwhite'>ACL's</font></td></tr>";
     //Fill the table if there is no filter selection
     if (policy == "") {

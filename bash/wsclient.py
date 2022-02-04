@@ -35,7 +35,7 @@ async def wsClient(id,ipaddr,uri,cookie_header, subscriptions, cursor):
     telemetryURI = "ws://" + s.getsockname()[0] + ":5000"
     subscriptions=json.loads(subscriptions)
     try:
-        async with websockets.connect(uri=uri, extra_headers=json.loads(cookie_header), ssl=ssl_context) as websocket, websockets.connect(uri=telemetryURI, extra_headers=wscookie) as carius:
+        async with websockets.connect(uri=uri, extra_headers=json.loads(cookie_header), ssl=ssl_context) as websocket, websockets.connect(uri=telemetryURI, extra_headers=wscookie) as CommPass:
             uri="https://{}/rest/v1/system/notification_subscribers?attributes=name%2Cnotification_subscriptions%2Ctype&depth=3".format(ipaddr)
             response=requests.get(uri,headers=json.loads(cookie_header),verify=False,timeout=10)
             # Subscribe to the active subscriptions (status = 1)
@@ -65,21 +65,23 @@ async def wsClient(id,ipaddr,uri,cookie_header, subscriptions, cursor):
                         queryStr="update devices set subscriber='{}' where id='{}'".format(msgjson['subscriber_name'],id)
                         cursor.execute(queryStr)
                     message = {'ipaddress':ipaddr,'message': message }
-                    await carius.send(json.dumps(message))
+                    await CommPass.send(json.dumps(message))
                 except Exception as e:
                     print("Connection Reset Error: {}".format(e))
                     sys.exit()
     except ConnectionRefusedError as e:
-        # We need to check which connection has failed, whether it is the connection to the Carius server or the connection to the switch
+        # We need to check which connection has failed, whether it is the connection to the CommPass server or the connection to the switch
         try:
             websocket
         except NameError:
             print("No connection to the switch")
         try:
-            carius
+            CommPass
         except NameError:
-            print("No connection to the Carius server")
+            print("No connection to the CommPass server")
         sys.exit()
+    except Exception as e:
+        print(e)
 
 
 loop = asyncio.get_event_loop()

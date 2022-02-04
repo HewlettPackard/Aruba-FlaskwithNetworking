@@ -1,77 +1,87 @@
-<!-- (C) Copyright 2019 Hewlett Packard Enterprise Development LP. -->
+<!-- (C) Copyright 2021 Hewlett Packard Enterprise Development LP. -->
 {% block content %}
 
-{% if interfaceinfo['hw_intf_info'] is defined %}
-    <div id="maincontainer">
-        <table class="tablewithborder">
-            {% if interfaceinfo.link_state is defined %}
-            <tr><td><font class="font12pxwhite">Link State:</font></td><td class="whiteBG"><font face="arial" size="1">{{ interfaceinfo['link_state'] }} </font></td></tr>
-            {% endif %}
-            {% if interfaceinfo.duplex is defined %}
-            <tr><td><font class="font12pxwhite">Duplex type:</font></td><td class="whiteBG"><font face="arial" size="1">{{ interfaceinfo['duplex'] }}</font></td></tr>
-            {% endif %}
-            {% if interfaceinfo.hw_intf_info.connector is defined %}
-            <tr><td><font class="font12pxwhite">Connector type:</font></td><td class="whiteBG"><font face="arial" size="1"> {{ interfaceinfo['hw_intf_info']['connector'] }} </font></td></tr>
-            {% endif %}
-            {% if interfaceinfo.hw_intf_info.mac_addr is defined %}
-            <tr><td><font class="font12pxwhite">MAC Address:</font></td><td class="whiteBG"><font face="arial" size="1"> {{ interfaceinfo['hw_intf_info']['mac_addr'] }} </font></td></tr>
-            {% endif %}
-            {% if interfaceinfo.hw_intf_info.transceiver_bay_type is defined %}
-            <tr><td><font class="font12pxwhite">Transceiver Type:</font></td><td class="whiteBG"><font face="arial" size="1"> {{ interfaceinfo['hw_intf_info']['transceiver_bay_type'] }} </font></td></tr>
-            {% endif %}
-            {% if interfaceinfo.hw_intf_info.linkspeed is defined %}
-            <tr><td><font class="font12pxwhite">Link Speed:</font></td><td class="whiteBG"><font face="arial" size="1"> {{ interfaceinfo['hw_status']['linkspeed'] }} </font></td></tr>
-            {% endif %}
-            {% if interfaceinfo.mtu is defined %}
-            <tr><td><font class="font12pxwhite">MTU Size:</font></td><td class="whiteBG"><font face="arial" size="1"> {{ interfaceinfo['mtu'] }} </font></td></tr>
-            {% endif %}
-            {% if interfaceinfo.statistics.if_hc_in_bytes is defined %}
-            <tr><td><font class="font12pxwhite">Bytes In:</font></td><td class="whiteBG"><font face="arial" size="1"> {{ interfaceinfo['statistics']['if_hc_in_bytes'] }} </font></td></tr>
-            {% endif %}
-            {% if interfaceinfo.statistics.if_hc_in_unicast_packets is defined %}
-            <tr><td><font class="font12pxwhite">Unicast Packets In:</font></td><td class="whiteBG"><font face="arial" size="1"> {{ interfaceinfo['statistics']['if_hc_in_unicast_packets'] }} </font></td></tr>
-            {% endif %}
-            {% if interfaceinfo.statistics.if_hc_out_bytes is defined %}
-            <tr><td><font class="font12pxwhite">Bytes Out:</font></td><td class="whiteBG"><font face="arial" size="1"> {{ interfaceinfo['statistics']['if_hc_out_bytes'] }} </font></td></tr>
-            {% endif %}
-            {% if interfaceinfo.statistics.if_hc_out_unicast_packets is defined %}
-            <tr><td><font class="font12pxwhite">Unicast Packets Out:</font></td><td class="whiteBG"><font face="arial" size="1"> {{ interfaceinfo['statistics']['if_hc_out_unicast_packets'] }} </font></td></tr>
-            {% endif %}
-            {% if interfaceinfo.statistics.if_in_multicast_packets is defined %}
-            <tr><td><font class="font12pxwhite">Multicast Packets In:</font></td><td class="whiteBG"><font face="arial" size="1"> {{ interfaceinfo['statistics']['if_in_multicast_packets'] }} </font></td></tr>
-            {% endif %}
-            {% if interfaceinfo.statistics.if_out_multicast_packets is defined %}
-            <tr><td><font class="font12pxwhite">Multicast Packets Out:</font></td><td class="whiteBG"><font face="arial" size="1"> {{ interfaceinfo['statistics']['if_out_multicast_packets'] }} </font></td></tr>
-            {% endif %}
-            {% if interfaceinfo.statistics.rx_bytes is defined %}
-            <tr><td><font class="font12pxwhite">Bytes Received:</font></td><td class="whiteBG"><font face="arial" size="1"> {{ interfaceinfo['statistics']['rx_bytes'] }} </font></td></tr>
-            {% endif %}
-            {% if interfaceinfo.statistics.rx_dropped is defined %}
-            <tr><td><font class="font12pxwhite">Bytes Dropped:</font></td><td class="whiteBG"><font face="arial" size="1"> {{ interfaceinfo['statistics']['rx_dropped'] }} </font></td></tr>
-            {% endif %}
-            {% if interfaceinfo.statistics.rx_packets is defined %}
-            <tr><td><font class="font12pxwhite">Packets Received:</font></td><td class="whiteBG"><font face="arial" size="1"> {{ interfaceinfo['statistics']['rx_packets'] }} </font></td></tr>
-            {% endif %}
-            {% if interfaceinfo.statistics.tx_bytes is defined %}
-            <tr><td><font class="font12pxwhite">Bytes Transmitted:</font></td><td class="whiteBG"><font face="arial" size="1"> {{ interfaceinfo['statistics']['tx_bytes'] }} </font></td></tr>
-            {% endif %}
-            {% if interfaceinfo.statistics.tx_packets is defined %}
-            <tr><td><font class="font12pxwhite">Packets Transmitted:</font></td><td class="whiteBG"><font face="arial" size="1"> {{ interfaceinfo['statistics']['tx_packets'] }} </font></td></tr>
-            {% endif %}
-            {% if lldpinfo %}
-            {% if lldpinfo[0].neighbor_info.chassis_description is defined %}
-            <tr><td><font class="font12pxwhite">LLDP remote chassis information:</font></td><td class="whiteBG"><font face="arial" size="1"> {{ lldpinfo[0]['neighbor_info']['chassis_description'] }} </font></td></tr>
-            {% endif %}
-            {% if lldpinfo[0].neighbor_info.chassis_name is defined %}
-            <tr><td><font class="font12pxwhite">LLDP remote chassis name:</font></td><td class="whiteBG"><font face="arial" size="1"> {{ lldpinfo[0]['neighbor_info']['chassis_name'] }} </font></td></tr>
-            {% endif %}
-            {% if lldpinfo[0].neighbor_info.port_description is defined %}
-            <tr><td><font class="font12pxwhite">LLDP Remote port:</font></td><td class="whiteBG"><font face="arial" size="1"> {{ lldpinfo[0]['neighbor_info']['port_description'] }} </font></td></tr>
-            {% endif %}
-            {% endif %}
 
-        </table>
-
+{% if "hw_intf_info" in interfaceinfo %}
+    <table class="tablewithborder">
+        {% if interfaceinfo.link_state is defined %}
+        <tr class="tableTitle"><td><font class="font12pxwhite">Link State:</font></td><td class="whiteBG"><font face="arial" size="1">{{ interfaceinfo['link_state'] }} </font></td></tr>
         {% endif %}
-        </div>
-        {% endblock %}
+        {% if interfaceinfo.duplex is defined %}
+        <tr class="tableTitle"><td><font class="font12pxwhite">Duplex type:</font></td><td class="whiteBG"><font face="arial" size="1">{{ interfaceinfo['duplex'] }}</font></td></tr>
+        {% endif %}
+        {% if interfaceinfo.hw_intf_info.connector is defined %}
+        <tr class="tableTitle"><td><font class="font12pxwhite">Connector type:</font></td><td class="whiteBG"><font face="arial" size="1"> {{ interfaceinfo['hw_intf_info']['connector'] }} </font></td></tr>
+        {% endif %}
+        {% if interfaceinfo.hw_intf_info.mac_addr is defined %}
+        <tr class="tableTitle"><td><font class="font12pxwhite">MAC Address:</font></td><td class="whiteBG"><font face="arial" size="1"> {{ interfaceinfo['hw_intf_info']['mac_addr'] }} </font></td></tr>
+        {% endif %}
+        {% if interfaceinfo.hw_intf_info.transceiver_bay_type is defined %}
+        <tr class="tableTitle"><td><font class="font12pxwhite">Transceiver Type:</font></td><td class="whiteBG"><font face="arial" size="1"> {{ interfaceinfo['hw_intf_info']['transceiver_bay_type'] }} </font></td></tr>
+        {% endif %}
+        {% if interfaceinfo.hw_intf_info.linkspeed is defined %}
+        <tr class="tableTitle"><td><font class="font12pxwhite">Link Speed:</font></td><td class="whiteBG"><font face="arial" size="1"> {{ interfaceinfo['hw_status']['linkspeed'] }} </font></td></tr>
+        {% endif %}
+        {% if interfaceinfo.mtu is defined %}
+        <tr class="tableTitle"><td><font class="font12pxwhite">MTU Size:</font></td><td class="whiteBG"><font face="arial" size="1"> {{ interfaceinfo['mtu'] }} </font></td></tr>
+        {% endif %}
+        {% if interfaceinfo.statistics.if_hc_in_bytes is defined %}
+        <tr class="tableTitle"><td><font class="font12pxwhite">Bytes In:</font></td><td class="whiteBG"><font face="arial" size="1"> {{ interfaceinfo['statistics']['if_hc_in_bytes'] }} </font></td></tr>
+        {% endif %}
+        {% if interfaceinfo.statistics.if_hc_in_unicast_packets is defined %}
+        <tr class="tableTitle"><td><font class="font12pxwhite">Unicast Packets In:</font></td><td class="whiteBG"><font face="arial" size="1"> {{ interfaceinfo['statistics']['if_hc_in_unicast_packets'] }} </font></td></tr>
+        {% endif %}
+        {% if interfaceinfo.statistics.if_hc_out_bytes is defined %}
+        <tr class="tableTitle"><td><font class="font12pxwhite">Bytes Out:</font></td><td class="whiteBG"><font face="arial" size="1"> {{ interfaceinfo['statistics']['if_hc_out_bytes'] }} </font></td></tr>
+        {% endif %}
+        {% if interfaceinfo.statistics.if_hc_out_unicast_packets is defined %}
+        <tr class="tableTitle"><td><font class="font12pxwhite">Unicast Packets Out:</font></td><td class="whiteBG"><font face="arial" size="1"> {{ interfaceinfo['statistics']['if_hc_out_unicast_packets'] }} </font></td></tr>
+        {% endif %}
+        {% if interfaceinfo.statistics.if_in_multicast_packets is defined %}
+        <tr class="tableTitle"><td><font class="font12pxwhite">Multicast Packets In:</font></td><td class="whiteBG"><font face="arial" size="1"> {{ interfaceinfo['statistics']['if_in_multicast_packets'] }} </font></td></tr>
+        {% endif %}
+        {% if interfaceinfo.statistics.if_out_multicast_packets is defined %}
+        <tr class="tableTitle"><td><font class="font12pxwhite">Multicast Packets Out:</font></td><td class="whiteBG"><font face="arial" size="1"> {{ interfaceinfo['statistics']['if_out_multicast_packets'] }} </font></td></tr>
+        {% endif %}
+        {% if interfaceinfo.statistics.rx_bytes is defined %}
+        <tr class="tableTitle"><td><font class="font12pxwhite">Bytes Received:</font></td><td class="whiteBG"><font face="arial" size="1"> {{ interfaceinfo['statistics']['rx_bytes'] }} </font></td></tr>
+        {% endif %}
+        {% if interfaceinfo.statistics.rx_dropped is defined %}
+        <tr class="tableTitle"><td><font class="font12pxwhite">Bytes Dropped:</font></td><td class="whiteBG"><font face="arial" size="1"> {{ interfaceinfo['statistics']['rx_dropped'] }} </font></td></tr>
+        {% endif %}
+        {% if interfaceinfo.statistics.rx_packets is defined %}
+        <tr class="tableTitle"><td><font class="font12pxwhite">Packets Received:</font></td><td class="whiteBG"><font face="arial" size="1"> {{ interfaceinfo['statistics']['rx_packets'] }} </font></td></tr>
+        {% endif %}
+        {% if interfaceinfo.statistics.tx_bytes is defined %}
+        <tr class="tableTitle"><td><font class="font12pxwhite">Bytes Transmitted:</font></td><td class="whiteBG"><font face="arial" size="1"> {{ interfaceinfo['statistics']['tx_bytes'] }} </font></td></tr>
+        {% endif %}
+        {% if interfaceinfo.statistics.tx_packets is defined %}
+        <tr class="tableTitle"><td><font class="font12pxwhite">Packets Transmitted:</font></td><td class="whiteBG"><font face="arial" size="1"> {{ interfaceinfo['statistics']['tx_packets'] }} </font></td></tr>
+        {% endif %}
+
+        <tr class="tableTitle">
+            <td colspan="2"><font class="font13pxwhite"><center>LLDP Information</center></font></td>
+        </tr>
+        {% for items in lldpinfo %}
+
+        <tr class="tableTitle"><td><font class="font12pxwhite">Chassis description:</font></td><td class="whiteBG"><font face="arial" size="1">{{ lldpinfo[items]['neighbor_info']['chassis_description'] }}</font></td></tr>
+        <tr class="tableTitle"><td><font class="font12pxwhite">Chassis name:</font></td><td class="whiteBG"><font face="arial" size="1">{{ lldpinfo[items]['neighbor_info']['chassis_name'] }}</font></td></tr>
+        <tr class="tableTitle"><td><font class="font12pxwhite">Port description:</font></td><td class="whiteBG"><font face="arial" size="1">{{ lldpinfo[items]['neighbor_info']['port_description'] }}</font></td></tr>
+        {% if not loop.last %}
+        <tr class="tableTitle"><td colspan="2"></td></tr>
+        {% endif %}
+        
+
+        {% endfor %}
+
+
+
+
+
+
+
+    </table>
+{% endif %}
+
+
+{% endblock %}

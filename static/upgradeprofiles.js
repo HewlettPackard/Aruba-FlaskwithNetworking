@@ -178,7 +178,6 @@ $(document).on("mouseenter mouseleave", ".showupgradeprofileDevices", async func
         // Construct the innerHTML
         profileDevices = JSON.parse(profileDevices);
         if (typeof profileDevices === 'string' || profileDevices instanceof String) {
-            console.log(typeof (profileDevices['deviceattributes']));
             profileDevices = JSON.parse(profileDevices);
         }
         pdHTML = "<table class='tablewithborder' style='max-width: 450px;' align='left'>";
@@ -245,7 +244,6 @@ async function editProfile(profileid) {
     $('#editprofilename').val(profileInfo['name']);
     $('#editupgradepartition').val(profileInfo['upgradepartition']);
     $('#editactivepartition').val(profileInfo['activepartition']);
-    console.log(profileInfo['schedule']);
     $('#editscheduletime').val(profileInfo['schedule'].toString().slice(0, -3));
     if (profileInfo['reboot'] == 1) {
         $("#editrebootafterUpgrade").prop("checked", true);
@@ -272,27 +270,26 @@ async function selectDevices(profileInfo) {
     pHTML = "<hr>";
     pHTML += "<table class='tablenoborder' id='" + $('#phprofileInfo').attr('data-addoredit') + "profileTable'>";
     pHTML += "<tr><td width='10%' nowrap><font class='font11px'>Search devices</font></td>";
-    pHTML += "<td width='10%'><select name='searchType' id='searchType' onchange='showsearchOptions()'>";
+    pHTML += "<td width='10%' nowrap><select name='searchType' id='searchType' onchange='showsearchOptions()'>";
     pHTML += "<option value=''>Select search criteria</option>";
     pHTML += "<option value='ipaddress'>IP address</option>";
     pHTML += "<option value='description'>Description</option>";
     pHTML += "<option value='attribute'>Device attribute</option>";
-    pHTML += "</select></td>";
-    pHTML += "<td nowrap>";
-    pHTML += "<div class='sbip' style='display: none;'><font class='font11px'>IP address&nbsp;</font><input type='text' name='sbip' id='sbip'></div>";
-    pHTML += "<div class='sbdescription' style='display:none;'><font class='font11px'>Device description&nbsp;</font><input type='text' name='sbdescription' id='sbdescription'></div >";
-    pHTML += "<div class='sbattribute' style='display:none;'><font class='font11px'>Select attribute&nbsp;</font>";
+    pHTML += "</select><td nowrap>";
+    pHTML += "<div class='sbip' style='display: none;'><font class='font11px'>IP address&nbsp;</font><input type='text' name='sbip' id='sbip'></div></td>";
+    pHTML += "<td nowrap><div class='sbdescription' style='display:none;'><font class='font11px'>Device description&nbsp;</font><input type='text' name='sbdescription' id='sbdescription'></div ></td>";
+    pHTML += "<td nowrap><div class='sbattribute' style='display:none;'><font class='font11px'>Select attribute&nbsp;</font>";
     pHTML += "<select name='step1deviceAttribute' class='selectdeviceAttribute' onchange='selectattributeValue()'>";
     pHTML += "<option value=''>Select</option>";
     for (var i = 0; i < deviceAttributes.length; i++) {
         pHTML += "<option value='" + deviceAttributes[i]['id'] + "' data-name='" + deviceAttributes[i]['name'] + "' data-type='" + deviceAttributes[i]['type'] + "' data-attributelist='" + deviceAttributes[i]['attributelist'] + "'>" + deviceAttributes[i]['name'] + " (" + deviceAttributes[i]['type'].charAt(0).toUpperCase() + deviceAttributes[i]['type'].slice(1) + ")</option>";
     }
     pHTML += "</select>";
-    pHTML += "</div>";
-    pHTML += "<div class='sbattributeValue' style='display:none;'></div><div class='sbattributeBoolean' style='display:none;'></div><div class='sbattributeList' style='display:none;'></div>";
+    pHTML += "</div></td>";
+    pHTML += "<td nowrap><div class='sbattributeValue' style='display:none;'></div><div class='sbattributeBoolean' style='display:none;'></div><div class='sbattributeList' style='display:none;'></div>";
     pHTML += "</td>";
     pHTML += "<td align='left'><div class='searchDevice' style='display:none;'><button type='button' name='searchDevice' class='transparent-button' id='searchDevice' value='Find device(s)' ' onclick='findDevices()'><img src='static/images/search.svg' width='12' height='12' class='showtitleTooltip' data-title='Find device(s)'></button></div></td>";
-    pHTML += "<td width='50%'></td></tr></table>";
+    pHTML += "<td width='70%'></td></tr></table>";
     pHTML += "<hr>";
     pHTML += "<div id='searchdeviceResult' style='display:none;'></div>"
     $('#selectdevicesDiv').empty().append(pHTML);
@@ -411,7 +408,6 @@ async function findDevices() {
         }
     });
     // Filling the table
-    console.log(searchResult);
     assigneddeviceInfo = $('#phprofileInfo').attr('data-assignedDevices');
     if (typeof assigneddeviceInfo === 'string' || assigneddeviceInfo instanceof String) {
         assigneddeviceInfo = JSON.parse(assigneddeviceInfo);
@@ -518,7 +514,6 @@ async function removefromProfile(deviceInfo, profileInfo) {
     if ($('#phprofileInfo').attr('data-divname') != "editProfile") {
         $('#phprofileInfo').attr('data-divname', 'removefromProfile');
     }
-    console.log($('#phprofileInfo').attr('data-divname'));
     //Obtain the already assigned switch information and remove the selected switch
     assigneddeviceInfo = JSON.parse($('#phprofileInfo').attr('data-assignedDevices'));
     $('#assignsoftwareDiv').empty();

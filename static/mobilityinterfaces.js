@@ -2,15 +2,16 @@
 
 $(".mobilityInterfaces").click(async function () {
     deviceid = $(this).attr('data-deviceid');
-    document.getElementById("mobilityInterfaces").style.display = "block";
-    document.getElementById("interfaceAction").style.display = "none";
-    document.getElementById("mobilityRoles").style.display = "none";
-    document.getElementById("roleAction").style.display = "none";
-    document.getElementById("mobilityPolicies").style.display = "none";
-    document.getElementById("policyAction").style.display = "none";
-    document.getElementById("addDeviceForm").style.display = "none";
-    document.getElementById("editDeviceForm").style.display = "none";
-    document.getElementById("liProgress").style.display = "none";
+    $('#interfaceAction').hide();
+    $('#roleAction').hide();
+    $('#policyAction').hide();
+    $('#mobilityroles').hide();
+    $('#mobilityPolicies').hide();
+    $('#mobilityInterfaces').show();
+    $('#liProgress').hide();
+    $('#addDeviceForm').hide();
+    $('#editDeviceForm').hide();
+
     // This is an async function, we have to wait until the information is returned from the Python call. 
     // Definition found in mobility.py
     interfaceInfo = await $.ajax({
@@ -41,8 +42,8 @@ $(".mobilityInterfaces").click(async function () {
     deviceInfo = JSON.parse(mobilityInfo);
     //Build the table
     interfaceHTML = "<table class='tablewithborder'>";
-    interfaceHTML += "<tr style='background-color:grey;'><td colspan='6'><font class='font13pxwhite'><center>Configured interfaces for " + deviceInfo['ipaddress'] + " (" + deviceInfo['description'] + ")</center></font></td></tr>";
-    interfaceHTML += "<trstyle='background-color:grey;'><td nowrap><font class='font13pxwhite'>VLAN ID</font></td>";
+    interfaceHTML += "<tr class='tableTitle'><td colspan='6'><font class='font13pxwhite'><center>Configured interfaces for " + deviceInfo['ipaddress'] + " (" + deviceInfo['description'] + ")</center></font></td></tr>";
+    interfaceHTML += "<tr class='tableTitle'><td nowrap><font class='font13pxwhite'>VLAN ID</font></td>";
     interfaceHTML += "<td nowrap><font class='font12pxwhite'>VLAN name</font></td>";
     interfaceHTML += "<td nowrap><font class='font12pxwhite'>IP Address (subnet mask)</font></td>";
     interfaceHTML += "<td nowrap><font class='font12pxwhite'>VRRP IP Address</font></td>";

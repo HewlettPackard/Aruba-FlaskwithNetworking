@@ -6,9 +6,34 @@ create user aruba;
 grant all on aruba.* to 'aruba'@'localhost' identified by 'ArubaRocks';
 grant drop on table aruba.* to aruba;
 
+
+DROP TABLE IF EXISTS afc;
+CREATE TABLE `afc` (
+  `id` bigint (20) UNSIGNED NOT NULL AUTO_INCREMENT,
+  `infotype` longtext NOT NULL,
+  `jsondata` longtext NOT NULL,
+  `message` longtext NOT NULL,
+  PRIMARY KEY (id)
+) ENGINE=InnoDB DEFAULT CHARSET=latin1;
+
+
+DROP TABLE IF EXISTS afcaudit;
+CREATE TABLE `afcaudit` (
+  `id` bigint (20) UNSIGNED NOT NULL AUTO_INCREMENT,
+  `uuid` text NOT NULL,
+  `record_type` longtext NOT NULL,
+  `stream_id` longtext NOT NULL,
+  `description` longtext NOT NULL,
+  `severity` longtext NOT NULL,
+  `jsondata` longtext NOT NULL,
+  `log_date` double NOT NULL,
+  PRIMARY KEY (id)
+) ENGINE=InnoDB DEFAULT CHARSET=latin1;
+
+
 DROP TABLE IF EXISTS devices;
 CREATE TABLE IF NOT EXISTS devices (
-  id bigint(20) NOT NULL AUTO_INCREMENT,
+  id bigint(20) UNSIGNED NOT NULL AUTO_INCREMENT,
   description text,
   ipaddress text,
   username text,
@@ -36,7 +61,7 @@ CREATE TABLE IF NOT EXISTS devices (
   topology int(11) UNSIGNED,
   deviceattributes mediumtext,
   PRIMARY KEY (id)
-) ENGINE=MyISAM AUTO_INCREMENT=335 DEFAULT CHARSET=latin1;
+) ENGINE=InnoDB DEFAULT CHARSET=latin1;
 
 DROP TABLE IF EXISTS dhcptracker;
 CREATE TABLE IF NOT EXISTS dhcptracker (
@@ -46,7 +71,7 @@ CREATE TABLE IF NOT EXISTS dhcptracker (
   information text NOT NULL,
   options text NOT NULL,
   PRIMARY KEY (id)
-) ENGINE=MyISAM AUTO_INCREMENT=1563 DEFAULT CHARSET=latin1;
+) ENGINE=InnoDB DEFAULT CHARSET=latin1;
 
 DROP TABLE IF EXISTS dsprofiles;
 
@@ -61,7 +86,7 @@ CREATE TABLE IF NOT EXISTS snmptracker (
   community text NOT NULL,
   information text NOT NULL,
   PRIMARY KEY (id)
-) ENGINE=MyISAM AUTO_INCREMENT=628 DEFAULT CHARSET=latin1;
+) ENGINE=InnoDB DEFAULT CHARSET=latin1;
 
 DROP TABLE IF EXISTS syslog;
 CREATE TABLE IF NOT EXISTS syslog (
@@ -72,7 +97,7 @@ CREATE TABLE IF NOT EXISTS syslog (
   severity text NOT NULL,
   information text NOT NULL,
   PRIMARY KEY (id)
-) ENGINE=MyISAM AUTO_INCREMENT=9 DEFAULT CHARSET=latin1;
+) ENGINE=InnoDB DEFAULT CHARSET=latin1;
 
 DROP TABLE IF EXISTS `sysuser`;
 CREATE TABLE IF NOT EXISTS `sysuser` (
@@ -83,7 +108,7 @@ CREATE TABLE IF NOT EXISTS `sysuser` (
   `cookie` text NOT NULL,
   `role` int NOT NULL,
   PRIMARY KEY (`id`)
-) ENGINE=MyISAM AUTO_INCREMENT=4 DEFAULT CHARSET=latin1;
+) ENGINE=InnoDB DEFAULT CHARSET=latin1;
 
 
 DROP TABLE IF EXISTS `configmgr`;
@@ -97,7 +122,7 @@ CREATE TABLE IF NOT EXISTS `configmgr` (
    `configuration` LONGTEXT NOT NULL,
    `masterbackup` BIGINT UNSIGNED NOT NULL,
     PRIMARY KEY (`id`)
-) ENGINE=MyISAM AUTO_INCREMENT=4 DEFAULT CHARSET=latin1;
+) ENGINE=InnoDB DEFAULT CHARSET=latin1;
 
 
 DROP TABLE IF EXISTS `ztpdevices`;
@@ -231,9 +256,19 @@ CREATE TABLE `deviceattributes` (
   PRIMARY KEY (`id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=latin1;
 
+DROP TABLE IF EXISTS `systemconfig`;
+CREATE TABLE `systemconfig` (
+  `id` bigint UNSIGNED NOT NULL AUTO_INCREMENT,
+  `configtype` text NOT NULL,
+  `datacontent` longtext NOT NULL,
+  PRIMARY KEY (`id`)
+) ENGINE=InnoDB DEFAULT CHARSET=latin1;
+
 INSERT INTO `sysuser` (`username`, `email`,`password`,`cookie`,`role`) VALUES
-('admin', 'admin@carius.org', '', '','1');
+('admin', 'admin@CommPass.org', '', '','1');
+
+INSERT INTO `systemconfig` (`id`, `configtype`,`datacontent`) VALUES (NULL, 'system', '{"idle_timeout": "3000", "pcap_location": "/var/www/html/bash/trace.pcap", "retain_dhcp": "15", "retain_snmp": "15", "retain_ztplog": "5", "retain_listenerlog": "5", "retain_cleanuplog": "5", "retain_topologylog": "5","retain_syslog": "15","retain_telemetrylog": "5","secret_key": "ArubaRocks!!!!!!", "appPath": "/var/www/html/", "softwareRelease": "2.3", "sysInfo": "","cxapi":"v10.08","ztppassword":"ztpinit","landingpage":"/","authsource":"local"}');
 
 INSERT INTO `sysrole` (`name`, `accessrights`, `status`) VALUES
-('Administrator', '{\"devices\": \"on\", \"switchaccess\": \"2\", \"mobilityaccess\": \"2\", \"clearpassaccess\": \"2\", \"ztp\": \"on\", \"ztptemplateaccess\": \"2\", \"ztpdeviceaccess\": \"2\",\"deviceupdates\": \"on\", \"imageaccess\": \"2\", \"upgradescheduleraccess\": \"2\",\"upgradeprofilesaccess\": \"2\", \"topology\": \"on\", \"telemetry\": \"on\", \"telemetrymonitoraccess\": \"2\", \"telemetrysubscriptionaccess\": \"2\", \"tools\": \"on\", \"dhcptrackeraccess\": \"2\", \"snmptrackeraccess\": \"2\", \"syslogtrackeraccess\": \"2\", \"anycliaccess\": \"2\", \"administration\": \"on\", \"sysuseraccess\": \"2\", \"sysroleaccess\": \"2\", \"deviceattributesaccess\": \"2\", \"sysadminaccess\": \"2\", \"servicesstatusaccess\": \"2\"}', 1);
+('Administrator', '{\"devices\": \"on\", \"switchaccess\": \"2\", \"mobilityaccess\": \"2\", \"clearpassaccess\": \"2\", \"ztp\": \"on\", \"ztptemplateaccess\": \"2\", \"ztpdeviceaccess\": \"2\",\"deviceupdates\": \"on\", \"imageaccess\": \"2\", \"upgradescheduleraccess\": \"2\",\"upgradeprofilesaccess\": \"2\", \"topology\": \"on\", \"telemetry\": \"on\", \"telemetrymonitoraccess\": \"2\", \"telemetrysubscriptionaccess\": \"2\", \"tools\": \"on\", \"dhcptrackeraccess\": \"2\", \"snmptrackeraccess\": \"2\", \"syslogtrackeraccess\": \"2\", \"anycliaccess\": \"2\", \"afc\": \"on\", \"afcfabricsaccess\": \"2\", \"afcswitchesaccess\": \"2\", \"afcintegrationsaccess\": \"2\", \"afcauditlogaccess\": \"2\", \"afcvmwareinventoryaccess\": \"2\",\"psm\": \"on\", \"psmdssaccess\": \"2\", \"psmnetworksaccess\": \"2\", \"psmsecuritypoliciesaccess\": \"2\", \"psmalertpoliciesaccess\": \"2\", \"administration\": \"on\", \"sysuseraccess\": \"2\", \"sysroleaccess\": \"2\", \"deviceattributesaccess\": \"2\", \"integrationsaccess\": \"2\", \"sysadminaccess\": \"2\", \"servicesstatusaccess\": \"2\"}', 1);
 

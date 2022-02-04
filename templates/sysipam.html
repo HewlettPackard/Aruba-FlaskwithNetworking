@@ -1,0 +1,53 @@
+﻿<!-- (C) Copyright 2021 Hewlett Packard Enterprise Development LP. -->
+{% block scripts %}
+<script src="static/scripts/jquery-1.10.2.min.js"></script>
+<link href="static/stylesheet.css" rel="stylesheet" />
+<script type="text/javascript" src="static/main.js"></script>
+<script type="text/javascript" src="static/sysconf.js"></script>
+
+{% endblock %}
+
+{% block content %}
+{% set pagename = "IPAM Integration" %}
+{% include 'navbar.html' %}
+
+
+<div id="maincontainer">
+    <table class="tablewithborder">
+        <form method="post" id="ldapintegrationform">
+            <input type="hidden" name="configtype" value="sysipam">
+            <tr class="tableTitle"><td colspan="8"><font class="font13pxwhite"><center>IPAM Integration</center></font></td></tr>
+            <tr class="tableTitle">
+                <td><font class="font12pxwhite">IPAM System</font></td>
+                <td class="whiteBG">
+                    <select name="ipamsystem" id="ipamsystem" onchange="ipamConf();">
+                        <option value="">Select</option>
+                        <option name="PHPIPAM" {% if ipamvars['ipamsystem']=="PHPIPAM" %} selected {% endif %}>PHPIPAM</option>
+                        <option name="Infoblox" {% if ipamvars['ipamsystem']=="Infoblox" %} selected {% endif %}>Infoblox</option>
+                    </select>
+                </td>
+                <td colspan="2"><font class="font12pxwhite">Activate IPAM for ZTP</font><input type="checkbox" name="ipamenabled" id="ipamenabled" value="1" {% if ipamvars['ipamenabled']=="1" %} checked {% endif %} {{disabled }} /></td>
+                <td colspan="2"><div id="ipamStatus"></div></td>
+                <td colspan="2"></td>
+            </tr>
+            <tr class="tableTitle" id="ipamtr" {% if ipamvars['ipamsystem']=="PHPIPAM" or ipamvars['ipamsystem']=="Infoblox" %} style="display:table-row;" {% else %} style="display:none;" {% endif %}>
+                <td><font class='font12pxwhite'>IPAM IP address</font></td>
+                <td class="whiteBG"><input type="text" name="ipamipaddress" id="ipamipaddress" value="{{ ipamvars['ipamipaddress'] }}"></td>
+                <td><font class='font12pxwhite'>IPAM username</font></td>
+                <td class="whiteBG"><input type='text' name='ipamuser' id="ipamuser" value='{{ ipamvars['ipamuser'] }}'></td>
+                <td><font class='font12pxwhite'>IPAM password</font></td>
+                <td class="whiteBG"><input type='password' maxlength='16' name='ipampassword' id="ipampassword" value='{{ ipamvars['ipampassword'] }}'></td>
+                <td width="15%"><div class="phpipamid" {% if ipamvars['ipamsystem']=="Infoblox" %} style="display:none;" {% endif %}><font class='font12pxwhite'>PHPIPAM APP ID</font></div></td>
+                <td class="whiteBG" width="15%"><div class="phpipamid" {% if ipamvars['ipamsystem']=="Infoblox" %} style="display:none;" {% endif %}><input type='text' name='phpipamappid' id="phpipamappid" value='{{ ipamvars['phpipamappid'] }}'></div></td>
+            </tr>
+            <tr>
+                <td colspan="8" align="center" class="whiteBG">
+                    <button name="action" value="Submit changes" class="button" id="submitChanges" {{disabled }}>Submit changes</button>
+                </td>
+            </tr>
+        </form>
+    </table>
+
+
+</div>
+    {% endblock %}

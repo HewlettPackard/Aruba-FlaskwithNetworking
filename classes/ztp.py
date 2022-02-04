@@ -172,6 +172,8 @@ def ztptemplatedbAction(formresult):
     globalsconf=classes.classes.globalvars()
     searchAction="None"
     constructQuery=""
+    templateid=int()
+    message=""
     if(bool(formresult)==True): 
         try:
             formresult['pageoffset']
@@ -179,12 +181,17 @@ def ztptemplatedbAction(formresult):
         except:
             pageoffset=0
         if(formresult['action']=="Submit template"):
-            queryStr="insert into ztptemplates (name,description,template) values ('{}','{}','{}')".format(formresult['name'],formresult['description'], formresult['template'])
-            templateid=classes.classes.sqlQuery(queryStr,"insert")
+            try:
+                queryStr="insert into ztptemplates (name,description,template) values ('{}','{}','{}')".format(formresult['name'],formresult['description'], formresult['template'])
+                templateid=classes.classes.sqlQuery(queryStr,"insert")
+            except:
+                templateid=0
         elif (formresult['action']=="Submit changes"):
-            queryStr="update ztptemplates set name='{}',description='{}',template='{}' where id='{}' "\
-            .format(formresult['name'],formresult['description'],formresult['template'],formresult['templateid'])
-            classes.classes.sqlQuery(queryStr,"update")
+            try:
+                queryStr="update ztptemplates set name='{}',description='{}',template='{}' where id='{}' ".format(formresult['name'],formresult['description'],formresult['template'],formresult['templateid'])
+                classes.classes.sqlQuery(queryStr,"update")
+            except:
+                templateid=0
         elif (formresult['action']=="Delete"):
             queryStr="delete from ztptemplates where id='{}'".format(formresult['templateid'])
             classes.classes.sqlQuery(queryStr,"delete")
@@ -213,6 +220,8 @@ def ztptemplatedbAction(formresult):
         # We have to construct the query based on the formresult information (entryperpage, totalpages, pageoffset)
         queryStr = "select * from ztptemplates " + constructQuery[:-4] + " LIMIT {} offset {}".format(entryperpage,pageoffset)
         result=classes.classes.sqlQuery(queryStr,"select")
+        if templateid==0:
+            message = "Cannot store template, check for quotes"
     else:
         queryStr="select COUNT(*) as totalentries from ztptemplates"
         navResult=classes.classes.sqlQuery(queryStr,"selectone")
@@ -220,7 +229,7 @@ def ztptemplatedbAction(formresult):
         pageoffset=0
         queryStr="select * from ztptemplates LIMIT {} offset {}".format(entryperpage,pageoffset)
         result=classes.classes.sqlQuery(queryStr,"select")
-    return {'result':result, 'totalentries': navResult['totalentries'], 'pageoffset': pageoffset, 'entryperpage': entryperpage}
+    return {'result':result,'message': message, 'totalentries': navResult['totalentries'], 'pageoffset': pageoffset, 'entryperpage': entryperpage}
 
 
 def ztpActivate(formresult):

@@ -35,8 +35,8 @@ netInfo is dictionary containing a list of variables:
             <input type="hidden" name="orig_secret_key" value="{{ sysvars['secret_key'] }}" />
             <input type="hidden" name="orig_ztppassword" value="{{ sysvars['ztppassword'] }}" />
             <input type="hidden" name="tzcity" value="{{ sysvars['timezonecity'] }}" id="tzcity" />
-            <tr style="background-color:grey;"><td colspan="6"><font class="font13pxwhite"><center>System configuration</center></font></td></tr>
-            <tr>
+            <tr class="tableTitle"><td colspan="6"><font class="font13pxwhite"><center>System configuration</center></font></td></tr>
+            <tr class="tableTitle">
                 <td><font class="font12pxwhite">Idle timeout (300-3600 seconds)</font></td>
                 <td class="whiteBG"><input type="number" name="idle_timeout" min="300" max="3600" value="{{sysvars['idle_timeout']}}" {{ disabled }} /><font class="font11px"> seconds</font></td>
                 <td><font class="font12pxwhite">Landing page</font></td>
@@ -60,7 +60,7 @@ netInfo is dictionary containing a list of variables:
                     <input type="password" maxlength="16" name="secret_key" value="{{ sysvars['secret_key'] }}" id="secret_key" {{ disabled }} />
                 </td>
             </tr>
-            <tr>
+            <tr class="tableTitle">
                 <td><font class="font12pxwhite">Purge DHCP Tracker information after</font></td>
                 <td class="whiteBG"><input type="number" name="retain_dhcp" value="{{sysvars['retain_dhcp']}}" min="1" max="15" {{disabled }} /><font class="font11px"> days</font></td>
                 <td><font class="font12pxwhite">Purge SNMP Tracker information after</font></td>
@@ -68,7 +68,7 @@ netInfo is dictionary containing a list of variables:
                 <td><font class="font12pxwhite">Purge Syslog information after</font></td>
                 <td class="whiteBG"><input type="number" name="retain_syslog" value="{{sysvars['retain_syslog']}}" min="1" max="15" {{disabled }} /><font class="font11px"> days</font></td>
             </tr>
-            <tr>
+            <tr class="tableTitle">
                 <td><font class="font12pxwhite">Purge ZTP log information after</font></td>
                 <td class="whiteBG"><input type="number" name="retain_ztplog" value="{{sysvars['retain_ztplog']}}" min="1" max="15" {{disabled }} /><font class="font11px"> days</font></td>
                 <td><font class="font12pxwhite">Purge Listener log information after</font></td>
@@ -76,7 +76,7 @@ netInfo is dictionary containing a list of variables:
                 <td><font class="font12pxwhite">Purge Topology log information after</font></td>
                 <td class="whiteBG"><input type="number" name="retain_topologylog" value="{{sysvars['retain_topologylog']}}" min="1" max="15" {{disabled }} /><font class="font11px"> days</font></td>
             </tr>
-            <tr>
+            <tr class="tableTitle">
                 <td><font class="font12pxwhite">Purge Cleanup log information after</font></td>
                 <td class="whiteBG"><input type="number" name="retain_cleanuplog" value="{{sysvars['retain_cleanuplog']}}" min="1" max="15" {{disabled }} /><font class="font11px"> days</font></td>
                 <td><font class="font12pxwhite">Purge Telemetry log information after</font></td>
@@ -84,75 +84,33 @@ netInfo is dictionary containing a list of variables:
                 <td colspan="2">&nbsp;</td>
 
             </tr>
-            <tr>
-                <td><font class="font12pxwhite">IPAM System</font></td>
-                <td class="whiteBG">
-                    <select name="ipamsystem" id="ipamsystem" onchange="ipamConf();" {{disabled }}>
-                        <option value="">Select</option>
-                        <option name="PHPIPAM" {% if sysvars['ipamsystem']=="PHPIPAM" %} selected {% endif %}>PHPIPAM</option>
-                        <option name="Infoblox" {% if sysvars['ipamsystem']=="Infoblox" %} selected {% endif %}>Infoblox</option>
-                    </select>
-                </td>
-                <td colspan="2"><font class="font12pxwhite">Activate IPAM for ZTP</font><input type="checkbox" name="ipamenabled" id="ipamenabled" value="1" {% if sysvars['ipamenabled']=="1" %} checked {% endif %} {{disabled }} /></td>
-                <td colspan="2"><div id="ipamStatus"></div></td>
-            </tr>
-
-
-            <tr id="ipamtr" {% if sysvars['ipamsystem']=="PHPIPAM" or sysvars['ipamsystem']=="Infoblox" %} style="display:table-row;" {% else %} style="display:none;" {% endif %}>
-                <td><font class='font12pxwhite'>IPAM IP address</font></td>
-                <td class="whiteBG"><input type="text" name="ipamipaddress" id="ipamipaddress" value="{{ sysvars['ipamipaddress'] }}" {{disabled }} /></td>
-                <td><font class='font12pxwhite'>IPAM username</font></td>
-                <td class="whiteBG"><input type='text' name='ipamuser' id="ipamuser" value='{{ sysvars['ipamuser'] }}' {{disabled }} /></td>
-                <td><font class='font12pxwhite'>IPAM password</font></td>
-                <td class="whiteBG"><input type='password' maxlength='16' name='ipampassword' id="ipampassword" value='{{ sysvars['ipampassword'] }}' {{disabled }} /></td>
-            </tr>
-
-            <tr id="phpipamtr" {% if sysvars['ipamsystem']=="PHPIPAM" %} style="display:table-row;" {% else %} style="display:none;" {% endif %}>
-                <td><font class='font12pxwhite'>PHPIPAM APP ID</font></td>
-                <td><input type='text' name='phpipamappid' id="phpipamappid" value='{{ sysvars['phpipamappid'] }}' {{disabled }} /></td>
-                <td><font class='font12pxwhite'>Token type</font></td>
-                <td>
-                    <select name='phpipamauth' id='phpipamauth' {{disabled }}>
-                        <option value='http' {% if sysvars['phpipamauth']=='http' %} selected {% endif %}>Token</option>
-                        <option value='https' {% if sysvars['phpipamauth']=='https' %} selected {% endif %}>SSL</option>
-                    </select>
-                </td>
-                <td colspan='2'></td>
-            </tr>
-            <tr>
+            <tr class="tableTitle">
                 <td><font class='font12pxwhite'>ZTP user password</font></td>
                 <td class="whiteBG"><input type='password' name='ztppassword' id="ztppassword" value='{{ sysvars['ztppassword'] }}' {{disabled }} /></td>
                 <td><font class='font12pxwhite'>Telemetry source IP address</font></td>
-                <td class="whiteBG"><input type='text' name='telemetrysource' id="telemetrysource" value='{{ sysvars['telemetrysource'] }}' {{disabled }} /></tdclass="whiteBG">
+                <td class="whiteBG"><input type='text' name='telemetrysource' id="telemetrysource" value='{{ sysvars['telemetrysource'] }}' {{disabled }} /></td>
+                <td colspan="2"></td>
+
+            </tr>
+            <tr id="ldapconf" class="tableTitle">
                 <td><font class='font12pxwhite'>Authentication source</font></td>
                 <td class="whiteBG">
-                    <select name="authsource" id="authsource" onchange="authsourceConf();" {{disabled }}>
+                    <select name="authsource" id="authsource">
                         <option value="local" {% if sysvars['authsource']=="local" %} selected {% endif %}>Local</option>
                         <option value="ldap" {% if sysvars['authsource']=="ldap" %} selected {% endif %}>LDAP</option>
                     </select>
                 </td>
-            </tr>
-            <tr id="ldapconf" {% if sysvars['authsource']=="ldap" %} style="display:table-row;" {% else %} style="display:none;" {% endif %}>
-                <td><font class='font12pxwhite'>LDAP Source IP address</font></td>
-                <td class="whiteBG"><input type='text' name='ldapsource' id="ldapsource" value='{{ sysvars['ldapsource'] }}' {{disabled }} /></td>
-                <td><font class='font12pxwhite'>Base DN</font></td>
-                <td class="whiteBG"><input type='text' name='basedn' id="basedn" value='{{ sysvars['basedn'] }}' {{disabled }} /></td>
-                <td><font class="font12pxwhite">Local fallback</font><input type="checkbox" name="localfallback" id="localfallback" value="1" {% if sysvars['localfallback']=="1" %} checked {% endif %} {{disabled }} /></td>
-                <td>
+                <td colspan="2"><font class="font12pxwhite">Local fallback</font><input type="checkbox" name="localfallback" id="localfallback" value="1" {% if sysvars['localfallback']=="1" %} checked {% endif %} {{disabled }} /></td>
+                <td><font class='font12pxwhite'>ArubaOS-CX API version</font></td>
+                <td class="whiteBG">
+                    <select name="cxapi" id="cxapi">
+                        <option value="v10.04" {% if sysvars['cxapi']=="v10.04" %} selected {% endif %}>Version 10.04</option>
+                        <option value="v10.08" {% if sysvars['cxapi']=="v10.08" %} selected {% endif %}>Version 10.08</option>
+                        <option value="v10.09" {% if sysvars['cxapi']=="v10.09" %} selected {% endif %}>Version 10.09</option>
+                    </select>
                 </td>
-            </tr>
-            <tr id="ldapconfauth" {% if sysvars['authsource']=="ldap" %} style="display:table-row;" {% else %} style="display:none;" {% endif %}>
-                <td><font class='font12pxwhite'>LDAP username</font></td>
-                <td class="whiteBG"><input type='text' name='ldapuser' id="ldapuser" value='{{ sysvars['ldapuser'] }}' /></td>
-                <td><font class='font12pxwhite'>LDAP password</font></td>
-                <td class="whiteBG"><input type='password' name='ldappassword' id="ldappassword" value='{{ sysvars['ldappassword'] }}' /></td>
-                <td>
-                    <button name="testldap" value="testldap" type="button" id="testldap">Verify LDAP connection</button>
-                </td>
-                <td><div id="ldapstatus"></div></td>
-            </tr>
-
-            <tr>
+            </tr>  
+            <tr class="tableTitle">
                 <td><font class="font12pxwhite">NTP server</font></td>
                 <td class="whiteBG">
                     <input type='text' name='ntpserver' id="ntpserver" value='{{ sysvars['ntpserver'] }}' />
@@ -172,32 +130,7 @@ netInfo is dictionary containing a list of variables:
                             <option id="selecttzcity" value="">Select city</option>
                         </select>
                 </td>
-            </tr>
-
-
-            <tr>
-                <td><font class='font12pxwhite'>Aruba Central API URL</font></td>
-                <td class="whiteBG"><input type='text' name='centralurl' id="centralurl" value='{{ sysvars['centralurl'] }}' {{disabled }} /></td>
-                <td><font class='font12pxwhite'>Aruba Central user name</font></td>
-                <td class="whiteBG"><input type='text' name='centralusername' id="centralusername" value='{{ sysvars['centralusername'] }}' {{disabled }} /></td>
-                <td><font class="font12pxwhite">Aruba Central user password</font></td>
-                <td class="whiteBG"><input type="password" name="centraluserpassword" id="centraluserpassword" value='{{ sysvars['centraluserpassword'] }}' {{disabled }} /></td>
-            </tr>
-            <tr>
-                <td><font class='font12pxwhite'>Aruba Central client id</font></td>
-                <td class="whiteBG"><input type='text' name='centralclientid' id="centralclientid" value='{{ sysvars['centralclientid'] }}' {{disabled }} /></td>
-                <td><font class="font12pxwhite">Aruba Central client secret</font></td>
-                <td class="whiteBG"><input type="password" name="centralclientsecret" id="centralclientsecret" value='{{ sysvars['centralclientsecret'] }}' {{disabled }} /></td>
-                <td><font class='font12pxwhite'>Aruba Central customer id</font></td>
-                <td class="whiteBG"><input type='text' name='centralcustomerid' id="centralcustomerid" value='{{ sysvars['centralcustomerid'] }}' {{disabled }} /></td>
-            </tr>
-            <tr>
-                <td><font class='font12pxwhite'>Aruba Central authentication status: </font></td>
-                <td><div id="arubacentralauthenticationstatus"></div></td>
-                <td><font class='font12pxwhite'>Aruba Central authorization status: </font></td>
-                <td><div id="arubacentralauthorizationstatus"></div></td>
-                <td colspan="2"><button name="arubacentralauthstatus" value="arubacentralauthstatus" type="button" id="arubacentralauthstatus">Verify Aruba Central connection</button></td>
-            </tr>
+            </tr>          
             <tr>
                 <td colspan="6" align="center" class="whiteBG">
                     <button name="action" value="Submit changes" class="button" id="submitChanges" {{disabled }}>Submit changes</button>
@@ -207,9 +140,9 @@ netInfo is dictionary containing a list of variables:
     </table>
 
     <table class="tablewithborder">
-        <tr style="background-color:grey;"><td colspan="4"><font class="font13pxwhite"><center>System information</center></font></td></tr>
-        <tr>
-            <td><font class="font12pxwhite">Carius Software version</font></td>
+        <tr class="tableTitle"><td colspan="4"><font class="font13pxwhite"><center>System information</center></font></td></tr>
+        <tr class="tableTitle">
+            <td><font class="font12pxwhite">CommPass Software version</font></td>
             <td class="whiteBG"><font class="font11px">{{sysvars.softwareRelease}}</font></td>
             <td><font class="font12pxwhite">System time</font></td>
             <td class="whiteBG">
@@ -218,7 +151,7 @@ netInfo is dictionary containing a list of variables:
                 </font>
             </td>
         </tr>
-        <tr>
+        <tr class="tableTitle">
             <td><font class="font12pxwhite">System platform</font></td>
             <td class="whiteBG"><font class="font11px">{{sysvars.sysInfo.platform}}</font></td>
             <td><font class="font12pxwhite">Hostname</font></td>
@@ -231,7 +164,7 @@ netInfo is dictionary containing a list of variables:
 
         {% for netItems in sysvars.netInfo %}
 
-        <tr>
+        <tr class="tableTitle">
             <td><font class="font12pxwhite">Interface name</font></td>
             <td class="whiteBG"><font class="font11px">{{netItems}}</font></td>
             <td><font class="font12pxwhite">MAC address</font></td>

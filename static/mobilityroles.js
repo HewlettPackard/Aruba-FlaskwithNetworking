@@ -2,10 +2,12 @@
 
 $(".mobilityRoles").click(async function () {
     deviceid = $(this).attr('data-deviceid');
-    document.getElementById("mobilityRoles").style.display = "block";
-    document.getElementById("mobilityPolicies").style.display = "none";
-    document.getElementById("mobilityInterfaces").style.display = "none";
-    document.getElementById("liProgress").style.display = "none";
+    $('#mobilityroles').show();
+    $('#mobilityPolicies').hide();
+    $('#mobilityInterfaces').hide();
+    $('#liProgress').hide();
+    $('#addDeviceForm').hide();
+    $('#editDeviceForm').hide();
     // This is an async function, we have to wait until the information is returned from the Python call. 
     // Definition found in mobility.py
     roleInfo = await $.ajax({
@@ -36,8 +38,8 @@ $(".mobilityRoles").click(async function () {
 
     //Build the table
     roleHTML = "<table class='tablewithborder'>";
-    roleHTML += "<tr><td colspan='2'><font class='font13pxwhite'><center>Configured roles for " + deviceInfo['ipaddress'] + " (" + deviceInfo['description'] + ")</center></font></td></tr>";
-    roleHTML += "<tr><td nowrap><font class='font13pxwhite'>Role name</font></td>";
+    roleHTML += "<tr class='tableTitle'><td colspan='2'><font class='font13pxwhite'><center>Configured roles for " + deviceInfo['ipaddress'] + " (" + deviceInfo['description'] + ")</center></font></td></tr>";
+    roleHTML += "<tr class='tableTitle'><td nowrap><font class='font13pxwhite'>Role name</font></td>";
     roleHTML += "<td nowrap><font class='font13pxwhite'>ACL's</font></td></tr>";
     for (counter = 0; counter < roleInfo.length; counter++) {
         roleHTML += "<td class='whiteBG' nowrap><font class='font11px'>" + roleInfo[counter]['rname']+ "</font></td><td class='whiteBG'><font class='font11px'>";

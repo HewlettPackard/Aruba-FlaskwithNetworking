@@ -1,0 +1,39 @@
+﻿<!-- (C) Copyright 2021 Hewlett Packard Enterprise Development LP. -->
+{% block scripts %}
+<script src="static/scripts/jquery-1.10.2.min.js"></script>
+<link href="static/stylesheet.css" rel="stylesheet" />
+<script type="text/javascript" src="static/main.js"></script>
+<script type="text/javascript" src="static/sysconf.js"></script>
+
+{% endblock %}
+
+{% block content %}
+{% set pagename = "Pensando PSM Integration" %}
+{% include 'navbar.html' %}
+
+
+<div id="maincontainer">
+    <table class="tablewithborder">
+        <form method="post" id="ldapintegrationform">
+            <input type="hidden" name="configtype" value="syspsm">
+            <input type="hidden" name="psmtoken" id="psmtoken" value="{{ psmvars['psmtoken'] }}">
+            <tr class="tableTitle"><td colspan="7"><font class="font13pxwhite"><center>Pensando PSM Integration</center></font></td></tr>
+            <tr id="psmtr" class="tableTitle">
+                <td><font class='font12pxwhite'>PSM IP address</font></td>
+                <td class="whiteBG" width="25%"><input type="text" name="psmipaddress" id="psmipaddress" value="{{ psmvars['psmipaddress'] }}" size="50"></td>
+                <td><font class='font12pxwhite'>PSM username</font></td>
+                <td class="whiteBG"><input type='text' name='psmusername' id="psmusername" value='{{ psmvars['psmusername'] }}'></td>
+                <td><font class='font12pxwhite'>PSM password</font></td>
+                <td class="whiteBG"><input type='password' maxlength='16' name='psmpassword' id="psmpassword" value='{{ psmvars['psmpassword'] }}'></td>
+                <td width="35%" nowrap><div id="psmstatus"><font class='font12pxwhite'>Status: </font></div></td>
+            </tr>
+            <tr>
+                <td colspan="7" align="center" class="whiteBG">
+                    <button name="action" value="Submit changes" class="button" id="submitChanges" {{disabled }}>Submit changes</button>
+                </td>
+            </tr>
+        </form>
+    </table>
+</div>
+
+{% endblock %}

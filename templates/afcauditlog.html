@@ -1,0 +1,110 @@
+<!-- (C) Copyright 2021 Hewlett Packard Enterprise Development LP. -->
+{% block scripts %}
+<script src="static/scripts/jquery-1.10.2.min.js"></script>
+<link href="static/stylesheet.css" rel="stylesheet" />
+<script type="text/javascript" src="static/main.js"></script>
+<script type="text/javascript" src="static/afc.js"></script>
+<script type="text/javascript" src="static/afcaudit.js"></script>
+{% endblock %}
+
+{% block content %}
+{% set pagename = "AFC audit log" %}
+
+
+{% if totalentries|int % entryperpage|int == 0 %}
+{% set totalpages=(totalentries|int/entryperpage|int)|int %}
+{% else %}
+{% set totalpages=(totalentries|int/entryperpage|int)|int +1 %}
+{% endif %}
+
+
+{% include 'navbar.html' %}
+
+
+<div id="updateAuditlog"></div>
+
+<div id="maincontainer">
+    <table class="tablenoborder">
+        <form method="post">
+            <tr>
+                <td align="right">
+                    <div id="navPage">
+                        <font class="font11pxgrey">
+                            Show <select name="entryperpage" id="entryperpage" onchange="navigation();">
+                                <option value="10">10</option>
+                                <option value="25" selected>25</option>
+                                <option value="50"}>50</option>
+                                <option value="100">100</option>
+                            </select> entries per page (page <select name="pageoffset" id="pageoffset">
+                                {% for i in  range(totalpages) %}
+                                <option value="{{ i+1 }}">{{ i+1 }}</option>
+                                {% endfor %}
+                            </select> of <span id="totalpagesph">{{ totalpages }}</span> pages)
+                        </font>
+                    </div>
+                </td>
+            </tr>
+    </table>
+    <div>
+        <table class="tablenoborder">
+            <input name='currentpageoffset' id="currentpageoffset" type='hidden' value="{{pageoffset}}" />
+            <input name='currenttotalentries' id="currenttotalentries" type='hidden' value="{{totalentries}}" />
+            <input name="totalpages" type="hidden" value="{{ totalpages }}" />
+            <input name='currententryperpage' id="currententryperpage" type='hidden' value="{{ entryperpage }}" />
+            <input name="action" type="hidden" value="navigation" />
+            <tr>
+                <td width="2%"><font class="font13pxgrey">Item</font></td>
+                <td><font class="font13pxgrey">Record type</font></td>
+                <td><font class="font13pxgrey">Stream ID</font></td>
+                <td><font class="font13pxgrey">Description</font></td>
+                <td><font class="font13pxgrey">Severity</font></td>
+                <td><font class="font13pxgrey">Log time</font></td>
+                <td><font class="font13pxgrey">Details</font></td>
+                <td></td>
+            </tr>
+            <tr class="tableTitle">
+                <td>&nbsp;</td>
+                <td align="left" valign="top">
+                    <select name="searchRecordtype" id="searchRecordtype" onchange="changeSearch();">
+                        <option value="">Select</option>
+                        <option value="ALARM" {% if searchRecordtype=="ALARM" %} selected {% endif %}>Alarm</option>
+                        <option value="EVENT" {% if searchRecordtype=="EVENT" %} selected {% endif %}>Event</option>
+                    </select>
+                </td>
+                <td align="left" valign="top">
+                    <select name="searchStreamid" id="searchStreamid" onchange="changeSearch();">
+                        <option value="">Select</option>
+                        <option value="general_events" {% if searchStreamid=="general_events" %} selected {% endif %}>General events</option>
+                        <option value="fabric_events" {% if searchStreamid=="fabric_events" %} selected {% endif %}>Fabric events</option>
+                        <option value="audit_events" {% if searchStreamid=="audit_events" %} selected {% endif %}>Audit events</option>
+                    </select>
+                </td>
+                <td align="left" valign="top">
+                    <input type="text" name="searchDescription" id="searchDescription" value="{{ searchDescription }}" size="50">
+                </td>
+                <td align="left" valign="top">
+                    <select name="searchSeverity" id="searchSeverity" onchange="changeSearch();">
+                        <option value="">Select</option>
+                        <option value="INFORMATIONAL" {% if searchSeverity=="INFORMATIONAL" %} selected {% endif %}>Informational</option>
+                        <option value="WARNING" {% if searchSeverity=="WARNING" %} selected {% endif %}>Warning</option>
+                        <option value="ALERT" {% if searchSeverity=="ALERT" %} selected {% endif %}>Alert</option>
+                        <option value="CRITICAL" {% if searchSeverity=="CRITICAL" %} selected {% endif %}>Critical</option>
+                    </select>
+                </td>
+                <td></td>
+                <td></td>
+
+            </tr>
+            </form>
+            <tbody id="auditContent">
+            </tbody>
+
+        </table>
+    </div>
+
+    <div id="showdaTooltip" type="display:none;"></div>
+    <div id="showauditItem" type="display:none;"></div>
+    <div id="selectedItem" type="display:none;" data-id=""></div>
+
+</div>
+{% endblock %}

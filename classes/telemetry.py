@@ -131,8 +131,8 @@ def checkSubscriptions(deviceid):
             totaldbsubs.append(items['resource'])
     # First check if the cookie is still ok
     isOnline=classes.classes.checkcxCookie(deviceid)
-    if isOnline==100:
-        response={"devicestatus":"Offline","swsubs":0,"activedbsubs":len(activedbsubs),"totaldbsubs":len(totaldbsubs),"subscriber":"Not active"}
+    if not "Cookie" in isOnline:
+        response={"devicestatus":"Offline","ipaddress": deviceinfo['ipaddress'],"swsubs":0,"activedbsubs":len(activedbsubs),"totaldbsubs":len(totaldbsubs),"subscriber":"Not active"}
         return json.dumps(response)
     else:
         swsubs=[]
@@ -150,5 +150,5 @@ def checkSubscriptions(deviceid):
             for items in swsubscriptions[0]['notification_subscriptions']:
                 swsubs.append(swsubscriptions[0]['notification_subscriptions'][items]['resource'][0])
         # Construct the response
-        response={"devicestatus":"Online","swsubs":len(swsubs),"activedbsubs":len(activedbsubs),"totaldbsubs":len(totaldbsubs),"subscriber":deviceinfo['subscriber']}
+        response={"devicestatus":"Online","ipaddress":deviceinfo['ipaddress'],"swsubs":len(swsubs),"activedbsubs":len(activedbsubs),"totaldbsubs":len(totaldbsubs),"subscriber":deviceinfo['subscriber']}
         return json.dumps(response)

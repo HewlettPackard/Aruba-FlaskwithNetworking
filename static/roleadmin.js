@@ -2,8 +2,8 @@
 
 $(document).on("click", "#addRole", function () {
     document.getElementById("Rolediv").style.display = "block";
-    var menuitems = ["devices", "ztp", "deviceupdates", "topology", "telemetry", "tools", "administration"];
-    var accessitems = ["switch", "mobility", "clearpass", "ztptemplate", "ztpdevice", "image", "upgradescheduler", "upgradeprofiles", "telemetrymonitor", "telemetrysubscription", "dhcptracker", "snmptracker", "syslogtracker", "anycli", "sysuser", "sysrole", "deviceattributes", "sysadmin", "servicesstatus"];
+    var menuitems = ["devices", "ztp", "deviceupdates", "topology", "telemetry", "tools", "psm", "afc", "administration"];
+    var accessitems = ["switch", "mobility", "clearpass", "ztptemplate", "ztpdevice", "image", "upgradescheduler", "upgradeprofiles", "telemetrymonitor", "telemetrysubscription", "dhcptracker", "snmptracker", "syslogtracker", "anycli", "afcfabrics", "afcswitches", "afcintegrations", "afcauditlog", "afcvmwareinventory","psmdss","psmnetworks","psmsecuritypolicies","psmalertpolicies", "sysuser", "sysrole", "integrations","deviceattributes", "sysadmin", "servicesstatus"];
     document.getElementById("name").value = "";
     for (i = 0; i < menuitems.length; i++) {
         document.getElementById(menuitems[i]).checked = false;
@@ -28,8 +28,8 @@ $(document).on("click", ".editRole", async function () {
         success: function (response) {
             response = JSON.parse(response);
             document.getElementById("name").value=response["name"];
-            var menuitems = ["devices", "ztp", "deviceupdates", "topology", "telemetry", "tools", "administration"];
-            var accessitems = ["switch", "mobility", "clearpass", "ztptemplate", "ztpdevice", "image", "upgradescheduler", "upgradeprofiles","telemetrymonitor","telemetrysubscription","dhcptracker","snmptracker","syslogtracker","anycli","sysuser","sysrole","deviceattributes", "sysadmin","servicesstatus"];
+            var menuitems = ["devices", "ztp", "deviceupdates", "topology", "telemetry", "tools", "psm", "afc", "administration"];
+            var accessitems = ["switch", "mobility", "clearpass", "ztptemplate", "ztpdevice", "image", "upgradescheduler", "upgradeprofiles", "telemetrymonitor", "telemetrysubscription", "dhcptracker", "snmptracker", "syslogtracker", "anycli", "afcfabrics", "afcswitches", "afcintegrations", "afcauditlog", "afcvmwareinventory","psmdss","psmnetworks","psmsecuritypolicies","psmalertpolicies", "sysuser","sysrole","integrations","deviceattributes", "sysadmin","servicesstatus"];
             accessrights = JSON.parse(response['accessrights']);
             for (i = 0; i < menuitems.length; i++) {
                 if (menuitems[i] in accessrights) {

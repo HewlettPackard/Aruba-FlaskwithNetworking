@@ -1,0 +1,122 @@
+<!-- (C) Copyright 2021 Hewlett Packard Enterprise Development LP. -->
+{% block scripts %}
+<script src="static/scripts/jquery-1.10.2.min.js"></script>
+<link href="static/stylesheet.css" rel="stylesheet" />
+<script type="text/javascript" src="static/main.js"></script>
+<script type="text/javascript" src="static/afc.js"></script>
+<script type="text/javascript" src="static/afcswitches.js"></script>
+{% endblock %}
+
+{% block content %}
+{% set pagename = "AFC switches" %}
+
+{% if totalentries|int % entryperpage|int == 0 %}
+{% set totalpages=(totalentries|int/entryperpage|int)|int %}
+{% else %}
+{% set totalpages=(totalentries|int/entryperpage|int)|int +1 %}
+{% endif %}
+
+{% macro sentence_case(text) %}
+{{ text[0]|upper}}{{text[1:] }}
+{% endmacro %}
+
+{% include 'navbar.html' %}
+
+
+<div id="maincontainer">
+    <form method="post" name="afcswitchForm" id="afcswitchForm">
+        <table class="tablenoborder" id="afcswitchTable">
+            <tr>
+                <td width="60%"></td>
+                <td width="20%" align="right">
+                    <font class="font11pxgrey">
+                        Select fabric <select name="afcfabric" onchange="this.form.submit()">
+                            <option value="allfabrics" {% if afcfabric=="allfabrics" %} selected {% endif %}>All fabrics</option>
+                            <option value="unassigned" {% if afcfabric=="unassigned" %} selected {% endif %}>Unassigned</option>
+                            {% for items in afcfabrics %}
+                            <option value="{{ items['uuid'] }}" {% if items['uuid']==afcfabric %} selected {% endif %}>{{ items['name'] }}</option>
+                            {% endfor %}
+                        </select>
+                    </font>
+                </td>
+                <td width="20%" align="right">
+                    <font class="font11pxgrey">
+                        Show <select name="entryperpage" onchange="this.form.submit()">
+                            <option value="5" {% if entryperpage==5 %} selected {% endif %}>5</option>
+                            <option value="10" {% if entryperpage==10 or entryperpage is not defined %} selected {% endif %}>10</option>
+                            <option value="25" {% if entryperpage==25 %} selected {% endif %}>25</option>
+                            <option value="50" {% if entryperpage==50 %} selected {% endif %}>50</option>
+                            <option value="100" {% if entryperpage==100 %} selected {% endif %}>100</option>
+                        </select> entries per page (page <select name="pageoffset" onchange="this.form.submit()">
+                            {% for i in  range(totalpages) %}
+                            <option value="{{ i+1 }}" {% if pageoffset==(i+1) %}selected{% endif %}>{{ i+1 }}</option>
+                            {% endfor %}
+                        </select> of {{ totalpages }} pages)
+                    </font>
+                </td>
+            </tr>
+        </table>
+    </form>
+
+    <table class="tablenoborder">
+        <tr>
+            <td width="2%"><font class="font13pxgrey">Item</font></td>
+            <td width="14%"><font class="font13pxgrey">Name</font></td>
+            <td widht="30%"><font class="font13pxgrey">Description</font></td>
+            <td width="8%"><font class="font13pxgrey">Fabric</font></td>
+            <td width="8%"><font class="font13pxgrey">MAC address</font></td>
+            <td width="8%"><font class="font13pxgrey">IPv4 address</font></td>
+            <td width="8%"><font class="font13pxgrey">IPv6 address</font></td>
+            <td width="8%"><font class="font13pxgrey">Software version</font></td>
+            <td width="8%"><font class="font13pxgrey">Role</font></td>
+            <td width="5%" nowrap><center><font class="font13pxgrey">Information</font></center></td>
+            <td></td>
+        </tr>
+        {% if afcswitches |length %}
+        <tbody>
+
+
+            {% if afcswitches[0]['message'] is not defined %}
+            {% for info in afcswitches %}
+            <tr id="tr{{ info['uuid'] }}" class="trswitch" data-serial_number="{{ info['uuid'] }}">
+                <td><font class="font10px"><div class="afcswitchindex" id="afcswitchindex{{ loop.index }}" data-id="{{ loop.index }}">{{ loop.index }}</div></font></td>
+                <td><font class="font10px"><div id="afcname{{ info['uuid'] }}">{{ info['name'] }}</div></font></td>
+                <td nowrap><font class="font10px"><div id="afcdescription{{ info['uuid'] }}">{{ info['description'] }}</div></font></td>
+                <td nowrap>
+                    <font class="font10px">
+                        <div id="afcfabricclass{{ fabricname }}">
+                            {% for fabric in afcfabrics %}
+                            {% if info['fabric_uuid'] ==fabric['uuid'] %}
+                            {{ fabric['name'] }}
+                            {% endif %}
+                            {% endfor %}
+                        </div>
+                    </font>
+                </td>
+                <td nowrap><font class="font10px"><div id="afcmacaddress{{ info['uuid'] }}">{{ info['mac_address'] }}</div></font></td>
+                <td nowrap><font class="font10px"><div id="afcipaddress{{ info['uuid'] }}">{{ info['ip_address'] }}</div></font></td>
+                <td nowrap><font class="font10px"><div id="afcipaddress{{ info['uuid'] }}">{{ info['ip_address_v6'] }}</div></font></td>
+                <td nowrap><font class="font10px"><div id="afcswversion{{ info['uuid'] }}">{{ info['sw_version'] }}</div></font></td>
+                <td nowrap><font class="font10px"><div id="afcrole{{ info['uuid'] }}">{{ sentence_case(info['role']) }}</div></font></td>
+                <td nowrap><center><button type="button" class="transparent-button switchInfo" data-uuid="{{info['uuid']}}" onclick="highlightRow(this);"><img src="static/images/info.svg" class="showtitleTooltip showswitchInfo" width="12" height="12" data-title="Information"></button></center></td>
+            </tr>
+            {% endfor %}
+            {% endif %}
+        </tbody>
+        {% endif %}
+    </table>
+    <div id="showdaTooltip" type="display:none;"></div>
+    <div id="switchlistHTML"></div>
+
+    <div class="afcgrid-container">
+        <div class="afcswitchinfo">
+            <div id="afcswitchInfo"></div>
+        </div>
+        <div class="afcportinfo">
+            <div id="afcportInfo"></div>
+        </div>
+    </div>
+    <div class="afcStatus"></div>
+
+</div>
+{% endblock %}

@@ -1,0 +1,96 @@
+<!-- (C) Copyright 2021 Hewlett Packard Enterprise Development LP. -->
+{% block scripts %}
+<script src="static/scripts/jquery-1.10.2.min.js"></script>
+<link href="static/stylesheet.css" rel="stylesheet" />
+<script type="text/javascript" src="static/main.js"></script>
+<script type="text/javascript" src="static/scripts/d3.v4.js"></script>
+<script type="text/javascript" src="static/afc.js"></script>
+<script type="text/javascript" src="static/afcvmwareinventory.js"></script>
+
+{% endblock %}
+
+{% block content %}
+{% set pagename = "AFC VMWare inventory" %}
+
+{% macro sentence_case(text) %}
+{{ text[0]|upper}}{{text[1:] }}
+{% endmacro %}
+
+{% include 'navbar.html' %}
+
+
+
+<div id="maincontainer">
+    {% if afcvmwareinventory is string %}
+    {% set inventoryInfo=converttoJSON(afcvmwareinventory) %}
+    {% else %}
+    {% set inventoryInfo=afcvmwareinventory %}
+    {% endif %}
+    {% set message=inventoryInfo['message'] %}
+    {% if "message" in inventoryInfo %}
+    {% endif %}
+    {% if inventoryInfo['jsondata'] is string %}
+    {% set invInfo=converttoJSON(inventoryInfo['jsondata']) %}
+    {% endif %}
+    {% if invInfo is defined and invInfo|length > 0 %}
+    <div class="afcgrid-container">
+        <div class="afcvminfo">
+            <table class="tablewithborder table-vmHosts">
+                <tbody>
+                    {% for info in invInfo %}
+                    <tr class="tableTitle">
+                        <td colspan="6"><font class="font13pxwhite"><center>Host name: {{ info['vsphere'] }}</center></font></td>
+                        <td width="1%" align="right">
+                            <button type="button" class="expandcollapseTable transparent-button" data-uuid="{{ info['vSphere_uuid'] }}-{{ info['vsphere']|replace('.', '') }}" data-collapse="0"><img src="static/images/caret-down.svg" width="15" height="15" data-title="Expand" class="showtitleTooltip" id="expandcollapse-{{ info['vSphere_uuid']}}-{{ info['vsphere']|replace('.', '') }}"></button>
+                        </td>
+                    </tr>
+                    <tr class="tableTitle tr-{{ info['vSphere_uuid'] }}-{{ info['vsphere']|replace('.', '') }}" style="display:none;">
+                        <td width="40%"><center><font class="font12pxwhite">Virtual machines</font></center></td>
+                        <td width="10%" nowrap><center><font class="font12pxwhite">VM information</font></center></td>
+                        <td width="10%"><center><font class="font12pxwhite">Port group</font></center></td>
+                        <td width="10%"><center><font class="font12pxwhite">vSwitch</font></center></td>
+                        <td width="10%"><center><font class="font12pxwhite">VMWare NIC</font></center></td>
+                        <td width="10%"><center><font class="font12pxwhite">Aruba switch</font></center></td>
+                        <td width="10%" colspan="2"><center><font class="font12pxwhite">Topology</font></center></td>
+                    </tr>
+                    {% for vmitems in info['hosts'] %}
+                    <tr style="display:none" class="tr-{{ info['vSphere_uuid'] }}-{{ info['vsphere']|replace('.', '') }}">
+                        <td><font class="font10px">{{ vmitems['name'] }}</font></td>
+                        <td><font class="font10px"><center><img src="static/images/tag.svg" class="showattributeTooltip" width="12" height="12" id="vmInfo-{{vmitems['uuid']}}"></font></center></font></td>
+                        <td><font class="font10px"><center><img src="static/images/tag.svg" class="showattributeTooltip" width="12" height="12" id="portgroupInfo-{{vmitems['uuid']}}"></font></center></font></td>
+                        <td><font class="font10px"><center><img src="static/images/tag.svg" class="showattributeTooltip" width="12" height="12" id="vswitchInfo-{{vmitems['uuid']}}"></font></center></font></td>
+                        <td><font class="font10px"><center><img src="static/images/tag.svg" class="showattributeTooltip" width="12" height="12" id="vnicInfo-{{vmitems['uuid']}}"></font></center></font></td>
+                        <td><font class="font10px"><center><img src="static/images/tag.svg" class="showattributeTooltip" width="12" height="12" id="arubaswitchInfo-{{vmitems['uuid']}}"></font></center></font></td>
+                        <td colspan="2"><center><button type="button" id="topo-{{vmitems['uuid']}}" class="transparent-button virtualTopo" onclick="highlightRow(this);" data-info="" data-vmConstruct="" data-uuid="{{vmitems['uuid']}}"><img src="static/images/topology.svg" class="showattributeTooltip" data-info="" width="15" height="15" id="showTopology{{ vmitems['name'] }}"></button></center></font></td>
+                    </tr>
+                    {% endfor %}
+                    <tr><td colspan="7" style="height:10px;"></td></tr>
+                    {% endfor %}
+
+                </tbody>
+            </table>
+            <div id="showdaTooltip" type="display:none;"></div>
+        </div>
+        <div class="afcvmtopoinfo">
+            <table class="tablewithborder">
+                <tr class="tableTitle"><td><font class="font13pxwhite"><center><div id="topoviewTitle">Topology view</div></center></font></td></tr>
+                <tr>
+                    <td class="whiteBG"><div id="virtualTopo" style="height: 600px; overflow:hidden;" data-uuid=""></div></td>
+                </tr>
+            </table>
+        </div>
+    </div>
+    {% else %}
+    {% if message %}
+    <script>showmessageBar('{{ message }}');</script>
+    {% endif %}
+    {% endif %}
+
+
+
+</div>
+
+
+<div class="afcvmwareinventoryStatus"></div>
+<div class="afcStatus"></div>
+{% endblock %}

@@ -79,7 +79,8 @@ def ztptemplate ():
         result=classes.ztptemplatedbAction(formresult)
         if authOK['hasaccess']==True:
             authOK['hasaccess']="true"
-            return render_template("ztptemplate.html",result=result['result'],formresult=formresult, totalentries=int(result['totalentries']),pageoffset=int(result['pageoffset']),entryperpage=int(result['entryperpage']), authOK=authOK, sysvars=sysvars)
+            print(result['message'])
+            return render_template("ztptemplate.html",result=result['result'], message=result['message'], formresult=formresult, totalentries=int(result['totalentries']),pageoffset=int(result['pageoffset']),entryperpage=int(result['entryperpage']), authOK=authOK, sysvars=sysvars)
         else:
             return render_template("noaccess.html",authOK=authOK, sysvars=sysvars)
     else:

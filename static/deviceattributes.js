@@ -1,6 +1,10 @@
 // (C) Copyright 2021 Hewlett Packard Enterprise Development LP.
 
 $(document).on("click", "#adddeviceAttribute", function () {
+    $('#name').val("");
+    $('#attributelist').val("");
+    $('#attributetype').val("");
+    document.getElementById("attributelist").style.display = "none";
     document.getElementById("deviceattributeDiv").style.display = "block";
     document.getElementById("addoredit").innerHTML = "Add";
     document.getElementById("submitorchange").innerHTML = "<input type='submit' name='action' value='Submit device attribute' class='button' />";

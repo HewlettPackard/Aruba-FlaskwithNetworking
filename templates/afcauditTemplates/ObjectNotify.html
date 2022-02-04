@@ -1,0 +1,101 @@
+<!-- (C) Copyright 2021 Hewlett Packard Enterprise Development LP. -->
+{% block scripts %}
+<script type="text/javascript">
+    var url = "static/main.js";
+    $.getScript(url);
+</script>
+{% endblock %}
+{% block content %}
+
+
+{% set eventInfo=auditInfo['jsondata'] %}
+
+<table class="tablewithborder">
+    <tr class="tableTitle">
+        <td colspan="12"><font class="font13pxwhite"><center>Audit information (notification)</center></font></td>
+    </tr>
+    <tr class="tableTitle">
+        <td><font class="font12pxwhite">Description</font></td>
+        <td colspan="11" class="whiteBG"><font face="arial" size="1">{{ auditInfo['description'] }}</font></td>
+    </tr>
+
+    {% if eventInfo['object_type']=="UpgradeNotification" %}
+    <tr class="tableTitle">
+        <td><font class="font12pxwhite">Name</font></td>
+        <td class="whiteBG"><font face="arial" size="1"> {{ eventInfo['event_object']['name'] }} </font></td>
+        <td><font class="font12pxwhite">Status</font></td>
+        <td class="whiteBG"><font face="arial" size="1"> {{ eventInfo['event_object']['status'] }}</font></td>
+        <td colspan="8" width="60%" class="whiteBG"><font face="arial" size="1"></font></td>
+    </tr>
+    {% elif eventInfo['object_type']=="Workflow" %}
+
+    {% if eventInfo['object_name']=="Overlay" %}
+    {% if "ibgp" in eventInfo['event_object'] %}
+    <tr class="tableTitle">
+        <td><font class="font12pxwhite">Name</font></td>
+        <td class="whiteBG"><font face="arial" size="1"> {{ eventInfo['event_object']['name'] }} </font></td>
+        <td><font class="font12pxwhite">BGP type</font></td>
+        <td class="whiteBG"><font face="arial" size="1"> {{ eventInfo['event_object']['bgp_type'] }}</font></td>
+        <td><font class="font12pxwhite">Description</font></td>
+        <td class="whiteBG"><font face="arial" size="1"> {{ eventInfo['event_object']['description'] }} </font></td>
+        <td><font class="font12pxwhite">Hold down timer</font></td>
+        <td class="whiteBG"><font face="arial" size="1"> {{ eventInfo['event_object']['holddown_timer'] }}</font></td>
+        <td><font class="font12pxwhite">Keep alive timer</font></td>
+        <td class="whiteBG"><font face="arial" size="1"> {{ eventInfo['event_object']['keepalive_timer'] }} </font></td>
+        <td><font class="font12pxwhite">Force timer update</font></td>
+        <td class="whiteBG"><font face="arial" size="1">{{ eventInfo['event_object']['force_timers_update'] }} </font></td>
+    </tr>
+    <tr class="tableTitle">
+        <td><font class="font12pxwhite">Route reflectors</font></td>
+        <td colspan="3" class="whiteBG"><font face="arial" size="1"> {{ eventInfo['event_object']['ibgp']['rr_server'] }} </font></td>
+        <td><font class="font12pxwhite">Spine leaf ASN</font></td>
+        <td class="whiteBG"><font face="arial" size="1"> {{ eventInfo['event_object']['ibgp']['spine_leaf_asn'] }} </font></td>
+        <td><font class="font12pxwhite">Leaf group name</font></td>
+        <td class="whiteBG"><font face="arial" size="1"> {{ eventInfo['event_object']['ibgp']['leaf_group_name'] }}</font></td>
+        <td><font class="font12pxwhite">Spine group name</font></td>
+        <td class="whiteBG"><font face="arial" size="1"> {{ eventInfo['event_object']['ibgp']['spine_group_name'] }} </font></td>
+        <td><font class="font12pxwhite">IP address pool</font></td>
+        <td class="whiteBG"><font face="arial" size="1">{{ eventInfo['event_object']['ipv4_address']['resource_pool_uuid'] }} </font></td>
+    </tr>
+
+
+    {% endif %}
+    {% endif %}
+    {% elif eventInfo['object_type']=="IntegrationPackStatus" %}
+    <tr class="tableTitle">
+        <td><font class="font12pxwhite">Name</font></td>
+        <td class="whiteBG"><font face="arial" size="1"> {{ eventInfo['event_object']['name'] }} </font></td>
+        <td><font class="font12pxwhite">Reason</font></td>
+        <td class="whiteBG" colspan="3"><font face="arial" size="1"> {{ eventInfo['event_object']['reason'] }}</font></td>
+        <td><font class="font12pxwhite">Integration pack name</font></td>
+        <td class="whiteBG"><font face="arial" size="1"> {{ eventInfo['event_object']['pack_name'] }} </font></td>
+        <td><font class="font12pxwhite">Integration pack type</font></td>
+        <td class="whiteBG"><font face="arial" size="1"> {{ eventInfo['event_object']['pack_type'] }}</font></td>
+        <td><font class="font12pxwhite">Connection status</font></td>
+        <td class="whiteBG"><font face="arial" size="1"> {{ eventInfo['event_object']['connection_status'] }}</font></td>
+    </tr>
+    {% elif eventInfo['object_type']=="Fabric" %}
+    Fabric : {{ eventInfo }}
+    {% elif eventInfo['object_type']=="LinkAggregationGroup" %}
+    Link Aggregation Group: {{ eventInfo }}
+    {% elif eventInfo['object_type']=="ReconcileNotification" %}
+    Reconcile notification: {{ eventInfo }}
+    {% elif eventInfo['object_type']=="AuthenticationFailureEvent" %}
+    Authentication failure:  {{ eventInfo }}
+    {% elif eventInfo['object_type']=="Switch" %}
+    <tr class="tableTitle">
+        <td><font class="font12pxwhite">Status</font></td>
+        <td class="whiteBG"><font face="arial" size="1"> {{ eventInfo['event_object']['status'] }} </font></td>
+        <td><font class="font12pxwhite">Device description</font></td>
+        <td class="whiteBG" colspan="5"><font face="arial" size="1"> {{ eventInfo['event_object']['description'] }}</font></td>
+        <td><font class="font12pxwhite">Serial number</font></td>
+        <td class="whiteBG"><font face="arial" size="1"> {{ eventInfo['event_object']['serial_number'] }} </font></td>
+        <td><font class="font12pxwhite">IP address</font></td>
+        <td class="whiteBG"><font face="arial" size="1"> {{ eventInfo['event_object']['ip_address'] }}</font></td>
+    </tr>
+    {% else %}
+    <br />Not found in ObjectNotify: {{ eventInfo['object_type'] }}. Form creation required.
+    {% endif %}
+</table>
+
+{% endblock %}

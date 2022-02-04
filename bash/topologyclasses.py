@@ -1,4 +1,4 @@
-# (C) Copyright 2020 Hewlett Packard Enterprise Development LP.
+# (C) Copyright 2021 Hewlett Packard Enterprise Development LP.
 
 from datetime import datetime, time, timedelta
 import time
@@ -22,15 +22,11 @@ from Crypto.Util.Padding import pad, unpad
 
 def discoverTopology():
     topolog = open('/var/www/html/log/topology.log', 'a')
-    pathname = os.path.dirname(sys.argv[0])
-    appPath = os.path.abspath(pathname) + "/globals.json"
     existingEntries=[]
     currentEntries=[]
-    with open(appPath, 'r') as myfile:
-        data=myfile.read()
-    globalconf=json.loads(data)
     dbconnection=pymysql.connect(host='localhost',user='aruba',password='ArubaRocks',db='aruba', autocommit=True)
     cursor=dbconnection.cursor(pymysql.cursors.DictCursor)
+    globalconf=obtainGlobalconf(cursor)
     # First step is to get all the devices from the database that have topology discovery enabled
     queryStr="select description,ipaddress,secinfo,ostype, sysinfo from devices where topology='1'"
     cursor.execute(queryStr)
@@ -94,7 +90,7 @@ def discoverTopology():
                                 cursor.execute(queryStr)
                                 topolog.write('{}: Created new topology for {} ({}). \n'.format(datetime.now(),items['ipaddress'],switchresult['name']))
                 except:
-                    print("Could not create or update topology for switch {}".format(items['ipaddress']))
+                    # print("Could not create or update topology for switch {}".format(items['ipaddress']))
                     topolog.write('{}: Could not create or update topology for switch {} ({}). \n'.format(datetime.now(),items['ipaddress'],switchresult['name']))
                     pass
                 # Once the topology is updated, we need to clean up the topology table for the given device. It could be that a remote device
@@ -111,11 +107,18 @@ def discoverTopology():
             
         elif items['ostype']=="arubaos-cx":
             # Obtain the interfaces from the switch
-            url="system/interfaces?depth=1"         
-            intresult=getRESTcx(items['ipaddress'],items['secinfo'],url)
-            # Obtain the system mac address and the hostname from the switch
+            url="system/interfaces?attributes=name&depth=1"
+            intresult=getRESTcx(items['ipaddress'],items['secinfo'],url, globalconf)
+            if globalconf['cxapi']!="v1": 
+                intNames=[]
+                for key in intresult:
+                    intname={}
+                    intname['name']=key
+                    intNames.append(intname)
+                intresult=intNames
+            # Obtain the system mac address and the hostname from the switch         
             url="system?attributes=applied_hostname%2Chostname%2Csystem_mac"
-            switchresult=getRESTcx(items['ipaddress'],items['secinfo'],url)
+            switchresult=getRESTcx(items['ipaddress'],items['secinfo'],url, globalconf)
             # If there is no hostname returned, we will use the applied hostname as hostname
             if "hostname" in switchresult:
                 hostname=switchresult['hostname']
@@ -132,7 +135,17 @@ def discoverTopology():
             for intitems in intresult:
                 # Obtain the LLDP information from the interfaces
                 url="system/interfaces/" + quote(intitems['name'], safe='') + "/lldp_neighbors?attributes=mac_addr%2Cneighbor_info%2Cport_id&depth=2"
-                lldpresult=getRESTcx(items['ipaddress'],items['secinfo'],url)
+                lldpresult=getRESTcx(items['ipaddress'],items['secinfo'],url, globalconf)
+                if isinstance(lldpresult,list):
+                    if len(lldpresult)>0:
+                        converttoDict=lldpresult[0]
+                        lldpresult={}
+                        lldpresult=converttoDict
+                    else:
+                        lldpresult={}
+                elif isinstance(lldpresult,dict):
+                    for key in lldpresult:
+                        lldpresult=lldpresult[key]
                 if lldpresult:
                     # There is information from the interface. Now we need to check a couple of things
                     # if there is already an entry for the topology we have to update
@@ -141,19 +154,19 @@ def discoverTopology():
                     result = cursor.fetchall()
                     if switchresult:
                         if switchresult['system_mac']:
-                            if "mgmt_ip_list" in lldpresult[0]['neighbor_info']:
-                                mgmtip=lldpresult[0]['neighbor_info']['mgmt_ip_list']
+                            if "mgmt_ip_list" in lldpresult['neighbor_info']:
+                                mgmtip=lldpresult['neighbor_info']['mgmt_ip_list']
                             else:
                                 mgmtip="0.0.0.0"
                             if result:
                                 queryStr="update topology set switchip='{}', systemmac='{}',hostname='{}',interface='{}',remoteswitchip='{}',remotesystemmac='{}',remotehostname='{}',remoteinterface='{}',lldpinfo='{}' where id='{}'" \
-                                .format(items['ipaddress'],switchresult['system_mac'],hostname,intitems['name'],mgmtip,lldpresult[0]['mac_addr'],lldpresult[0]['neighbor_info']['chassis_name'],lldpresult[0]['port_id'] ,json.dumps(lldpresult[0]),result[0]['id'])
+                                .format(items['ipaddress'],switchresult['system_mac'],hostname,intitems['name'],mgmtip,lldpresult['mac_addr'],lldpresult['neighbor_info']['chassis_name'],lldpresult['port_id'] ,json.dumps(lldpresult),result[0]['id'])
                                 cursor.execute(queryStr)
                                 #topolog.write('{}: Updated topology for {} ({}). \n'.format(datetime.now(),items['ipaddress'],hostname))
                                 existingEntries.append(result[0]['id'])
                             else:
                                 queryStr="insert into topology (switchip,systemmac,hostname,interface,remoteswitchip,remotesystemmac,remotehostname,remoteinterface,lldpinfo) values ('{}','{}','{}','{}','{}','{}','{}','{}','{}')" \
-                                .format(items['ipaddress'],switchresult['system_mac'],hostname,intitems['name'],mgmtip,lldpresult[0]['mac_addr'],lldpresult[0]['neighbor_info']['chassis_name'],lldpresult[0]['port_id'] ,json.dumps(lldpresult[0]))
+                                .format(items['ipaddress'],switchresult['system_mac'],hostname,intitems['name'],mgmtip,lldpresult['mac_addr'],lldpresult['neighbor_info']['chassis_name'],lldpresult['port_id'] ,json.dumps(lldpresult))
                                 cursor.execute(queryStr)
                                 topolog.write('{}: Created new topology for {} ({}). \n'.format(datetime.now(),items['ipaddress'],hostname))
 
@@ -174,8 +187,8 @@ def discoverTopology():
     topolog.close()
 
 
-def getRESTcx(ipaddress,cookie_header,url):
-    baseurl="https://{}/rest/v1/".format(ipaddress)
+def getRESTcx(ipaddress,cookie_header,url, globalconf):
+    baseurl="https://{}/rest/{}/".format(ipaddress,globalconf['cxapi'])
     if type(cookie_header) is dict:
         header=cookie_header
     else:
@@ -215,6 +228,20 @@ def checkIpaddress(ip):
         return True
     except:
         return False
+
+
+def obtainGlobalconf(cursor):
+    queryStr="select datacontent from systemconfig where configtype='system'"
+    cursor.execute(queryStr)
+    result = cursor.fetchall()
+    globalconf=result[0]
+    if isinstance(globalconf,str):
+        globalconf=json.loads(globalconf)
+    globalconf=globalconf['datacontent']
+    if isinstance(globalconf,str):
+        globalconf=json.loads(globalconf)
+    return globalconf
+
 
 
 

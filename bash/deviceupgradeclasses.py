@@ -26,17 +26,13 @@ from Crypto.Util.Padding import pad, unpad
 
 def scheduler():
     upgradelog = open('/var/www/html/log/device-upgrade.log', 'a')
-    pathname = os.path.dirname(sys.argv[0])
-    appPath = os.path.abspath(pathname) + "/globals.json"
-    with open(appPath, 'r') as myfile:
-        data=myfile.read()
-    globalconf=json.loads(data)
     # Obtain the active IP address
     s = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
     s.connect(("8.8.8.8", 80))
     hostip=s.getsockname()[0]
     dbconnection=pymysql.connect(host='localhost',user='aruba',password='ArubaRocks',db='aruba', autocommit=True)
     cursor=dbconnection.cursor(pymysql.cursors.DictCursor)
+    globalconf=obtainGlobalconf(cursor)
     # First step is to check whether there are scheduled upgrades. Criteria is that the status=0 and there is either no schedule date or the schedule date has passed the current datetime
     queryStr="select * from softwareupdate where status=0 and (schedule IS NULL or schedule<'{}')".format(datetime.now())
     cursor.execute(queryStr)
@@ -57,149 +53,242 @@ def scheduler():
         if switchInfo[0]['ostype']=="arubaos-switch":
             switchInfo[0]['secinfo']=checkswitchCookie(cursor,items['id'],switchInfo[0]['ipaddress'],switchInfo[0]['username'],switchInfo[0]['password'],switchInfo[0]['secinfo'], globalconf['secret_key'])
         elif switchInfo[0]['ostype']=="arubaos-cx":
-            switchInfo[0]['secinfo']=checkcxCookie(cursor, items['id'], switchInfo[0]['ipaddress'], switchInfo[0]['username'], switchInfo[0]['password'], switchInfo[0]['secinfo'], globalconf['secret_key'])
+            switchInfo[0]['secinfo']=checkcxCookie(cursor, items['id'], switchInfo[0]['ipaddress'], switchInfo[0]['username'], switchInfo[0]['password'], switchInfo[0]['secinfo'], globalconf['secret_key'], globalconf)
         queryStr="select * from deviceimages where id='{}'".format(items['software'])
         cursor.execute(queryStr)
         softwareInfo = cursor.fetchall()
         # Per item we need to check the status. Based on the status, we need to perform an action (upload software, verify whether software has been uploaded correctly, set boot partition..
         # If needed, reboot the switch)
         if items['status']==1:
-            stageOne(cursor, hostip,items, switchInfo[0], softwareInfo[0], upgradelog)
+            stageOne(cursor, hostip,items, switchInfo[0], softwareInfo[0], upgradelog, globalconf)
         elif items['status']==5:
-            stageFive(cursor, hostip,items, switchInfo[0], softwareInfo[0], upgradelog)
+            stageFive(cursor, hostip,items, switchInfo[0], softwareInfo[0], upgradelog, globalconf)
         elif items['status']==10:
-            stageTen(cursor, hostip,items, switchInfo[0], softwareInfo[0], upgradelog)
+            stageTen(cursor, hostip,items, switchInfo[0], softwareInfo[0], upgradelog, globalconf)
         elif items['status']==20:
-            stageTwenty(cursor, hostip,items, switchInfo[0], softwareInfo[0], upgradelog)
+            stageTwenty(cursor, hostip,items, switchInfo[0], softwareInfo[0], upgradelog, globalconf)
         elif items['status']==50:
-            stageFifty(cursor, hostip,items, switchInfo[0], softwareInfo[0], upgradelog)
+            stageFifty(cursor, hostip,items, switchInfo[0], softwareInfo[0], upgradelog, globalconf)
     upgradelog.close()
 
-
-
-def stageOne(cursor, hostip,upgradeInfo,switchInfo,softwareInfo, upgradelog):
+    
+def stageOne(cursor, hostip,upgradeInfo,switchInfo,softwareInfo, upgradelog, globalconf):
     # Uploading the new software
     if switchInfo['ostype']=="arubaos-cx":
-        # Put the software on the upgradepartition
-        vrf=checkVRF(switchInfo['ipaddress'],switchInfo['secinfo'])
-        url = "firmware?image=" + upgradeInfo['imagepartition'] + "&from=http://" + hostip + "/images/" + softwareInfo['filename'] + "&vrf=" + vrf
-        pResponse=putRESTcx(switchInfo['ipaddress'],switchInfo['secinfo'],url)
-        if pResponse==200:
-            # Software upgrade command has been issued successfully, set stage to 5 (checking whether the software has been uploaded successfully
-            # In addition, obtain the current software information and store this as well. Also set the start time
-            response=getRESTcx(switchInfo['ipaddress'],switchInfo['secinfo'],url)
-            queryStr="update softwareupdate set status=5, upgradefrom='{}', softwareinfo='{}', starttime='{}' where id='{}'".format(response['current_version'],json.dumps(response),datetime.now(),upgradeInfo['id'])
-            cursor.execute(queryStr)
-            upgradelog.write('{}: Copy software {} onto {}. \n'.format(datetime.now(),softwareInfo['filename'],switchInfo['ipaddress']))
-            upgradeprofileCheck(cursor,upgradeInfo)
-        elif pResponse==400:
-            # There already seems to be a software upgrade in progress. Setting the stage to 50
-            queryStr="update softwareupdate set status=50 where id='{}'".format(upgradeInfo['id'])
-            cursor.execute(queryStr)
-    elif switchInfo['ostype']=="arubaos-switch":
-        imageurl="http://" + hostip + "/images/" + softwareInfo['filename']
-        url="file-transfer"
-        if upgradeInfo['imagepartition']=="primary":
-            imagepartition="BI_PRIMARY_IMAGE"
-        else:
-            imagepartition="BI_SECONDARY_IMAGE"
-        parameters={ "file_type":"FTT_FIRMWARE", "url":imageurl, "action":"FTA_DOWNLOAD", "boot_image":imagepartition}
-        response= postRESTswitch(switchInfo['ipaddress'],switchInfo['secinfo'],url,parameters)
-        url="file-transfer/status"
-        sresponse=getRESTswitch(switchInfo['ipaddress'],switchInfo['secinfo'],url)
-        if "message" in response:
-            if response['message']=="File transfer initiated":
-                cmd="show flash"
-                versionInfo=anycli(switchInfo['ipaddress'],switchInfo['secinfo'],cmd) 
-                if "error_msg" in versionInfo:
-                    if versionInfo['error_msg']=="":
-                        versionInfo=convertFlash( base64.b64decode(versionInfo['result_base64_encoded']).decode('utf-8') )
-                        # Obtain the current active software version
-                        if versionInfo['default_image']=="Primary":
-                            originalVersion=versionInfo['primary_version']
-                        else:
-                            originalVersion=versionInfo['secondary_version']
-                        # File transfer has been initialized. Set status to stage 5, check whether software has been uploaded
-                        queryStr="update softwareupdate set status=5, upgradefrom='{}', softwareinfo='{}', starttime='{}' where id='{}'".format(originalVersion, json.dumps(versionInfo),datetime.now(),upgradeInfo['id'])
-                        cursor.execute(queryStr)
-                        upgradelog.write('{}: Copy software {} onto {}. \n'.format(datetime.now(),softwareInfo['filename'],switchInfo['ipaddress']))
-                        upgradeprofileCheck(cursor,upgradeInfo)
-
-
-def stageFive(cursor, hostip,upgradeInfo,switchInfo,softwareInfo, upgradelog):
-    # Check whether the software was uploaded successfully
-    if switchInfo['ostype']=="arubaos-cx":
-        url="firmware/status"
-        response=getRESTcx(switchInfo['ipaddress'],switchInfo['secinfo'],url)
-        if "status" in response:
-            if response['status']=="success":
-                queryStr="update softwareupdate set status=10 where id='{}'".format(upgradeInfo['id'])
+        try:
+            # Put the software on the upgradepartition
+            vrf=checkVRF(switchInfo['ipaddress'],switchInfo['secinfo'], globalconf)
+            url = "firmware?image=" + upgradeInfo['imagepartition'] + "&from=http://" + hostip + "/images/" + softwareInfo['filename'] + "&vrf=" + vrf
+            pResponse=putRESTcx(switchInfo['ipaddress'],switchInfo['secinfo'],url, globalconf)
+            if pResponse==200:
+                # Software upgrade command has been issued successfully, set stage to 5 (checking whether the software has been uploaded successfully
+                # In addition, obtain the current software information and store this as well. Also set the start time
+                response=getRESTcx(switchInfo['ipaddress'],switchInfo['secinfo'],url, globalconf)
+                queryStr="update softwareupdate set status=5, upgradefrom='{}', softwareinfo='{}', starttime='{}' where id='{}'".format(response['current_version'],json.dumps(response),datetime.now(),upgradeInfo['id'])
                 cursor.execute(queryStr)
-                # Software has been upgraded successfully. Go to stage 10
-                upgradelog.write('{}: Software {} uploaded successfully onto {}. \n'.format(datetime.now(),softwareInfo['filename'],switchInfo['ipaddress']))
+                upgradelog.write('{}: Copy software {} onto {}. \n'.format(datetime.now(),softwareInfo['filename'],switchInfo['ipaddress']))
                 upgradeprofileCheck(cursor,upgradeInfo)
-            elif response['status']=="none":
-                queryStr="update softwareupdate set status=1 where id='{}'".format(upgradeInfo['id'])
+            elif pResponse==400:
+                # There already seems to be a software upgrade in progress. Setting the stage to 50
+                queryStr="update softwareupdate set status=50 where id='{}'".format(upgradeInfo['id'])
                 cursor.execute(queryStr)
-                # Software has not been upgraded. Go back to stage 1
-                upgradelog.write('{}: Error copying software {} onto {}. Retrying... \n'.format(datetime.now(),softwareInfo['filename'],switchInfo['ipaddress']))
-        else:
-            pass
+        except Exception as e:
+            upgradelog.write('{}: Stage 1 (CX): {}. \n'.format(datetime.now(), e ))
     elif switchInfo['ostype']=="arubaos-switch":
-        url="file-transfer/status"
-        response=getRESTswitch(switchInfo['ipaddress'],switchInfo['secinfo'],url)
-        if response['status']=="FTS_COMPLETED":
-            # File copy has been completed. Set the status to 10
-            queryStr="update softwareupdate set status=10 where id='{}'".format(upgradeInfo['id'])
-            cursor.execute(queryStr)
-            upgradelog.write('{}: Software {} uploaded successfully onto {}. \n'.format(datetime.now(),softwareInfo['filename'],switchInfo['ipaddress']))
-            upgradeprofileCheck(cursor,upgradeInfo)
-        else:
-            queryStr="update softwareupdate set status=1 where id='{}'".format(upgradeInfo['id'])
-            cursor.execute(queryStr)
-            # Software has not been upgraded. Go back to stage 1
-            upgradelog.write('{}: Error copying software {} onto {}. Retrying... \n'.format(datetime.now(),softwareInfo['filename'],switchInfo['ipaddress']))
-
-
-def stageTen(cursor, hostip,upgradeInfo,switchInfo,softwareInfo, upgradelog):
-    # Software has been uploaded successfully. Setting boot parameters
-    if switchInfo['ostype']=="arubaos-cx":
-        # Need to check whether the switch has to be rebooted as instructed by the upgrade job
-        if upgradeInfo['reboot']==1:
-            # We need to reboot the switch with the proper boot partition
-            url="boot?image=" + upgradeInfo['activepartition']
-            response=postRESTcx(switchInfo['ipaddress'],switchInfo['secinfo'],url,'')
-            queryStr="update softwareupdate set status=20 where id='{}'".format(upgradeInfo['id'])
-            cursor.execute(queryStr)
-            upgradelog.write('{}: Reboot {} on partition {}. \n'.format(datetime.now(),switchInfo['ipaddress'],upgradeInfo['activepartition'] ))
-            upgradeprofileCheck(cursor,upgradeInfo)
-        else:
-            # No reboot, however we do have to tell the system that the switch has to be rebooted. The upgrade job is completed, setting the status to 110
-            url="firmware"
-            response=getRESTcx(switchInfo['ipaddress'],switchInfo['secinfo'],url)
-            # Now update the database with the new information and set the status to 100 (completed)
-            queryStr="update softwareupdate set status=110, upgradeto='{}', softwareinfoafter='{}', endtime='{}' where id='{}'".format(response['current_version'],json.dumps(response),datetime.now(),upgradeInfo['id'])
-            cursor.execute(queryStr)
-            upgradelog.write('{}: No reboot for {} on partition {} as configured in upgrade job. \n'.format(datetime.now(),switchInfo['ipaddress'],upgradeInfo['activepartition'] ))
-            upgradeprofileCheck(cursor,upgradeInfo)
-    elif switchInfo['ostype']=="arubaos-switch":
-        # Need to check whether the switch has to be rebooted as instructed by the upgrade job
-        if upgradeInfo['reboot']==1:
-            # We need to reboot the switch with the proper boot partition
-            url="system/reboot"
+        try:
+            imageurl="http://" + hostip + "/images/" + softwareInfo['filename']
+            url="file-transfer"
             if upgradeInfo['imagepartition']=="primary":
                 imagepartition="BI_PRIMARY_IMAGE"
             else:
                 imagepartition="BI_SECONDARY_IMAGE"
-            parameters={ "boot_image":imagepartition}
-            response=postRESTswitch(switchInfo['ipaddress'],switchInfo['secinfo'],url,parameters)
-            queryStr="update softwareupdate set status=20 where id='{}'".format(upgradeInfo['id'])
-            cursor.execute(queryStr)
-            upgradelog.write('{}: Reboot {} on partition {}. \n'.format(datetime.now(),switchInfo['ipaddress'],upgradeInfo['imagepartition'] ))
-            upgradeprofileCheck(cursor,upgradeInfo)
-        else:
-            # No reboot, however we do have to tell the system that the switch has to be rebooted. The upgrade job is completed, setting the status to 110
-            # We need to format the version in formation and convert to a dict 
+            parameters={ "file_type":"FTT_FIRMWARE", "url":imageurl, "action":"FTA_DOWNLOAD", "boot_image":imagepartition}
+            response= postRESTswitch(switchInfo['ipaddress'],switchInfo['secinfo'],url,parameters)
+            url="file-transfer/status"
+            sresponse=getRESTswitch(switchInfo['ipaddress'],switchInfo['secinfo'],url)
+            if "message" in response:
+                if response['message']=="File transfer initiated":
+                    cmd="show flash"
+                    versionInfo=anycli(switchInfo['ipaddress'],switchInfo['secinfo'],cmd) 
+                    if "error_msg" in versionInfo:
+                        if versionInfo['error_msg']=="":
+                            versionInfo=convertFlash( base64.b64decode(versionInfo['result_base64_encoded']).decode('utf-8') )
+                            # Obtain the current active software version
+                            if versionInfo['default_image']=="Primary":
+                                originalVersion=versionInfo['primary_version']
+                            else:
+                                originalVersion=versionInfo['secondary_version']
+                            # File transfer has been initialized. Set status to stage 5, check whether software has been uploaded
+                            queryStr="update softwareupdate set status=5, upgradefrom='{}', softwareinfo='{}', starttime='{}' where id='{}'".format(originalVersion, json.dumps(versionInfo),datetime.now(),upgradeInfo['id'])
+                            cursor.execute(queryStr)
+                            upgradelog.write('{}: Copy software {} onto {}. \n'.format(datetime.now(),softwareInfo['filename'],switchInfo['ipaddress']))
+                            upgradeprofileCheck(cursor,upgradeInfo)
+        except Exception as e:
+            upgradelog.write('{}: Stage 1 (AOS): {}. \n'.format(datetime.now(), e ))
+
+
+def stageFive(cursor, hostip,upgradeInfo,switchInfo,softwareInfo, upgradelog, globalconf):
+    # Check whether the software was uploaded successfully
+    if switchInfo['ostype']=="arubaos-cx":
+        try:
+            url="firmware/status"
+            response=getRESTcx(switchInfo['ipaddress'],switchInfo['secinfo'],url, globalconf)
+            if "status" in response:
+                if response['status']=="success":
+                    queryStr="update softwareupdate set status=10 where id='{}'".format(upgradeInfo['id'])
+                    cursor.execute(queryStr)
+                    # Software has been upgraded successfully. Go to stage 10
+                    upgradelog.write('{}: Software {} uploaded successfully onto {}. \n'.format(datetime.now(),softwareInfo['filename'],switchInfo['ipaddress']))
+                    upgradeprofileCheck(cursor,upgradeInfo)
+                elif response['status']=="none":
+                    queryStr="update softwareupdate set status=1 where id='{}'".format(upgradeInfo['id'])
+                    cursor.execute(queryStr)
+                    # Software has not been upgraded. Go back to stage 1
+                    upgradelog.write('{}: Error copying software {} onto {}. Retrying... \n'.format(datetime.now(),softwareInfo['filename'],switchInfo['ipaddress']))
+            else:
+                pass
+        except Exception as e:
+            upgradelog.write('{}: Stage 5 (CX): {}. \n'.format(datetime.now(), e ))
+    elif switchInfo['ostype']=="arubaos-switch":
+        try:
+            url="file-transfer/status"
+            response=getRESTswitch(switchInfo['ipaddress'],switchInfo['secinfo'],url)
+            if response['status']=="FTS_COMPLETED":
+                # File copy has been completed. Set the status to 10
+                queryStr="update softwareupdate set status=10 where id='{}'".format(upgradeInfo['id'])
+                cursor.execute(queryStr)
+                upgradelog.write('{}: Software {} uploaded successfully onto {}. \n'.format(datetime.now(),softwareInfo['filename'],switchInfo['ipaddress']))
+                upgradeprofileCheck(cursor,upgradeInfo)
+            else:
+                queryStr="update softwareupdate set status=1 where id='{}'".format(upgradeInfo['id'])
+                cursor.execute(queryStr)
+                # Software has not been upgraded. Go back to stage 1
+                upgradelog.write('{}: Error copying software {} onto {}. Retrying... \n'.format(datetime.now(),softwareInfo['filename'],switchInfo['ipaddress']))
+        except Exception as e:
+            upgradelog.write('{}: Stage 5 (AOS): {}. \n'.format(datetime.now(), e ))
+
+
+def stageTen(cursor, hostip,upgradeInfo,switchInfo,softwareInfo, upgradelog, globalconf):
+    # Software has been uploaded successfully. Setting boot parameters
+    if switchInfo['ostype']=="arubaos-cx":
+        try:
+            # Need to check whether the switch has to be rebooted as instructed by the upgrade job
+            if upgradeInfo['reboot']==1:
+                # We need to reboot the switch with the proper boot partition
+                url="boot?image=" + upgradeInfo['activepartition']
+                response=postRESTcx(switchInfo['ipaddress'],switchInfo['secinfo'],url,'', globalconf)
+                queryStr="update softwareupdate set status=20 where id='{}'".format(upgradeInfo['id'])
+                cursor.execute(queryStr)
+                upgradelog.write('{}: Reboot {} on partition {}. \n'.format(datetime.now(),switchInfo['ipaddress'],upgradeInfo['activepartition'] ))
+                upgradeprofileCheck(cursor,upgradeInfo)
+            else:
+                # No reboot, however we do have to tell the system that the switch has to be rebooted. The upgrade job is completed, setting the status to 110
+                url="firmware"
+                response=getRESTcx(switchInfo['ipaddress'],switchInfo['secinfo'],url, globalconf)
+                # Now update the database with the new information and set the status to 100 (completed)
+                queryStr="update softwareupdate set status=110, upgradeto='{}', softwareinfoafter='{}', endtime='{}' where id='{}'".format(response['current_version'],json.dumps(response),datetime.now(),upgradeInfo['id'])
+                cursor.execute(queryStr)
+                upgradelog.write('{}: No reboot for {} on partition {} as configured in upgrade job. \n'.format(datetime.now(),switchInfo['ipaddress'],upgradeInfo['activepartition'] ))
+                upgradeprofileCheck(cursor,upgradeInfo)
+        except Exception as e:
+            print(e)
+            upgradelog.write('{}: Stage 10 (CX): {}. \n'.format(datetime.now(), e ))
+    elif switchInfo['ostype']=="arubaos-switch":
+        try:
+            # Need to check whether the switch has to be rebooted as instructed by the upgrade job
+            if upgradeInfo['reboot']==1:
+                # We need to reboot the switch with the proper boot partition
+                url="system/reboot"
+                if upgradeInfo['imagepartition']=="primary":
+                    imagepartition="BI_PRIMARY_IMAGE"
+                else:
+                    imagepartition="BI_SECONDARY_IMAGE"
+                parameters={ "boot_image":imagepartition}
+                response=postRESTswitch(switchInfo['ipaddress'],switchInfo['secinfo'],url,parameters)
+                queryStr="update softwareupdate set status=20 where id='{}'".format(upgradeInfo['id'])
+                cursor.execute(queryStr)
+                upgradelog.write('{}: Reboot {} on partition {}. \n'.format(datetime.now(),switchInfo['ipaddress'],upgradeInfo['imagepartition'] ))
+                upgradeprofileCheck(cursor,upgradeInfo)
+            else:
+                # No reboot, however we do have to tell the system that the switch has to be rebooted. The upgrade job is completed, setting the status to 110
+                # We need to format the version in formation and convert to a dict 
+                cmd="show flash"
+                versionInfo=anycli(switchInfo['ipaddress'],switchInfo['secinfo'],cmd) 
+                if "error_msg" in versionInfo:
+                    if versionInfo['error_msg']=="":
+                        versionInfo=convertFlash( base64.b64decode(versionInfo['result_base64_encoded']).decode('utf-8') )   
+                        if versionInfo['default_image']=="Primary":
+                            newVersion=versionInfo['primary_version']
+                        else:
+                            newVersion=versionInfo['secondary_version'] 
+                        queryStr="update softwareupdate set status=110, upgradeto='{}', softwareinfoafter='{}', endtime='{}' where id='{}'".format(newVersion, json.dumps(versionInfo),datetime.now(),upgradeInfo['id'])
+                        cursor.execute(queryStr)
+                        upgradelog.write('{}: No reboot for {} on partition {}. \n'.format(datetime.now(),switchInfo['ipaddress'],upgradeInfo['imagepartition'] ))
+                        upgradeprofileCheck(cursor,upgradeInfo)
+        except Exception as e:
+            upgradelog.write('{}: Stage 10 (AOS): {}. \n'.format(datetime.now(), e ))    
+
+
+def stageTwenty(cursor, hostip,upgradeInfo,switchInfo,softwareInfo, upgradelog, globalconf):
+    # Switch has been rebooted. Check if switch is back online
+    if switchInfo['ostype']=="arubaos-cx":
+        try:
+            url="firmware/status"
+            response=getRESTcx(switchInfo['ipaddress'],switchInfo['secinfo'],url, globalconf)
+            if "status" in response:
+                if response['status']=="none":
+                    # Switch is back online and upgraded
+                    url="firmware"
+                    response=getRESTcx(switchInfo['ipaddress'],switchInfo['secinfo'],url, globalconf)
+                    # Now update the database with the new information and set the status to 100 (completed)
+                    queryStr="update softwareupdate set status=100, upgradeto='{}', softwareinfoafter='{}', endtime='{}' where id='{}'".format(response['current_version'],json.dumps(response),datetime.now(),upgradeInfo['id'])
+                    cursor.execute(queryStr)
+                    upgradelog.write('{}: Switch {} is back online. Upgrade finished. \n'.format(datetime.now(),switchInfo['ipaddress'] ))
+                    upgradeprofileCheck(cursor,upgradeInfo)
+        except Exception as e:
+            print(e)
+            upgradelog.write('{}: Stage 20 (CX): {}. \n'.format(datetime.now(), e ))
+    elif switchInfo['ostype']=="arubaos-switch":
+        try:
+            # Need to check whether the switch has to be rebooted as instructed by the upgrade job
+            cmd="show flash"
+            #because the switch has rebooted, a new cookie has to be obtained
+            versionInfo=anycli(switchInfo['ipaddress'],switchInfo['secinfo'],cmd) 
+            if "error_msg" in versionInfo:
+                if versionInfo['error_msg']=="":
+                    # We have a response and we can store this information in the database and set the status to completed (100). Also set the finish time
+                    # We need to format the version in formation and convert to a dict
+                    versionInfo=convertFlash( base64.b64decode(versionInfo['result_base64_encoded']).decode('utf-8') )   
+                    if versionInfo['default_image']=="Primary":
+                        newVersion=versionInfo['primary_version']
+                    else:
+                        newVersion=versionInfo['secondary_version']
+                    queryStr="update softwareupdate set status=100, upgradeto='{}', softwareinfoafter='{}', endtime='{}' where id='{}'".format(newVersion, json.dumps(versionInfo),datetime.now(),upgradeInfo['id'])
+                    cursor.execute(queryStr)
+                    upgradelog.write('Stage 20 (AOS): {}: Switch {} is back online. Upgrade to {} finished. \n'.format(datetime.now(),switchInfo['ipaddress'], newVersion ))
+                    upgradeprofileCheck(cursor,upgradeInfo)
+                else:
+                    # If there is an error in the response, we try again in the next iteration
+                    pass
+        except Exception as e:
+            upgradelog.write('{}: {}. \n'.format(datetime.now(), e ))
+
+def stageFifty(cursor, hostip,upgradeInfo,switchInfo,softwareInfo, upgradelog, globalconf):
+    # There is already an upgrade in progress. We need to wait until that upgrade has completed and then the upgrade can be performed 
+    if switchInfo['ostype']=="arubaos-cx":
+        try:
+            url="firmware/status"
+            response=getRESTcx(switchInfo['ipaddress'],switchInfo['secinfo'],url, globalconf)
+            # If status is in_progress or success, then an upgrade is in progress. Don't change status in that case
+            if response['status']=="none":
+                # We're ok for the upgrade to start now, reset the status to 1
+                queryStr="update softwareupdate set status=1 where id='{}'".format(upgradeInfo['id'])
+                cursor.execute(queryStr)
+                upgradelog.write('{}: Another software upgrade is in progress for {}. Retrying...\n'.format(datetime.now(),switchInfo['ipaddress'] ))
+        except Exception as e:
+            upgradelog.write('{}: Stage 50 (CX) {}. \n'.format(datetime.now(), e ))
+    elif switchInfo['ostype']=="arubaos-switch":
+        try:
             cmd="show flash"
             versionInfo=anycli(switchInfo['ipaddress'],switchInfo['secinfo'],cmd) 
             if "error_msg" in versionInfo:
@@ -208,67 +297,22 @@ def stageTen(cursor, hostip,upgradeInfo,switchInfo,softwareInfo, upgradelog):
                     if versionInfo['default_image']=="Primary":
                         newVersion=versionInfo['primary_version']
                     else:
-                        newVersion=versionInfo['secondary_version'] 
-                    queryStr="update softwareupdate set status=110, upgradeto='{}', softwareinfoafter='{}', endtime='{}' where id='{}'".format(newVersion, json.dumps(versionInfo),datetime.now(),upgradeInfo['id'])
-                    cursor.execute(queryStr)
-                    upgradelog.write('{}: No reboot for {} on partition {}. \n'.format(datetime.now(),switchInfo['ipaddress'],upgradeInfo['imagepartition'] ))
-                    upgradeprofileCheck(cursor,upgradeInfo)
+                        newVersion=versionInfo['secondary_version']
+                    if upgradeInfo['upgradeto']==newVersion:
+                        # It seems that the software has been upgraded, set the stage to 100
+                        queryStr="update softwareupdate set status=100, upgradeto='{}', softwareinfoafter='{}', endtime='{}' where id='{}'".format(newVersion, json.dumps(versionInfo),datetime.now(),upgradeInfo['id'])
+                        cursor.execute(queryStr)
+                        upgradelog.write('{}: Switch {} is back online. Upgrade to {} finished. \n'.format(datetime.now(),switchInfo['ipaddress'], newVersion ))
+                    else:
+                        queryStr="update softwareupdate set status=1 where id='{}'".format(upgradeInfo['id'])
+                        cursor.execute(queryStr)
+                        upgradelog.write('{}: Another software upgrade is in progress for {}. Retrying...\n'.format(datetime.now(),switchInfo['ipaddress'] ))        
+        except Exception as e:
+            upgradelog.write('{}: Stage 50 (AOS): {}. \n'.format(datetime.now(), e ))
 
 
-
-def stageTwenty(cursor, hostip,upgradeInfo,switchInfo,softwareInfo, upgradelog):
-    # Switch has been rebooted. Check if switch is back online
-    if switchInfo['ostype']=="arubaos-cx":
-        url="firmware/status"
-        response=getRESTcx(switchInfo['ipaddress'],switchInfo['secinfo'],url)
-        if "status" in response:
-            if response['status']=="none":
-                # Switch is back online and upgraded
-                url="firmware"
-                response=getRESTcx(switchInfo['ipaddress'],switchInfo['secinfo'],url)
-                # Now update the database with the new information and set the status to 100 (completed)
-                queryStr="update softwareupdate set status=100, upgradeto='{}', softwareinfoafter='{}', endtime='{}' where id='{}'".format(response['current_version'],json.dumps(response),datetime.now(),upgradeInfo['id'])
-                cursor.execute(queryStr)
-                upgradelog.write('{}: Switch {} is back online. Upgrade finished. \n'.format(datetime.now(),switchInfo['ipaddress'] ))
-                upgradeprofileCheck(cursor,upgradeInfo)
-    elif switchInfo['ostype']=="arubaos-switch":
-        # Need to check whether the switch has to be rebooted as instructed by the upgrade job
-        cmd="show flash"
-        #because the switch has rebooted, a new cookie has to be obtained
-        versionInfo=anycli(switchInfo['ipaddress'],switchInfo['secinfo'],cmd) 
-        if "error_msg" in versionInfo:
-            if versionInfo['error_msg']=="":
-                # We have a response and we can store this information in the database and set the status to completed (100). Also set the finish time
-                # We need to format the version in formation and convert to a dict
-                versionInfo=convertFlash( base64.b64decode(versionInfo['result_base64_encoded']).decode('utf-8') )   
-                if versionInfo['default_image']=="Primary":
-                    newVersion=versionInfo['primary_version']
-                else:
-                    newVersion=versionInfo['secondary_version']
-                queryStr="update softwareupdate set status=100, upgradeto='{}', softwareinfoafter='{}', endtime='{}' where id='{}'".format(newVersion, json.dumps(versionInfo),datetime.now(),upgradeInfo['id'])
-                cursor.execute(queryStr)
-                upgradelog.write('{}: Switch {} is back online. Upgrade to {} finished. \n'.format(datetime.now(),switchInfo['ipaddress'], newVersion ))
-                upgradeprofileCheck(cursor,upgradeInfo)
-            else:
-                # If there is an error in the response, we try again in the next iteration
-                pass
-
-
-def stageFifty(cursor, hostip,upgradeInfo,switchInfo,softwareInfo, upgradelog):
-    # There is already an upgrade in progress. We need to wait until that upgrade has completed and then the upgrade can be performed 
-    if switchInfo['ostype']=="arubaos-cx":
-        url="firmware/status"
-        response=getRESTcx(switchInfo['ipaddress'],switchInfo['secinfo'],url)
-        # If status is in_progress or success, then an upgrade is in progress. Don't change status in that case
-        if response['status']=="none":
-            # We're ok for the upgrade to start now, reset the status to 1
-            queryStr="update softwareupdate set status=1 where id='{}'".format(upgradeInfo['id'])
-            cursor.execute(queryStr)
-            upgradelog.write('{}: Another software upgrade is in progress for {}. Retrying...\n'.format(datetime.now(),switchInfo['ipaddress'] ))
-
-
-def getRESTcx(ipaddress,cookie_header,url):
-    url="https://{}/rest/v1/{}".format(ipaddress,url)
+def getRESTcx(ipaddress,cookie_header,url, globalconf):
+    url="https://{}/rest/{}/{}".format(ipaddress, globalconf['cxapi'], url)
     if type(cookie_header) is dict:
         header=cookie_header
     else:
@@ -285,8 +329,8 @@ def getRESTcx(ipaddress,cookie_header,url):
     return response
 
 
-def putRESTcx(ipaddress,cookie_header,url):
-    url="https://{}/rest/v1/{}".format(ipaddress,url)
+def putRESTcx(ipaddress,cookie_header,url, globalconf):
+    url="https://{}/rest/{}/{}".format(ipaddress, globalconf['cxapi'], url)
     if type(cookie_header) is dict:
         header=cookie_header
     else:
@@ -299,8 +343,8 @@ def putRESTcx(ipaddress,cookie_header,url):
     return response
 
 
-def postRESTcx(ipaddress,cookie_header,url,parameters):
-    url="https://{}/rest/v1/{}".format(ipaddress, url)
+def postRESTcx(ipaddress,cookie_header,url,parameters, globalconf):
+    url="https://{}/rest/{}/{}".format(ipaddress, globalconf['cxapi'], url)
     if type(cookie_header) is dict:
         header=cookie_header
     else:
@@ -357,11 +401,11 @@ def checkIpaddress(ip):
         return False
 
 
-def checkVRF(ip,secinfo):
+def checkVRF(ip, secinfo, globalconf):
     # Check which VRF has the active IP address
     # Check the management VRF IP address against the configured IP address. If there is a match we need to return the mgmt VRF, else the default VRF
     url="system?attributes=mgmt_intf%2Cmgmt_intf_status&depth=2"
-    response=getRESTcx(ip,secinfo,url)
+    response=getRESTcx(ip, secinfo, url, globalconf)
     if response:
         if "ip" in response['mgmt_intf_status']:
             if response['mgmt_intf_status']['ip']==ip:
@@ -389,8 +433,8 @@ def anycli(ip,cookie_header,cmd):
         return {}        
 
 
-def checkcxCookie(cursor, id, ipaddress, username, password, secinfo, secret_key):
-    baseurl="https://{}/rest/v1/".format(ipaddress)
+def checkcxCookie(cursor, id, ipaddress, username, password, secinfo, secret_key, globalconf):
+    baseurl="https://{}/rest/{}/".format(ipaddress, globalconf['cxapi'])
     # First, let's check if we can perform a REST call and get a response 200
     if secinfo is None or secinfo=="":
         # There is no cookie in the secinfo field, we HAVE to login
@@ -621,7 +665,6 @@ def decryptPassword(salt, password):
     return pt.decode()
 
 
-
 def convertFlash(flashInfo):
     bootInfo={}
     flashInfo=flashInfo.splitlines()
@@ -632,6 +675,19 @@ def convertFlash(flashInfo):
     res = [i for i in flashInfo if "Default Boot Image" in i]
     bootInfo['default_image'] = res[0].split()[-1]
     return bootInfo
+
+
+def obtainGlobalconf(cursor):
+    queryStr="select datacontent from systemconfig where configtype='system'"
+    cursor.execute(queryStr)
+    result = cursor.fetchall()
+    globalconf=result[0]
+    if isinstance(globalconf,str):
+        globalconf=json.loads(globalconf)
+    globalconf=globalconf['datacontent']
+    if isinstance(globalconf,str):
+        globalconf=json.loads(globalconf)
+    return globalconf
 
 
 

@@ -86,10 +86,12 @@ def verifyAccess(item, type):
 
 def submitLogin(username,password):
     globalsconf=classes.classes.globalvars()
+    ldapconf=classes.classes.obtainVars("sysldap")
+    if isinstance(ldapconf,str):
+        ldapconf=json.loads(ldapconf)
     # If the authentication source is LDAP, we need to authenticate against the LDAP server. If the LDAP server is not available, we need to fallback to local authentication
     if globalsconf['authsource']=="ldap":
-        if checkldap(username, password, globalsconf['ldapsource'], globalsconf['basedn'],"submitLogin")['message']=="LDAP connection successful":
-            print("LDAP connection is successful")
+        if checkldap(username, password, ldapconf['ldapsource'], ldapconf['basedn'],"submitLogin")['message']=="LDAP connection successful":
             # Set a cookie. Cookie has to contain the username and the cookie value
             token = secrets.token_urlsafe(24)
             cookievals = {'username':username,'token':token}
@@ -147,11 +149,14 @@ def changePassword(username,password):
         classes.classes.sqlQuery(queryStr,"selectone")
     except:
         pass
+
 		
 def checksysConf():
     # This definition is used to check whether the hardware in the system has changed, so this is not for changing the parameters
 	# 
     globalsconf=classes.classes.globalvars()
+    if isinstance(globalsconf,str):
+        globalsconf=json.loads(globalsconf)
     sysInfo=classes.classes.getSystemInfo()
     pathname = os.path.dirname(sys.argv[0]) 
     if platform.system()=="Windows":
@@ -160,8 +165,74 @@ def checksysConf():
         appPath = os.path.abspath(pathname) + "/"
     globalsconf.update({"sysInfo":json.loads(sysInfo)})
     globalsconf.update({"netInfo":psutil.net_if_addrs()})
-    with open('bash/globals.json', 'w') as systemconfig:
-        systemconfig.write(json.dumps(globalsconf))
+    queryStr="update systemconfig set datacontent='{}' where configtype='system'".format(json.dumps(globalsconf))
+    classes.classes.sqlQuery(queryStr,"update")
+
+
+def submitIntegration(configInfo):
+    configInfo=configInfo.to_dict(flat=True)
+    datacontent={}
+    if configInfo['configtype']=="sysldap":
+        # Construct the datacontent
+        try:
+            datacontent.update({"ldapsource":configInfo['ldapsource']})
+            datacontent.update({"basedn":configInfo['basedn']})
+            datacontent.update({"ldapuser":configInfo['ldapuser']})
+            datacontent.update({"ldappassword":configInfo['ldappassword']})
+        except:
+            pass
+    elif configInfo['configtype']=="sysipam":
+        # Construct the datacontent
+        try:
+            datacontent.update({"ipamsystem":configInfo['ipamsystem']})
+            datacontent.update({"ipamenabled":configInfo['ipamenabled']})
+            datacontent.update({"ipamipaddress":configInfo['ipamipaddress']})
+            datacontent.update({"ipamuser":configInfo['ipamuser']})
+            datacontent.update({"ipampassword":configInfo['ipampassword']})
+            if configInfo['ipamsystem']=="PHPIPAM":
+                datacontent.update({"phpipamappid":configInfo['phpipamappid']})
+        except:
+            pass
+    elif configInfo['configtype']=="sysarubacentral":
+        # Construct the datacontent
+        try:
+            datacontent.update({"arubacentralurl":configInfo['arubacentralurl']})
+            datacontent.update({"arubacentralusername":configInfo['arubacentralusername']})
+            datacontent.update({"arubacentraluserpassword":configInfo['arubacentraluserpassword']})
+            datacontent.update({"arubacentralclientid":configInfo['arubacentralclientid']})
+            datacontent.update({"arubacentralclientsecret":configInfo['arubacentralclientsecret']})
+            datacontent.update({"arubacentralcustomerid":configInfo['arubacentralcustomerid']})
+        except:
+            pass
+    elif configInfo['configtype']=="sysafc":
+        # Construct the datacontent
+        try:
+            datacontent.update({"afcipaddress":configInfo['afcipaddress']})
+            datacontent.update({"afcusername":configInfo['afcusername']})
+            datacontent.update({"afcpassword":configInfo['afcpassword']})
+            datacontent.update({"afctoken":configInfo['afctoken']})
+            datacontent.update({"auditpurge":configInfo['auditpurge']})
+
+        except:
+            pass
+    elif configInfo['configtype']=="syspsm":
+        # Construct the datacontent
+        try:
+            datacontent.update({"psmipaddress":configInfo['psmipaddress']})
+            datacontent.update({"psmusername":configInfo['psmusername']})
+            datacontent.update({"psmpassword":configInfo['psmpassword']})
+            datacontent.update({"psmtoken":configInfo['psmtoken']})
+        except:
+            pass
+    # First check if the config exists in the database. If not, insert
+    queryStr="select * from systemconfig where configtype='{}'".format(configInfo['configtype'])
+    checkResult=classes.classes.sqlQuery(queryStr,"selectone")
+    if checkResult==None:
+        queryStr="INSERT INTO `systemconfig` (`id`, `configtype`, `datacontent`) VALUES (NULL, '{}', '{}')".format(configInfo['configtype'],json.dumps(datacontent))
+        classes.classes.sqlQuery(queryStr,"insert")
+    else:
+        queryStr="update systemconfig set datacontent='{}' where configtype='{}'".format(json.dumps(datacontent),configInfo['configtype'])
+        classes.classes.sqlQuery(queryStr,"update")
 
 
 def submitsysConf(sysconf):
@@ -225,11 +296,18 @@ def submitsysConf(sysconf):
         else:
             globalsconf.update( { key : items} )
     globalsconf.update({"appPath":appPath})
-    globalsconf.update({"softwareRelease":"2.2"})
+    globalsconf.update({"softwareRelease":"3.0"})
     globalsconf.update({"sysInfo":json.loads(sysInfo)})
     globalsconf.update({"netInfo":psutil.net_if_addrs()})
-    with open('bash/globals.json', 'w') as systemconfig:
-        systemconfig.write(json.dumps(globalsconf))
+    # First check if the config exists in the database. If not, insert
+    queryStr="select * from systemconfig where configtype='system'"
+    checkResult=classes.classes.sqlQuery(queryStr,"selectone")
+    if checkResult==None:
+        queryStr="INSERT INTO `systemconfig` (`id`, `configtype`, `datacontent`) VALUES (NULL, 'system', '{}')".format(json.dumps(globalsconf))
+        classes.classes.sqlQuery(queryStr,"insert")
+    else:
+        queryStr="update systemconfig set datacontent='{}' where configtype='system'".format(json.dumps(globalsconf))
+        classes.classes.sqlQuery(queryStr,"update")
     # Update the timezone (if configured)
     if "timezoneregion" in sysconf and "timezonecity" in sysconf:
         # There is a timezone configuration. If these variable have a value, then set the timezone
@@ -353,7 +431,9 @@ def userdbAction(formresult):
 
 def userldapAction(formresult):
     # This definition is for all the ldap actions for the user administration  
-    globalsconf=classes.classes.globalvars()
+    ldapvars=classes.classes.obtainVars("sysldap")
+    if isinstance(ldapvars,str):
+        ldapvars=json.loads(ldapvars)
     totalentries=0
     if formresult['entryperpage']:
         entryperpage=formresult['entryperpage']
@@ -364,12 +444,12 @@ def userldapAction(formresult):
     else:
         pageoffset=0
     ldapstatus=""
-    response=checkldap(globalsconf['ldapuser'], globalsconf['ldappassword'], globalsconf['ldapsource'], globalsconf['basedn'],"userldapAction")
+    response=checkldap(ldapvars['ldapuser'], ldapvars['ldappassword'], ldapvars['ldapsource'], ldapvars['basedn'],"userldapAction")
     if response['message']=="LDAP connection successful":
         tls_configuration = Tls(validate=ssl.CERT_NONE)
-        ldapserver = Server(globalsconf['ldapsource'], use_ssl=True, tls=tls_configuration)
-        conn = Connection(ldapserver, user=globalsconf['ldapuser'], password=globalsconf['ldappassword'], auto_bind=True)
-        conn.search(search_base = globalsconf['basedn'], search_filter = '(objectClass=user)', search_scope = SUBTREE, attributes = ["cn","userPrincipalName","distinguishedName"])
+        ldapserver = Server(ldapvars['ldapsource'], use_ssl=True, tls=tls_configuration)
+        conn = Connection(ldapserver, user=ldapvars['ldapuser'], password=ldapvars['ldappassword'], auto_bind=True)
+        conn.search(search_base = ldapvars['basedn'], search_filter = '(objectClass=user)', search_scope = SUBTREE, attributes = ["cn","userPrincipalName","distinguishedName"])
         totalentries = len(conn.response)
         # We need to extract the proper list based on the page offset and number of entries per page
         userresult=conn.response[int(pageoffset): int(pageoffset)+int(entryperpage)]
@@ -459,7 +539,7 @@ def checkProcess(name):
     globalsconf=classes.classes.globalvars()
     for proc in psutil.process_iter():
         # Need to check whether the listener process or the scheduler process is queried
-        if name=="Cleanup" or name=="Topology" or name=="ZTP" or name=="Telemetry" or name=="Device-upgrade":
+        if name=="Cleanup" or name=="Topology" or name=="ZTP" or name=="Telemetry" or name=="Device-upgrade" or name=="Data-collector":
             try:
                 if "python" in proc.name().lower():
                     procinfo=psutil.Process(proc.pid)
@@ -491,7 +571,7 @@ def processAction(name, action):
     pathname = os.path.dirname(sys.argv[0])
     if action =="Stop":
         # Need to check whether the listener process or the scheduler process is queried
-        if name=="Cleanup" or name=="Topology" or name=="ZTP" or name=="Telemetry"  or name=="Device-upgrade":
+        if name=="Cleanup" or name=="Topology" or name=="ZTP" or name=="Telemetry"  or name=="Device-upgrade"   or name=="Data-collector":
             for proc in psutil.process_iter():
                 processname=globalsconf['appPath'] + "bash/" + name.lower()
                 cmdline=proc.cmdline()
@@ -520,7 +600,7 @@ def processAction(name, action):
 
 def checkPhpipam(info):
     try:
-        url=info['phpipamauth'] + "://" + info['ipamipaddress'] + "/api/" + info['phpipamappid'] + "/user/"
+        url="http://" + info['ipamipaddress'] + "/api/" + info['phpipamappid'] + "/user/"
         result = requests.post(url, auth=(info['ipamuser'], info['ipampassword']), verify=False, timeout=10)
         if result.status_code==200:
             return "Online"
@@ -568,3 +648,100 @@ def checkldap(ldapuser, ldappassword, ldapsource, basedn, calldef):
         else:
             response['message']=e
     return response
+
+
+def checkAFC(afcvars,afcipaddress, afcusername, afcpassword, afctoken):
+    # if the username, IP address or password has changed, we need to obtain a new token
+    returnresponse={}
+    if len(afcvars)==0:
+        # There are no vars stored yet. Only check if all the fields have been filled in the form
+        if afcipaddress!= "" and afcusername != "" and afcpassword!="":
+            response= classes.classes.obtainafcToken(afcipaddress, afcusername, afcpassword)
+            if isinstance(response,str):
+                response = json.loads(response)
+            if "count" in response:
+                # Result is the afctoken. We need to update the afcvars
+                returnresponse.update(({"result":"Aruba Fabric Composer is reachable, token is valid","afctoken": response['result']}))
+            else:
+                if "message" in response:
+                    returnresponse.update(({"result":response['message']}))
+                else:
+                    returnresponse.update(({"result":"Aruba Fabric Composer is unreachable"}))
+    else:
+        if (afcipaddress!= afcvars['afcipaddress'] or afcusername != afcvars['afcusername'] or afcpassword!=afcvars['afcpassword']) or (afcvars['afctoken']=="" or afctoken==""):
+            response= classes.classes.obtainafcToken(afcipaddress, afcusername, afcpassword)
+            if isinstance(response,str):
+                response=json.loads(response)
+            if isinstance(response,str):
+                response = json.loads(response)
+            if "count" in response:
+                # Result is the afctoken. We need to update the afcvars
+                afcvars.update({"afctoken":response['result']})
+                queryStr="update systemconfig set datacontent='{}' where configtype='sysafc'".format(json.dumps(afcvars))
+                classes.classes.sqlQuery(queryStr,"update")
+                returnresponse.update(({"result":"Aruba Fabric Composer is reachable, token is valid","afctoken":response['result']}))
+            else:
+                if "message" in response:
+                    returnresponse.update(({"result":response['message']}))
+                else:
+                    returnresponse.update(({"result":"Aruba Fabric Composer is unreachable"}))
+        else:
+            response=classes.classes.checkafcToken(afcipaddress, afctoken)
+            if isinstance(response,str):
+                response = json.loads(response)
+            if "status_code" in response:
+                if response['status_code']==204:
+                    returnresponse.update(({"result":"Aruba Fabric Composer is reachable, token is valid"}))
+                else:
+                    returnresponse.update(({"result":response['result']}))
+            else:
+                returnresponse.update(({"result":response['message']}))
+    return returnresponse
+
+
+
+def checkPSM(psmvars,psmipaddress, psmusername, psmpassword, psmtoken):
+    returnresponse={}
+    if len(psmvars)==0:
+        # There are no vars stored yet. Only check if all the fields have been filled in the form
+        if psmipaddress!= "" and psmusername != "" and psmpassword!="":
+            response= classes.classes.obtainpsmToken(psmipaddress, psmusername, psmpassword)
+            if "Set-Cookie" in response:
+                # There is a cookie, so the login was successful. We don't have to logout because we will be using this cookie for subsequent calls
+                # Result is the afctoken. We need to update the afcvars
+                returnresponse.update(({"result":"Pensando Services Manager is reachable, token is valid","psmtoken": response['Set-Cookie']}))
+            else:
+                returnresponse.update(({"result":"Pensando Services Manager is reachable but token is invalid"}))
+
+    else:
+        # if the username, IP address or password has changed, we need to obtain a new token
+        if psmipaddress!= psmvars['psmipaddress'] or psmusername != psmvars['psmusername'] or psmpassword!=psmvars['psmpassword']:
+            response= classes.classes.obtainpsmToken(psmipaddress, psmusername, psmpassword)
+            if "headers" in response:
+                if "Set-Cookie" in response.headers:
+                    # There is a cookie, so the login was successful. We don't have to logout because we will be using this cookie for subsequent calls
+                    # Result is the afctoken. We need to update the afcvars
+                    psmvars.update({'Cookie': response['Set-Cookie']})
+                    queryStr="update systemconfig set datacontent='{}' where configtype='syspsm'".format(json.dumps(psmvars))
+                    classes.classes.sqlQuery(queryStr,"update")
+                    returnresponse.update(({"result":"Pensando Services Manager is reachable, token is valid"}))
+                else:
+                    returnresponse.update(({"result":"Pensando Services Manager is reachable but token is invalid"}))
+            else:
+                if "message" in response:
+                    returnresponse.update(({"result":response['message']}))
+                else:
+                    returnresponse.update(({"result":"Pensando Services Manager is unreachable"}))
+        else:
+            response=classes.classes.checkpsmToken(psmvars['psmipaddress'], psmvars['psmtoken'])
+            if isinstance(response,str):
+                response = json.loads(response)
+            if "status_code" in response:
+                if response['status_code']==204 or response['status_code']==200:
+                    returnresponse.update(({"result":"Pensando Services Manager is reachable, token is valid"}))
+                else:
+                   returnresponse.update(({"result":response['result']}))
+            else:
+                returnresponse.update(({"result":response['message']}))
+    return returnresponse
+        

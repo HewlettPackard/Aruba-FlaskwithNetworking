@@ -1,4 +1,4 @@
-<!-- (C) Copyright 2019 Hewlett Packard Enterprise Development LP. -->
+<!-- (C) Copyright 2021 Hewlett Packard Enterprise Development LP. -->
 {% block scripts %}
 <link href="static/stylesheet.css" rel="stylesheet" />
 <script src="static/scripts/jquery-1.10.2.min.js"></script>
@@ -16,7 +16,6 @@
 
 {% include 'navbar.html' %}
 
-<div id="maincontainer" style="background-color: mintcream;">
     <table class="tablenoborder">
         <form method="POST" name="Select Device">
             <input type="hidden" name="action" value="Show Device Information" />
@@ -35,6 +34,4 @@
             </tr>
         </form>
     </table>
- </div>
-
-    {% endblock %}
+{% endblock %}

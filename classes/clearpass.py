@@ -70,8 +70,6 @@ def clearpassdbAction(formresult):
             constructQuery += " ipaddress like'%" + formresult['searchIpaddress'] + "%' AND "
         if formresult['searchPlatform']:
             constructQuery += " platform like'%" + formresult['searchPlatform'] + "%' AND "
-
-
         queryStr="select COUNT(*) as totalentries from devices " + constructQuery[:-4]
         navResult=classes.classes.navigator(queryStr,formresult)
         totalentries=navResult['totalentries']
@@ -109,18 +107,18 @@ def getRESTcp (deviceid,geturl):
         header={'Content-Type':'application/json'}
         try:
             # Obtain the new token.
-            response = requests.post(baseurl+url, verify=False, data=json.dumps(credentials),headers=header, timeout=2)
+            response = requests.post(baseurl+url, verify=False, data=json.dumps(credentials),headers=header, timeout=10)
             # if the status code equals 200, then the call was successful, so we can use the token in the header.
             if response.status_code==200:
                 # Now, obtain the information from ClearPass
                 authtoken="Bearer " + response.json()['access_token']
                 header={'Content-Type':'application/json','Authorization': authtoken }
-                response = requests.get(baseurl+geturl, verify=False, data=json.dumps(credentials),headers=header, timeout=2)
+                response = requests.get(baseurl+geturl, verify=False, data=json.dumps(credentials),headers=header, timeout=10)
                 return response.json()
             else:
                 return 401
-        except:
-            print("Cannot obtain information from ClearPass")
+        except Exception as e:
+            print("Cannot obtain information from ClearPass: {}".format(e))
             return 401
     else:
         return 401
@@ -169,6 +167,9 @@ def getendpointInfo(deviceid,epEntryperpage,epPageoffset, searchMacaddress, sear
         url="endpoint?filter=" + searchFilter + "&sort=%2Bid&offset=0&limit=" + str(epEntryperpage) + "&calculate_count=true"
         endpointInfo=classes.classes.getRESTcp(deviceid,url)
         return {'endpointInfo': endpointInfo,'deviceInfo': deviceInfo, 'epTotalentries': endpointInfo['count'], 'epEntryperpage': epEntryperpage, 'epPageoffset': 0 , 'searchMacaddress': searchMacaddress, 'searchDescription': searchDescription, 'searchStatus': searchStatus }
+    elif endpointInfo==403:
+        # Access denied
+        endpointInfo={"count":0,"message":"Access denied"}
     else:
         return {'endpointInfo': endpointInfo,'deviceInfo': deviceInfo, 'epTotalentries': endpointInfo['count'], 'epEntryperpage': epEntryperpage, 'epPageoffset': pageOffset , 'searchMacaddress': searchMacaddress, 'searchDescription': searchDescription, 'searchStatus': searchStatus }
 
@@ -247,19 +248,21 @@ def getservicesInfo(deviceid,seEntryperpage,sePageoffset, searchName, searchType
         servicesItems=[]
     if searchTemplate:
         for li in servicesInfo['_embedded']['items']:
-            if searchTemplate in li['template']:
+            if searchTemplate.lower() in li['template'].lower():
                 servicesItems.append(li)
             servicesInfo['_embedded']['items']=servicesItems
         servicesItems=[]
     if searchType:
         for li in servicesInfo['_embedded']['items']:
-            if searchType in li['type']:
+            if searchType.lower() in li['type'].lower():
                 servicesItems.append(li)
+            servicesInfo['_embedded']['items']=servicesItems
         servicesItems=[]
     if servicesInfo==401:        
         servicesInfo={}
         return {'servicesInfo': servicesInfo,'deviceInfo': deviceInfo, 'seTotalentries': 0, 'seEntryperpage': seEntryperpage, 'sePageoffset': 0, 'searchName':searchName, 'searchType': searchType,'searchTemplate': searchTemplate,'searchStatus':searchStatus }
     elif len(servicesInfo)==0:
+        print ("Services info length is zero")
         # It might also be that the pageOffset is too far off finding information, if that is the case, set the pageOffset to 0 and query again
         url="config/service?filter=%7B%7D&sort=%2Bid&offset=0&limit=" + str(seEntryperpage) + "&calculate_count=true"
         servicesInfo=classes.classes.getRESTcp(deviceid,url)

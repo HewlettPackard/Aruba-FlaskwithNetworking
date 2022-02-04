@@ -39,44 +39,46 @@
             </tr>
             </table>
     <table class="tablenoborder">
-            <input name="action" type="hidden" value="navigation" />
-            <input name='currentpageoffset' type='hidden' value="{{pageoffset}}" />
-            <input name='currenttotalentries' type='hidden' value="{{totalentries}}" />
-            <input name='totalpages' type="hidden" value="{{ totalpages }}" />
-            <input name='currententryperpage' id="currententryperpage" type='hidden' value="{{ entryperpage }}" />
-            <tr>
-                <td width="5%" align="left"><font class="font13pxgrey">ID</font></td>
-                <td nowrap><font class="font13pxgrey">Common name</font></td>
-                <td nowrap><font class="font13pxgrey">Distinguished name</font></td>
-                <td nowrap><font class="font13pxgrey">Principal name</font></td>
-                <td></td>
-            </tr>
-            <tr style="background-color: grey;" class="tableTitle">
-                <td align="left" nowrap>&nbsp;</td>
-                <td align="left" valign="top"><input type="text" id="searchName" name="searchName" value="{{ formresult.searchName }}" size="15"></td>
-                <td align="left" valign="top"><input type="text" id="searchEmail" name="searchEmail" value="{{ formresult.searchEmail }}" size="15"></td>
-                <td align="left" valign="top"><input type="text" id="searchRole" name="searchRole" value="{{ formresult.searchRole }}" size="15"></td>
-                <td align="right">
-                    {% if sysvars['authsource']=="ldap" %}<font class="font12pxwhite">
-                        Authentication source <select name="selectauthsource" onchange="this.form.submit()">
-                            <option value="local" {% if formresult['selectauthsource']=="local" %} selected {% endif %}>Local</option>
-                            <option value="ldap" {% if formresult['selectauthsource']=="ldap" %} selected {% endif %}>LDAP</option>
-                        </select>
-                    </font>{% endif %}
-                    <button type="submit" name="searchAction" value="Search" class="transparent-button" id="searchTemplate" onclick="cleartemplateRow(this);"><img src="static/images/search.svg" width="12" height="12" class="showtitleTooltip" data-title="Search"></button>
-                </td>
-            </tr>
+        <input name="action" type="hidden" value="navigation" />
+        <input name='currentpageoffset' type='hidden' value="{{pageoffset}}" />
+        <input name='currenttotalentries' type='hidden' value="{{totalentries}}" />
+        <input name='totalpages' type="hidden" value="{{ totalpages }}" />
+        <input name='currententryperpage' id="currententryperpage" type='hidden' value="{{ entryperpage }}" />
+        <tr>
+            <td width="5%" align="left"><font class="font13pxgrey">ID</font></td>
+            <td nowrap><font class="font13pxgrey">Common name</font></td>
+            <td nowrap><font class="font13pxgrey">Distinguished name</font></td>
+            <td nowrap><font class="font13pxgrey">Principal name</font></td>
+            <td></td>
+        </tr>
+        <tr style="background-color: grey;" class="tableTitle">
+            <td align="left" nowrap>&nbsp;</td>
+            <td align="left" valign="top"><input type="text" id="searchName" name="searchName" value="{{ formresult.searchName }}" size="15"></td>
+            <td align="left" valign="top"><input type="text" id="searchEmail" name="searchEmail" value="{{ formresult.searchEmail }}" size="15"></td>
+            <td align="left" valign="top"><input type="text" id="searchRole" name="searchRole" value="{{ formresult.searchRole }}" size="15"></td>
+            <td align="right">
+                {% if sysvars['authsource']=="ldap" %}<font class="font12pxwhite">
+                    Authentication source <select name="selectauthsource" onchange="this.form.submit()">
+                        <option value="local" {% if formresult['selectauthsource']=="local" %} selected {% endif %}>Local</option>
+                        <option value="ldap" {% if formresult['selectauthsource']=="ldap" %} selected {% endif %}>LDAP</option>
+                    </select>
+                </font>{% endif %}
+                <button type="submit" name="searchAction" value="Search" class="transparent-button" id="searchTemplate" onclick="cleartemplateRow(this);"><img src="static/images/search.svg" width="12" height="12" class="showtitleTooltip" data-title="Search"></button>
+            </td>
+        </tr>
 
-            {% for info in result %}
-            <tr>
-                <td width="5%" align="left" nowrap height="25px"><font class="font12px">{{ loop.index }}</font></td>
-                <td width="1%" align="left" nowrap><font class="font12px">{{ info['attributes']['cn'] }}</font></td>
-                <td width="1%" align="left" nowrap><font class="font12px">{{ info['attributes']['distinguishedName'] }}</font></td>
-                <td width="1%" align="left" nowrap><font class="font12px">{{ info['attributes']['userprincipalName'] }}</font></td>
-                <td width="20%" align="right">
-                </td>
-            </tr>
-            {% endfor %}
+        {% for info in result %}
+        {% if "attributes" in info %}
+        <tr>
+            <td width="5%" align="left" nowrap height="25px"><font class="font12px">{{ loop.index }}</font></td>
+            <td width="1%" align="left" nowrap><font class="font12px">{{ info['attributes']['cn'] }}</font></td>
+            <td width="1%" align="left" nowrap><font class="font12px">{{ info['attributes']['distinguishedName'] }}</font></td>
+            <td width="1%" align="left" nowrap><font class="font12px">{{ info['attributes']['userprincipalName'] }}</font></td>
+            <td width="20%" align="right">
+            </td>
+        </tr>
+        {% endif %}
+        {% endfor %}
     </table>  
     {% else %}
     <table class="tablenoborder">

@@ -19,10 +19,11 @@ $(document).ready(function () {
                         // For some strange reason it could be that the status that is received from the call is not for the same device. If that is the case, we have to skip the update
                         if (response['deviceid'] == deviceid) {
                             //We can show the status
-                            if (response['isRunning'] == "Online") {
-                                //The websocket client is running
+                            if (response['isRunning'] == "Online" && subscriptions['devicestatus'] == "Online") {
+                                //The websocket client is running and device is online
+                                document.getElementById("liProgress").style.display = "none";
                                 document.getElementById('telemetryOnline' + deviceid).innerHTML = "<img src='static/images/status-good.svg' height='12' width='12' class='showtitleTooltip' data-title='Device is online'>";
-                                $('#telemetryOnline' + deviceid).attr('data-status', '2');
+                                $('#telemetryOnline' + deviceid).attr('data-status', '3');
                                 $('#monitor' + deviceid).attr('disabled', false);
                                 document.getElementById("subscriber" + deviceid).innerHTML = subscriptions['subscriber'];
                                 document.getElementById("activesubscriptions" + deviceid).innerHTML = subscriptions['swsubs'];
@@ -33,6 +34,20 @@ $(document).ready(function () {
                             else if (response['isRunning'] == "Offline" && subscriptions['devicestatus'] == "Online") {
                                 //The websocket client is not running but the device is online
                                 document.getElementById('telemetryOnline' + deviceid).innerHTML = "<img src='static/images/status-unknown.svg' height='12' width='12'  class='showtitleTooltip' data-title='Device is online, no subscriptions'>";
+                                $('#telemetryOnline' + deviceid).attr('data-status', '2');
+                                document.getElementById("subscriber" + deviceid).innerHTML = "";
+                                document.getElementById("subscriptions" + deviceid).innerHTML = subscriptions['totaldbsubs'];
+                                document.getElementById("activatedsubscriptions" + deviceid).innerHTML = subscriptions['activedbsubs'];
+                                document.getElementById("activesubscriptions" + deviceid).innerHTML = subscriptions['swsubs'];
+                                document.getElementById("startws" + deviceid).innerHTML = "";
+                                if (subscriptions['subscriber'] != "Not active") {
+                                    startwsHTML = "<button type='button' name='startws' class='transparent-button startwsClient' id='monitor" + deviceid + "' data-deviceid='" + deviceid + "'><img src='static/images/start.svg' width='12' height='12' class='showtitleTooltip' data-title='Start telemetry client'></button>";
+                                    document.getElementById("startws" + deviceid).innerHTML = startwsHTML;
+                                }
+                            }
+                            else if (response['isRunning'] == "Online" && subscriptions['devicestatus'] == "Offline") {
+                                //The websocket client is not running but the device is online
+                                document.getElementById('telemetryOnline' + deviceid).innerHTML = "<img src='static/images/status-critical.svg' height='12' width='12'  class='showtitleTooltip' data-title='Device is offline, telemetry client is active'>";
                                 $('#telemetryOnline' + deviceid).attr('data-status', '1');
                                 document.getElementById("subscriber" + deviceid).innerHTML = "";
                                 document.getElementById("subscriptions" + deviceid).innerHTML = subscriptions['totaldbsubs'];
@@ -41,7 +56,7 @@ $(document).ready(function () {
                                 document.getElementById("startws" + deviceid).innerHTML = "";
                             }
                             else if (response['isRunning'] == "Offline" && subscriptions['devicestatus'] == "Offline") {
-                                document.getElementById('telemetryOnline' + deviceid).innerHTML = "<img src='static/images/status-critical.svg' height='12' width='12'  class='showtitleTooltip' data-title='Device is offline'>";
+                                document.getElementById('telemetryOnline' + deviceid).innerHTML = "<img src='static/images/status-critical.svg' height='12' width='12'  class='showtitleTooltip' data-title='Device is offline, no active subscriptions'>";
                                 $('#telemetryOnline' + deviceid).attr('data-status', '0');
                                 $('#monitor' + deviceid).attr('disabled', true);
                                 document.getElementById("subscriber" + deviceid).innerHTML = "Offline";
@@ -50,13 +65,13 @@ $(document).ready(function () {
                                 document.getElementById("activatedsubscriptions" + deviceid).innerHTML = subscriptions['activedbsubs'];
                                 //Need to show the start wsclient button so that user can start the client manually, only if the switch is online
                                 if (subscriptions['subscriber'] != "Not active") {
-                                    startwsHTML = "<input type='button' name='startws' value='Start client' data-deviceid='" + deviceid + "' id='monitor" + deviceid + "' class='startwsClient'>";
+                                    startwsHTML = "<button type='button' name='startws' class='transparent-button startwsClient' id='monitor" + deviceid + "' data-deviceid='" + deviceid + "'><img src='static/images/start.svg' width='12' height='12' class='showtitleTooltip' data-title='Start telemetry client'></button>";
                                     document.getElementById("startws" + deviceid).innerHTML = startwsHTML;
                                 }
                             }                         
                         }
                     },
-                    error: function () {
+                    error: function (response) {
                         console.log("There is an error obtaining status information");
                     }
                 });
@@ -72,11 +87,10 @@ $(document).ready(function () {
     $('#wsClient').ready(function () {
 
         uri = "ws://" + $('#wsClient').attr('data-hostip') + ":5000";
-        console.log(uri);
         const socket = new WebSocket(uri);
         // Connection opened
         socket.addEventListener('open', function (event) {
-            socket.send('Connecting from Carius client');
+            socket.send('Connecting from Compass client');
         });
 
         // Listen for messages

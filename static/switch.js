@@ -73,7 +73,7 @@ $(document).ready(function () {
     $(".monitordevice").click(function () {
         deviceid = $(this).attr('data-deviceid');
         document.getElementById('monitordevice').setAttribute('data-deviceid', deviceid);
-        document.getElementById("monitordevice").style.display = "block";
+        document.getElementById("monitordevice").style.display = "inline-block";
         document.getElementById("liProgress").style.display = "none";
         document.getElementById("configurationManager").style.display = "none";
         document.getElementById("portaccess").style.display = "none";
@@ -351,7 +351,7 @@ $(document).ready(function () {
                     success: function (response) {
                         response = JSON.parse(response);
                         if (response['status'] == "Online") {
-                            document.getElementById('deviceStatus' + deviceid).innerHTML = "<img src='static/images/ok.png' height='15' width='15'>" + deviceid;
+                            document.getElementById('deviceStatus' + deviceid).innerHTML = "<img src='static/images/status-good.svg' height='12' width='12' class='showtitleTooltip' data-title='Device is online'>" + deviceid;
                             $('#deviceStatus' + deviceid).attr('data-status', '2');
                             $('#deviceStatus' + deviceid).attr('data-ostype', ostype);
                             $("#portaccess" + deviceid).prop('disabled', false);
@@ -365,7 +365,7 @@ $(document).ready(function () {
                             $("#softwareupgrade" + deviceid).css('pointer-events', 'auto');
                         }
                         if (response['status'] == "Offline") {
-                            document.getElementById('deviceStatus' + deviceid).innerHTML = "<img src='static/images/notok.png' height='15' width='15'>" + deviceid;
+                            document.getElementById('deviceStatus' + deviceid).innerHTML = "<img src='static/images/status-critical.svg' height='12' width='12'  class='showtitleTooltip' data-title='Device status unknown'>" + deviceid;
                             $('#deviceStatus' + deviceid).attr('data-status', '0');
                             $('#deviceStatus' + deviceid).attr('data-ostype', ostype);
                             $("#portaccess" + deviceid).prop('disabled', true);
@@ -379,7 +379,7 @@ $(document).ready(function () {
                             $("#softwareupgrade" + deviceid).css('pointer-events', 'none');
                         }
                         if (response['status'] == "Unstable") {
-                            document.getElementById('deviceStatus' + deviceid).innerHTML = "<img src='static/images/risk.png' height='15' width='15'>" + deviceid;
+                            document.getElementById('deviceStatus' + deviceid).innerHTML = "<img src='static/images/status-unknown.svg' height='12' width='12'  class='showtitleTooltip' data-title='Device status unknown'>" + deviceid;
                             $('#deviceStatus' + deviceid).attr('data-status', '1');
                             $('#deviceStatus' + deviceid).attr('data-ostype', ostype);
                             $("#portaccess" + deviceid).prop('disabled', true);
@@ -631,6 +631,7 @@ $(document).ready(function () {
     });
 
 
+    
 });
 
 

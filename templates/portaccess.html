@@ -1,10 +1,10 @@
-<!-- (C) Copyright 2020 Hewlett Packard Enterprise Development LP. -->
+<!-- (C) Copyright 2021 Hewlett Packard Enterprise Development LP. -->
 {% block content %}
 
     <div id="maincontainer">
         <table class='tablewithborder'>
-            <tr><td colspan='7'><font class='font13pxwhite'><center>Access port client information for device {{deviceInfo['ipaddress']}} ({{deviceInfo['description']}})</center></font></td></tr>
-            <tr>
+            <tr class="tableTitle"><td colspan='7'><font class='font13pxwhite'><center>Access port client information for device {{deviceInfo['ipaddress']}} ({{deviceInfo['description']}})</center></font></td></tr>
+            <tr class="tableTitle">
                 <td nowrap><font class='font12pxwhite'>Access port</font></td>
                 <td nowrap><font class='font12pxwhite'>Client name</font></td>
                 <td nowrap><font class='font12pxwhite'>Authentication type</font></td>
@@ -19,7 +19,7 @@
             {% if 'Mac_Auth_Client_UR_Status_Detail' in accessInfo %}
             {% for items in accessInfo['Mac_Auth_Client_UR_Status_Detail'] %}
 
-            <tr>
+            <tr class="tableTitle">
                 <td style="background-color:#ffffff;" nowrap><font class='font11px'>{{ items['Client Base Details']['Port'] }}</font></td>
                 <td style="background-color:#ffffff;" nowrap><font class='font11px'>{{ items['Client Base Details']['Client Name'] }}</font></td>
                 <td style="background-color:#ffffff;" nowrap><font class='font11px'>{{ items['Client Base Details']['Authentication Type'] }}</font></td>
@@ -39,7 +39,7 @@
             {% if '8021x_Auth_Client_UR_Status_Detail' in accessInfo %}
             {% for items in accessInfo['8021x_Auth_Client_UR_Status_Detail'] %}
 
-            <tr>
+            <tr class="tableTitle">
                 <td style="background-color:#ffffff;" nowrap><font class='font11px'>{{ items['Client Base Details']['Port'] }}</font></td>
                 <td style="background-color:#ffffff;" nowrap><font class='font11px'>{{ items['Client Base Details']['Client name'] }}</font></td>
                 <td style="background-color:#ffffff;" nowrap><font class='font11px'>{{ items['Client Base Details']['Authentication Type'] }}</font></td>

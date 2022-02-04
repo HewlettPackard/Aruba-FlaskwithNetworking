@@ -56,6 +56,7 @@
                         <td><font class="font13pxgrey">Severity</font></td>
                         <td><font class="font13pxgrey">Information</font></td>
                         <td></td>
+                        <td></td>
                     </tr>
                     <tr style="background-color: grey;">
                         <td align="left" nowrap>&nbsp;</td>
@@ -77,7 +78,9 @@
                             </select>
                         </td>
                         <td align="left" valign="top"><input type="text" name="searchInfo" id="searchInfo" value="{{ formresult.searchInfo }}" size="30"></td>
-                        <td></td>
+                       <td width="1%"><button type="button" name="action" value="Select all" class="transparent-button selectAll" onclick="selectAll('syslog');"><img src="static/images/select.svg" width="12" height="12" class="showtitleTooltip" data-title="Select all"></button></td>
+                       <td width="1%"><button type="button" name="action" value="Delete all" class="transparent-button" onclick="if (confirm('Are you sure that you want to delete the selection?')) deleteSelection('syslog');"><img src="static/images/trash.svg" width="12" height="12" class="showtitleTooltip" data-title="Delete selection"></button></td>
+ 
                     </tr>
                 </form>
                 <tbody id="logList"></tbody>

@@ -1,582 +1,553 @@
-<!-- (C) Copyright 2020 Hewlett Packard Enterprise Development LP. -->
+<!-- (C) Copyright 2021 Hewlett Packard Enterprise Development LP. -->
+{% block scripts %}
+<script type="text/javascript">
+    var url = "static/cx.js";
+    $.getScript(url);
+</script>
+{% endblock %}
+
+
+
 {% block content %}
 {% set partnumber=[] %}
 {% set serialnumber=[] %}
-    <div id="maincontainer" style="background-color: mintcream;">
-        <div style="display:none;">
-            {% if sysinfo.software_images is defined %}
-            {% for dict_item in sysinfo.subsystems %}
-            {% for key, value in dict_item.product_info.items() %}
-            {% if key=="part_number" %}
-            {% if value!="" %}
-            {{ partnumber.append( value ) }}
-            {% endif %}
-            {% endif %}
-            {% if key=="serial_number" %}
-            {% if value!="" %}
-            {{ serialnumber.append( value ) }}
-            {% endif %}
-            {% endif %}
-            {% endfor %}
-            {% endfor %}
-        </div>
-        <table class="tablewithborder">
-            <tr>
-                <td colspan="12"><font class="font13pxwhite"><center>{{ ipaddress }}  ({{ description }}) Device information</center></font></td>
-            </tr>
-            <tr>
-                <td><font class="font12pxwhite">Hostname</font></td>
-                <td class="whiteBG"><font face="arial" size="1"> {% if sysinfo['hostname'] %}{{ sysinfo['hostname'] }} {% elif "mgmt_intf_status" in sysinfo %} {% if sysinfo['mgmt_intf_status']['hostname'] %} {{ sysinfo['mgmt_intf_status']['hostname'] }} {%endif%} {% else %} {{ sysinfo['platform_name'] }} {% endif %}  </font></td>
-                <td><font class="font12pxwhite">Part number(s)</font></td>
-                <td class="whiteBG">
-                    <font face="arial" size="1">
-                        {% if vsfinfo|length %}
-                        VSF
-                        {% else %}
-                        {% for sku in partnumber|unique %}
-                        {{ sku }}
-                        <!-- Match the sku with the product description -->
-                        <br />
-                        {% endfor %}
-                        {% endif %}
-                    </font>
-                </td>
-                <td><font class="font12pxwhite">Serial Number(s)</font></td>
-                <td class="whiteBG">
-                    <font face="arial" size="1">
-                        {% if vsfinfo|length %}
-                        VSF
-                        {% else %}
-                        {% for sn in serialnumber|unique %}
-                        {{ sn }}<br />
-                        {% endfor %}
-                        {% endif %}
-                    </font>
-                </td>
-                <td><font class="font12pxwhite">Interface Count</font></td>
-                <td class="whiteBG">
-                    <font face="arial" size="1">
-                        {% if vsfinfo|length %}
-                        VSF
-                        {% else %}
-                        {% for items in sysinfo['subsystems'] %}
-                        {% if items['product_info']['interface_count'] %}
-                        {{ items['product_info']['interface_count'] }}<br />
-                        {% endif %}
-                        {% endfor %}
-                        {% endif %}
-                    </font>
-                </td>
-                <td><font class="font12pxwhite">Platform</font></td>
-                <td class="whiteBG"><font face="arial" size="1"> {% if sysinfo['platform_name'] %} {{ sysinfo['platform_name'] }} {% endif %} </font></td>
-                <td><font class="font12pxwhite">Operating System</font></td>
-                <td class="whiteBG"><font face="arial" size="1"> {% if 'software_info' in sysinfo %}{{ sysinfo['software_info']['os_name'] }} {% endif %} </font></td>
-            </tr>
-            <tr>
-                <td><font class="font12pxwhite">Primary Image</font></td>
-                <td class="whiteBG"><font face="arial" size="1"> {{ sysinfo['software_images']['primary_image_version'] }} ({{ sysinfo['software_images']['primary_image_size'] }})  </font></td>
-                <td><font class="font12pxwhite">Secondary Image</font></td>
-                <td class="whiteBG"><font face="arial" size="1"> {{ sysinfo['software_images']['secondary_image_version'] }} ({{ sysinfo['software_images']['secondary_image_size'] }}) </font></td>
-                <td><font class="font12pxwhite">Default Image</font></td>
-                <td class="whiteBG"><font face="arial" size="1"> {{ sysinfo['software_images']['default_image'] }} </font></td>
-                <td><font class="font12pxwhite">Operational Software</font></td>
-                <td class="whiteBG"><font face="arial" size="1"> {{ sysinfo['software_version'] }} </font></td>
-                <td><font class="font12pxwhite">Build Date</font></td>
-                <td class="whiteBG"><font face="arial" size="1"> {% if 'software_info' in sysinfo %}{{ sysinfo['software_info']['build_date'] }} {% endif %}  </font></td>
-                <td><font class="font12pxwhite">Up time</font></td>
-                <td class="whiteBG">
-                    <font face="arial" size="1">{% if 'boot_time' in sysinfo %}{{ timeDelta(sysinfo['boot_time']) }} {% endif %}</font>
-                </td>
-            </tr>
-            {% if 'mgmt_intf_status' in sysinfo %}
+{% if sysinfo.software_images is defined %}
 
-            <tr>
-                <td><font class="font12pxwhite">Management Interface</font></td>
-                <td class="whiteBG"><font face="arial" size="1">{{ sysinfo['mgmt_intf_status']['link_state'] }}</font></td>
-                <td><font class="font12pxwhite">MAC Address</font></td>
-                <td class="whiteBG"><font face="arial" size="1">{{ sysinfo['mgmt_intf_status']['mac_address'] }}</font></td>
-                <td><font class="font12pxwhite">IP Address</font></td>
-                <td class="whiteBG"><font face="arial" size="1">{{ sysinfo['mgmt_intf_status']['ip'] }}</font></td>
-                <td><font class="font12pxwhite">Subnet Mask</font></td>
-                <td class="whiteBG"><font face="arial" size="1">{{ sysinfo['mgmt_intf_status']['subnet_mask'] }}</font></td>
-                <td><font class="font12pxwhite"> &nbsp;</font></td>
-                <td class="whiteBG"><font face="arial" size="1"> &nbsp; </font></td>
-                <td><font class="font12pxwhite"> &nbsp;</font></td>
-                <td class="whiteBG"><font face="arial" size="1"> &nbsp; </font></td>
-            </tr>
-            {% endif %}
 
-            {% for items in sysinfo.subsystems %}
-            {% if items['type'] == "chassis" %}
-            <!-- Check if sysinfo contains power supply information -->
-            {% if items['power_supplies'] %}
-            {% if sysinfo['platform_name']=="6300" %}
-            <tr>
-                <td><font class="font12pxwhite">Power Supply Status</font></td>
-                <td class="whiteBG"><font face="arial" size="1"> {{ items['power_supplies'][0]['status'] }} </font></td>
-                <td><font class="font12pxwhite">Description</font></td>
-                <td class="whiteBG"><font face="arial" size="1"> {% if items['power_supplies'][0]['identity'] %} {{ items['power_supplies'][0]['identity']['description'] }} {% endif %}</font></td>
-                <td><font class="font12pxwhite">Maximum power</font></td>
-                <td class="whiteBG"><font face="arial" size="1"> {% if items['power_supplies'][0]['characteristics'] %} {{ items['power_supplies'][0]['characteristics']['maximum_power'] }} {% endif %} </font></td>
-                <td><font class="font12pxwhite">Failures</font></td>
-                <td class="whiteBG"><font face="arial" size="1"> {% if items['power_supplies'][0]['statistics'] %}  {{ items['power_supplies'][0]['statistics']['failures'] }} {% endif %} </font></td>
-                <td><font class="font12pxwhite">Warnings</font></td>
-                <td class="whiteBG"><font face="arial" size="1">{% if items['power_supplies'][0]['statistics'] %}  {{ items['power_supplies'][0]['statistics']['warnings'] }} {% endif %} </font></td>
-                <td colspan="2"</td>
-            </tr>
-            {% endif %}
-            {% if sysinfo['platform_name']=="8320" or sysinfo['platform_name']=="8325" %}
-            <tr>
-                <td><font class="font12pxwhite">Power Supply 1 Status</font></td>
-                <td class="whiteBG"><font face="arial" size="1"> {{ items['power_supplies'][0]['status'] }} </font></td>
-                <td><font class="font12pxwhite">Part Number</font></td>
-                <td class="whiteBG"><font face="arial" size="1"> {% if items['power_supplies'][0]['identity'] %} {{ items['power_supplies'][0]['identity']['product_name'] }} {% endif %} </font></td>
-                <td><font class="font12pxwhite">Serial Number</font></td>
-                <td class="whiteBG"><font face="arial" size="1"> {% if items['power_supplies'][0]['identity'] %}{{ items['power_supplies'][0]['identity']['serial_number'] }} {% endif %} </font></td>
-                <td><font class="font12pxwhite">Power Supply 2 Status</font></td>
-                <td class="whiteBG"><font face="arial" size="1"> {{ items['power_supplies'][1]['status'] }} </font></td>
-                <td><font class="font12pxwhite">Part Number</font></td>
-                <td class="whiteBG"><font face="arial" size="1"> {% if items['power_supplies'][0]['identity'] %}{{ items['power_supplies'][1]['identity']['product_name'] }} {% endif %} </font></td>
-                <td><font class="font12pxwhite">Serial Number</font></td>
-                <td class="whiteBG"><font face="arial" size="1"> {% if items['power_supplies'][0]['identity'] %}{{ items['power_supplies'][1]['identity']['serial_number'] }} {% endif %} </font></td>
-            </tr>
-            {% endif %}
-            {% endif %}
-            {% endif %}
-            {% endfor %}
+{% for dict_item in sysinfo['subsystem'] %}
 
-            <!-- Check if sysinfo contains fan information -->
-            {% for items in sysinfo.subsystems %}
-            {% if items['type'] == "line_card" %}
-            <!-- Check if sysinfo contains fan information (this is for the 8320) -->
-            {% if items['fans'] %}
-            <tr>
-                <td><font class="font12pxwhite">Fan status</font></td>
-                <td colspan="2" class="whiteBG"><font face="arial" size="1">Fan 1: L: {{ items['fans'][0]['status'] }} ({{ items['fans'][0]['rpm'] }} rpm) R: {{ items['fans'][1]['status'] }} ({{ items['fans'][1]['rpm'] }} rpm) </font></td>
-                <td colspan="2" class="whiteBG"><font face="arial" size="1">Fan 2: L: {{ items['fans'][2]['status'] }} ({{ items['fans'][2]['rpm'] }} rpm) R: {{ items['fans'][3]['status'] }} ({{ items['fans'][3]['rpm'] }} rpm) </font></td>
-                <td colspan="2" class="whiteBG"><font face="arial" size="1">Fan 3: L: {{ items['fans'][4]['status'] }} ({{ items['fans'][4]['rpm'] }} rpm) R: {{ items['fans'][5]['status'] }} ({{ items['fans'][5]['rpm'] }} rpm) </font></td>
-                <td colspan="2" class="whiteBG"><font face="arial" size="1">Fan 4: L: {{ items['fans'][6]['status'] }} ({{ items['fans'][6]['rpm'] }} rpm) R: {{ items['fans'][7]['status'] }} ({{ items['fans'][7]['rpm'] }} rpm) </font></td>
-                <td colspan="2" class="whiteBG"><font face="arial" size="1">Fan 5: L: {{ items['fans'][8]['status'] }} ({{ items['fans'][8]['rpm'] }} rpm) R: {{ items['fans'][9]['status'] }} ({{ items['fans'][9]['rpm'] }} rpm) </font></td>
-                <td class="whiteBG"><font face="arial" size="1"> &nbsp; </font></td>
-            </tr>
-            {% endif %}
-            {% endif %}
-            {% endfor %}
-        </table>
-        <p></p>
-        <!-- VLAN information -->
-        {% if portinfo %}
-        <table class="tablewithborder">
-            <tr>
-                <td colspan="6"><font class="font13pxwhite"><center>Port information</center></font></td>
-            </tr>
-            <tr>
-                <td><center><font class="font12pxwhite">Interface name</font></center></td>
-                <td><center><font class="font12pxwhite">VRF</font></center></td>
-                <td><center><font class="font12pxwhite">Primary IPv4 address/mask</font></center></td>
-                <td><center><font class="font12pxwhite">Secondary IPv4 address/mask</font></center></td>
-                <td><center><font class="font12pxwhite">IPv6 address/mask</font></center></td>
-                <td><center><font class="font12pxwhite">VLAN membership</font></center></td>
-            </tr>
-            {% for items in portinfo |sort(attribute='name') %}
-            {% if items.ip4_address %}
-            <tr>
-                <td class="whiteBG"><font face="arial" size="1">{{ items.name }}</font></td>
-                <td class="whiteBG">
-                    <font face="arial" size="1">
-                        {% set vrfname = items.vrf|string %}
-                        {% set vrf = vrfname.rsplit('/',1) %}
-                        {% set vrfname = vrf[1]|string %}
-                        {{ vrfname }}
-                    </font>
-                </td>
-                <td class="whiteBG"><font face="arial" size="1">{{ items.ip4_address }}</font></td>
-                <td class="whiteBG">
-                    <font face="arial" size="1">
-                        {% for ipv4sec in items.ip4_address_secondary %}
-                        {{ ipv4sec }}&nbsp;
-                        {% endfor %}
-                    </font>
-                </td>
-                <td class="whiteBG">
-                    <font face="arial" size="1">
-                        {% for ipv6address in items.ip6_addresses %}
-                        {{ ipv6address }}&nbsp;
-                        {% endfor %}
-                    </font>
-                </td>
-                <td class="whiteBG">
-                    <font face="arial" size="1">
-                        {% for vlanitems in items.applied_vlan_trunks %}
-                        {% set vlanid = vlanitems.rsplit('/',1) %}
-                        {{ vlanid[1] }}&nbsp;
-                        {% endfor %}
-                    </font>
-                </td>
-            </tr>
-            {% endif %}
-            {% endfor %}
-        </table>
-        {% endif %}
-        {% endif %}
+{% for key in sysinfo['subsystem'][dict_item]['product_info'] %}
+{% if key=="part_number" %}
+{% if sysinfo['subsystem'][dict_item]['product_info']['part_number']!="" %}
+{% set partnumber=partnumber.append( sysinfo['subsystem'][dict_item]['product_info']['part_number'] ) %}
+{% endif %}
+{% endif %}
+{% if key=="serial_number" %}
+{% if sysinfo['subsystem'][dict_item]['product_info']['serial_number']!="" %}
+{% set sn = sysinfo['subsystem'][dict_item]['product_info']['serial_number'] + "(" + sysinfo['subsystem'][dict_item]['product_info']['part_number'] + ")" %}
+{% set serialnumber=serialnumber.append( sn ) %}
+{% endif %}
+{% endif %}
 
-        <p></p>
+{% endfor %}
+{% endfor %}
 
-        {% if vsfinfo|length %}
+{% macro sentence_case(text) %}
+{{ text[0]|upper}}{{text[1:] }}
+{% endmacro %}
 
-        <!-- VSF information -->
-        <table class="tablewithborder">
-            <tr>
-                <td colspan="9"><font class="font13pxwhite"><center>Virtual Switching Framework (VSF) information</center></font></td>
-            </tr>
-            <tr>
-                <td nowrap width="2%"><font class="font12pxwhite">Device Role</font></td>
-                <td nowrap width="2%"><font class="font12pxwhite">Status</font></td>
-                <td nowrap width="2%"><font class="font12pxwhite">Device Member ID</font></td>
-                <td nowrap width="2%"><font class="font12pxwhite">Part number</font></td>
-                <td nowrap width="2%"><font class="font12pxwhite">Product name</font></td>
-                <td nowrap width="2%"><font class="font12pxwhite">Serial number</font></td>
-                <td nowrap width="2%"><font class="font12pxwhite">Interface count</font></td>
-                <td nowrap width="2%"><font class="font12pxwhite">Link 1</font></td>
-                <td nowrap width="2%"><font class="font12pxwhite">Link 2</font></td>
-            </tr>
-            {% for vsfitems in vsfinfo %}
-            <tr>
-                <td class="whiteBG" nowrap><font face="arial" size="1"> {{ vsfitems['role'] }} </font></td>
-                <td class="whiteBG" nowrap><font face="arial" size="1"> {{ vsfitems['status'] }} </font></td>
-                <td class="whiteBG" nowrap><font face="arial" size="1"> {{ vsfitems['id'] }} </font></td>
-                <td class="whiteBG" nowrap>
-                    <font face="arial" size="1">
-                        <div style="display:none;">
-                            {% set vsfmpn=[] %}
-                            {% for dict_item in vsfitems['subsystems'] %}
-                            {% for key, value in dict_item.product_info.items() %}
-                            {% if key=="part_number" %}
-                            {% if value!="" %}
-                            {{ vsfmpn.append( value ) }}
-                            {% endif %}
-                            {% endif %}
-                            {% endfor %}
-                            {% endfor %}
-                        </div>
-                        {% for pn in vsfmpn|unique %}
-                        {{ pn }}
-                        {% endfor %}
-                    </font>
-                </td>
-                <td class="whiteBG" nowrap>
-                    <font face="arial" size="1">
-                        <div style="display:none;">
-                            {% set vsfmpn=[] %}
-                            {% for dict_item in vsfitems['subsystems'] %}
-                            {% for key, value in dict_item.product_info.items() %}
-                            {% if key=="product_description" %}
-                            {% if value!="" %}
-                            {{ vsfmpn.append( value ) }}
-                            {% endif %}
-                            {% endif %}
-                            {% endfor %}
-                            {% endfor %}
-                        </div>
-                        {% for pn in vsfmpn|unique %}
-                        {{ pn }}
-                        {% endfor %}
-                    </font>
-                </td>
-                <td class="whiteBG" nowrap>
-                    <font face="arial" size="1">
-                        <div style="display:none;">
-                            {% set vsfmsn=[] %}
-                            {% for dict_item in vsfitems['subsystems'] %}
-                            {% for key, value in dict_item.product_info.items() %}
-                            {% if key=="serial_number" %}
-                            {% if value!="" %}
-                            {{ vsfmsn.append( value ) }}
-                            {% endif %}
-                            {% endif %}
-                            {% endfor %}
-                            {% endfor %}
-                        </div>
-                        {% for sn in vsfmsn|unique %}
-                        {{ sn }}
-                        {% endfor %}
-                    </font>
-                </td>
-                <td class="whiteBG" nowrap>
-                    <font face="arial" size="1">
-                        <div style="display:none;">
-                            {% set vsfmic=[] %}
-                            {% for dict_item in vsfitems['subsystems'] %}
-                            {% for key, value in dict_item.product_info.items() %}
-                            {% if key=="interface_count" %}
-                            {% if value!="" %}
-                            {{ vsfmic.append( value ) }}
-                            {% endif %}
-                            {% endif %}
-                            {% endfor %}
-                            {% endfor %}
-                        </div>
-                        {% for ic in vsfmic|unique %}
-                        {{ ic }}
-                        {% endfor %}
-                    </font>
-                </td>
-                <td class="whiteBG" nowrap>
-                    <font face="arial" size="1">
-                        {% if vsfitems['links']['1'] %}
-                        {% for link1items in vsfitems['links']['1']['interfaces'] %}
-                        {% set tmpval = link1items.split('/rest/v1/system/interfaces/') %}
-                        {{ tmpval[1]|replace("%2F","/")  }}&nbsp;
-                        {% endfor %}
-                        {% endif %}
-                <td class="whiteBG" nowrap>
-                    <font face="arial" size="1">
-                        {% if vsfitems['links']['2'] %}
-                        {% for link2items in vsfitems['links']['2']['interfaces'] %}
-                        {% set tmpval = link2items.split('/rest/v1/system/interfaces/') %}
-                        {{ tmpval[1]|replace("%2F","/")  }}&nbsp;
-                        {% endfor %}
-                        {% endif %}
-                    </font>
-                </td>
-                </font></td>
-            </tr>
-            {% endfor %}
-        </table>
+{% set mmurl = "" %}
+{% set chassisurl = "" %}
+{% set linecardurl = "" %}
 
-            {% endif %}
 
-            <!-- VSX information -->
-            {% if vsxinfo %}
-            <table class="tablewithborder">
-                <tr>
-                    <td colspan="12"><font class="font13pxwhite"><center>Virtual Switching Exchange (VSX) information</center></font></td>
-                </tr>
-                <tr>
-                    <td><font class="font12pxwhite">Device Role</font></td>
-                    <td nowrap class="whiteBG"><font face="arial" size="1"> {{ vsxinfo['device_role'] }} </font></td>
-                    <td><font class="font12pxwhite">Device System ID</font></td>
-                    <td nowrap class="whiteBG"><font face="arial" size="1"> {{ vsxinfo['oper_status']['oper_system_id'] }} </font></td>
-                    <td><font class="font12pxwhite">Configuration Sync State</font></td>
-                    <td nowrap class="whiteBG"><font face="arial" size="1"> {{ vsxinfo['oper_status']['config_sync_state'] }} </font></td>
-                    <td><font class="font12pxwhite">ISL Management State</font></td>
-                    <td nowrap class="whiteBG"><font face="arial" size="1"> {{ vsxinfo['oper_status']['isl_mgmt_state'] }} </font></td>
-                    <td><font class="font12pxwhite">ISL Protocol Version (State)</font></td>
-                    <td nowrap class="whiteBG"><font face="arial" size="1">  {{ vsxinfo['oper_status']['islp_version'] }} ({{ vsxinfo['oper_status']['islp_state'] }})</font></td>
-                </tr>
-                <tr>
-                    <td><font class="font12pxwhite">Peer Device Role</font></td>
-                    <td class="whiteBG"><font face="arial" size="1"> {{ vsxinfo['peer_status']['peer_device_role'] }} </font></td>
-                    <td><font class="font12pxwhite">Peer ISL Interface</font></td>
-                    <td class="whiteBG"><font face="arial" size="1"> {{ vsxinfo['peer_status']['peer_isl_port'] }} </font></td>
-                    <td><font class="font12pxwhite">Peer Device System ID</font></td>
-                    <td class="whiteBG"><font face="arial" size="1"> {{ vsxinfo['peer_status']['peer_system_id'] }} </font></td>
-                    <td><font class="font12pxwhite">Peer ISL Protocol Version</font></td>
-                    <td class="whiteBG"><font face="arial" size="1"> {{ vsxinfo['peer_status']['peer_islp_version'] }} </font></td>
-                    <td><font class="font12pxwhite">ISL Interfaces</font></td>
-                    <td class="whiteBG">
-                        <font face="arial" size="1">
-                            {% for items in vsxinfo['isl_port']['interfaces'] %}
-                            {{ items['name'] }}&nbsp;
-                            {% endfor %}
-                        </font>
-                    </td>
-                </tr>
-                <tr>
-                    <td><font class="font12pxwhite">ISL Received Packets</font></td>
-                    <td class="whiteBG"><font face="arial" size="1"> {{ vsxinfo['isl_mgmt_statistics']['rx_pkts'] }} </font></td>
-                    <td><font class="font12pxwhite">ISL Transmitted Packets</font></td>
-                    <td class="whiteBG"><font face="arial" size="1"> {{ vsxinfo['isl_mgmt_statistics']['tx_pkts'] }} </font></td>
-                    <td><font class="font12pxwhite">ISL Dropped Packets</font></td>
-                    <td class="whiteBG"><font face="arial" size="1"> {{ vsxinfo['isl_mgmt_statistics']['rx_drops'] }} </font></td>
-                    <td><font class="font12pxwhite">Keep Alive Source IP Address</font></td>
-                    <td class="whiteBG"><font face="arial" size="1">  {{ vsxinfo['keepalive_src_ip'] }}  </font></td>
-                    <td><font class="font12pxwhite">Keep Alive Peer IP Address</font></td>
-                    <td class="whiteBG"><font face="arial" size="1">   {{ vsxinfo['keepalive_peer_ip'] }}   </font></td>
-                </tr>
-                {% if vsxinfo['keepalive_port'] is defined %}
-                <tr>
-                    <td><font class="font12pxwhite">Keep Alive Received Packets</font></td>
-                    <td class="whiteBG"><font face="arial" size="1"> {{ vsxinfo['keepalive_statistics']['rx'] }} </font></td>
-                    <td><font class="font12pxwhite">Keep Alive Transmitted Packets</font></td>
-                    <td class="whiteBG"><font face="arial" size="1"> {{ vsxinfo['keepalive_statistics']['tx'] }} </font></td>
-                    <td><font class="font12pxwhite">Keep Alive Dropped Packets</font></td>
-                    <td class="whiteBG"><font face="arial" size="1"> {{ vsxinfo['keepalive_statistics']['dropped'] }} </font></td>
-                    <td><font class="font12pxwhite">Keep Alive Local Interface</font></td>
-                    <td class="whiteBG"><font face="arial" size="1"> {{ vsxinfo['keepalive_port']['name'] }} </font></td>
-                    <td><font class="font12pxwhite">Administrative Status</font></td>
-                    <td class="whiteBG"><font face="arial" size="1"> {{ vsxinfo['keepalive_port']['admin'] }} </font></td>
-                </tr>
+<table class="tablewithborder">
+    <tr class="tableTitle">
+        <td colspan="12"><font class="font13pxwhite"><center>{{ ipaddress }}  ({{ description }}) Device information</center></font></td>
+    </tr>
+    <tr class="tableTitle">
+        <td><font class="font12pxwhite">Hostname</font></td>
+        <td class="whiteBG"><font class="font10px"> {% if sysinfo['hostname'] %}{{ sysinfo['hostname'] }} {% elif "mgmt_intf_status" in sysinfo %} {% if sysinfo['mgmt_intf_status']['hostname'] %} {{ sysinfo['mgmt_intf_status']['hostname'] }} {%endif%} {% else %} {{ sysinfo['platform_name'] }} {% endif %}  </font></td>
+        <td><font class="font12pxwhite">Part number(s)</font></td>
+        <td class="whiteBG">
+            <font class="font10px">
+                {% if vsfinfo|length %}
+                VSF
+                {% else %}
+                {% for sku in partnumber|unique %}
+                {{ sku }}
+                <!-- Match the sku with the product description -->
+                <br />
+                {% endfor %}
                 {% endif %}
-                {% if vsxinfo['keepalive_vrf'] is defined %}
-                <tr>
-                    <td><font class="font12pxwhite">Keep Alive State</font></td>
-                    <td class="whiteBG"><font face="arial" size="1"> {{ vsxinfo['keepalive_status']['state'] }} </font></td>
-                    <td><font class="font12pxwhite">Keep Alive Peer Status</font></td>
-                    <td class="whiteBG"><font face="arial" size="1"> {{ vsxinfo['keepalive_peer_status']['peer_islp_state'] }} </font></td>
-                    <td><font class="font12pxwhite">Keep Alive VRF</font></td>
-                    <td class="whiteBG"><font face="arial" size="1">{% if vsxinfo['keepalive_vrf']['name'] is defined %} {{ vsxinfo['keepalive_vrf']['name'] }} {% endif %} </font></td>
-                    <td><font class="font12pxwhite">Hello Interval Timer (seconds)</font></td>
-                    <td class="whiteBG"><font face="arial" size="1">  {{ vsxinfo['keepalive_timers']['hello_interval'] }}  </font></td>
-                    <td><font class="font12pxwhite">Dead Interval Timer (seconds)</font></td>
-                    <td class="whiteBG"><font face="arial" size="1">  {{ vsxinfo['keepalive_timers']['dead_interval'] }}  </font></td>
-                </tr>
+            </font>
+        </td>
+        <td><font class="font12pxwhite">Serial Number(s)</font></td>
+        <td class="whiteBG">
+            <font class="font10px">
+                {% if vsfinfo|length %}
+                VSF
+                {% else %}
+                {% for sn in serialnumber|unique %}
+                {{ sn }}<br />
+                {% endfor %}
                 {% endif %}
-            </table>
-            {% endif %}
+            </font>
+        </td>
+        <td><font class="font12pxwhite">Interface Count</font></td>
+        <td class="whiteBG">
+            <font class="font10px">
+                {% if vsfinfo|length %}
+                VSF
+                {% else %}
+                {% for items in sysinfo['subsystem'] %}
+                {% if sysinfo['subsystem'][items]['product_info']['interface_count'] %}
+                {{ sysinfo['subsystem'][items]['product_info']['interface_count'] }}<br />
+                {% endif %}
+                {% endfor %}
+                {% endif %}
+            </font>
+        </td>
+        <td><font class="font12pxwhite">Platform</font></td>
+        <td class="whiteBG"><font class="font10px"> {% if sysinfo['platform_name'] %} {{ sysinfo['platform_name'] }} {% endif %} </font></td>
+        <td><font class="font12pxwhite">Operating System</font></td>
+        <td class="whiteBG"><font class="font10px"> {% if 'software_info' in sysinfo %}{{ sysinfo['software_info']['os_name'] }} {% endif %} </font></td>
+    </tr>
+    <tr class="tableTitle">
+        <td><font class="font12pxwhite">Primary Image</font></td>
+        <td class="whiteBG"><font class="font10px"> {{ sysinfo['software_images']['primary_image_version'] }} ({{ sysinfo['software_images']['primary_image_size'] }})  </font></td>
+        <td><font class="font12pxwhite">Secondary Image</font></td>
+        <td class="whiteBG"><font class="font10px"> {{ sysinfo['software_images']['secondary_image_version'] }} ({{ sysinfo['software_images']['secondary_image_size'] }}) </font></td>
+        <td><font class="font12pxwhite">Default Image</font></td>
+        <td class="whiteBG"><font class="font10px"> {{ sysinfo['software_images']['default_image'] }} </font></td>
+        <td><font class="font12pxwhite">Operational Software</font></td>
+        <td class="whiteBG"><font class="font10px"> {{ sysinfo['software_version'] }} </font></td>
+        <td><font class="font12pxwhite">Build Date</font></td>
+        <td class="whiteBG"><font class="font10px"> {% if 'software_info' in sysinfo %}{{ sysinfo['software_info']['build_date'] }} {% endif %}  </font></td>
+        <td><font class="font12pxwhite">Up time</font></td>
+        <td class="whiteBG">
+            <font class="font10px">{% if 'boot_time' in sysinfo %}{{ timeDelta(sysinfo['boot_time']) }} {% endif %}</font>
+        </td>
+    </tr>
+    {% if 'mgmt_intf_status' in sysinfo %}
 
-            <p></p>
-            {% if sysinfo['capacities_status'] %}
-            <table class="tablewithborder">
-                <tr>
-                    <td colspan="12"><font class="font13pxwhite"><center>Resources Status: (In Use)  of (Available)</center></font></td>
-                </tr>
-                <tr>
-                    <td><font class="font12pxwhite">Classifier ACL Entries</font></td>
-                    <td class="whiteBG">
-                        <font face="arial" size="1">
-                            {% if sysinfo['capacities_status']['classifier_acl_entries'] %}
-                            {{ sysinfo['capacities_status']['classifier_acl_entries'] }}
-                            {% else %}
-                            0
-                            {% endif %}
-                            &nbsp; of {{ sysinfo['capacities']['classifier_acl_entries'] }}
-                        </font>
-                    </td>
-                    <td><font class="font12pxwhite">Classifier ACL's</font></td>
-                    <td class="whiteBG"><font face="arial" size="1">{{ sysinfo['capacities_status']['classifier_acls'] }} of {{ sysinfo['capacities']['classifier_acls'] }}</font></td>
-                    <td><font class="font12pxwhite">Classifier Class Entries</font></td>
-                    <td class="whiteBG"><font face="arial" size="1">{{ sysinfo['capacities_status']['classifier_class_entries'] }} of {{ sysinfo['capacities']['classifier_class_entries'] }}</font></td>
-                    <td><font class="font12pxwhite">Classifier Classes</font></td>
-                    <td class="whiteBG"><font face="arial" size="1">{{ sysinfo['capacities_status']['classifier_classes'] }} of {{ sysinfo['capacities']['classifier_classes'] }}</font></td>
-                    <td><font class="font12pxwhite">Classifier Entries Per ACL</font></td>
-                    <td class="whiteBG">
-                        <font face="arial" size="1">
-                            {% if sysinfo['capacities_status']['classifier_entries_per_acl'] %}
-                            {{ sysinfo['capacities_status']['classifier_entries_per_acl'] }}
-                            {% else %}
-                            0
-                            {% endif %}
-                            &nbsp;of {{ sysinfo['capacities']['classifier_entries_per_acl'] }}
-                        </font>
-                    </td>
-                    <td><font class="font12pxwhite">Classifier Entries Per Class</font></td>
-                    <td class="whiteBG">
-                        <font face="arial" size="1">
-                            {% if sysinfo['capacities_status']['classifier_entries_per_class'] %}
-                            {{ sysinfo['capacities_status']['classifier_entries_per_class'] }}
-                            {% else %}
-                            0
-                            {% endif %}
-                            &nbsp;of {{ sysinfo['capacities']['classifier_entries_per_class'] }}
-                        </font>
-                    </td>
-                </tr>
-                <tr>
-                    <td><font class="font12pxwhite">Classifier Entries Per Policy</font></td>
-                    <td class="whiteBG">
-                        <font face="arial" size="1">
-                            {% if sysinfo['capacities_status']['classifier_entries_per_policy'] %}
-                            {{ sysinfo['capacities_status']['classifier_entries_per_policy'] }}
-                            {% else %}
-                            0
-                            {% endif %}
-                            &nbsp;of {{ sysinfo['capacities']['classifier_entries_per_policy'] }}
-                        </font>
-                    </td>
-                    <td><font class="font12pxwhite">Classifier Policies</font></td>
-                    <td class="whiteBG"><font face="arial" size="1">{{ sysinfo['capacities_status']['classifier_policies'] }} of {{ sysinfo['capacities']['classifier_policies'] }}  </font></td>
-                    <td><font class="font12pxwhite">MSTP Instances</font></td>
-                    <td class="whiteBG"><font face="arial" size="1">{{ sysinfo['capacities_status']['mstp_instances'] }} of {{ sysinfo['capacities']['mstp_instances'] }}</font></td>
-                    <td><font class="font12pxwhite">PVST Instances</font></td>
-                    <td class="whiteBG">
-                        <font face="arial" size="1">
-                            {% if sysinfo['capacities_status']['pvst_instance_count'] %}
-                            {{ sysinfo['capacities_status']['pvst_instance_count'] }}
-                            {% else %}
-                            0
-                            {% endif %}
-                            &nbsp;of {{ sysinfo['capacities']['pvst_instance_count'] }}
-                        </font>
-                    </td>
-                    <td><font class="font12pxwhite">VSX LAG Count</font></td>
-                    <td class="whiteBG">
-                        <font face="arial" size="1">
-                            {% if vsxlags %}
-                            {{ vsxlags|length }}
-                            {% else %}
-                            0
-                            {% endif %}
-                            &nbsp;of {{ sysinfo['capacities']['vsx_interface_count'] }}
-                        </font>
-                    </td>
-                    <td><font class="font12pxwhite">Active Gateway Virtual MAC</font></td>
-                    <td class="whiteBG"><font face="arial" size="1">{{ sysinfo['capacities_status']['active_gateway_vmacs'] }} of {{ sysinfo['capacities']['active_gateway_vmacs'] }}</font></td>
-                </tr>
-                <tr>
-                    <td><font class="font12pxwhite">OSPFv2 Areas</font></td>
-                    <td class="whiteBG"><font face="arial" size="1">{{ sysinfo['capacities_status']['ospfv2_areas'] }} of {{ sysinfo['capacities']['ospfv2_areas'] }}  </font></td>
-                    <td><font class="font12pxwhite">OSPFv2 Interfaces</font></td>
-                    <td class="whiteBG"><font face="arial" size="1">{{ sysinfo['capacities_status']['ospfv2_interfaces'] }} of {{ sysinfo['capacities']['ospfv2_interfaces'] }}  </font></td>
-                    <td><font class="font12pxwhite">OSPFv2 Interfaces Per Area</font></td>
-                    <td class="whiteBG">
-                        <font face="arial" size="1">
-                            {% if sysinfo['capacities_status']['ospfv2_interfaces_per_area'] %}
-                            {{ sysinfo['capacities_status']['ospfv2_interfaces_per_area'] }}
-                            {% else %}
-                            0
-                            {% endif %}
-                            &nbsp;of {{ sysinfo['capacities']['ospfv2_interfaces_per_area'] }}
-                        </font>
-                    </td>
-                    <td><font class="font12pxwhite">OSPFv3 Areas</font></td>
-                    <td class="whiteBG"><font face="arial" size="1">{{ sysinfo['capacities_status']['ospfv3_areas'] }} of {{ sysinfo['capacities']['ospfv3_areas'] }}  </font></td>
-                    <td><font class="font12pxwhite">OSPFv3 Interfaces</font></td>
-                    <td class="whiteBG"><font face="arial" size="1">{{ sysinfo['capacities_status']['ospfv3_interfaces'] }} of {{ sysinfo['capacities']['ospfv3_interfaces'] }}  </font></td>
-                    <td><font class="font12pxwhite">OSPFv3 Interfaces Per Area</font></td>
-                    <td class="whiteBG">
-                        <font face="arial" size="1">
-                            {% if sysinfo['capacities_status']['ospfv3_interfaces_per_area'] %}
-                            {{ sysinfo['capacities_status']['ospfv3_interfaces_per_area'] }}
-                            {% else %}
-                            0
-                            {% endif %}
-                            &nbsp;of {{ sysinfo['capacities']['ospfv3_interfaces_per_area'] }}
-                        </font>
-                    </td>
-                </tr>
-                <tr>
-                    <td><font class="font12pxwhite">BGP AS Path Lists</font></td>
-                    <td class="whiteBG"><font face="arial" size="1">{{ sysinfo['capacities_status']['bgp_aspath_lists'] }} of {{ sysinfo['capacities']['bgp_aspath_lists'] }}</font></td>
-                    <td><font class="font12pxwhite">BGP Neighbors</font></td>
-                    <td class="whiteBG"><font face="arial" size="1">{{ sysinfo['capacities_status']['bgp_neighbors'] }} of {{ sysinfo['capacities']['bgp_neighbors'] }}  </font></td>
-                    <td><font class="font12pxwhite">BGP Peer Groups</font></td>
-                    <td class="whiteBG"><font face="arial" size="1">{{ sysinfo['capacities_status']['bgp_peer_groups'] }} of {{ sysinfo['capacities']['bgp_peer_groups'] }}  </font></td>
-                    <td><font class="font12pxwhite">BGP RR Clients</font></td>
-                    <td class="whiteBG"><font face="arial" size="1">{{ sysinfo['capacities_status']['bgp_rr_clients'] }} of {{ sysinfo['capacities']['bgp_rr_clients'] }}</font></td>
-                    <td><font class="font12pxwhite">BGP Prefix Lists</font></td>
-                    <td class="whiteBG"><font face="arial" size="1">{{ sysinfo['capacities_status']['bgp_prefix_lists'] }} of {{ sysinfo['capacities']['bgp_prefix_lists'] }}  </font></td>
-                    <td><font class="font12pxwhite">BGP Route Maps</font></td>
-                    <td class="whiteBG"><font face="arial" size="1">{{ sysinfo['capacities_status']['bgp_route_maps'] }} of {{ sysinfo['capacities']['bgp_route_maps'] }}</font></td>
-                </tr>
-                <tr>
-                    <td><font class="font12pxwhite">BGP Routes</font></td>
-                    <td class="whiteBG"><font face="arial" size="1">{{ routeinfo | selectattr("from", "equalto", "bgp") | list | count }} of {{ sysinfo['capacities']['bgp_routes'] }}</font></td>
-                    <td><font class="font12pxwhite">BGP Communities</font></td>
-                    <td class="whiteBG"><font face="arial" size="1">{{ sysinfo['capacities_status']['bgp_community_lists'] }} of {{ sysinfo['capacities']['bgp_community_lists'] }}</font></td>
-                    <td><font class="font12pxwhite">VRF's</font></td>
-                    <td class="whiteBG"><font face="arial" size="1">{{ sysinfo['capacities_status']['vrfs'] }} of {{ sysinfo['capacities']['vrfs'] }}</font></td>
-                    <td><font class="font12pxwhite">VRRP IPv4 Virtual Addresses</font></td>
-                    <td class="whiteBG"><font face="arial" size="1">{{ sysinfo['capacities_status']['vrrp_ipv4_virtual_address_entries'] }} of {{ sysinfo['capacities']['vrrp_ipv4_virtual_address_entries'] }}</font></td>
-                    <td><font class="font12pxwhite">VRRP IPv6 Virtual Addresses</font></td>
-                    <td class="whiteBG"><font face="arial" size="1">{{ sysinfo['capacities_status']['vrrp_ipv6_virtual_address_entries'] }} of {{ sysinfo['capacities']['vrrp_ipv6_virtual_address_entries'] }}</font></td>
-                    <td><font class="font12pxwhite">VRRP Group Entries</font></td>
-                    <td class="whiteBG"><font face="arial" size="1">{{ sysinfo['capacities_status']['vrrp_virtual_router_group_entries'] }} of {{ sysinfo['capacities']['vrrp_virtual_router_group_entries'] }}</font></td>
-                </tr>
-            </table>
-            {% endif %}
+    <tr class="tableTitle">
+        <td><font class="font12pxwhite">Management Interface</font></td>
+        <td class="whiteBG"><font class="font10px">{{ sysinfo['mgmt_intf_status']['link_state'] }}</font></td>
+        <td><font class="font12pxwhite">MAC Address</font></td>
+        <td class="whiteBG"><font class="font10px">{{ sysinfo['mgmt_intf_status']['mac_address'] }}</font></td>
+        <td><font class="font12pxwhite">IP Address</font></td>
+        <td class="whiteBG"><font class="font10px">{{ sysinfo['mgmt_intf_status']['ip'] }}</font></td>
+        <td><font class="font12pxwhite">Subnet Mask</font></td>
+        <td class="whiteBG"><font class="font10px">{{ sysinfo['mgmt_intf_status']['subnet_mask'] }}</font></td>
+        <td><font class="font12pxwhite"> &nbsp;</font></td>
+        <td class="whiteBG"><font class="font10px"> &nbsp; </font></td>
+        <td><font class="font12pxwhite"> &nbsp;</font></td>
+        <td class="whiteBG"><font class="font10px"> &nbsp; </font></td>
+    </tr>
+    {% endif %}
+
+    {% for items in sysinfo.subsystems %}
+    {% if items['type'] == "chassis" %}
+    <!-- Check if sysinfo contains power supply information -->
+    {% if items['power_supplies'] %}
+    {% if sysinfo['platform_name']=="6300" %}
+    <tr class="tableTitle">
+        <td><font class="font12pxwhite">Power Supply Status</font></td>
+        <td class="whiteBG"><font class="font10px"> {{ items['power_supplies'][0]['status'] }} </font></td>
+        <td><font class="font12pxwhite">Description</font></td>
+        <td class="whiteBG"><font class="font10px"> {% if items['power_supplies'][0]['identity'] %} {{ items['power_supplies'][0]['identity']['description'] }} {% endif %}</font></td>
+        <td><font class="font12pxwhite">Maximum power</font></td>
+        <td class="whiteBG"><font class="font10px"> {% if items['power_supplies'][0]['characteristics'] %} {{ items['power_supplies'][0]['characteristics']['maximum_power'] }} {% endif %} </font></td>
+        <td><font class="font12pxwhite">Failures</font></td>
+        <td class="whiteBG"><font class="font10px"> {% if items['power_supplies'][0]['statistics'] %}  {{ items['power_supplies'][0]['statistics']['failures'] }} {% endif %} </font></td>
+        <td><font class="font12pxwhite">Warnings</font></td>
+        <td class="whiteBG"><font class="font10px">{% if items['power_supplies'][0]['statistics'] %}  {{ items['power_supplies'][0]['statistics']['warnings'] }} {% endif %} </font></td>
+        <td colspan="2"</td>
+    </tr>
+    {% endif %}
+    {% if sysinfo['platform_name']=="8320" or sysinfo['platform_name']=="8325" %}
+    <tr class="tableTitle">
+        <td><font class="font12pxwhite">Power Supply 1 Status</font></td>
+        <td class="whiteBG"><font class="font10px"> {{ items['power_supplies'][0]['status'] }} </font></td>
+        <td><font class="font12pxwhite">Part Number</font></td>
+        <td class="whiteBG"><font class="font10px"> {% if items['power_supplies'][0]['identity'] %} {{ items['power_supplies'][0]['identity']['product_name'] }} {% endif %} </font></td>
+        <td><font class="font12pxwhite">Serial Number</font></td>
+        <td class="whiteBG"><font class="font10px"> {% if items['power_supplies'][0]['identity'] %}{{ items['power_supplies'][0]['identity']['serial_number'] }} {% endif %} </font></td>
+        <td><font class="font12pxwhite">Power Supply 2 Status</font></td>
+        <td class="whiteBG"><font class="font10px"> {{ items['power_supplies'][1]['status'] }} </font></td>
+        <td><font class="font12pxwhite">Part Number</font></td>
+        <td class="whiteBG"><font class="font10px"> {% if items['power_supplies'][0]['identity'] %}{{ items['power_supplies'][1]['identity']['product_name'] }} {% endif %} </font></td>
+        <td><font class="font12pxwhite">Serial Number</font></td>
+        <td class="whiteBG"><font class="font10px"> {% if items['power_supplies'][0]['identity'] %}{{ items['power_supplies'][1]['identity']['serial_number'] }} {% endif %} </font></td>
+    </tr>
+    {% endif %}
+    {% endif %}
+    {% endif %}
+    {% endfor %}
+
+    <!-- Check if sysinfo contains fan information -->
+    {% for items in sysinfo.subsystems %}
+    {% if items['type'] == "line_card" %}
+    <!-- Check if sysinfo contains fan information (this is for the 8320) -->
+    {% if items['fans'] %}
+    <tr class="tableTitle">
+        <td><font class="font12pxwhite">Fan status</font></td>
+        <td colspan="2" class="whiteBG"><font class="font10px">Fan 1: L: {{ items['fans'][0]['status'] }} ({{ items['fans'][0]['rpm'] }} rpm) R: {{ items['fans'][1]['status'] }} ({{ items['fans'][1]['rpm'] }} rpm) </font></td>
+        <td colspan="2" class="whiteBG"><font class="font10px">Fan 2: L: {{ items['fans'][2]['status'] }} ({{ items['fans'][2]['rpm'] }} rpm) R: {{ items['fans'][3]['status'] }} ({{ items['fans'][3]['rpm'] }} rpm) </font></td>
+        <td colspan="2" class="whiteBG"><font class="font10px">Fan 3: L: {{ items['fans'][4]['status'] }} ({{ items['fans'][4]['rpm'] }} rpm) R: {{ items['fans'][5]['status'] }} ({{ items['fans'][5]['rpm'] }} rpm) </font></td>
+        <td colspan="2" class="whiteBG"><font class="font10px">Fan 4: L: {{ items['fans'][6]['status'] }} ({{ items['fans'][6]['rpm'] }} rpm) R: {{ items['fans'][7]['status'] }} ({{ items['fans'][7]['rpm'] }} rpm) </font></td>
+        <td colspan="2" class="whiteBG"><font class="font10px">Fan 5: L: {{ items['fans'][8]['status'] }} ({{ items['fans'][8]['rpm'] }} rpm) R: {{ items['fans'][9]['status'] }} ({{ items['fans'][9]['rpm'] }} rpm) </font></td>
+        <td class="whiteBG"><font class="font10px"> &nbsp; </font></td>
+    </tr>
+    {% endif %}
+    {% endif %}
+    {% endfor %}
+</table>
+
+<!-- Active port information -->
+{% if portinfo %}
+<p></p>
+<table class="tablewithborder">
+    <tr class="tableTitle">
+        <td colspan="7"><font class="font13pxwhite"><center>Active port information</center></font></td>
+    </tr>
+    <tr class="tableTitle">
+        <td><center><font class="font12pxwhite">Interface name</font></center></td>
+        <td><center><font class="font12pxwhite">VRF</font></center></td>
+        <td><center><font class="font12pxwhite">Primary IPv4 address/mask</font></center></td>
+        <td><center><font class="font12pxwhite">Secondary IPv4 address/mask</font></center></td>
+        <td><center><font class="font12pxwhite">IPv6 address/mask</font></center></td>
+        <td><center><font class="font12pxwhite">LLDP information</font></center></td>
+        <td><center><font class="font12pxwhite">VLAN membership (trunk)</font></center></td>
+    </tr>
+    {% for items in portinfo |sort(attribute='name') %}
+    {% if items.link_state=="up" %}
+    <tr class="tableTitle">
+        <td class="whiteBG"><font class="font10px">{{ items.name }}</font></td>
+        <td class="whiteBG">
+            <font class="font10px">
+                {{ items['vrf']}}
+
+            </font>
+        </td>
+        <td class="whiteBG"><font class="font10px">{{ items.ip4_address }}</font></td>
+        <td class="whiteBG">
+            <font class="font10px">
+                {% for ipv4sec in items.ip4_address_secondary %}
+                {{ ipv4sec }}&nbsp;
+                {% endfor %}
+            </font>
+        </td>
+        <td class="whiteBG">
+            <center>
+                <font class="font10px">
+                    {% if items['ip6_addresses'] %}
+                    <img src="static/images/tag.svg" class="showrestCX" width="12" height="12" data-url="{{ items['ip6_addresses'] }}?depth=2" data-info="" data-deviceid="{{ deviceid }}" id="showrestCXipv6{{ items.name|replace("/", "-") }}">
+                    {% endif %}
+                </font>
+            </center>
+        </td>
+        <td class="whiteBG">
+            <center>
+                <font class="font10px">
+                    {% if items['lldp_neighbors'] %}
+                    <img src="static/images/tag.svg" class="showrestCX" width="12" height="12" data-url="{{ items['lldp_neighbors'] }}?depth=2" data-info="" data-deviceid="{{ deviceid }}" id="showrestCXlldp{{ items.name|replace("/", "-") }}">
+                    {% endif %}
+                </font>
+            </center>
+
+        </td>
+        <td class="whiteBG">
+            <font class="font10px">
+                {% for trunkItems in items.applied_vlan_trunks %}
+                {{ trunkItems }}&nbsp;
+                {% endfor %}
+            </font>
+        </td>
+    </tr>
+    {% endif %}
+    {% endfor %}
+</table>
+{% endif %}
+{% endif %}
+
+{% if vsfinfo|length and (platform=="6200" or platform=="6300" or platform=="6400") %}
+<p></p>
+<!-- VSF information -->
+<table class="tablewithborder">
+    <tr class="tableTitle">
+        <td colspan="9"><font class="font13pxwhite"><center>Virtual Switching Framework (VSF) information</center></font></td>
+    </tr>
+    {% if vsfstatus|length %}
+    <tr class="tableTitle">
+        <td nowrap width="2%"><font class="font12pxwhite">Topology type</font></td>
+        <td nowrap class="whiteBG" ><font class="font10px">{{ sentence_case(vsfstatus['vsf_status']['topology_type']) }}</font></td>
+        <td nowrap width="2%"><font class="font12pxwhite">Stack split state</font></td>
+        <td nowrap class="whiteBG" ><font class="font10px">{{ vsfstatus['vsf_status']['stack_split_state'] }}</font></td>
+        <td nowrap width="2%"><font class="font12pxwhite">Split detection method</font></td>
+        <td nowrap class="whiteBG" ><font class="font10px">{{ vsfstatus['vsf_config']['split_detection_method'] }}</font></td>
+        <td nowrap width="2%"><font class="font12pxwhite">Domain ID</font></td>
+        <td nowrap colspan="2" class="whiteBG" ><font class="font10px">{{ vsfstatus['vsf_status']['domain_id'] }}</font></td>
+    </tr>
+    <tr><td colspan="9"></td></tr>
+    {% endif %}
+    <tr class="tableTitle">
+        <td nowrap width="2%"><font class="font12pxwhite">Device Role</font></td>
+        <td nowrap width="2%"><font class="font12pxwhite">Status</font></td>
+        <td nowrap width="2%"><font class="font12pxwhite">Device Member ID</font></td>
+        <td nowrap width="2%"><font class="font12pxwhite">Part number</font></td>
+        <td nowrap width="2%"><font class="font12pxwhite">Product name</font></td>
+        <td nowrap width="2%"><font class="font12pxwhite">Serial number</font></td>
+        <td nowrap width="2%"><font class="font12pxwhite">Interface count</font></td>
+        <td nowrap width="2%"><font class="font12pxwhite">Link 1 (status, connected to)</font></td>
+        <td nowrap width="2%"><font class="font12pxwhite">Link 2</font></td>
+    </tr>
+    {% for vsfitems in vsfinfo %}
+    <tr class="tableTitle">
+        <td class="whiteBG" nowrap><font class="font10px">{{ sentence_case(vsfitems['role']) }}</font></td>
+        <td class="whiteBG" nowrap><font class="font10px"> {{ sentence_case(vsfitems['status']) }} </font></td>
+        <td class="whiteBG" nowrap><font class="font10px"> {{ vsfitems['id'] }} </font></td>
+        <td class="whiteBG" nowrap><font class="font10px">{{ vsfitems['product_info']['part_number']}}</font></td>
+        <td class="whiteBG" nowrap><font class="font10px">{{ vsfitems['product_info']['product_description']}}</font></td>
+        <td class="whiteBG" nowrap><font class="font10px">{{ vsfitems['product_info']['serial_number']}}</font></td>
+        <td class="whiteBG" nowrap><font class="font10px">{{ vsfitems['interface_count']}}</font></td>
+        <td class="whiteBG" nowrap>
+            <font class="font10px">
+                {% if "1" in vsfitems['vsflinks'] %}
+                {% for key, value in vsfitems['vsflinks']['1']['interfaces'].items() %}
+                {{ key }} ({{ vsfitems['vsflinks']['1']['oper_status']}}, {{ vsfitems['vsflinks']['1']['peer_member_id'] }})
+                {% endfor %}
+                {% endif %}
+            </font>
+        </td>
+        <td class="whiteBG" nowrap>
+            <font class="font10px">
+                {% if "2" in vsfitems['vsflinks'] %}
+                {% for key, value in vsfitems['vsflinks']['2']['interfaces'].items() %}
+                {{ key }} ({{ vsfitems['vsflinks']['2']['oper_status']}}, {{ vsfitems['vsflinks']['2']['peer_member_id'] }})
+                {% endfor %}
+                {% endif %}
+            </font>
+        </td>
+    </tr>
+    {% endfor %}
+</table>
+{% endif %}
 
 
+<!-- VSX information -->
+{% if vsxinfo|length %}
+<p></p>
+<table class="tablewithborder">
+    <tr class="tableTitle">
+        <td colspan="12"><font class="font13pxwhite"><center>Virtual Switching Exchange (VSX) information</center></font></td>
+    </tr>
+    <tr class="tableTitle">
+        <td><font class="font12pxwhite">Device Role</font></td>
+        <td nowrap class="whiteBG"><font class="font10px"> {{ vsxinfo['device_role'] }} </font></td>
+        <td><font class="font12pxwhite">Device System ID</font></td>
+        <td nowrap class="whiteBG"><font class="font10px"> {{ vsxinfo['oper_status']['oper_system_id'] }} </font></td>
+        <td><font class="font12pxwhite">Configuration Sync State</font></td>
+        <td nowrap class="whiteBG"><font class="font10px"> {{ vsxinfo['oper_status']['config_sync_state'] }} </font></td>
+        <td><font class="font12pxwhite">ISL Management State</font></td>
+        <td nowrap class="whiteBG"><font class="font10px"> {{ vsxinfo['oper_status']['isl_mgmt_state'] }} </font></td>
+        <td><font class="font12pxwhite">ISL Protocol Version (State)</font></td>
+        <td nowrap class="whiteBG"><font class="font10px">  {{ vsxinfo['oper_status']['islp_version'] }} ({{ vsxinfo['oper_status']['islp_state'] }})</font></td>
+    </tr>
+    <tr class="tableTitle">
+        <td><font class="font12pxwhite">Peer Device Role</font></td>
+        <td class="whiteBG"><font class="font10px"> {{ vsxinfo['peer_status']['peer_device_role'] }} </font></td>
+        <td><font class="font12pxwhite">Peer ISL Interface</font></td>
+        <td class="whiteBG"><font class="font10px"> {{ vsxinfo['peer_status']['peer_isl_port'] }} </font></td>
+        <td><font class="font12pxwhite">Peer Device System ID</font></td>
+        <td class="whiteBG"><font class="font10px"> {{ vsxinfo['peer_status']['peer_system_id'] }} </font></td>
+        <td><font class="font12pxwhite">Peer ISL Protocol Version</font></td>
+        <td class="whiteBG"><font class="font10px"> {{ vsxinfo['peer_status']['peer_islp_version'] }} </font></td>
+        <td><font class="font12pxwhite">ISL Interfaces</font></td>
+        <td class="whiteBG">
+            <font class="font10px">
+                {% for items in vsxinfo['isl_port']['interfaces'] %}
+                {{ items['name'] }}&nbsp;
+                {% endfor %}
+            </font>
+        </td>
+    </tr>
+    <tr class="tableTitle">
+        <td><font class="font12pxwhite">ISL Received Packets</font></td>
+        <td class="whiteBG"><font class="font10px"> {{ vsxinfo['isl_mgmt_statistics']['rx_pkts'] }} </font></td>
+        <td><font class="font12pxwhite">ISL Transmitted Packets</font></td>
+        <td class="whiteBG"><font class="font10px"> {{ vsxinfo['isl_mgmt_statistics']['tx_pkts'] }} </font></td>
+        <td><font class="font12pxwhite">ISL Dropped Packets</font></td>
+        <td class="whiteBG"><font class="font10px"> {{ vsxinfo['isl_mgmt_statistics']['rx_drops'] }} </font></td>
+        <td><font class="font12pxwhite">Keep Alive Source IP Address</font></td>
+        <td class="whiteBG"><font class="font10px">  {{ vsxinfo['keepalive_src_ip'] }}  </font></td>
+        <td><font class="font12pxwhite">Keep Alive Peer IP Address</font></td>
+        <td class="whiteBG"><font class="font10px">   {{ vsxinfo['keepalive_peer_ip'] }}   </font></td>
+    </tr>
+    {% if vsxinfo['keepalive_port'] is defined %}
+    <tr class="tableTitle">
+        <td><font class="font12pxwhite">Keep Alive Received Packets</font></td>
+        <td class="whiteBG"><font class="font10px"> {{ vsxinfo['keepalive_statistics']['rx'] }} </font></td>
+        <td><font class="font12pxwhite">Keep Alive Transmitted Packets</font></td>
+        <td class="whiteBG"><font class="font10px"> {{ vsxinfo['keepalive_statistics']['tx'] }} </font></td>
+        <td><font class="font12pxwhite">Keep Alive Dropped Packets</font></td>
+        <td class="whiteBG"><font class="font10px"> {{ vsxinfo['keepalive_statistics']['dropped'] }} </font></td>
+        <td><font class="font12pxwhite">Keep Alive Local Interface</font></td>
+        <td class="whiteBG"><font class="font10px"> {{ vsxinfo['keepalive_port']['name'] }} </font></td>
+        <td><font class="font12pxwhite">Administrative Status</font></td>
+        <td class="whiteBG"><font class="font10px"> {{ vsxinfo['keepalive_port']['admin'] }} </font></td>
+    </tr>
+    {% endif %}
+    {% if vsxinfo['keepalive_vrf'] is defined %}
+    <tr class="tableTitle">
+        <td><font class="font12pxwhite">Keep Alive State</font></td>
+        <td class="whiteBG"><font class="font10px"> {{ vsxinfo['keepalive_status']['state'] }} </font></td>
+        <td><font class="font12pxwhite">Keep Alive Peer Status</font></td>
+        <td class="whiteBG"><font class="font10px"> {{ vsxinfo['keepalive_peer_status']['peer_islp_state'] }} </font></td>
+        <td><font class="font12pxwhite">Keep Alive VRF</font></td>
+        <td class="whiteBG"><font class="font10px">{% if vsxinfo['keepalive_vrf']['name'] is defined %} {{ vsxinfo['keepalive_vrf']['name'] }} {% endif %} </font></td>
+        <td><font class="font12pxwhite">Hello Interval Timer (seconds)</font></td>
+        <td class="whiteBG"><font class="font10px">  {{ vsxinfo['keepalive_timers']['hello_interval'] }}  </font></td>
+        <td><font class="font12pxwhite">Dead Interval Timer (seconds)</font></td>
+        <td class="whiteBG"><font class="font10px">  {{ vsxinfo['keepalive_timers']['dead_interval'] }}  </font></td>
+    </tr>
+    {% endif %}
+</table>
+    {% endif %}
 
-    </div>
-{% endblock %}
+    {% if sysinfo['capacities_status'] %}
+<p></p>
+<table class="tablewithborder">
+    <tr class="tableTitle">
+        <td colspan="12"><font class="font13pxwhite"><center>Resources Status: (In Use)  of (Available)</center></font></td>
+    </tr>
+    <tr class="tableTitle">
+        <td><font class="font12pxwhite">Classifier ACL Entries</font></td>
+        <td class="whiteBG">
+            <font class="font10px">
+                {% if sysinfo['capacities_status']['classifier_acl_entries'] %}
+                {{ sysinfo['capacities_status']['classifier_acl_entries'] }}
+                {% else %}
+                0
+                {% endif %}
+                &nbsp; of {{ sysinfo['capacities']['classifier_acl_entries'] }}
+            </font>
+        </td>
+        <td><font class="font12pxwhite">Classifier ACL's</font></td>
+        <td class="whiteBG"><font class="font10px">{{ sysinfo['capacities_status']['classifier_acls'] }} of {{ sysinfo['capacities']['classifier_acls'] }}</font></td>
+        <td><font class="font12pxwhite">Classifier Class Entries</font></td>
+        <td class="whiteBG"><font class="font10px">{{ sysinfo['capacities_status']['classifier_class_entries'] }} of {{ sysinfo['capacities']['classifier_class_entries'] }}</font></td>
+        <td><font class="font12pxwhite">Classifier Classes</font></td>
+        <td class="whiteBG"><font class="font10px">{{ sysinfo['capacities_status']['classifier_classes'] }} of {{ sysinfo['capacities']['classifier_classes'] }}</font></td>
+        <td><font class="font12pxwhite">Classifier Entries Per ACL</font></td>
+        <td class="whiteBG">
+            <font class="font10px">
+                {% if sysinfo['capacities_status']['classifier_entries_per_acl'] %}
+                {{ sysinfo['capacities_status']['classifier_entries_per_acl'] }}
+                {% else %}
+                0
+                {% endif %}
+                &nbsp;of {{ sysinfo['capacities']['classifier_entries_per_acl'] }}
+            </font>
+        </td>
+        <td><font class="font12pxwhite">Classifier Entries Per Class</font></td>
+        <td class="whiteBG">
+            <font class="font10px">
+                {% if sysinfo['capacities_status']['classifier_entries_per_class'] %}
+                {{ sysinfo['capacities_status']['classifier_entries_per_class'] }}
+                {% else %}
+                0
+                {% endif %}
+                &nbsp;of {{ sysinfo['capacities']['classifier_entries_per_class'] }}
+            </font>
+        </td>
+    </tr>
+    <tr class="tableTitle">
+        <td><font class="font12pxwhite">Classifier Entries Per Policy</font></td>
+        <td class="whiteBG">
+            <font class="font10px">
+                {% if sysinfo['capacities_status']['classifier_entries_per_policy'] %}
+                {{ sysinfo['capacities_status']['classifier_entries_per_policy'] }}
+                {% else %}
+                0
+                {% endif %}
+                &nbsp;of {{ sysinfo['capacities']['classifier_entries_per_policy'] }}
+            </font>
+        </td>
+        <td><font class="font12pxwhite">Classifier Policies</font></td>
+        <td class="whiteBG"><font class="font10px">{{ sysinfo['capacities_status']['classifier_policies'] }} of {{ sysinfo['capacities']['classifier_policies'] }}  </font></td>
+        <td><font class="font12pxwhite">MSTP Instances</font></td>
+        <td class="whiteBG"><font class="font10px">{{ sysinfo['capacities_status']['mstp_instances'] }} of {{ sysinfo['capacities']['mstp_instances'] }}</font></td>
+        <td><font class="font12pxwhite">PVST Instances</font></td>
+        <td class="whiteBG">
+            <font class="font10px">
+                {% if sysinfo['capacities_status']['pvst_instance_count'] %}
+                {{ sysinfo['capacities_status']['pvst_instance_count'] }}
+                {% else %}
+                0
+                {% endif %}
+                &nbsp;of {{ sysinfo['capacities']['pvst_instance_count'] }}
+            </font>
+        </td>
+        <td><font class="font12pxwhite">VSX LAG Count</font></td>
+        <td class="whiteBG">
+            <font class="font10px">
+                {% if vsxlags %}
+                {{ vsxlags|length }}
+                {% else %}
+                0
+                {% endif %}
+                &nbsp;of {{ sysinfo['capacities']['vsx_interface_count'] }}
+            </font>
+        </td>
+        <td><font class="font12pxwhite">Active Gateway Virtual MAC</font></td>
+        <td class="whiteBG"><font class="font10px">{{ sysinfo['capacities_status']['active_gateway_vmacs'] }} of {{ sysinfo['capacities']['active_gateway_vmacs'] }}</font></td>
+    </tr>
+    <tr class="tableTitle">
+        <td><font class="font12pxwhite">OSPFv2 Areas</font></td>
+        <td class="whiteBG"><font class="font10px">{{ sysinfo['capacities_status']['ospfv2_areas'] }} of {{ sysinfo['capacities']['ospfv2_areas'] }}  </font></td>
+        <td><font class="font12pxwhite">OSPFv2 Interfaces</font></td>
+        <td class="whiteBG"><font class="font10px">{{ sysinfo['capacities_status']['ospfv2_interfaces'] }} of {{ sysinfo['capacities']['ospfv2_interfaces'] }}  </font></td>
+        <td><font class="font12pxwhite">OSPFv2 Interfaces Per Area</font></td>
+        <td class="whiteBG">
+            <font class="font10px">
+                {% if sysinfo['capacities_status']['ospfv2_interfaces_per_area'] %}
+                {{ sysinfo['capacities_status']['ospfv2_interfaces_per_area'] }}
+                {% else %}
+                0
+                {% endif %}
+                &nbsp;of {{ sysinfo['capacities']['ospfv2_interfaces_per_area'] }}
+            </font>
+        </td>
+        <td><font class="font12pxwhite">OSPFv3 Areas</font></td>
+        <td class="whiteBG"><font class="font10px">{{ sysinfo['capacities_status']['ospfv3_areas'] }} of {{ sysinfo['capacities']['ospfv3_areas'] }}  </font></td>
+        <td><font class="font12pxwhite">OSPFv3 Interfaces</font></td>
+        <td class="whiteBG"><font class="font10px">{{ sysinfo['capacities_status']['ospfv3_interfaces'] }} of {{ sysinfo['capacities']['ospfv3_interfaces'] }}  </font></td>
+        <td><font class="font12pxwhite">OSPFv3 Interfaces Per Area</font></td>
+        <td class="whiteBG">
+            <font class="font10px">
+                {% if sysinfo['capacities_status']['ospfv3_interfaces_per_area'] %}
+                {{ sysinfo['capacities_status']['ospfv3_interfaces_per_area'] }}
+                {% else %}
+                0
+                {% endif %}
+                &nbsp;of {{ sysinfo['capacities']['ospfv3_interfaces_per_area'] }}
+            </font>
+        </td>
+    </tr>
+    <tr class="tableTitle">
+        <td><font class="font12pxwhite">BGP AS Path Lists</font></td>
+        <td class="whiteBG"><font class="font10px">{{ sysinfo['capacities_status']['bgp_aspath_lists'] }} of {{ sysinfo['capacities']['bgp_aspath_lists'] }}</font></td>
+        <td><font class="font12pxwhite">BGP Neighbors</font></td>
+        <td class="whiteBG"><font class="font10px">{{ sysinfo['capacities_status']['bgp_neighbors'] }} of {{ sysinfo['capacities']['bgp_neighbors'] }}  </font></td>
+        <td><font class="font12pxwhite">BGP Peer Groups</font></td>
+        <td class="whiteBG"><font class="font10px">{{ sysinfo['capacities_status']['bgp_peer_groups'] }} of {{ sysinfo['capacities']['bgp_peer_groups'] }}  </font></td>
+        <td><font class="font12pxwhite">BGP RR Clients</font></td>
+        <td class="whiteBG"><font class="font10px">{{ sysinfo['capacities_status']['bgp_rr_clients'] }} of {{ sysinfo['capacities']['bgp_rr_clients'] }}</font></td>
+        <td><font class="font12pxwhite">BGP Prefix Lists</font></td>
+        <td class="whiteBG"><font class="font10px">{{ sysinfo['capacities_status']['bgp_prefix_lists'] }} of {{ sysinfo['capacities']['bgp_prefix_lists'] }}  </font></td>
+        <td><font class="font12pxwhite">BGP Route Maps</font></td>
+        <td class="whiteBG"><font class="font10px">{{ sysinfo['capacities_status']['bgp_route_maps'] }} of {{ sysinfo['capacities']['bgp_route_maps'] }}</font></td>
+    </tr>
+    <tr class="tableTitle">
+        <td><font class="font12pxwhite">BGP Routes</font></td>
+        <td class="whiteBG"><font class="font10px">{{ routeinfo | selectattr("from", "equalto", "bgp") | list | count }} of {{ sysinfo['capacities']['bgp_routes'] }}</font></td>
+        <td><font class="font12pxwhite">BGP Communities</font></td>
+        <td class="whiteBG"><font class="font10px">{{ sysinfo['capacities_status']['bgp_community_lists'] }} of {{ sysinfo['capacities']['bgp_community_lists'] }}</font></td>
+        <td><font class="font12pxwhite">VRF's</font></td>
+        <td class="whiteBG"><font class="font10px">{{ sysinfo['capacities_status']['vrfs'] }} of {{ sysinfo['capacities']['vrfs'] }}</font></td>
+        <td><font class="font12pxwhite">VRRP IPv4 Virtual Addresses</font></td>
+        <td class="whiteBG"><font class="font10px">{{ sysinfo['capacities_status']['vrrp_ipv4_virtual_address_entries'] }} of {{ sysinfo['capacities']['vrrp_ipv4_virtual_address_entries'] }}</font></td>
+        <td><font class="font12pxwhite">VRRP IPv6 Virtual Addresses</font></td>
+        <td class="whiteBG"><font class="font10px">{{ sysinfo['capacities_status']['vrrp_ipv6_virtual_address_entries'] }} of {{ sysinfo['capacities']['vrrp_ipv6_virtual_address_entries'] }}</font></td>
+        <td><font class="font12pxwhite">VRRP Group Entries</font></td>
+        <td class="whiteBG"><font class="font10px">{{ sysinfo['capacities_status']['vrrp_virtual_router_group_entries'] }} of {{ sysinfo['capacities']['vrrp_virtual_router_group_entries'] }}</font></td>
+    </tr>
+</table>
+
+
+<div id="showcxTooltip" type="display:none;"></div>
+
+    {% endif %}
+    {% endblock %}

@@ -1,33 +1,30 @@
-<!-- (C) Copyright 2019 Hewlett Packard Enterprise Development LP. -->
-{% block scripts %}
+<!-- (C) Copyright 2021 Hewlett Packard Enterprise Development LP. -->
 
-    <div id="maincontainer">
-        <table class="tablenoborder">
-            <form method="POST" name="Select interface">
-                <tr>
-                    <td>
-                        <font face="arial" size="2">Interface:</font>
-                        <select name="interface" id="interface">
-                            <option value="">Select interface</option>
-                            {% if ostype=="arubaos-cx" %}
-                            {% for items in interfaces |sort(attribute='name') %}
-                            <option value="{{ items['name'] }}">{{items['name']}}</option></option>
-                            {% endfor %}
+{% block content %}
 
-                        </select>
-                        {% elif ostype=="arubaos-switch" %}
+<table class="tablenoborder">
+    <form method="POST" name="Select interface">
+        <tr>
+            <td>
+                <font face="arial" size="2">Interface:</font>
+                <select name="interface" id="interface" class="selectInterface">
+                    <option value="">Select interface</option>
+                    {% if ostype=="arubaos-cx" %}
+                    {% for items in interfaces %}
+                    <option value="{{ items }}">{{items}}</option>
+                    {% endfor %}
 
-                        {% for items in interfaces.port_statistics_element  |sort(attribute='id') %}
-                        <option value="{{ items['id'] }}">{{items['id']}}</option></option>
-                        {% endfor %}
+                </select>
+                {% elif ostype=="arubaos-switch" %}
 
-                        {% endif %}
+                {% for items in interfaces.port_statistics_element  |sort(attribute='id') %}
+                <option value="{{ items['id'] }}">{{items['id']}}</option>
+                {% endfor %}
 
-                    </td>
-                </tr>
-            </form>
-        </table>
-        </div>
+                {% endif %}
 
-
-        {% endblock %}
+            </td>
+        </tr>
+    </form>
+</table>
+{% endblock %}

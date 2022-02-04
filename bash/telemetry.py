@@ -1,8 +1,10 @@
-# (C) Copyright 2020 Hewlett Packard Enterprise Development LP.
+# (C) Copyright 2021 Hewlett Packard Enterprise Development LP.
 #!/usr/bin/python3
 
 
 import psutil, sys, os, platform, subprocess
+import traceback
+import logging
 from subprocess import Popen, PIPE
 import psutil, sys, os, platform, websockets, ssl, asyncio, pathlib, requests, json, pymysql.cursors
 import urllib3
@@ -17,15 +19,15 @@ urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)
 ssl_context = ssl.SSLContext(ssl.PROTOCOL_SSLv23)
 
 
-pathname = os.path.dirname(sys.argv[0])
-appPath = os.path.abspath(pathname) + "/globals.json"
-with open(appPath, 'r') as myfile:
-    data=myfile.read()
-globalconf=json.loads(data)
-
-
 dbconnection=pymysql.connect(host='localhost',user='aruba',password='ArubaRocks',db='aruba', autocommit=True)
 cursor=dbconnection.cursor(pymysql.cursors.DictCursor)
+queryStr="select datacontent from systemconfig where configtype='system'"
+cursor.execute(queryStr)
+result = cursor.fetchall()
+globalconf=result[0]
+if isinstance(globalconf,str):
+    globalconf=json.loads(globalconf)
+
 
 
 # When launching the telemetry service, we also need to run the telemetryclasses.py script. Before we do, this we need to check whether this is already running
@@ -51,7 +53,10 @@ async def server (websocket,path):
                     wsBrowser = conn.request_headers['Cookie'].split(";")
                     await conn.send(message)
                     # This notification comes from the switch. We need to go through the connection list again and only forward this message to the clients that are
-                    # registered with the IP address of the switch                                   
+                    # registered with the IP address of the switch   
+    except Exception as e:
+        print(e)
+        logging.error(traceback.format_exc())
     finally:
         connected.remove(websocket)
 

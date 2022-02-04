@@ -9,36 +9,42 @@
 
 <script>clearCookies()</script>
 
+<div id="mainbg">
+
+
 <table class="tablenoborder" align="center" style="margin-top:300px;">
     <form method="POST" name="Login" action="/submitlogin">
-        <tr>
+        <tr class="noborder">
             <td align="center">
-                <font class="font13px">Carius Login</font>
+                <font class="font13px">CommPass Login</font>
             </td>
         </tr>
 {% if message %}
-        <tr>
+        <tr class="noborder">
             <td align="center">
                 <font class="font13px">{{ message }}</font>
             </td>
         </tr>
 {% endif %}
-        <tr>
+        <tr class="noborder">
             <td align="center">
                 <input type="text" name="username" placeholder="Username" autofocus="">
             </td>
         </tr>
-        <tr>
+        <tr class="noborder">
             <td align="center">
                 <input type="password" name="password" placeholder="Password">
             </td>
         </tr>
-        <tr>
+        <tr class="noborder">
             <td align="center">
                 <button>Login</button>
             </td>
         </tr>
     </form>
 </table>
+
+
+</div>
 
 {% endblock %}

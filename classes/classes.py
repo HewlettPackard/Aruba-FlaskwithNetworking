@@ -1,4 +1,7 @@
 # (C) Copyright 2021 Hewlett Packard Enterprise Development LP.
+from classes.afc import getRestafc, obtainafcToken, checkafcToken, getafcSwitches, afcauditInfo, afcswitchInfo
+from classes.psm import getRestpsm, obtainpsmToken, checkpsmToken
+from classes.arubacentral import centralAuthentication, centralAuthorization, checkcentralToken
 from classes.clearpass import clearpassdbAction, getRESTcp, checkcpOnline, getendpointInfo, getservicesInfo, gettrustInfo
 from classes.arubaoscx import getcxInfo, getcxREST, postcxREST, checkcxCookie
 from classes.arubaosswitch import getswitchInfo,anycli,anycliProvision,checkswitchCookie, getswitchREST, postswitchREST
@@ -9,13 +12,14 @@ from classes.mobility import mobilitydbAction, loginmc, logoutmc, getRESTmc, mci
 from classes.dsprofile import dsprofiledbAction,dsprofileInfo
 from classes.trackers import dhcpdbAction, snmpdbAction, syslogdbAction
 from classes.dsservice import dsservicedbAction, getVLANinfo, getVLANint, getVLANidname, getRolesinfo, getRoleinfo, getACLinfo, getProfile, getService, provisionSwitch
-from classes.sysadmin import verifyAccess, checkAuth, submitLogin, submitsysConf, userdbAction,userldapAction, roledbAction, changePassword, checkProcess, processAction, checkPhpipam, checkInfoblox, checkldap
+from classes.sysadmin import verifyAccess, checkAuth, submitLogin, submitsysConf, userdbAction,userldapAction, roledbAction, changePassword, checkProcess, processAction, checkPhpipam, checkInfoblox, checkldap, submitIntegration, checkAFC, checkPSM
 from classes.configmgr import configdbAction, runningbackupSwitch, runningbackupCX, startupbackupSwitch, startupbackupCX, deleteBackup, branchBackup, changebranchBackup
 from classes.ztp import ztpdevicedbAction, ztptemplatedbAction, ztpActivate, ztpDeactivate, verifyCredentials
 from classes.deviceimages import imagedbAction
 from classes.phpipam import PHPipamtoken, PHPipamget
 from classes.topology import topodbAction, endpointInfo, checktopoDevice, topoInfo
 from classes.infoblox import getInfoblox
+from classes.afc import obtainafcToken, checkafcToken, afcvmwareInventory
 from classes.telemetry import telemetrydbAction, subscriptionAction, checkRunningws, checkSubscriptions
 
 import requests, os, sys, platform, psutil, subprocess, socket
@@ -39,6 +43,7 @@ import ssl
 
 def convertTime(timestamp):
     return datetime.datetime.fromtimestamp(int(timestamp)).strftime('%-m/%-d/%Y, %H:%M:%S %p') 
+
 
 def timeDelta(timestamp):
     timeNow=time.time()
@@ -70,10 +75,20 @@ def sysTime():
 
 
 def globalvars():
-    with open('/var/www/html/bash/globals.json', 'r') as myfile:
-        data=myfile.read()
-    # parse file
-    return(json.loads(data))
+    queryStr="select datacontent from systemconfig where configtype='system'"
+    data=sqlQuery(queryStr,'selectone')
+    return(json.loads(data['datacontent']))
+
+
+def obtainVars(configtype):
+    queryStr="select datacontent from systemconfig where configtype='{}'".format(configtype)
+    data=sqlQuery(queryStr,'selectone')
+    if data==None:
+        datacontent={}
+    else:
+        datacontent=data['datacontent']
+    return(datacontent)
+
 
 
 def sqlQuery(queryStr, command):
@@ -146,13 +161,30 @@ def converttoJSON(input):
     #If the first character is a double quote, we have to remove the first and last character
     if input[0] == '"' and input[-1] == '"':
         input=input[1:-1]
-    return json.loads(input)
+    try:        
+        result = json.loads(input)
+    except Exception as e:      
+        # Find the offending character index:
+        idx_to_replace = int(str(e).split(' ')[-1].replace(')', ''))    
+        # Remove the offending character:
+        input = list(input)
+        input[idx_to_replace] = ' '
+        new_message = ''.join(input)     
+        return converttoJSON(input=new_message)
+    return result
 
 
 def converttoInteger(input):
     if type(input)==str and input:
         input=int(input)
     return input
+
+
+def jinjasqlQuery(input):
+    result=sqlQuery(input,"selectone")
+    if isinstance(result,str):
+        result=json.loads(result)
+    return result
 
 
 def showdataType(input):

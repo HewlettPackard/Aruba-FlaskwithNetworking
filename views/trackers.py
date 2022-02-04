@@ -132,3 +132,14 @@ def deleteTrackerentry():
         return "200"
     except:
         return "400"
+
+
+@trackers.route("/deleteTrackerselection",methods=['GET','POST'])
+def deleteTrackerselection():
+    formresult=request.form
+    try:
+        queryStr="delete from {} where id in ({})".format(formresult['dbtable'],formresult['selection'])
+        result=classes.sqlQuery(queryStr,"selectone")
+        return "200"
+    except:
+        return "400"

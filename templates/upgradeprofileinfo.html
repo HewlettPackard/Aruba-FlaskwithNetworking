@@ -4,8 +4,6 @@
 {% if upgradeInfo|string %}
 {% set upgradeInfo=converttoJSON(upgradeInfo) %}
 {% endif %}
-
-<div id="maincontainer">
     <table class='tablenoborder'>
         <tr>
             <td colspan='10' align='center'><font class='font13pxgrey'>Upgrade profile information</font></td>
@@ -37,5 +35,4 @@
         </tr>
         {% endfor %}
     </table>
-</div>
 {% endblock %}

@@ -355,7 +355,15 @@ def assignswitchAttribute ():
     result=classes.assignswitchAttribute(request.form['deviceid'], request.form['id'])
     return json.dumps(result)
 
+
 @devices.route("/removeswitchAttribute", methods=['GET','POST'])
 def removeswitchAttribute ():
     result=classes.removeswitchAttribute(request.form['deviceid'], request.form['id'])
+    return json.dumps(result)
+
+
+@devices.route("/showrestCX", methods=['GET','POST'])
+def showrestCX ():
+    url=request.form['url'].split("/", 3)
+    result=classes.getcxREST(request.form['deviceid'], url[3])
     return json.dumps(result)

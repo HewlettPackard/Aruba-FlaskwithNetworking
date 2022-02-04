@@ -1,4 +1,4 @@
-// (C) Copyright 2020 Hewlett Packard Enterprise Development LP.
+// (C) Copyright 2021 Hewlett Packard Enterprise Development LP.
 
 
 $(document).ready(function () {
@@ -212,7 +212,7 @@ $('.cpStatus').ready(function () {
                         document.getElementById('cpStatus' + deviceid).innerHTML = "<img src='static/images/status-good.svg' height='12' width='12'  class='showtitleTooltip' data-title='Device is online'>";
                     }
                     else {
-                        document.getElementById('cpStatus' + deviceid).innerHTML = "<img src='static/images/status-critical.png' height='12' width='12'  class='showtitleTooltip' data-title='Device is not reachable'>";
+                        document.getElementById('cpStatus' + deviceid).innerHTML = "<img src='static/images/status-critical.svg' height='12' width='12'  class='showtitleTooltip' data-title='Device is not reachable'>";
                     }
                 }
 

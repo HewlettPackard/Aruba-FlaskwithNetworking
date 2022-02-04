@@ -22,8 +22,8 @@ custom_style = Style(
   opacity='.6',
   opacity_hover='.9',
   transition='400ms ease-in',
-  label_font_size=15,
-  title_font_size=20,
+  label_font_size=12,
+  title_font_size=15,
   colors=('#E853A0', '#E8537A', '#E95355', '#E87653', '#E89B53'))
 
 def checkifOnline(deviceid,ostype):
@@ -295,9 +295,9 @@ def interfacedbAction(deviceid, interface,ostype):
     if ostype=="arubaos-cx":
         # extract the selected interface information
         for items in interfaceinfo:
-            if items['name']==interface:
+            if items==interface:
                 # Assign the selected interface values
-                interfaceinfo=items
+                interfaceinfo=interfaceinfo[items]
     elif ostype=="arubaos-switch":
         # Obtain information of the selected interface
         if interfaceinfo:
@@ -491,14 +491,17 @@ def cleardevicefromAttributes(deviceid):
 
 
 def getswitchFamily(deviceid):
-    queryStr="select osversion from devices where id='{}'".format(deviceid)
+    queryStr="select osversion, platform from devices where id='{}'".format(deviceid)
     result=classes.classes.sqlQuery(queryStr,"selectone")
     if "WC" in result['osversion']:
         return "2930"
     elif "KB" in result['osversion']:
         return "3810/5400"
     elif "FL" in result['osversion']:
-        return "6300/6400"
+        if result['platform']=="6300":
+            return "6300"
+        else:
+            return "6400"
     elif "ML" in result['osversion']:
         return "6200"
     elif "PL" in result['osversion']:
@@ -509,5 +512,9 @@ def getswitchFamily(deviceid):
         return "8320"
     elif "LL" in result['osversion']:
        return "8360"
+    elif "DL" in result['osversion']:
+       return "10000"
+    elif "Virtual" in result['osversion']:
+       return "OVA"
     else:
         return "none"

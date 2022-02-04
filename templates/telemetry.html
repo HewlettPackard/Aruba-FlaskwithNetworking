@@ -117,18 +117,18 @@
                     </font>
                 </td>
                 <td align="right">
-                    <button type="button" name="monitor" value="Monitor" data-username="{{ info['ipaddress'] }}" data-deviceid="{{info['id']}}" id="monitor{{info['id']}}" class="transparent-button monitorSubscription" onclick="highlightRow(this);"><img src="static/images/monitor.svg" width="12" height="12" class="showtitleTooltip" data-title="Monitor telemetry"></button><button type="button" name="managesubscription" value="Manage subscriptions" data-deviceid="{{info['id']}}" class="transparent-button manageSubscription" onclick="highlightRow(this);" {% if va("telemetrysubscriptionaccess","feature")==False %} style="opacity:0.2;pointer-events:none;" {% endif %}><img src="static/images/subscriptions.svg" width="12" height="12" class="showtitleTooltip" data-title="Manage subscriptions"></button>
+                    <span class="startWS" id="startws{{ info['id'] }}"></span><button type="button" name="monitor" value="Monitor" data-username="{{ info['ipaddress'] }}" data-deviceid="{{info['id']}}" id="monitor{{info['id']}}" class="transparent-button monitorSubscription" onclick="highlightRow(this);"><img src="static/images/monitor.svg" width="12" height="12" class="showtitleTooltip" data-title="Monitor telemetry"></button><button type="button" name="managesubscription" value="Manage subscriptions" data-deviceid="{{info['id']}}" class="transparent-button manageSubscription" onclick="highlightRow(this);" {% if va("telemetrysubscriptionaccess","feature")==False %} style="opacity:0.2;pointer-events:none;" {% endif %}><img src="static/images/subscriptions.svg" width="12" height="12" class="showtitleTooltip" data-title="Manage subscriptions"></button>
                 </td>
             </tr>
-            <span class="startWS" id="startws{{ info['id'] }}"></span>
+           
         </form>
         {% endfor %}
     </table>
 
 
 
-    <div id="monitorsubscription" style="display:none;" data-deviceid="">
-        <textarea class="showNotifications" id="showNotifications" rows="30" onclick="clearTextArea(this);" readonly></textarea>
+    <div id="monitorsubscription" style="display:none;text-align: center;" data-deviceid="">
+        <textarea class="showNotifications" id="showNotifications" rows="30" cols="10" onclick="clearTextArea(this);" readonly></textarea>
     </div>
 
 

@@ -7,10 +7,10 @@ $.getScript(url);
 {% endblock %}
 {% block content %}
 
-<div id="maincontainer">
+{% if endpointInfo %}
     <table class="tablewithborder">
-        <tr><td colspan='6' align='center'><font class="font13pxwhite">Endpoint information from {{deviceInfo['ipaddress']}} ({{deviceInfo['description']}})</font></td></tr>
-        <tr>
+        <tr class="tableTitle"><td colspan='6' align='center'><font class="font13pxwhite">Endpoint information from {{deviceInfo['ipaddress']}} ({{deviceInfo['description']}})</font></td></tr>
+        <tr class="tableTitle">
             <td nowrap><font class='font12pxwhite'>ID</font></td>
             <td nowrap><font class='font12pxwhite'>MAC address</font></td>
             <td nowrap><font class='font12pxwhite'>Description</font></td>
@@ -53,7 +53,7 @@ $.getScript(url);
         </form>
         {% for items in endpointInfo['_embedded']['items'] %}
 
-        <tr>
+        <tr class="tableTitle">
             <td class="whiteBG"><font class='font11px'>{{ items['id'] }}</font></td>
             <td class="whiteBG"><font class='font11px'>{{ items['mac_address'] }}</font></td>
             <td class="whiteBG"><font class='font11px'>{{ items['description'] }}</font></td>
@@ -70,5 +70,5 @@ $.getScript(url);
         {% endfor %}
 
     </table>
-</div>
+{% endif %}
 {% endblock %}

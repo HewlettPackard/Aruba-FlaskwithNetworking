@@ -1,0 +1,47 @@
+<!-- (C) Copyright 2021 Hewlett Packard Enterprise Development LP. -->
+{% block scripts %}
+<script src="static/scripts/jquery-1.10.2.min.js"></script>
+<link href="static/stylesheet.css" rel="stylesheet" />
+<script type="text/javascript" src="static/main.js"></script>
+<script type="text/javascript" src="static/psm.js"></script>
+<script type="text/javascript" src="static/psmsecuritypolicies.js"></script>
+{% endblock %}
+
+{% block content %}
+{% set pagename = "PSM security policies" %}
+
+{% include 'navbar.html' %}
+
+<div id="maincontainer">
+
+    <table class="tablenoborder" id="psmsecuritypolicy">
+        <tr>
+            <td width="3%"><font class="font13pxgrey">Item</font></td>
+            <td width="25%"><font class="font13pxgrey">Policy name</font></td>
+            <td width="25%" nowrap><font class="font13pxgrey">Tenant</font></td>
+            <td width="25%" nowrap><font class="font13pxgrey">Propagation status</font></td>
+            <td width="11%" nowrap><center><font class="font13pxgrey">Ruleset</font></center></td>
+            <td width="11%" nowrap><center><font class="font13pxgrey">Pending DSS/DSC</font></center></td>
+            <td></td>
+        </tr>
+        <tbody>
+            {% for info in psminfo['items'] %}
+            <tr id="tr{{ info['meta']['uuid'] }}" class="securitypolicyInformation" data-info="{{ info | replace("True", "'true'") | replace("False", "'false'")| replace("None", "'none'") }}">
+                <td><font class="font10px"><div class="psmsecuritypolicyindex" id="psmsecuritypolicyindex{{ loop.index }}" data-id="{{ loop.index }}">{{ loop.index }}</div></font></td>
+                <td><font class="font10px"><div id="securitypolicyname{{ info['meta']['uuid'] }}">{{ info['meta']['name'] }}</div></font></td>
+                <td nowrap><font class="font10px"><div id="securitypolicytenant{{ info['meta']['uuid'] }}">{{ info['meta']['tenant'] }}</div></font></td>
+                <td nowrap><font class="font10px"><div id="propagationstatus{{ info['meta']['uuid'] }}">{{ info['status']['propagation-status']['status'] }}</div></font></td>
+                <td nowrap><center><button type="button" class="transparent-button ruleInfo" data-uuid="{{info['meta']['uuid']}}" id="showRuleset{{ info['meta']['uuid'] }}" onclick="highlightRow(this);"><img src="static/images/info.svg" class="showtitleTooltip showrulesetInfo" width="12" height="12" data-title="Ruleset information"></button></center></td>
+                <td nowrap><font class="font10px"><center><img src="static/images/tag.svg" class="showattributeTooltip" width="12" height="12" id="pendingdssinfo{{ info['meta']['uuid'] }}"></center></font></td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+
+    <div id="showdaTooltip" type="display:none;"></div>
+    <div class="securitypolicyStatus" type="display:none;"></div>
+    <div class="securitypolicyRuleset" id="securitypolicyRuleset" type="display:none;" data-uuid=""></div>
+
+
+</div>
+{% endblock %}

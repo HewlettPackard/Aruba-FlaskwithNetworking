@@ -1,4 +1,4 @@
-# (C) Copyright 2020 Hewlett Packard Enterprise Development LP.
+# (C) Copyright 2021 Hewlett Packard Enterprise Development LP.
 
 from datetime import date, datetime, time, timedelta
 import time
@@ -26,20 +26,29 @@ def cleanupTrackers():
     cleanuplog.close()
     dbconnection=pymysql.connect(host='localhost',user='aruba',password='ArubaRocks',db='aruba', autocommit=True)
     cursor=dbconnection.cursor(pymysql.cursors.DictCursor)
-    pathname = os.path.dirname(sys.argv[0])
-    appPath = os.path.abspath(pathname) + "/globals.json"
+    globalconf=obtainGlobalconf(cursor)
     # Purge entries from DHCP, Syslog and SNMP which are older than configured values
-    with open(appPath, 'r') as myfile:
-        data=myfile.read()
-    globalconf=json.loads(data)
     queryStr="DELETE FROM `snmptracker` WHERE `utctime` < {}".format(datetime.timestamp(datetime.now() - timedelta(days=int(globalconf['retain_snmp']))))
     cursor.execute(queryStr)
     queryStr="DELETE FROM `dhcptracker` WHERE `utctime` < {}".format(datetime.timestamp(datetime.now() - timedelta(days=int(globalconf['retain_dhcp']))))
     cursor.execute(queryStr)
     queryStr="DELETE FROM `syslog` WHERE `utctime` < {}".format(datetime.timestamp(datetime.now() - timedelta(days=int(globalconf['retain_syslog']))))
     cursor.execute(queryStr)
-    # Cleaning up the logs
-    currentTime=int(time.time())
+
+
+def cleanupafcAudit():
+    # Cleaning up the AFC audit log
+    cleanuplog = open('/var/www/html/log/cleanup.log', 'a')
+    cleanuplog.write('{}: Running AFC auditlog cleanup process. \n'.format(datetime.now()))
+    cleanuplog.close()
+    dbconnection=pymysql.connect(host='localhost',user='aruba',password='ArubaRocks',db='aruba', autocommit=True)
+    cursor=dbconnection.cursor(pymysql.cursors.DictCursor)
+    globalconf=obtainGlobalconf(cursor)
+    afcconf=obtainafcconf(cursor)
+    # Purge entries from AFC audit log database
+    queryStr="DELETE FROM afcaudit WHERE log_date < {}".format(int(datetime.timestamp(datetime.now() - timedelta(days=int(afcconf['auditpurge']))))*1000)
+    cursor.execute(queryStr)
+
 
 def cleanupLogging():
     cleanuplog = open('/var/www/html/log/cleanup.log', 'a')
@@ -47,12 +56,10 @@ def cleanupLogging():
     cleanuplog.close()
     #Get the timestamp of minus 24 hours 
     oneday=int((datetime.now() - timedelta(hours=24)).timestamp())
-    pathname = os.path.dirname(sys.argv[0])
-    appPath = os.path.abspath(pathname) + "/globals.json"
+    dbconnection=pymysql.connect(host='localhost',user='aruba',password='ArubaRocks',db='aruba', autocommit=True)
+    cursor=dbconnection.cursor(pymysql.cursors.DictCursor)
+    globalconf=obtainGlobalconf(cursor)
     # Purge entries from DHCP, Syslog and SNMP which are older than configured values
-    with open(appPath, 'r') as myfile:
-        data=myfile.read()
-    globalconf=json.loads(data)
     # Log files list
     logFiles=["cleanup.log","topology.log","ztp.log","listener.log", "telemetry.log"]
     for items in logFiles:
@@ -102,6 +109,7 @@ def cleanupLogging():
             checklog.write(tsData[1])
             checklog.close()
 
+
 def checkSocketserver():
     status=""
     # Check if the websocket server is running. If it is not running, we need to stop all the ws clients.
@@ -125,6 +133,32 @@ def checkSocketserver():
         cleanuplog = open('/var/www/html/log/cleanup.log', 'a')
         cleanuplog.write('{}: Web Socket server is stopped. All websocket clients have been stopped. \n'.format(datetime.now()))
         cleanuplog.close()
+
+
+def obtainGlobalconf(cursor):
+    queryStr="select datacontent from systemconfig where configtype='system'"
+    cursor.execute(queryStr)
+    result = cursor.fetchall()
+    globalconf=result[0]
+    if isinstance(globalconf,str):
+        globalconf=json.loads(globalconf)
+    globalconf=globalconf['datacontent']
+    if isinstance(globalconf,str):
+        globalconf=json.loads(globalconf)
+    return globalconf
+
+
+def obtainafcconf(cursor):
+    queryStr="select datacontent from systemconfig where configtype='sysafc'"
+    cursor.execute(queryStr)
+    result = cursor.fetchall()
+    afcconf=result[0]
+    if isinstance(afcconf,str):
+        afcconf=json.loads(afcconf)
+    afcconf=afcconf['datacontent']
+    if isinstance(afcconf,str):
+        afcconf=json.loads(afcconf)
+    return afcconf
 
 
 

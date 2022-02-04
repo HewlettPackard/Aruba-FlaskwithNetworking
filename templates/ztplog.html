@@ -8,8 +8,8 @@ $.getScript(url);
 {% block content %}
 <div id="maincontainer">
     <table class='tablewithborder' id="ztplogtable">
-        <tr><td colspan='2'><font class='font13pxwhite'><center>ZTP log information for device {{deviceInfo['ipaddress']}} ({{deviceInfo['name']}})</center></font></td><td width="2%"><button type="button" name="clearLog" class="transparent-button" id="clearLog" data-deviceid="{{ deviceInfo['id'] }}" value="Clear" {% if va("ztpdeviceaccess","feature")==False %} style="opacity:0.2;pointer-events:none;" {% endif %}><img src="static/images/clear.svg" width="12" height="12" class="showtitleTooltip" data-title="Clear log"></button></td></tr>
-        <tr>
+        <tr class="tableTitle"><td colspan='2'><font class='font13pxwhite'><center>ZTP log information for device {{deviceInfo['ipaddress']}} ({{deviceInfo['name']}})</center></font></td><td width="2%"><button type="button" name="clearLog" class="transparent-button" id="clearLog" data-deviceid="{{ deviceInfo['id'] }}" value="Clear" {% if va("ztpdeviceaccess","feature")==False %} style="opacity:0.2;pointer-events:none;" {% endif %}><img src="static/images/clear.svg" width="12" height="12" class="showtitleTooltip" data-title="Clear log"></button></td></tr>
+        <tr class="tableTitle">
             <td nowrap><font class='font12pxwhite'>Date</font></td>
             <td nowrap><font class='font12pxwhite'>Information</font></td>
             <td></td>
@@ -19,7 +19,7 @@ $.getScript(url);
         <tr>
             <td style="background-color:#ffffff;" nowrap><font class='font11px'>{{ items['datetime'] }}</font></td>
             <td style="background-color:#ffffff;" nowrap><font class='font11px'>{{ items['logEntry'] }}</font></td>
-            <td style="background-color:#ffffff;"></tdstyle="background-color:#ffffff;">
+            <td style="background-color:#ffffff;"></td>
         </tr>
 
         {% endfor %}

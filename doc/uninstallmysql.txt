@@ -1,0 +1,2 @@
+drop database IF EXISTS aruba;
+drop user IF EXISTS 'aruba'@'localhost';

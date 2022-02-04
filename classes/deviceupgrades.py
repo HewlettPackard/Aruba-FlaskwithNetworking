@@ -173,7 +173,7 @@ def addupgradeProfile(profileInfo):
     for items in assignedDevices:
         # First we need to obtain the right software from the repository. This can be tricky because the best way to check is on the device itself. If the device is offline, then we have to base the software
         # version on the information in the database
-        queryStr="select id, ipaddress, username, password, ostype, osversion from devices where id='{}'".format(items['id'])
+        queryStr="select id, ipaddress, username, password, ostype, osversion, platform from devices where id='{}'".format(items['id'])
         deviceInfo=classes.classes.sqlQuery(queryStr,"selectone")
         bootInfo=getofflineupgradeInfo(deviceInfo)
         if "devicefamily" in bootInfo:
@@ -360,6 +360,11 @@ def getupgradeInfo(deviceInfo):
                     bootInfo['devicefamily']="8360"
                     queryStr="select * from deviceimages where devicefamily='8360'"
                     imageResult=classes.classes.sqlQuery(queryStr,"select")
+                elif "DL" in deviceInfo['osversion']:
+                    # It's a 10000 series. Obtain all the images that are available for the 10000 series
+                    bootInfo['devicefamily']="10000"
+                    queryStr="select * from deviceimages where devicefamily='10000'"
+                    imageResult=classes.classes.sqlQuery(queryStr,"select")
                 else:
                     imageResult=[]
             else:
@@ -434,6 +439,11 @@ def getofflineupgradeInfo(deviceInfo):
                 bootInfo['devicefamily']="8360"
                 queryStr="select * from deviceimages where devicefamily='8360'"
                 imageResult=classes.classes.sqlQuery(queryStr,"select")
+            elif "DL" in deviceInfo['osversion']:
+                # It's a 10000 series. Obtain all the images that are available for the 10000 series
+                bootInfo['devicefamily']="10000"
+                queryStr="select * from deviceimages where devicefamily='10000'"
+                imageResult=classes.classes.sqlQuery(queryStr,"select")
             else:
                 imageResult=[]
         else:
@@ -446,18 +456,24 @@ def getofflineupgradeInfo(deviceInfo):
 
 def bootSwitch(ostype, upgradeid, deviceid, activepartition):
     response={}
-    if ostype=="arubaos-cx":
-        # We need to reboot the switch with the proper boot partition
-        url="boot?image=" + activepartition
-        response=classes.classes.postcxREST(deviceid,url,"")
-        queryStr="update softwareupdate set status=20 where id='{}'".format(upgradeid)
-        classes.classes.sqlQuery(queryStr,"update")
-    elif ostype=="arubaos-switch":
-        url="system/reboot"
-        parameters={ "boot_image":activepartition}
-        response=classes.classes.postswitchREST(deviceid,url,parameters)
-        queryStr="update softwareupdate set status=20 where id='{}'".format(upgradeid)
-        classes.classes.sqlQuery(queryStr,"update")
+    try:
+        if ostype=="arubaos-cx":
+            # We need to reboot the switch with the proper boot partition
+            url="boot?image=" + activepartition
+            print(url)
+            response=classes.classes.postcxREST(deviceid,url,"")
+            print("Reboot switch")
+            print(response)
+            queryStr="update softwareupdate set status=20 where id='{}'".format(upgradeid)
+            classes.classes.sqlQuery(queryStr,"update")
+        elif ostype=="arubaos-switch":
+            url="system/reboot"
+            parameters={ "boot_image":activepartition}
+            response=classes.classes.postswitchREST(deviceid,url,parameters)
+            queryStr="update softwareupdate set status=20 where id='{}'".format(upgradeid)
+            classes.classes.sqlQuery(queryStr,"update")
+    except Exception as e:
+        print(e)
     return response
 
 
@@ -580,26 +596,29 @@ def getupgradeprofileStatus(profileid):
         # There is only one element in the list, we need to remove the single comma
         switchIds=switchIds.replace(",","")
     # Now obtain the switch information
-    queryStr="select id,ipaddress, description, ostype, platform, osversion from devices where id in {} ".format(switchIds)
-    deviceInfo=classes.classes.sqlQuery(queryStr,"select")
-    # Now iterate through the software update items and add the switch information, status information and optionally (if the upgrade has been completed) the upgrade time
-    for items in upgradeInfo:
-        items['status']=upgradestatus[items['status']]
-        if items['endtime']:
-            # Calculate the upgrade duration
-            upgradeDuration=items['endtime']-items['starttime']
-            days = upgradeDuration.days
-            hours, remainder = divmod(upgradeDuration.seconds, 3600)
-            minutes, seconds = divmod(remainder, 60)
-            items['duration']=str(days) + " days, " + str(hours) + " hour(s), " + str(minutes) + " minute(s), " + str(seconds) + " second(s)"
-        else:
-            items['duration']=""
-        for items2 in deviceInfo:
-            if items2['id']==items['switchid']:
-                # Found the switch information, add this to the upgradeInfo
-                items['ipaddress']=items2['ipaddress']
-                items['description']=items2['description']
-                items['ostype']=items2['ostype']
-                items['platform']=items2['platform']
-                items['osversion']=items2['osversion']
+    try:
+        queryStr="select id,ipaddress, description, ostype, platform, osversion from devices where id in {} ".format(switchIds)
+        deviceInfo=classes.classes.sqlQuery(queryStr,"select")
+        # Now iterate through the software update items and add the switch information, status information and optionally (if the upgrade has been completed) the upgrade time
+        for items in upgradeInfo:
+            items['status']=upgradestatus[items['status']]
+            if items['endtime']:
+                # Calculate the upgrade duration
+                upgradeDuration=items['endtime']-items['starttime']
+                days = upgradeDuration.days
+                hours, remainder = divmod(upgradeDuration.seconds, 3600)
+                minutes, seconds = divmod(remainder, 60)
+                items['duration']=str(days) + " days, " + str(hours) + " hour(s), " + str(minutes) + " minute(s), " + str(seconds) + " second(s)"
+            else:
+                items['duration']=""
+            for items2 in deviceInfo:
+                if items2['id']==items['switchid']:
+                    # Found the switch information, add this to the upgradeInfo
+                    items['ipaddress']=items2['ipaddress']
+                    items['description']=items2['description']
+                    items['ostype']=items2['ostype']
+                    items['platform']=items2['platform']
+                    items['osversion']=items2['osversion']
+    except:
+        return {}
     return upgradeInfo

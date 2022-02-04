@@ -1,0 +1,62 @@
+<!-- (C) Copyright 2021 Hewlett Packard Enterprise Development LP. -->
+{% block scripts %}
+<script src="static/scripts/jquery-1.10.2.min.js"></script>
+<link href="static/stylesheet.css" rel="stylesheet" />
+<script type="text/javascript" src="static/main.js"></script>
+<script type="text/javascript" src="static/psm.js"></script>
+<script type="text/javascript" src="static/psmdss.js"></script>
+
+{% endblock %}
+
+{% block content %}
+{% set pagename = "PSM DSS" %}
+
+{% include 'navbar.html' %}
+
+<div id="maincontainer">
+
+
+    {% if psminfo['message']=="PSM credentials do not exist" %}
+    <script>
+        showmessageBar("PSM integration not created. Click <a href='/syspsm' style='pointer-events:auto;'>here</a> to configure.");
+    </script>
+    {% endif %}
+
+    <table class="tablenoborder" id="psmdss" data-psmdssuuid="">
+        <tr>
+            <td width="2%"><font class="font13pxgrey">Item</font></td>
+            <td width="20%"><font class="font13pxgrey">Name</font></td>
+            <td widht="15%" nowrap><font class="font13pxgrey">Admission state</font></td>
+            <td widht="15%" nowrap><font class="font13pxgrey">PSM connection state</font></td>
+            <td width="15%" nowrap><font class="font13pxgrey">Serial number</font></td>
+            <td width="15%" nowrap><font class="font13pxgrey">Software version</font></td>
+            <td width="9%" nowrap><center><font class="font13pxgrey">Switch information</font></center></td>
+            <td width="9%" nowrap><center><font class="font13pxgrey">Advanced information</font></center></td>
+            <td></td>
+        </tr>
+        <tbody>
+
+            {% for info in psminfo['items'] %}
+
+
+
+            <tr id="tr{{ info['meta']['uuid'] }}" class="dssInformation" data-info="{{ info | replace("True", "'true'") | replace("False", "'false'")| replace("None", "'none'") }}">
+                <td><font class="font10px"><div class="psmdssindex" id="psmdssindex{{ loop.index }}" data-id="{{ loop.index }}">{{ loop.index }}</div></font></td>
+                <td><font class="font10px"><div id="dssname{{ info['meta']['uuid'] }}">{{ info['meta']['name'] }}</div></font></td>
+                <td nowrap><font class="font10px"><div id="dssadmissionstate{{ info['meta']['uuid'] }}">{{ info['status']['admission-phase'] }}</div></font></td>
+                <td nowrap><font class="font10px"><div id="dssconnectionstate{{ info['meta']['uuid'] }}">{{ info['status']['is-connected-to-psm'] }}</div></font></td>
+                <td nowrap><font class="font10px"><div id="dssserialnumber{{ info['meta']['uuid'] }}">{{ info['status']['serial-num'] }}</div></font></td>
+                <td nowrap><font class="font10px"><div id="dssversion{{ info['meta']['uuid'] }}">{{ info['status']['DSCVersion'] }}</div></font></td>
+                <td nowrap><font class="font10px"><center><img src="static/images/tag.svg" class="showattributeTooltip" width="12" height="12" id="dssswitchinfo{{ info['meta']['uuid'] }}"></center></font></td>
+                <td nowrap><font class="font10px"><center><img src="static/images/tag.svg" class="showattributeTooltip" width="12" height="12" id="dssinfo{{ info['meta']['uuid'] }}"></center></font></td>
+            </tr>
+
+            {% endfor %}
+        </tbody>
+    </table>
+
+    <div id="showdaTooltip" type="display:none;"></div>
+    <div class="dssStatus" type="display:none;"></div>
+
+</div>
+{% endblock %}

@@ -8,10 +8,10 @@
 {% endblock %}
 {% block content %}
 
-<div id="maincontainer" style="background-color: mintcream;">
+{% if servicesInfo %}
     <table class="tablewithborder">
-        <tr><td colspan="7"><font class='font13pxwhite'><center>Services information from {{deviceInfo['ipaddress']}} ({{deviceInfo['description']}})</center></font></td></tr>
-        <tr>
+        <tr class="tableTitle"><td colspan="7"><font class='font13pxwhite'><center>Services information from {{deviceInfo['ipaddress']}} ({{deviceInfo['description']}})</center></font></td></tr>
+        <tr class="tableTitle">
             <td nowrap><font class='font12pxwhite'>ID</font></td>
             <td nowrap><font class='font12pxwhite'>Name</font></td>
             <td nowrap><font class='font12pxwhite'>Type</font></td>
@@ -55,7 +55,7 @@
             </tr>
         </form>
         {% for items in servicesInfo['_embedded']['items']|sort(attribute='order_no') %}
-        <tr>
+        <tr class="tableTitle">
             <td class="whiteBG" nowrap><font class='font11px'>{{ items['id'] }}</font></td>
             <td class="whiteBG" nowrap><font class='font11px'>{{ items['name'] }}</font></td>
             <td class="whiteBG" nowrap><font class='font11px'>{{ items['type'] }}</font></td>
@@ -69,5 +69,5 @@
         {% endfor %}
 
     </table>
-</div>
+{% endif %}
 {% endblock %}

@@ -11,6 +11,7 @@ $(document).ready(function () {
     });
 });
 
+
 $('.cleanupProcess').ready(function () {
     var refresh = function () {
         $("div[data-chart='cleanupProcess']").load('monitorProcess?name=Cleanup');
@@ -62,6 +63,7 @@ $('.topologyProcess').ready(function () {
     refresh();
 });
 
+
 $('.ztpProcess').ready(function () {
     var refresh = function () {
         $("div[data-chart='ztpProcess']").load('monitorProcess?name=ZTP');
@@ -69,6 +71,7 @@ $('.ztpProcess').ready(function () {
     setInterval(refresh, 5000);
     refresh();
 });
+
 
 $('.listenerProcess').ready(function () {
     var refresh = function () {
@@ -78,6 +81,7 @@ $('.listenerProcess').ready(function () {
     refresh();
 });
 
+
 $('.telemetryProcess').ready(function () {
     var refresh = function () {
         $("div[data-chart='telemetryProcess']").load('monitorProcess?name=Telemetry');
@@ -85,6 +89,7 @@ $('.telemetryProcess').ready(function () {
     setInterval(refresh, 5000);
     refresh();
 });
+
 
 $('.deviceupgradeProcess').ready(function () {
     var refresh = function () {
@@ -94,7 +99,17 @@ $('.deviceupgradeProcess').ready(function () {
     refresh();
 });
 
+$('.datacollectorProcess').ready(function () {
+    var refresh = function () {
+        $("div[data-chart='datacollectorProcess']").load('monitorProcess?name=Data-collector');
+    }
+    setInterval(refresh, 5000);
+    refresh();
+});
+
+
 $('#systemTime').ready(function () {
+    if ($('#systemTime').length) {
     var refresh = function () {
         $.ajax({
             type: "POST",
@@ -104,12 +119,13 @@ $('#systemTime').ready(function () {
                 response = JSON.parse(response);
                 document.getElementById("systemTime").innerHTML = response['month'] + " " + response['day'] + ", " + response['year'] + ": " + minTwoDigits(response['hour']) + ":" + minTwoDigits(response['minute']) + ":" + minTwoDigits(response['second']);
             }
-
         });
     }
     setInterval(refresh, 1000);
     refresh();
+    }
 });
+
 
 $('#ipamstatus').ready(function () {
     var refresh = async function () {
@@ -129,33 +145,92 @@ $('#ipamstatus').ready(function () {
                     var ipamuser = document.getElementById('ipamuser').value;
                     var ipampassword = document.getElementById('ipampassword').value;
                     var ipamipaddress = document.getElementById('ipamipaddress').value;
-                    var e = document.getElementById("phpipamauth");
-                    var phpipamauth = e.options[e.selectedIndex].value;
                     var phpipamappid = document.getElementById('phpipamappid').value;
                 }
 
                 response = await $.ajax({
                     url: "/ipamStatus",
                     type: "POST",
-                    data: { ipamsystem: ipamsystem, ipamipaddress: ipamipaddress, ipamuser: ipamuser, ipampassword: ipampassword, phpipamauth: phpipamauth, phpipamappid: phpipamappid },
+                    data: { ipamsystem: ipamsystem, ipamipaddress: ipamipaddress, ipamuser: ipamuser, ipampassword: ipampassword, phpipamappid: phpipamappid },
                     success: function (response) {
                     }
                 });
                 if (response == "Online") {
-                    document.getElementById("ipamStatus").innerHTML = "<font class='font13pxwhite'>IPAM is reachable: </font><img src='static/images/ok.png' height='15' width='15'>";
+                    document.getElementById("ipamStatus").innerHTML = "<font class='font12pxwhite'>Status: IPAM is reachable</font>";
                 }
                 else {
-                    document.getElementById("ipamStatus").innerHTML = "<font class='font13pxwhite'>IPAM is unreachable: </font><img src='static/images/notok.png' height='15' width='15'>";
+                    document.getElementById("ipamStatus").innerHTML = "<font class='font12pxwhite'>Status: IPAM is unreachable</font>";
                 }
             }
             else {
-                document.getElementById("ipamStatus").innerHTML = "<font class='font13pxwhite'>IPAM not selected or activated...</font>";
+                document.getElementById("ipamStatus").innerHTML = "<font class='font12pxwhite'>Status: IPAM not selected or activated...</font>";
             }
         }
     }
     setInterval(refresh, 5000);
     refresh();
 });
+
+
+$('#afcstatus').ready(function () {
+    if ($('#afcipaddress').length) {
+        var refresh = async function () {
+            if ($('#afcipaddress').val().length && $('#afcusername').val().length && $('#afcpassword').val().length) {
+                response = await $.ajax({
+                    url: "/afcStatus",
+                    type: "POST",
+                    data: { afcipaddress: $('#afcipaddress').val(), afcuser: $('#afcusername').val(), afcpassword: $('#afcpassword').val(), afctoken: $('#afctoken').val() },
+                    success: function (response) {
+                        if (typeof response === 'string' || response instanceof String) {
+                            response = JSON.parse(response);
+                        }
+                        if (response['count'] == 1) {
+                            // Set the afctoken value in the form
+                            $('#afctoken').val(response['result']);
+                            document.getElementById("afcstatus").innerHTML = "<font class='font12pxwhite'>Status: Aruba Fabric Composer is reachable, token is obtained</font>";
+                        }
+                        else {
+                            document.getElementById("afcstatus").innerHTML = "<font class='font12pxwhite'>Status: " + response['result'] + "</font>";
+                        }
+                    }
+                });
+            }
+        }
+        setInterval(refresh, 8000);
+        refresh();
+    }
+});
+
+
+$('#psmstatus').ready(function () {
+    if ($('#psmipaddress').length) {
+        var refresh = async function () {
+            if ($('#psmipaddress').val().length && $('#psmusername').val().length && $('#psmpassword').val().length) {
+                response = await $.ajax({
+                    url: "/psmStatus",
+                    type: "POST",
+                    data: { psmipaddress: $('#psmipaddress').val(), psmuser: $('#psmusername').val(), psmpassword: $('#psmpassword').val(), psmtoken: $('#psmtoken').val() },
+                    success: function (response) {
+                        if (typeof response === 'string' || response instanceof String) {
+                            response = JSON.parse(response);
+                        }
+                        if ("psmtoken" in response) {
+                            // Set the psmtoken value in the form
+                            $('#psmtoken').val(response['psmtoken']);
+                            document.getElementById("psmstatus").innerHTML = "<font class='font12pxwhite'>Status: Pensando PSM is reachable, token is obtained</font>";
+                        }
+                        else {
+                            document.getElementById("psmstatus").innerHTML = "<font class='font12pxwhite'>Status: " + response['result'] + "</font>";
+                        }
+                    }
+                });
+            }
+        }
+        setInterval(refresh, 8000);
+        refresh();
+    }
+});
+
 
 $(document).on('click', '.downloadLog', function () {
     response = $.ajax({
@@ -180,6 +255,7 @@ $(document).on('click', '.downloadLog', function () {
     });
 });
 
+
 $(document).on('click', '.clearLog', function () {
     response = $.ajax({
         url: "/clearprocessLog",
@@ -190,89 +266,59 @@ $(document).on('click', '.clearLog', function () {
     });
 });
 
+
 function minTwoDigits(n) {
     return (n < 10 ? '0' : '') + n;
 }
 
+
 function ipamConf() {
     var e = document.getElementById("ipamsystem");
     var ipamVal = e.options[e.selectedIndex].value;
-
-
     if (ipamVal == "Infoblox") {
         $("#ipamtr").show();
-        $("#phpipamtr").hide();
+        $(".phpipamid").hide();
     }
-
     else if (ipamVal == "PHPIPAM") {
         $("#ipamtr").show();
-        $("#phpipamtr").show();
+        $(".phpipamid").show();
     }
     else {
         $("#ipamtr").hide();
-        $("#phpipamtr").hide();
     }  
 }
 
 
-function authsourceConf() {
-    var e = document.getElementById("authsource");
-    var authsourceVal = e.options[e.selectedIndex].value;
-    if (authsourceVal == "local") {
-        $("#ldapconf").hide();
-        $("#ldapconfauth").hide();
-    }
-
-    else if (authsourceVal == "ldap") {
-        $("#ldapconf").show();
-        $("#ldapconfauth").show();
-    }
-    else {
-        $("#ldapconf").hide();
-        $("#ldapconfauth").hide();
-    }
-}
-
-
-$(document).on('click', '#testldap', function () {
-    response = $.ajax({
-        url: "/testldap",
-        type: "POST",
-        data: { ldapuser: document.getElementById('ldapuser').value, ldappassword: document.getElementById('ldappassword').value, ldapsource: document.getElementById('ldapsource').value, basedn: document.getElementById('basedn').value},
-        success: function (response) {
-            response = JSON.parse(response);
-            document.getElementById("ldapstatus").innerHTML ="<font class='font12pxwhite'>" +  response['message'] + "</font>";
-        }
-    });
-});
-
 $('#ldapstatus').ready(function () {
-    if (document.getElementById("authsource")){
-    var as = document.getElementById("authsource");
-    var authsource = as.options[as.selectedIndex].value;
-    var refresh = function () {
-        $.ajax({
-            type: "POST",
-            data: { ldapuser: document.getElementById('ldapuser').value, ldappassword: document.getElementById('ldappassword').value, ldapsource: document.getElementById('ldapsource').value, basedn: document.getElementById('basedn').value },
-            url: "/testldap",
-            success: function (response) {
-                response = JSON.parse(response);
-                document.getElementById("ldapstatus").innerHTML = "<font class='font12pxwhite'>" + response['message'] + "</font>";
-            }
-
-        });
+    if ($('#ldapuser').val() && $('#ldappassword').val() && $('#ldapsource').val() && $('#basedn').val()) {
+        var refresh = async function () {
+            $.ajax({
+                type: "POST",
+                data: { ldapuser: $('#ldapuser').val(), ldappassword: $('#ldappassword').val(), ldapsource: $('#ldapsource').val(), basedn: $('#basedn').val() },
+                url: "/testldap",
+                success: function (response) {
+                    response = JSON.parse(response);
+                    if (response['message'] == "LDAP connection successful") {
+                        document.getElementById("ldapstatus").innerHTML = "<font class='font12pxwhite'>Status: " + response['message'];
+                    }
+                    else {
+                        document.getElementById("ldapstatus").innerHTML = "<font class='font12pxwhite'>Status: " + response['message'];
+                    }
+                }
+            });
+        }
+        setInterval(refresh, 5000);
+        refresh();
     }
-    setInterval(refresh, 15000);
-    refresh();
-    }
-
 });
+
 
 $(document).on('click', '#arubacentralauthstatus', async function () {
     await $.ajax(
         {
         type: "POST",
-        url: "/checkauthentication",
+            url: "/checkauthentication",
+            data: { arubacentralurl: $('#arubacentralurl').val(), arubacentralusername: $('#arubacentralusername').val(), arubacentraluserpassword: $('#arubacentraluserpassword').val(), arubacentralclientid: $('#arubacentralclientid').val(), arubacentralclientsecret: $('#arubacentralclientsecret').val(), arubacentralcustomerid: $('#arubacentralcustomerid').val() },
         success: function (response) {
             response = JSON.parse(response);
             document.getElementById("arubacentralauthenticationstatus").innerHTML = "<font class='font12pxwhite'>" + response['message'] + "</font>";
@@ -283,7 +329,6 @@ $(document).on('click', '#arubacentralauthstatus', async function () {
         url: "/checkauthorization",
         success: function (response) {
             response = JSON.parse(response);
-            console.log(response);
             document.getElementById("arubacentralauthorizationstatus").innerHTML = "<font class='font12pxwhite'>" + response['message'] + "</font>";
         }
     });
@@ -312,5 +357,4 @@ function changetimezoneRegion() {
     for (i = 0; i < eval("tz" + region).length; i++) {
          $('#timezonecity').append("<option value='" + eval("tz" + region)[i] + "'>" + eval("tz" + region)[i] + "</option>");
     }
-
 }

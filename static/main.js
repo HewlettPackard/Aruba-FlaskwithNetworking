@@ -2,13 +2,13 @@
 
 
 $(document).on('mouseenter', '.showtitleTooltip', function (event) {
-    if ((event.pageX + 45) > self.innerWidth) {
-        var left = event.pageX - 45 - $(this).attr('data-title').length;
+    if ((event.pageX + 150) > self.innerWidth) {
+        var left = event.pageX - 150 - $(this).attr('data-title').length;
     }
     else {
-        var left = event.pageX - 30;
+        var left = event.pageX;
     }
-    var top = event.pageY + 10;
+    var top = event.pageY - 25;
     $("#showdaTooltip").css({
         position: 'absolute',
         zIndex: 20,
@@ -19,7 +19,7 @@ $(document).on('mouseenter', '.showtitleTooltip', function (event) {
         paddingRight: 5,
         paddingBottom: 5,
         backgroundColor: 'white',
-        width: 70,
+        width: 100,
         "text-align": "center",
     });
     // Construct the innerHTML
@@ -34,6 +34,32 @@ $(document).on('mouseleave', '.showtitleTooltip', function (event) {
     $('#showdaTooltip').hide();
 });
 
+
+$(document).on('mouseenter', '.compassInfo', function (event) {
+    var left = event.pageX + 5;
+    var top = event.pageY + 5;
+    $("#compassInfo").css({
+        position: 'absolute',
+        zIndex: 20,
+        left: left,
+        top: top,
+        paddingLeft: 5,
+        paddingTop: 2,
+        paddingRight: 5,
+        backgroundColor: 'white',
+        "text-align": "center"
+    });
+    // Construct the innerHTML
+    if ($(this).attr('data-title') != "") {
+        $('#compassInfo').empty().append($(this).attr('data-title'));
+        $('#compassInfo').show();
+    }
+});
+
+$(document).on('mouseleave', '.compassInfo', function (event) {
+    $('#compassInfo').empty();
+    $('#compassInfo').hide();
+});
 
 
 function setHidden(buttonValue)
@@ -76,6 +102,23 @@ function clearRow(e) {
     var tableTitles = document.getElementsByClassName('tableTitle');
     for (var i = 0; i < tableTitles.length; i++) {
         tableTitles[i].style.backgroundColor = 'grey';
+    }
+}
+
+
+function clearTable() {
+    if ($(".tablenoborder")[0]) {
+        var table = document.getElementsByClassName('tablenoborder');
+        for (var i = 0; i < table.length; i++) {
+            table[i].style.backgroundColor = 'transparent';
+        }
+        var tableTitles = document.getElementsByClassName('tableTitle');
+        for (var i = 0; i < tableTitles.length; i++) {
+            tableTitles[i].style.backgroundColor = 'grey';
+        }
+
+    } else {
+        console.log("Class does not exist");
     }
 }
 
@@ -131,22 +174,12 @@ function checkPass() {
 
 
 function showmessageBar(message) {
-    document.getElementById("liProgress").style.display = "block";
-    $('#liProgress').css({
-        'position': 'relative',
-        'width': '350px',
-        'height': '16px',
-        'line-height': '16px',
-        'background-color': '#4CAF50',
-        'text-align': 'center',
-        'vertical-align': 'middle',
-        'color': 'white',
-        'right': '0',
-        'left': '0',
-        'top': '0px',
-        'z-index': '101',
-        'text-decoration': 'none',
-        'pointer-events' : 'none'
-    });
+    document.getElementById("liProgress").style.display = "block"; 
     $('#liProgress').empty().append(message);
+}
+
+
+function clearmessageBar() {
+    document.getElementById("liProgress").style.display = "none";
+    $('#liProgress').empty().append();
 }

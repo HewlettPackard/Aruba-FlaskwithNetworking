@@ -962,7 +962,7 @@ $(document).ready(function () {
         // If there is a template assigned to the device, we need to get the parameter information and build the table
         if (deviceInfo['template']!=0) {
             templateparameters = JSON.parse(deviceInfo['templateparameters']);     
-            templateHTML = "<table class='tablenoborder' cellpadding='2'><tr><td colspan='2' style='background-color: grey;'><center><font class='font13pxwhite'>Template parameters</font></center></td></tr>";
+            templateHTML = "<table class='tablenoborder' cellpadding='2'><tr class='tableTitle'><td colspan='2'><center><font class='font13pxwhite'>Template parameters</font></center></td></tr>";
             $.each(templateparameters, function (k, v) {
                 templateHTML += "<tr><td width='10%'><font class='font13pxgrey'>" + k + "</font></td><td><input type='text' name='parameterValues[" + k + "]' value='" + v + "'></td></tr>";
             });

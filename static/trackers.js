@@ -34,12 +34,16 @@ $('#updateTracker').ready(function () {
                         listHTML += "<td><font class='font10px'>" + ts.toLocaleDateString() + " " + ts.toLocaleTimeString()  + "</font></td>";
                         listHTML += "<td><font class='font10px'>" + response[i]['dhcptype'] + "</font></td>";
                         listHTML += "<td width='60%' nowrap><font class='font10px'>" + response[i]['information'] + "</font></td>";
-                        listHTML += "<td align='right'>";
                         if (result['accessright'] == true) {
-                            listHTML += "<button name='action' value='Delete' class='transparent-button' onclick=\"if (confirm('Are you sure?')) deleteEntry(" + response[i]['id'] + ",'dhcptracker');\"><img src='static/images/trash.svg' width='12' height='12' class='showtitleTooltip' data-title='Delete'></button></td></tr></form>";
+                            listHTML += "<td align='right' style='vertical-align:bottom;' width='1%'><input type='checkbox' class='selectEntry' id='selectEntry" + response[i]['id'] + "' data-id='" + response[i]['id'] + "'";
+                            if ($('#selectEntry' + response[i]['id']).is(":checked")) {
+                                listHTML += " checked ";
+                            }
+                            listHTML += "></td>";
+                            listHTML += "<td align='right' width='1%'><button name='action' value='Delete' class='transparent-button' onclick=\"if (confirm('Are you sure?')) deleteEntry(" + response[i]['id'] + ",'dhcptracker');\"><img src='static/images/trash.svg' width='12' height='12' class='showtitleTooltip' data-title='Delete'></button></td></tr ></form > ";
                         }
                         else {
-                            listHTML += "<button name='action' value='Delete' class='transparent-button' style='opacity:0.2;pointer-events:none;'><img src='static/images/trash.svg' width='12' height='12' class='showtitleTooltip' data-title='Delete'></button></td></tr></form>";
+                            listHTML += "<td align='right' style='vertical-align:bottom;' width='1%'><input type='checkbox' data-id='" + response[i]['id'] + "' class='selectEntry' disabled></td><td align='right' width='1%'><button name='action' value='Delete' class='transparent-button' style='opacity:0.2;pointer-events:none;'><img src='static/images/trash.svg' width='12' height='12' class='showtitleTooltip' data-title='Delete'></button></td></tr></form>";
                         }
                     }
                     document.getElementById("logList").innerHTML = listHTML;
@@ -70,12 +74,16 @@ $('#updateTracker').ready(function () {
                         listHTML += "<td><font class='font10px'>" + response[i]['version'] + "</font></td>";
                         listHTML += "<td><font class='font10px'>" + response[i]['community'] + "</font></td>";
                         listHTML += "<td width='60%' nowrap><font class='font10px'>" + response[i]['information'] + "</font></td>";
-                        listHTML += "<td align='right'>";
                         if (result['accessright'] == true) {
-                            listHTML += "<button name='action' value='Delete' class='transparent-button' onclick=\"if (confirm('Are you sure?')) deleteEntry(" + response[i]['id'] + ", 'snmptracker' );\"><img src='static/images/trash.svg' width='12' height='12' class='showtitleTooltip' data-title='Delete'></button></td></tr></form>";
+                            listHTML += "<td align='right' style='vertical-align:bottom;' width='1%'><input type='checkbox' class='selectEntry' id='selectEntry" + response[i]['id'] + "' data-id='" + response[i]['id'] + "'";
+                            if ($('#selectEntry' + response[i]['id']).is(":checked")) {
+                                listHTML += " checked ";
+                            }
+                            listHTML += "></td>";
+                            listHTML += "<td align='right' width='1%'><button name='action' value='Delete' class='transparent-button' onclick=\"if (confirm('Are you sure?')) deleteEntry(" + response[i]['id'] + ",'snmptracker');\"><img src='static/images/trash.svg' width='12' height='12' class='showtitleTooltip' data-title='Delete'></button></td></tr ></form > ";
                         }
                         else {
-                            listHTML += "<button name='action' value='Delete' class='transparent-button' style='opacity:0.2;pointer-events:none;'><img src='static/images/trash.svg' width='12' height='12' class='showtitleTooltip' data-title='Delete'></button></td></tr></form>";
+                            listHTML += "<td align='right' style='vertical-align:bottom;' width='1%'><input type='checkbox' data-id='" + response[i]['id'] + "' class='selectEntry' disabled></td><td align='right' width='1%'><button name='action' value='Delete' class='transparent-button' style='opacity:0.2;pointer-events:none;'><img src='static/images/trash.svg' width='12' height='12' class='showtitleTooltip' data-title='Delete'></button></td></tr></form>";
                         }
                     }
                     document.getElementById("logList").innerHTML = listHTML;
@@ -105,13 +113,17 @@ $('#updateTracker').ready(function () {
                         listHTML += "<td><font class='font10px'>" + response[i]['source'] + "</font></td>";
                         listHTML += "<td><font class='font10px'>" + response[i]['facility'] + "</font></td>";
                         listHTML += "<td><font class='font10px'>" + response[i]['severity'] + "</font></td>";
-                        listHTML += "<td width='60%' nowrap><font class='font10px'>" + response[i]['information'] + "</font></td>";
-                        listHTML += "<td align='right'>";
+                        listHTML += "<td width='60%' nowrap><font class='font10px'>" + response[i]['information'].slice(0, 250) + "</font></td>";
                         if (result['accessright'] == true) {
-                            listHTML += "<button name='action' value='Delete' class='transparent-button' onclick=\"if (confirm('Are you sure?')) deleteEntry(" + response[i]['id'] + ",'syslog' );\"><img src='static/images/trash.svg' width='12' height='12' class='showtitleTooltip' data-title='Delete'></button></td></tr></form>";
+                            listHTML += "<td align='right' style='vertical-align:bottom;' width='1%'><input type='checkbox' class='selectEntry' id='selectEntry" + response[i]['id'] + "' data-id='" + response[i]['id'] + "'";
+                            if ($('#selectEntry' + response[i]['id']).is(":checked")) {
+                                listHTML += " checked ";
+                            }
+                            listHTML += "></td>";
+                            listHTML += "<td align='right' width='1%'><button name='action' value='Delete' class='transparent-button' onclick=\"if (confirm('Are you sure?')) deleteEntry(" + response[i]['id'] + ",'syslog');\"><img src='static/images/trash.svg' width='12' height='12' class='showtitleTooltip' data-title='Delete'></button></td></tr ></form > ";
                         }
                         else {
-                            listHTML += "<button name='action' value='Delete' class='transparent-button' style='opacity: 0.2;pointer-events:none;'><img src='static/images/trash.svg' width='12' height='12' class='showtitleTooltip' data-title='Delete'></button></td></tr></form>";
+                            listHTML += "<td align='right' style='vertical-align:bottom;' width='1%'><input type='checkbox' data-id='" + response[i]['id'] + "' class='selectEntry' disabled></td><td align='right' width='1%'><button name='action' value='Delete' class='transparent-button' style='opacity:0.2;pointer-events:none;'><img src='static/images/trash.svg' width='12' height='12' class='showtitleTooltip' data-title='Delete'></button></td></tr></form>";
                         }
                     }
                     document.getElementById("logList").innerHTML = listHTML;
@@ -193,6 +205,29 @@ async function deleteEntry(id, dbtable) {
         type: "POST",
         url: "/deleteTrackerentry",
         data: { dbtable: dbtable, id: id  },
+        success: function (response) {
+        }
+    });
+}
+
+function selectAll(dbtable) {
+    $('.selectEntry').each(function () {
+        $(this).attr('checked', !$(this).attr('checked'));
+    });
+}
+
+async function deleteSelection(dbtable) {
+    var selection = [];
+    // Obtain all the id's from the checkboxes, but only the ones that are selected
+    $('.selectEntry').each(function () {
+        if ($(this).attr('checked')) {
+            selection.push($(this).attr('data-id'));
+        }
+    });
+    response = await $.ajax({
+        type: "POST",
+        url: "/deleteTrackerselection",
+        data: { dbtable: dbtable, selection: selection.toString() },
         success: function (response) {
         }
     });

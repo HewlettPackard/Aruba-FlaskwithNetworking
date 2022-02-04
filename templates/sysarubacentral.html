@@ -1,0 +1,53 @@
+﻿<!-- (C) Copyright 2021 Hewlett Packard Enterprise Development LP. -->
+{% block scripts %}
+<script src="static/scripts/jquery-1.10.2.min.js"></script>
+<link href="static/stylesheet.css" rel="stylesheet" />
+<script type="text/javascript" src="static/main.js"></script>
+<script type="text/javascript" src="static/sysconf.js"></script>
+
+{% endblock %}
+
+{% block content %}
+{% set pagename = "Aruba Central Integration" %}
+{% include 'navbar.html' %}
+
+<div id="maincontainer">
+    <br />
+    <table class="tablewithborder">
+        <form method="post" id="arubacentralintegrationform">
+            <input type="hidden" name="configtype" value="sysarubacentral">
+            <tr class="tableTitle"><td colspan="6"><font class="font13pxwhite"><center>Aruba Central Integration</center></font></td></tr>
+            <tr class="tableTitle">
+                <td><font class='font12pxwhite'>Aruba Central API URL</font></td>
+                <td class="whiteBG"><input type='text' name='arubacentralurl' id="arubacentralurl" value='{{ arubacentralvars['arubacentralurl'] }}'></td>
+                <td><font class='font12pxwhite'>Aruba Central user name</font></td>
+                <td class="whiteBG"><input type='text' name='arubacentralusername' id="arubacentralusername" value='{{ arubacentralvars['arubacentralusername'] }}'></td>
+                <td><font class="font12pxwhite">Aruba Central user password</font></td>
+                <td class="whiteBG"><input type="password" name="arubacentraluserpassword" id="arubacentraluserpassword" value='{{ arubacentralvars['arubacentraluserpassword'] }}'></td>
+            </tr>
+            <tr class="tableTitle">
+                <td><font class='font12pxwhite'>Aruba Central client id</font></td>
+                <td class="whiteBG"><input type='text' name='arubacentralclientid' id="arubacentralclientid" value='{{ arubacentralvars['arubacentralclientid'] }}'></td>
+                <td><font class="font12pxwhite">Aruba Central client secret</font></td>
+                <td class="whiteBG"><input type="password" name="arubacentralclientsecret" id="arubacentralclientsecret" value='{{ arubacentralvars['arubacentralclientsecret'] }}'></td>
+                <td><font class='font12pxwhite'>Aruba Central customer id</font></td>
+                <td class="whiteBG"><input type='text' name='arubacentralcustomerid' id="arubacentralcustomerid" value='{{ arubacentralvars['arubacentralcustomerid'] }}'></td>
+            </tr>
+            <tr class="tableTitle">
+                <td><font class='font12pxwhite'>Aruba Central authentication status: </font></td>
+                <td><div id="arubacentralauthenticationstatus"></div></td>
+                <td><font class='font12pxwhite'>Aruba Central authorization status: </font></td>
+                <td><div id="arubacentralauthorizationstatus"></div></td>
+                <td colspan="2"><button name="arubacentralauthstatus" value="arubacentralauthstatus" type="button" id="arubacentralauthstatus">Verify Aruba Central connection</button></td>
+            </tr>
+            <tr class="tableTitle">
+                <td colspan="6" align="center" class="whiteBG">
+                    <button name="action" value="Submit changes" class="button" id="submitChanges" {{disabled }}>Submit changes</button>
+                </td>
+            </tr>
+        </form>
+    </table>
+
+
+</div>
+    {% endblock %}

@@ -2,18 +2,56 @@
 (C) Copyright 2021 Hewlett Packard Enterprise Development LP.
 */
 
+
+
+.line {
+    fill: none;
+    stroke: steelblue;
+    stroke-width: 2px;
+}
+
+div.tooltip {
+    position: absolute;
+    text-align: center;
+    padding: 5px;
+    font: 10px sans-serif;
+    background: lightsteelblue;
+    border: 0px;
+    border-radius: 3px;
+    pointer-events: none;
+    min-width: 75px;
+    max-width: 255px;
+    min-height: 20px;
+    max-height: 150px;
+}
+
+
+
 body {
     font-family: Arial, Helvetica, sans-serif;
     font-size: 10px;
-    background-color: rgba(238, 238, 238, 0.52);
+    background-image: url("images/compassbg.png");
+    z-index: -100;
 }
 
 img {
     vertical-align: middle;
 }
 
+.border {
+    height: 12px;
+    border: 0.1pt solid black;
+}
+
+.noborder {
+    border: none;
+}
+
+
 textarea {
-    width: 100%;
+    width: 98%;
+    margin-left: auto;
+    margin-right: auto;
 }
 
 select {
@@ -32,6 +70,128 @@ input[type="password"] {
     border: 1px solid #999999;
     margin: 5px 0;
     padding: 3px;
+}
+
+#maincontainer {
+    list-style: none;
+    width: 100%;
+    top: 30px;
+    left: 0px;
+    position: absolute;
+    z-index:0;
+    opacity: .9;
+}
+
+
+#maincontainer div {
+    width: 100%;
+    float: left;
+    position: relative;
+}
+
+    #maincontainer .divfiftypercent {
+        display: inline-block;
+        margin-right: 5px;
+        margin-left: 5px;
+        width: 49%;
+        text-align: center;
+        vertical-align: top;
+    }
+
+
+#liProgress {
+        position: absolute;
+        width: 350px;
+        height: 25px;
+        line-height: 25px;
+        background-color: #4CAF50;
+        text-align: center;
+        vertical-align: middle;
+        color: white;
+        right: 0;
+        left: 900px;
+        top: 0px;
+        z-index: 101;
+        text-decoration: none;
+        pointer-events: none;
+    }
+
+
+.grid-container {
+    display: grid;
+    grid-template-columns: 30fr 30fr 39.5fr 0.5fr;
+    grid-template-rows: 1fr 1fr;
+    gap: 5px 5px;
+    grid-template-areas: "switchinfo switchinfo switchinfo" "cpu memory interfaces";
+    width: 99vw;
+}
+
+.switchinfo {
+    grid-area: switchinfo;
+}
+
+.cpuinfo {
+    grid-area: cpu;
+}
+
+.memoryinfo {
+    grid-area: memory;
+}
+
+.interfaces {
+    grid-area: interfaces;
+}
+
+
+.afcgrid-container {
+    display: grid;
+    grid-template-columns: 50fr 49.5fr 0.5fr;
+    gap: 5px 5px;
+    grid-template-areas: "afcswitchinfo afcportinfo";
+    width: 99vw;
+}
+
+.afcswitchinfo {
+    grid-area: afcswitchinfo;
+}
+
+.afcportinfo {
+    grid-area: afcportinfo;
+}
+
+.afcgrid-container {
+    display: grid;
+    grid-template-columns: 50fr 49.5fr 0.5fr;
+    gap: 5px 5px;
+    grid-template-areas: "afcleft afcright";
+    width: 99vw;
+}
+
+.afcswitchinfo {
+    grid-area: afcleft;
+}
+
+.afcportinfo {
+    grid-area: afcright;
+}
+
+.afcvmhostinfo {
+    grid-area: afcleft;
+}
+
+.afcvmtopoinfo {
+    grid-area: afcright;
+}
+
+
+
+.divfiftypercent {
+    display: inline-block;
+    margin-right: 5px;
+    margin-left: 5px;
+    width: 49%;
+    text-align: center;
+    vertical-align: top;
 }
 
 
@@ -125,6 +285,11 @@ button:hover, input[type="button"]:hover, input[type="submit"]:hover {
 }
 
 
+.whiteBG {
+    border: 1px solid black;
+    background-color: #ffffff;
+}
+
 table.tablewithborder {
     width: 99%;
     margin-left: 10px;
@@ -135,30 +300,36 @@ table.tablewithborder {
     border-collapse: collapse;
     background-color: #ffffff;
 }
-
-    .whiteBG {
-        border: 1px solid black;
-        background-color: #ffffff;
-    }
-
-    table.tablewithborder tr {
+    table.tablewithborder .tableTitle {
         border: 1px solid #444444;
         background-color: #777777;
     }
 
+
+    table.tablewithborder .tableTitle td {
+        padding-left:4px;
+        padding-right:4px;
+    }
+
+
+
 table.tablenoborder {
     width: 99%;
-    margin-left: 10px;
-    margin-right: 10px;
-    margin-top: 5px;
-    margin-bottom: 5px;
+    margin-left: .5%;
+    margin-right: .5%;
+    margin-top: .2%;
+    margin-bottom: .2%;
     border: none;
     border-collapse: collapse;
 }
 
-    table.tablenoborder td {
-        border: none;
-    }
+table.tablenoborder .tableTitle {
+    background-color: #777777;
+}
+
+table.tablenoborder td {
+    border: none;
+}
 
 table.insidetable {
     width: 100%;
@@ -171,15 +342,18 @@ table.insidetable {
     }
 
 .font10px {
-    font-size: 11px;
+    font-size: 10px;
+    font-family: Arial, Helvetica, sans-serif;
 }
 
 .font11px {
     font-size: 11px;
+    font-family: Arial, Helvetica, sans-serif;
 }
 
 .font12px {
     font-size: 12px;
+    font-family: Arial, Helvetica, sans-serif;
 }
 
 .font12pxgrey {
@@ -187,6 +361,22 @@ table.insidetable {
     font-size: 12px;
     color: #555555;
     text-decoration: none;
+}
+
+.font10pxwhite {
+    font-family: Arial, Helvetica, sans-serif;
+    font-size: 10px;
+    color: #EEEEEE;
+    text-decoration: none;
+    text-shadow: 1px 1px 1px #000;
+}
+
+.font11pxwhite {
+    font-family: Arial, Helvetica, sans-serif;
+    font-size: 11px;
+    color: #EEEEEE;
+    text-decoration: none;
+    text-shadow: 1px 1px 1px #000;
 }
 
 .font12pxwhite {
@@ -200,6 +390,20 @@ table.insidetable {
 .font13px {
     font-size: 13px;
     font-weight: bold;
+}
+
+.font9pxgrey {
+    font-family: Arial, Helvetica, sans-serif;
+    font-size: 9px;
+    color: #555555;
+    text-decoration: none;
+}
+
+.font10pxgrey {
+    font-family: Arial, Helvetica, sans-serif;
+    font-size: 10px;
+    color: #555555;
+    text-decoration: none;
 }
 
 .font11pxgrey {
@@ -255,35 +459,6 @@ table.insidetable {
     width: 90%;
 }
 
-.grid-container {
-    display: grid;
-    grid-template-columns: 500px 500px auto;
-    grid-gap: 2px;
-    padding: 2px;
-}
-
-    .grid-container > div {
-        background-color: rgba(255, 255, 255, 0.8);
-        text-align: center;
-        padding: 20px 0;
-        font-size: 30px;
-    }
-
-.grid-container-col3 {
-    display: grid;
-    grid-template-columns: 50% auto 50%;
-    grid-gap: 2px;
-    padding: 10px;
-}
-
-    .grid-container-col3 > div {
-        background-color: rgba(255, 255, 255, 0.8);
-        text-align: right;
-        padding: 20px 0;
-        font-size: 30px;
-        max-width: 700px;
-        align-self: stretch;
-    }
 
 .profiletooltip {
     position: relative;
@@ -418,250 +593,161 @@ table.insidetable {
     top:-7px;
     overflow: visible;
     width: 100%;
-    height: 20px;
-    line-height: 20px;
+    height: 25px;
+    line-height: 25px;
     background-color: darkgrey;
     text-align: center;
     vertical-align: middle;
     text-decoration: none;
 }
 
-
-#menu {
+#navigationmenu {
     list-style: none;
     width: 99%;
+    top: 2px;
     margin: 0px auto 0px auto;
-    height: 24px;
-    padding: 0px 5px 0px 5px;
+    position: absolute;
+    height: 25px;
+    padding: 0px 5px 0px -5px;
     background: #777777;
     z-index: 10;
-
-}
-
-#menu li {
-    float: left;
-    text-align: left;
-    position: relative;
-    padding: 4px 10px 4px 10px;
-    margin-right: 30px;
-    margin-top: 0px;
-    border: none;
-    z-index:10;
-}
-
-#menu li:hover {
-    border: 1px solid #777777;
-    padding: 4px 9px 4px 9px;
-    /* Background color and gradients */
-    background: #F4F4F4;
-    background: -moz-linear-gradient(top, #F4F4F4, #EEEEEE);
-    background: -webkit-gradient(linear, 0% 0%, 0% 100%, from(#F4F4F4), to(#eeeeee));
-    z-index:10;
 }
 
 
-#menu li a {
-    font-family: Arial, Helvetica, sans-serif;
-    font-size: 12px;
-    color: #EEEEEE;
-    display: block;
-    outline: 0;
-    text-decoration: none;
-    text-shadow: 1px 1px 1px #000;
-    z-index: 10;
-}
-
-    #menu li:hover a {
-        color: #161616;
-        text-shadow: 1px 1px 1px #FFFFFF;
-        z-index: 10;
-    }
-
-
-    #menu li .drop {
-        padding-right: 5px;
-        z-index: 5;
-    }
-
-
-
-    #menu .liplaceholder_left {
-        list-style: none;
-        font-family: Arial, Helvetica, sans-serif;
-        font-size: 12px;
-        color: #EEEEEE;
-        display: block;
-        outline: 0;
-        text-decoration: none;
-        text-shadow: 1px 1px 1px #000;
-        pointer-events: none;
-        z-index: 10;
-    }
-
-    #menu .liplaceholder_right {
-        list-style: none;
-        font-family: Arial, Helvetica, sans-serif;
-        font-size: 12px;
-        color: #EEEEEE;
-        display: block;
-        outline: 0;
-        text-decoration: none;
-        text-shadow: 1px 1px 1px #000;
-        z-index: 10;
-    }
-
-        #menu .liplaceholder_right:hover {
-            text-decoration: none;
-            z-index: 10;
-        }
-
-    #menu .liplaceholder_right {
+    #navigationmenu .menu_right {
         float: right;
-        text-align: left;
         position: relative;
-        padding: 4px 2px 4px 2px;
-        margin-right: 5px;
-        margin-top: 1px;
-        border: none;
-        z-index: 10;
-    }
-    #menu .no_event {
+        top: 5px;
+        background: #777777;
         text-decoration: none;
-        text-shadow: 1px 1px 1px #000;
-        pointer-events: none;
-        list-style: none;
+        z-index: 0;
+        white-space: nowrap;
         font-family: Arial, Helvetica, sans-serif;
         font-size: 12px;
         color: #EEEEEE;
-        display: block;
         outline: 0;
         text-decoration: none;
         text-shadow: 1px 1px 1px #000;
-        z-index: 10;
+        margin: 0px 10px 0px 10px;
+        vertical-align: middle;
     }
 
-/* Drop Down */
-
-    #menu .dropdown {
-        margin: 4px auto;
-        float: left;
-        position: absolute;
-        left: -999em; /* Hides the drop down */
-        text-align: left;
-        /*padding: 5px 5px 5px 5px;*/
-        border: 1px solid #777777;
-        border-top: none;
-        /* Gradient background */
-        background: #F4F4F4;
-        background: -moz-linear-gradient(top, #EEEEEE, #BBBBBB);
-        background: -webkit-gradient(linear, 0% 0%, 0% 100%, from(#EEEEEE), to(#BBBBBB));
-        z-index: 20;
-    }
-
-.dropdown {
-    width: 160px;
-    z-index: 20;
-}
-
-#menu li:hover .dropdown {
-    left: -1px;
-    top: 18px;
-    z-index: 20;
-}
-
-/* Columns */
-
-.col_1 {
-    display: inline;
-    float: left;
-    position: relative;
-    margin-left: 2px;
-    margin-right: 2px;
-    margin-top: 2px;
-    margin-bottom: 2px;
-}
-
-/* main menu alignment */
-
-#menu .menu_item {
-    float: left;
-    top: 0px;
-    margin-right: 0px;
-    background-color: #777777;
-    text-decoration: none;
-    z-index: 12;
-}
-
-/* Right alignment */
-
-#menu .menu_right {
-    float: right;
-    top: 1px;
-    height: 0px;
-    margin: 0px;
-    background: #777777;
-    text-decoration: none;
-    z-index: 0;
-}
-
-
-    #menu .menu_right:hover {
-        top: 0px;
+    #navigationmenu .menu_right:hover {
+        position: relative;
+        top: 5px;
         background: #777777;
         z-index: 0;
     }
 
-/* Left alignment */
 
-#menu .menu_left {
-    float: left;
-    top: -5px;
-    margin-left: 1px;
-    margin-right: 1px;
-    z-index: 12;
-}
-
-
-/* Drop Down Content Stylings */
-
-#menu li:hover div a {
-    font-size: 12px;
-    color: #015b86;
-    z-index: 20;
-}
-
-    #menu li:hover div a:hover {
-        color: #029feb;
-        z-index: 20;
+    #navigationmenu .menu_left {
+        float: left;
+        position: relative;
+        top: 2px;
+        background: #777777;
+        text-decoration: none;
+        z-index: 0;
+        white-space: nowrap;
+        font-family: Arial, Helvetica, sans-serif;
+        font-size: 12px;
+        color: #EEEEEE;
+        outline: 0;
+        text-decoration: none;
+        text-shadow: 1px 1px 1px #000;
+        margin: 0px 0px 0px 0px;
+        vertical-align: middle;
     }
 
-#menu li ul {
-    list-style: none;
-    padding: 5px;
-    margin: 0 0 0 0;
-    z-index: 20;
+        #navigationmenu .menu_left:hover {
+            position: relative;
+            top: 2px;
+            background: #777777;
+            z-index: 0;
+        }
+
+
+.parentmenu {
+    display: block;
+    position: relative;
+    float: left;
+    line-height: 25px;
+    background-color: #777777;
+    border-right: #cacaca 1px solid;
 }
 
-    #menu li ul li {
+    .parentmenu a {
+        white-space: nowrap;
+        font-family: Arial, Helvetica, sans-serif;
         font-size: 12px;
-        line-height: 20px;
-        position: relative;
-        text-shadow: 1px 1px 1px #ffffff;
-        padding: 0;
-        margin: 0;
-        float: none;
-        text-align: left;
-        width: 120px;
+        color: #EEEEEE;
+        outline: 0;
+        text-decoration: none;
+        text-shadow: 1px 1px 1px #000;
+        margin: 0px 10px 0px 10px;
+    }
+
+    .parentmenu:hover > ul {
+        display: block;
+        position: absolute;
+        background: #BBBBBB;
+        background: -moz-linear-gradient(top, #BBBBBB, #EEEEEE);
+        background: -webkit-gradient(linear, 0% 0%, 0% 100%, from(#bbbbbb), to(#eeeeee));
         z-index: 10;
     }
 
-        #menu li ul li:hover {
-            background: none;
-            border: none;
-            padding: 0;
-            margin: 0;
-            z-index: 10;
+
+
+.childmenu {
+    display: none;
+}
+
+    .childmenu li {
+        background-color: #777777;
+        line-height: 25px;
+        border-bottom: #cacaca 1px solid;
+        border-right: #cacaca 1px solid;
+        width: 100%;
+    }
+
+        .childmenu li a {
+            white-space: nowrap;
+            font-family: Arial, Helvetica, sans-serif;
+            font-size: 12px;
+            color: #EEEEEE;
+            outline: 0;
+            text-decoration: none;
+            text-shadow: 1px 1px 1px #000;
+            margin: 0px 10px 0px 10px;
         }
+
+ul {
+    list-style: none;
+    margin: 0;
+    padding: 0px;
+    min-width: 10em;
+}
+
+    ul ul ul {
+        left: 100%;
+        top: 0;
+        margin-left: 1px;
+    }
+
+
+.parentmenu li:hover {
+    background-color: #BBBBBB;
+    background: -moz-linear-gradient(top, #BBBBBB, #EEEEEE);
+    background: -webkit-gradient(linear, 0% 0%, 0% 100%, from(#bbbbbb), to(#eeeeee));
+    z-index: 10;
+}
+
+
+li:hover {
+    background-color: #BBBBBB;
+    background: -moz-linear-gradient(top, #BBBBBB, #EEEEEE);
+    background: -webkit-gradient(linear, 0% 0%, 0% 100%, from(#bbbbbb), to(#eeeeee));
+    z-index: 10;
+}
 
 
 .toggleswitch {

@@ -1,0 +1,49 @@
+<!-- (C) Copyright 2021 Hewlett Packard Enterprise Development LP. -->
+{% block scripts %}
+<script src="static/scripts/jquery-1.10.2.min.js"></script>
+<link href="static/stylesheet.css" rel="stylesheet" />
+<script type="text/javascript" src="static/main.js"></script>
+<script type="text/javascript" src="static/psm.js"></script>
+<script type="text/javascript" src="static/psmnetworks.js"></script>
+{% endblock %}
+
+{% block content %}
+{% set pagename = "PSM networks" %}
+
+{% include 'navbar.html' %}
+
+<div id="maincontainer">
+
+    <table class="tablenoborder" id="psmnetwork">
+        <tr>
+            <td width="2%"><font class="font13pxgrey">Item</font></td>
+            <td width="20%"><font class="font13pxgrey">VLAN name</font></td>
+            <td widht="15%" nowrap><font class="font13pxgrey">Tenant</font></td>
+            <td widht="15%" nowrap><font class="font13pxgrey">VLAN ID</font></td>
+            <td width="15%" nowrap><font class="font13pxgrey">VLAN type</font></td>
+            <td width="15%" nowrap><font class="font13pxgrey">Operational state</font></td>
+            <td width="9%" nowrap><font class="font13pxgrey">Propagation status</font></td>
+            <td width="9%" nowrap><center><font class="font13pxgrey">Pending DSS/DSC</font></center></td>
+            <td></td>
+        </tr>
+        <tbody>
+            {% for info in psminfo['items'] %}
+            <tr id="tr{{ info['meta']['uuid'] }}" class="networkInformation" data-info="{{ info | replace("True", "'true'") | replace("False", "'false'")| replace("None", "'none'") }}">
+                <td><font class="font10px"><div class="psmnetworkindex" id="psmnetworkindex{{ loop.index }}" data-id="{{ loop.index }}">{{ loop.index }}</div></font></td>
+                <td><font class="font10px"><div id="networkname{{ info['meta']['uuid'] }}">{{ info['meta']['name'] }}</div></font></td>
+                <td nowrap><font class="font10px"><div id="networktenant{{ info['meta']['uuid'] }}">{{ info['meta']['tenant'] }}</div></font></td>
+                <td nowrap><font class="font10px"><div id="networkid{{ info['meta']['uuid'] }}">{{ info['spec']['vlan-id'] }}</div></font></td>
+                <td nowrap><font class="font10px"><div id="networkid{{ info['meta']['uuid'] }}">{{ info['spec']['type'] }}</div></font></td>
+                <td nowrap><font class="font10px"><div id="networkoperationalstate{{ info['meta']['uuid'] }}">{{ info['status']['oper-state'] }}</div></font></td>
+                <td nowrap><font class="font10px"><div id="networkpropagationstatus{{ info['meta']['uuid'] }}">{{ info['status']['propagation-status']['status'] }}</div></font></td>
+                <td nowrap><font class="font10px"><center><img src="static/images/tag.svg" class="showattributeTooltip" width="12" height="12" id="networkinfo{{ info['meta']['uuid'] }}"></center></font></td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+
+    <div id="showdaTooltip" type="display:none;"></div>
+    <div class="networkStatus" type="display:none;"></div>
+
+</div>
+{% endblock %}

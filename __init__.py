@@ -4,8 +4,7 @@ from flask import Flask, render_template
 import json
 import ssl
 from urllib.parse import unquote, quote
-import datetime
-from time import gmtime, strftime, time
+from datetime import datetime, time, timedelta
 import urllib.request,http.cookiejar
 import classes.classes as classes
 import classes.sysadmin as sysadmin
@@ -21,7 +20,8 @@ s.connect(("8.8.8.8", 80))
 hostip=s.getsockname()[0]
 
 sys.path.append('../')
-
+systemlog = open('/var/www/html/log/system.log', 'a')
+systemlog.write('{}: Starting the app. \n'.format(datetime.now()))
 # Start the processes
 
 globalsconf=classes.globalvars()
@@ -30,23 +30,21 @@ globalsconf=classes.globalvars()
 if sys.version_info<(3,6,0):
     sys.stderr.write("You need python 3.6 or later to run this script\n")
 else:
-    scriptName=globalsconf['appPath'] +"bash/cleanup.sh"
-    proc = subprocess.Popen(scriptName, shell=True, stdout=subprocess.PIPE)
-    scriptName=globalsconf['appPath'] +"bash/topology.sh"
-    proc = subprocess.Popen(scriptName, shell=True, stdout=subprocess.PIPE)
-    scriptName=globalsconf['appPath'] +"bash/ztp.sh"
-    proc = subprocess.Popen(scriptName, shell=True, stdout=subprocess.PIPE)
-    scriptName=globalsconf['appPath'] +"bash/listener.sh"
-    proc = subprocess.Popen(scriptName, shell=True, stdout=subprocess.PIPE)
-    scriptName=globalsconf['appPath'] +"bash/telemetry.sh"
-    proc = subprocess.Popen(scriptName, shell=True, stdout=subprocess.PIPE)
-    scriptName=globalsconf['appPath'] +"bash/device-upgrade.sh"
-    proc = subprocess.Popen(scriptName, shell=True, stdout=subprocess.PIPE)
+
+
+    scriptName=["/var/www/html/bash/cleanup.sh","/var/www/html/bash/topology.sh","/var/www/html/bash/ztp.sh","/var/www/html/bash/listener.sh","/var/www/html/bash/telemetry.sh","/var/www/html/bash/device-upgrade.sh","/var/www/html/bash/data-collector.sh"]
+    for items in scriptName:
+        try:
+            proc = subprocess.Popen(items, shell=True, stdout=subprocess.PIPE)
+            systemlog.write('{}: Started  {}. \n'.format(datetime.now(),items))
+        except Exception as err:
+            systemlog.write('{}: Error starting  {}. \n {} \n'.format(datetime.now(),items,err))
+
 
 # Check whether something has changed in the hardware and update the globalvars config if that's the case
 sysadmin.checksysConf()
 
-__name__="carius"
+__name__="CommPass"
 app=Flask(__name__)
 
      
@@ -66,8 +64,13 @@ app.jinja_env.globals.update(timeDelta=classes.timeDelta)
 app.jinja_env.globals.update(timeDuration=classes.timeDuration)
 app.jinja_env.globals.update(upgradeprofileName=classes.getupgradeprofileName)
 app.jinja_env.globals.update(va=classes.verifyAccess)
+app.jinja_env.globals.update(sqlQuery=classes.jinjasqlQuery)
+app.jinja_env.globals.update(afcswitchInfo=classes.afcswitchInfo)
 
-
+from views.afc import afc
+app.register_blueprint(afc)
+from views.psm import psm
+app.register_blueprint(psm)
 from views.anycli import anycli
 app.register_blueprint(anycli)
 from views.devices import devices
@@ -93,7 +96,7 @@ app.register_blueprint(tele_metry)
 from views.arubacentral import arubacentral
 app.register_blueprint(arubacentral)
 
-if (__name__) == "carius": 
-    #serve(app,host='0.0.0.0',port=8080,ident="Carius")
-    serve(app,listen="*:8080 [::]:8080", ident="Carius", threads=8)
-    #app.run(host=hostip, port=8080, debug=True)
+systemlog.close()
+
+if (__name__) == "CommPass": 
+    serve(app,listen="*:8080 [::]:8080", ident="Compass", threads=32)

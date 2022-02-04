@@ -1,0 +1,41 @@
+﻿<!-- (C) Copyright 2021 Hewlett Packard Enterprise Development LP. -->
+{% block scripts %}
+<script src="static/scripts/jquery-1.10.2.min.js"></script>
+<link href="static/stylesheet.css" rel="stylesheet" />
+<script type="text/javascript" src="static/main.js"></script>
+<script type="text/javascript" src="static/sysconf.js"></script>
+
+{% endblock %}
+
+{% block content %}
+{% set pagename = "AFC Integration" %}
+{% include 'navbar.html' %}
+
+
+<div id="maincontainer">
+    <table class="tablewithborder">
+        <form method="post" id="ldapintegrationform">
+            <input type="hidden" name="configtype" value="sysafc">
+            <input type="hidden" name="afctoken" id="afctoken" value="{{ afcvars['afctoken'] }}">
+            <tr class="tableTitle"><td colspan="9"><font class="font13pxwhite"><center>Aruba Fabric Composer Integration</center></font></td></tr>
+            <tr id="afctr" class="tableTitle">
+                <td nowrap><font class='font12pxwhite'>AFC IP address</font></td>
+                <td class="whiteBG" width="15%"><input type="text" name="afcipaddress" id="afcipaddress" value="{{ afcvars['afcipaddress'] }}" size="50"></td>
+                <td nowrap><font class='font12pxwhite'>AFC username</font></td>
+                <td class="whiteBG" width="15%"><input type='text' name='afcusername' id="afcusername" value='{{ afcvars['afcusername'] }}'></td>
+                <td nowrap><font class='font12pxwhite'>AFC password</font></td>
+                <td class="whiteBG" width="15%"><input type='password' maxlength='16' name='afcpassword' id="afcpassword" value='{{ afcvars['afcpassword'] }}'></td>
+                <td nowrap><font class='font12pxwhite'>Purge audit log after</font></td>
+                <td class="whiteBG" width="5%" nowrap><input type="text" name="auditpurge" id="auditpurge" value="{{ afcvars['auditpurge'] }}" size="2"> <font class='font12pxgrey'>days</font></td>
+                <td width="25%" nowrap><div id="afcstatus"><font class='font12pxwhite'>Status: </font></div></td>
+            </tr>
+            <tr>
+                <td colspan="9" align="center" class="whiteBG">
+                    <button name="action" value="Submit changes" class="button" id="submitChanges" {{disabled }}>Submit changes</button>
+                </td>
+            </tr>
+        </form>
+    </table>
+</div>
+
+{% endblock %}

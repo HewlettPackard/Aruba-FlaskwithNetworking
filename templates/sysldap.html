@@ -1,0 +1,44 @@
+﻿<!-- (C) Copyright 2021 Hewlett Packard Enterprise Development LP. -->
+{% block scripts %}
+<script src="static/scripts/jquery-1.10.2.min.js"></script>
+<link href="static/stylesheet.css" rel="stylesheet" />
+<script type="text/javascript" src="static/main.js"></script>
+<script type="text/javascript" src="static/sysconf.js"></script>
+
+{% endblock %}
+
+{% block content %}
+{% set pagename = "LDAP Integration" %}
+{% include 'navbar.html' %}
+
+<div id="maincontainer">
+    <br />
+    <table class="tablewithborder">
+        <form method="post" id="ldapintegrationform">
+            <input type="hidden" name="configtype" value="sysldap">
+            <tr class="tableTitle"><td colspan="5"><font class="font13pxwhite"><center>LDAP Integration</center></font></td></tr>
+            <tr id="ldapconf" class="tableTitle">
+                <td><font class='font12pxwhite'>LDAP Source IP address</font></td>
+                <td class="whiteBG"><input type='text' name='ldapsource' id="ldapsource" value='{{ ldapvars['ldapsource'] }}'></td>
+                <td><font class='font12pxwhite'>Base DN</font></td>
+                <td class="whiteBG"><input type='text' name='basedn' id="basedn" value='{{ ldapvars['basedn'] }}'></td>
+                <td></td>
+            </tr>
+            <tr id="ldapconfauth" class="tableTitle">
+                <td><font class='font12pxwhite'>LDAP username</font></td>
+                <td class="whiteBG"><input type='text' name='ldapuser' id="ldapuser" value='{{ ldapvars['ldapuser'] }}'></td>
+                <td><font class='font12pxwhite'>LDAP password</font></td>
+                <td class="whiteBG"><input type='password' name='ldappassword' id="ldappassword" value='{{ ldapvars['ldappassword'] }}'></td>
+                <td><div id="ldapstatus"></div></td>
+            </tr>
+            <tr>
+                <td colspan="5" align="center" class="whiteBG">
+                    <button name="action" value="Submit changes" class="button" id="submitChanges" {{disabled }}>Submit changes</button>
+                </td>
+            </tr>
+        </form>
+    </table>
+
+
+</div>
+    {% endblock %}

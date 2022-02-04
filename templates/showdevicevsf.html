@@ -1,14 +1,13 @@
-<!-- (C) Copyright 2019 Hewlett Packard Enterprise Development LP. -->
+<!-- (C) Copyright 2021 Hewlett Packard Enterprise Development LP. -->
 
 {% block content %}
 
 {%  if sysinfo %}
-    <div id="maincontainer">
         <table class="tablewithborder">
-            <tr>
+            <tr class="tableTitle">
                 <td colspan="8"><font class="font13pxwhite"><center>{{ ipaddress }} ({{ description }}) Device information</center></font></td>
             </tr>
-            <tr>
+            <tr class="tableTitle">
                 <td width="9%"><font class="font12pxwhite">Switch type (Domain)</font></td>
                 <td class="whiteBG"><font face="arial" size="1">VSF ({{ vsfinfo['domain_id'] }})</font></td>
                 <td width="9%"><font class="font12pxwhite">Topology (Status)</font></td>
@@ -19,8 +18,8 @@
                 <td class="whiteBG"><font face="arial" size="1">{{ vsfinfo['software_version'] }}</font></td>
             </tr>
             {% for items in sysinfo.vsf_member_element %}
-            <tr><td colspan="8">&nbsp;</td></tr>
-            <tr>
+            <tr class="tableTitle"><td colspan="8">&nbsp;</td></tr>
+            <tr class="tableTitle">
                 <td><font class="font12pxwhite">VSF Member</font></td>
                 <td class="whiteBG"><font face="arial" size="1">{{ items['member_id'] }}</font></td>
                 <td><font class="font12pxwhite">Role</font></td>
@@ -33,7 +32,7 @@
             {% for vsfelementInfo in vsfinfo.vsf_member_system_info_element %}
             {% if vsfelementInfo['member_id']==items['member_id'] %}
 
-            <tr>
+            <tr class="tableTitle">
                 <td><font class="font12pxwhite">Serial number</font></td>
                 <td class="whiteBG"><font face="arial" size="1">{{ vsfelementInfo['serial_num'] }}</font></td>
                 <td><font class="font12pxwhite">ROM Version</font></td>
@@ -49,7 +48,7 @@
             {% endfor %}
             {% for psitems in sysinfo.system_power_supply %}
             {% if psitems['member_id'] == items['member_id'] %}
-            <tr>
+            <tr class="tableTitle">
                 <td><font class="font12pxwhite">Power supply {{psitems['power_supply_number']}} status</font></td>
                 <td class="whiteBG"><font face="arial" size="1">{{psitems['power_supply_state'][5:]}}</font></td>
                 <td><font class="font12pxwhite">Input voltage</font></td>
@@ -77,7 +76,7 @@
 
             {% for hwitems in sysinfo.blades %}
             {% if hwitems['stack_member'] == items['member_id'] %}
-            <tr>
+            <tr class="tableTitle">
                 <td><font class="font12pxwhite">Fan status</font></td>
                 <td class="whiteBG">
                     <font face="arial" size="1">
@@ -115,9 +114,9 @@
             {% endfor %}
 
             {% endfor %}
-            <tr><td colspan="8">&nbsp;</td></tr>
+            <tr class="tableTitle"><td colspan="8">&nbsp;</td></tr>
             {% for items in sysinfo.snmp_server_community_element %}
-            <tr>
+            <tr class="tableTitle">
                 <td><font class="font12pxwhite">SNMP Community</font></td>
                 <td class="whiteBG"><font face="arial" size="1">{{ items['community_name'] }}</font></td>
                 <td><font class="font12pxwhite">Access type</font></td>
@@ -129,7 +128,7 @@
             </tr>
             {% endfor %}
             {% for items in sysinfo.snmpv3_user_element %}
-            <tr>
+            <tr class="tableTitle">
                 <td><font class="font12pxwhite">SNMPv3 User</font></td>
                 <td class="whiteBG"><font face="arial" size="1">{{ items['user_name'] }}</font></td>
                 <td><font class="font12pxwhite">Authentication protocol</font></td>
@@ -141,7 +140,7 @@
             </tr>
             {% endfor %}
             {% for items in sysinfo.radius_server_element %}
-            <tr>
+            <tr class="tableTitle">
                 <td><font class="font12pxwhite">Radius server</font></td>
                 <td class="whiteBG"><font face="arial" size="1">{{ items['address']['octets'] }}</font></td>
                 <td><font class="font12pxwhite">Dynamic Authorization</font></td>
@@ -154,7 +153,7 @@
             </tr>
             {% endfor %}
             {% if sysinfo['time_server_protocol'] %}
-            <tr>
+            <tr class="tableTitle">
                 <td><font class="font12pxwhite">NTP protocol</font></td>
                 <td class="whiteBG"><font face="arial" size="1">{{ sysinfo['time_server_protocol'][4:] }}</font></td>
                 <td><font class="font12pxwhite">Time server</font></td>
@@ -166,7 +165,7 @@
             </tr>
             {% endif %}
             {% for items in sysinfo.vlan_element %}
-            <tr>
+            <tr class="tableTitle">
                 <td><font class="font12pxwhite">VLAN ID</font></td>
                 <td class="whiteBG"><font face="arial" size="1">{{ items['vlan_id'] }}</font></td>
                 <td><font class="font12pxwhite">IP Address</font></td>
@@ -204,7 +203,7 @@
             </tr>
             {% endfor %}
             {% for items in sysinfo.lacp_element |sort(attribute='trunk_group') %}
-            <tr>
+            <tr class="tableTitle">
                 <td><font class="font12pxwhite">Trunk group</font></td>
                 <td class="whiteBG"><font face="arial" size="1">{{ items['trunk_group'] }}</font></td>
                 <td><font class="font12pxwhite">Port</font></td>
@@ -225,9 +224,6 @@
                 {% endfor %}
             </tr>
             {% endfor %}
-
         </table>
-
         {% endif %}
-        </div>
         {% endblock %}

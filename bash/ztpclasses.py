@@ -54,11 +54,7 @@ def ztpupdate():
     ztplog = open('/var/www/html/log/ztp.log', 'a')
     dbconnection=pymysql.connect(host='localhost',user='aruba',password='ArubaRocks',db='aruba', autocommit=True)
     cursor=dbconnection.cursor(pymysql.cursors.DictCursor)
-    pathname = os.path.dirname(sys.argv[0])
-    appPath = os.path.abspath(pathname) + "/globals.json"
-    with open(appPath, 'r') as myfile:
-        data=myfile.read()
-    globalconf=json.loads(data)
+    globalconf=obtainGlobalconf(cursor)
     # Obtain device information from which ztp has been enabled
     queryStr="select * from ztpdevices where enableztp>0 and enableztp<99"
     deviceResult=cursor.execute(queryStr)
@@ -73,7 +69,7 @@ def ztpupdate():
             logEntry(items['id'],"Stage 1: Provision initial configuration for {}".format(items['name']),cursor)
             try:
                 url="system?attributes=ztp"
-                response=getRESTcxIP(items['ipaddress'],username,password,url)
+                response=getRESTcxIP(items['ipaddress'],username,password,url, globalconf)
                 if response['ztp']['state']=="success":
                     ztpstatus=response['ztp']['configuration_file'] + " successful download from " + response['ztp']['tftp_server']
                     queryStr="update ztpdevices set vrf='{}', enableztp=2, ztpstatus='{}' where id='{}'".format(response['ztp']['vrf'],ztpstatus,items['id'])
@@ -107,7 +103,7 @@ def ztpupdate():
                 logEntry(items['id'],"Stage 2: There is a software image configured for this device", cursor)
                 ztplog.write('{}: Stage 2: There is a software image configured for {} ({}). \n'.format(datetime.now(),items['ipaddress'],items['name']))
                 url="firmware"
-                response=getRESTcxIP(items['ipaddress'],username,password,url)
+                response=getRESTcxIP(items['ipaddress'],username,password,url, globalconf)
                 # Only continue if there is a response. If there is no response, the switch might be offline
                 if response:
                     # Obtain the image file name
@@ -115,7 +111,7 @@ def ztpupdate():
                     cursor.execute(queryStr)
                     imageResult=cursor.fetchall()
                     # Formating the image name so that we can compare with the information from the rest call
-                    imagename=getplatformName(items['ipaddress'],username,password,imageResult[0]['filename'])
+                    imagename=getplatformName(items['ipaddress'],username,password,imageResult[0]['filename'], globalconf)
                     if imagename==response['current_version']:
                         # There is no need to upgrade the switch. Switch is already running on the right software
                         logEntry(items['id'],"Stage 2: {} already on the right software".format(items['ipaddress']), cursor)
@@ -126,12 +122,12 @@ def ztpupdate():
                     else:
                         # Switch is not running on the right software, we need to upgrade
                         if items['ztpdhcp']==1 or items['vrf']=="0":
-                            vrf=checkVRF(items['ipaddress'],username,password)
+                            vrf=checkVRF(items['ipaddress'],username,password, globalconf)
                         else:
                             vrf=items['vrf']
                         if vrf!="":
                             url="firmware?image=primary&from=http://" + hostip + "/images/" + imageResult[0]['filename'] + "&vrf=" + vrf
-                            response=putRESTcxIP(items['ipaddress'],username,password,url,'')
+                            response=putRESTcxIP(items['ipaddress'],username,password,url,'', globalconf)
                             if response==200:
                                 ztpstatus="Upgrade switch to " + imagename
                                 queryStr="update ztpdevices set enableztp=21, ztpstatus='{}' where id='{}'".format(ztpstatus,items['id'])
@@ -159,12 +155,12 @@ def ztpupdate():
             logEntry(items['id'],"Stage 21: {} is upgrading, checking the status".format(items['ipaddress']), cursor)
             # ztplog.write('{}: Stage 21: {} ({}) is upgrading, checking status. \n'.format(datetime.now(),items['ipaddress'],items['name']))
             url="firmware/status"
-            response=getRESTcxIP(items['ipaddress'],username,password,url)
+            response=getRESTcxIP(items['ipaddress'],username,password,url, globalconf)
             if response:
                 if response['status']=="success":
                     # Another check to see whether the image has been pushed to the primary partition. If it has not been pushed, we have to re-issue the upload command
                     url="firmware"
-                    response=getRESTcxIP(items['ipaddress'],username,password,url)
+                    response=getRESTcxIP(items['ipaddress'],username,password,url, globalconf)
                     # The response content should contain the primary version information that is the updated image
                     # Obtain the image file name
                     if (items['vsfenabled']==1 and items['vsfmaster']!=0):
@@ -181,7 +177,7 @@ def ztpupdate():
                     # Each platform has it's own prepend code. For 6300, it's FL, for 8320 it's TL, for 8325 it's GL. We need to make sure that the image name variable is set correctly
                     # in order to be able to verify
                     url="system?attributes=platform_name"
-                    imagename=getplatformName(items['ipaddress'],username,password,imageResult[0]['filename'])
+                    imagename=getplatformName(items['ipaddress'],username,password,imageResult[0]['filename'], globalconf)
                     if response['primary_version']:
                         if imagename==response['primary_version']:
                             # upgrade is successful to the primary image. We now have to reboot the switch on the primary image
@@ -193,7 +189,7 @@ def ztpupdate():
                                 if items['vsfmaster']!=0:
                                     # This is a member switch
                                     url="boot?image=primary"
-                                    response=postRESTcxIP(items['ipaddress'],username,password,url,'')
+                                    response=postRESTcxIP(items['ipaddress'],username,password,url,'', globalconf)
                                     ztpstatus="Upgrade successful, preparing for reboot"
                                     queryStr="update ztpdevices set enableztp=22, ztpstatus='{}' where id='{}'".format(ztpstatus,items['id'])
                                     cursor.execute(queryStr)
@@ -215,7 +211,7 @@ def ztpupdate():
                                     if goodtoBoot==1:
                                         # All the VSF members have been upgraded and are back online
                                         url="boot?image=primary"
-                                        response=postRESTcxIP(items['ipaddress'],username,password,url,'')
+                                        response=postRESTcxIP(items['ipaddress'],username,password,url,'', globalconf)
                                         ztpstatus="Upgrade successful, rebooting the switch"
                                         queryStr="update ztpdevices set enableztp=23, ztpstatus='{}' where id='{}'".format(ztpstatus,items['id'])
                                         cursor.execute(queryStr)
@@ -224,7 +220,7 @@ def ztpupdate():
                             else: 
                                 # It's not a VSF, so we can reboot the switch straight away
                                 url="boot?image=primary"
-                                response=postRESTcxIP(items['ipaddress'],username,password,url,'')
+                                response=postRESTcxIP(items['ipaddress'],username,password,url,'', globalconf)
                                 ztpstatus="Upgrade successful, preparing for reboot"
                                 queryStr="update ztpdevices set enableztp=28, ztpstatus='{}' where id='{}'".format(ztpstatus,items['id'])
                                 cursor.execute(queryStr)
@@ -245,7 +241,7 @@ def ztpupdate():
         elif items['enableztp']==22:
             #STAGE 22: VSF MEMBER REBOOTED. CHECK WHETHER VSF MEMBER IS BACK ONLINE
             url="firmware"
-            response=getRESTcxIP(items['ipaddress'],username,password,url)
+            response=getRESTcxIP(items['ipaddress'],username,password,url, globalconf)
             if not bool(response):
                 # VSF Member is not online yet. Loop this stage
                 ztpstatus="VSF member switch is starting up"
@@ -261,7 +257,7 @@ def ztpupdate():
                 cursor.execute(queryStr)
                 imageResult=cursor.fetchall()
                 # Formating the image name so that we can compare with the information from the rest call
-                imagename=getplatformName(items['ipaddress'],username,password,imageResult[0]['filename'])
+                imagename=getplatformName(items['ipaddress'],username,password,imageResult[0]['filename'], globalconf)
                 if response:
                     if imagename!=response['current_version']:
                         # Software is not on the right level yet. Stay in this stage
@@ -278,9 +274,9 @@ def ztpupdate():
             cursor.execute(queryStr)
             imageResult=cursor.fetchall()
             # Formating the image name so that we can compare with the information from the rest call
-            imagename=getplatformName(items['ipaddress'],username,password,imageResult[0]['filename'])
+            imagename=getplatformName(items['ipaddress'],username,password,imageResult[0]['filename'], globalconf)
             url="firmware"
-            response=getRESTcxIP(items['ipaddress'],username,password,url)
+            response=getRESTcxIP(items['ipaddress'],username,password,url, globalconf)
             if not bool(response):
                 # VSF Master is not online yet. Loop this stage
                 ztpstatus="VSF master switch is starting up"
@@ -319,7 +315,7 @@ def ztpupdate():
             logEntry(items['id'],"Stage 28: {} is rebooting".format(items['ipaddress']), cursor)
             ztplog.write('{}: Stage 28: {} ({}) is rebooting. \n'.format(datetime.now(),items['ipaddress'],items['name']))
             url="firmware/status"
-            response=getRESTcxIP(items['ipaddress'],username,password,url)
+            response=getRESTcxIP(items['ipaddress'],username,password,url, globalconf)
             if not bool(response):
                 # Standalone switch not online yet. Loop this stage
                 ztpstatus="Rebooting switch"
@@ -329,7 +325,7 @@ def ztpupdate():
                 # Standalone switch is (back) online
                 # Check if the switch is running on the right software. If not, keep in this loop. 
                 url="firmware"
-                response=getRESTcxIP(items['ipaddress'],username,password,url)
+                response=getRESTcxIP(items['ipaddress'],username,password,url, globalconf)
                 # The response content should contain the primary version information that is the updated image
                 # Obtain the image file name
                 if (items['vsfenabled']==1 and items['vsfmaster']!=0):
@@ -344,7 +340,7 @@ def ztpupdate():
                 imageResult=cursor.fetchall()
                 # Formating the image name so that we can compare with the information from the rest call
 
-                imagename=getplatformName(items['ipaddress'],username,password, imageResult[0]['filename'])
+                imagename=getplatformName(items['ipaddress'],username,password, imageResult[0]['filename'], globalconf)
                 if response['primary_version']:
                     if imagename!=response['current_version']:
                         # Software is not on the right level yet. Stay in this stage
@@ -442,7 +438,7 @@ def ztpupdate():
                 else:
                     # We need to doublecheck whether VSF has been deployed to the master switch by checking the VSF link before going to stage 5
                     url="system/vsf_members/1/links"
-                    checkVSF=getRESTcxIP(items['ipaddress'],username,password,url)
+                    checkVSF=getRESTcxIP(items['ipaddress'],username,password,url, globalconf)
                     if checkVSF:
                         # We can go into the next stage, which is for the master switch to wait until all members have joined the stack
                         logEntry(items['id'],"Stage 4: VSF has been deployed to the master switch. Waiting for member switches", cursor)
@@ -466,7 +462,7 @@ def ztpupdate():
                      cursor.execute(queryStr)
                      vsfmasterResult=cursor.fetchall()
                      url="system/vsf_members?attributes=id%2Crole%2Cstatus&depth=2"
-                     roleResponse=getRESTcxIP(vsfmasterResult[0]['ipaddress'],username,password,url)
+                     roleResponse=getRESTcxIP(vsfmasterResult[0]['ipaddress'],username,password,url, globalconf)
                      # Now check if the VSF member exists in the VSF and status is ready
                      if len(roleResponse)>1:
                         memberInfo=next(item for item in roleResponse if item["id"] == items['vsfmember'])
@@ -486,7 +482,7 @@ def ztpupdate():
             cursor.execute(queryStr)
             vsfmasterResult=cursor.fetchall()
             url="system/vsf_members?attributes=id%2Crole%2Cstatus&depth=2"
-            response=getRESTcxIP(vsfmasterResult[0]['ipaddress'],"ztpuser",globalconf['ztppassword'],url)
+            response=getRESTcxIP(vsfmasterResult[0]['ipaddress'],"ztpuser",globalconf['ztppassword'],url, globalconf)
             if items['vsfrole']=="Secondary":
                 # Additional check is to verify whether the secondary switch member id exists in the VSF. If it does, we can assign the secondary role to the member switch
                 # We should only push the secondary role to the master switch when the master switch has been completed and the VSF is ready (stage 61)
@@ -519,7 +515,7 @@ def ztpupdate():
                         else:
                             # Secondary is already configured. Now check the VSF status again. If the member is up and running again, we can set the status to completed
                             url="system/vsf_members/"+str(items['vsfmember'])
-                            response=getRESTcxIP(vsfmasterResult[0]['ipaddress'],"ztpuser",globalconf['ztppassword'],url)
+                            response=getRESTcxIP(vsfmasterResult[0]['ipaddress'],"ztpuser",globalconf['ztppassword'],url, globalconf)
                             if response['status']=="ready":
                                 # It is done. The member switch has been provisioned
                                 ztpstatus="ZTP has been completed"
@@ -548,9 +544,9 @@ def ztpupdate():
             url="system/vsf_members/"+ str(items['vsfmember'])+"?attributes=role&depth=1"
             if masterResult[0]['enableztp']==100:
                 # ZTP has been completed, we have to use the configured admin user. If not completed, we can use the ztpinit user account
-                response=getRESTcxIP(masterResult[0]['ipaddress'],masterResult[0]['adminuser'],masterResult[0]['adminpassword'],url)
+                response=getRESTcxIP(masterResult[0]['ipaddress'],masterResult[0]['adminuser'],masterResult[0]['adminpassword'],url, globalconf)
             else:
-                response=getRESTcxIP(masterResult[0]['ipaddress'],"ztpuser",password,url)
+                response=getRESTcxIP(masterResult[0]['ipaddress'],"ztpuser",password,url, globalconf)
             if "role" in response:
                 if response['role']=="standby":
                     # The switch has been designated secondary. The switch is ready
@@ -578,7 +574,7 @@ def ztpupdate():
             # Total members in VSF. We will check this with a REST call
             # Check whether the VSF is completely operational
             url="system/vsf_members?depth=1"
-            response=getRESTcxIP(items['ipaddress'],username,password,url)
+            response=getRESTcxIP(items['ipaddress'],username,password,url, globalconf)
             # The number of entries (minus 1 for the master switch) identify the number of members in the VSF. If this is the same as the number of VSF switches
             # And the status of all switches is "ready", then we are good to go for the provisioning of the VSF master configuration
             if (len(response)-1)==totalinVSF[0]['total']:
@@ -633,7 +629,7 @@ def ztpupdate():
                 outFile.write(templateOutput)
                 outFile.close()
                 if items['ztpdhcp']==1 or items['vrf']=="0" or items['vrf']=="" or items['vrf']=="swns":
-                    vrf=checkVRF(items['ipaddress'],username,password)
+                    vrf=checkVRF(items['ipaddress'],username,password, globalconf)
                     queryStr="update ztpdevices set vrf='{}' where ipaddress='{}' and macaddress='{}'".format(items['ipaddress'],vrf,items['macaddress']) 
                     cursor.execute(queryStr)
                 else:
@@ -642,7 +638,7 @@ def ztpupdate():
                 # in the ztpdevice is changed as well, otherwise we cannot complete the ztp process
                 deviceIP=checkztpIPaddress(items['ipaddress'],items['netmask'],items['macaddress'],cursor)
                 # If the configuration has already been pushed but something went wrong and the IP address and or username has not changed in the database, we have to make that change
-                configChange=checkifChanged(deviceIP,items['ipaddress'],password,items['id'],cursor)
+                configChange=checkifChanged(deviceIP,items['ipaddress'],password,items['id'],cursor, globalconf)
                 print("Configuration change number is {}".format(configChange))
                 if configChange==0:
                     username="admin"
@@ -660,12 +656,12 @@ def ztpupdate():
                     # It implies that the configuration has already been pushed but something went wrong
                     username="ztpuser"
                     items['ipaddress']=deviceIP
-                    vrf=checkVRF(items['ipaddress'],username,password)
+                    vrf=checkVRF(items['ipaddress'],username,password, globalconf)
                     queryStr="update ztpdevices set ipaddress='{}', vrf='{}' where ipaddress='{}' and macaddress='{}'".format(deviceIP,vrf,items['ipaddress'],items['macaddress']) 
                     cursor.execute(queryStr)
                 url="fullconfigs/running-config?from=tftp%3A%2F%2F" + hostip + "%2F" + items['macaddress'] + "template.cfg&vrf=" + vrf
                 try:
-                    response=putRESTcxIP(items['ipaddress'],username,password,url,'') 
+                    response=putRESTcxIP(items['ipaddress'],username,password,url,'', globalconf) 
                     if response==200:
                         logEntry(items['id'],"Stage 6: The push to the running configuration was successful. Now put the configuration in the startup", cursor)
                         ztplog.write('{}: Stage 6: Configuration has been pushed to {} ({}) successfully. Copy the running configuration to the startup configuration. \n'.format(datetime.now(),items['ipaddress'],items['name']))
@@ -676,11 +672,11 @@ def ztpupdate():
                         if deviceIP!=items['ipaddress']:
                             items['ipaddress']=deviceIP
                         # The push to the running configuration was successful. Now repeat the push and store the configuration to the startup-config
-                        response=putRESTcxIP(items['ipaddress'],"ztpuser",globalconf['ztppassword'],url,'')
+                        response=putRESTcxIP(items['ipaddress'],"ztpuser",globalconf['ztppassword'],url,'', globalconf)
                         if response==200:
                             # The put to the startup config was successful
                             url="system?attributes=platform_name"
-                            response=getRESTcxIP(items['ipaddress'],"ztpuser",globalconf['ztppassword'],url)
+                            response=getRESTcxIP(items['ipaddress'],"ztpuser",globalconf['ztppassword'],url, globalconf)
                             if response['platform_name']:
                                 queryStr="update ztpdevices set ipaddress='{}' where macaddress='{}'".format(items['ipaddress'],items['macaddress']) 
                                 cursor.execute(queryStr)
@@ -743,7 +739,7 @@ def ztpupdate():
             if checkSecondary:
                 # There is a secondary switch in the VSF. We have to check whether the secondary switch has joined the VSF. If it has (status=ready and role=secondary), then ZTP is completed
                 url="system/vsf_members?depth=1"
-                response=getRESTcxIP(items['ipaddress'],"ztpuser",globalconf['ztppassword'],url)
+                response=getRESTcxIP(items['ipaddress'],"ztpuser",globalconf['ztppassword'],url, globalconf)
                 # First check, are all switches up and running (status ready)
                 notReady=1
                 for statusItems in response:
@@ -800,12 +796,12 @@ def ztpupdate():
             password=decryptPassword(globalconf['secret_key'], adminaccount[0]['adminpassword'])
             # Now that we have the admin account, we can delete the ztp user account
             url="system/users/ztpuser"
-            result=deleteRESTcxIP(items['ipaddress'],username,password,url)
+            result=deleteRESTcxIP(items['ipaddress'],username,password,url, globalconf)
             if result==204:
                 # The ztpuser has been removed from the running configuration. Now copy the running configuration to the startup configuration
-                url="fullconfigs/startup-config?from=%2Frest%2Fv1%2Ffullconfigs%2Frunning-config"
+                url="fullconfigs/startup-config?from=%2Frest%2F" + globalconf['cxapi'] + "%2Ffullconfigs%2Frunning-config"
                 # The push to the running configuration was successful. Now repeat the push and store the configuration to the startup-config
-                response=putRESTcxIP(items['ipaddress'],username,password,url,'')
+                response=putRESTcxIP(items['ipaddress'],username,password,url,'', globalconf)
                 ztpstatus="ZTP has been completed".format(items['ipaddress'])
                 queryStr="update ztpdevices set enableztp=100, ztpstatus='{}' where id='{}'".format(ztpstatus,items['id'])
                 cursor.execute(queryStr)
@@ -813,9 +809,9 @@ def ztpupdate():
                 ztplog.write('{}: Stage 100: ZTP user removed from {} ({}), ZTP has been completed. \n'.format(datetime.now(),items['ipaddress'],items['name']))
             elif result==404:
                 # It seems that the ztpuser does not exist anymore, so we are also good here. Now copy the running configuration to the startup configuration
-                url="fullconfigs/startup-config?from=%2Frest%2Fv1%2Ffullconfigs%2Frunning-config"
+                url="fullconfigs/startup-config?from=%2Frest%2F" + globalconf['cxapi'] + "%2Ffullconfigs%2Frunning-config"
                 # The push to the running configuration was successful. Now repeat the push and store the configuration to the startup-config
-                response=putRESTcxIP(items['ipaddress'],username,password,url,'')
+                response=putRESTcxIP(items['ipaddress'],username,password,url,'', globalconf)
                 ztpstatus="ZTP has been completed"
                 queryStr="update ztpdevices set enableztp=100,ztpstatus='{}' where id='{}'".format(ztpstatus,items['id'])
                 cursor.execute(queryStr)
@@ -837,13 +833,12 @@ def ztpupdate():
                 print("STAGE 100: ZTP HAS BEEN COMPLETED")
     ztplog.close()
     
-def getRESTcxIP(ip,username,password,url):
+def getRESTcxIP(ip,username,password,url, globalconf):
     global sessionid
-    baseurl="https://{}/rest/v1/".format(ip)
+    baseurl="https://{}/rest/{}/".format(ip, globalconf['cxapi'])
     credentials={'username': username,'password': password }
     try:
         response=sessionid.post(baseurl + "login", params=credentials, verify=False, timeout=5)
-        print("Response in getrestcxip is:  {}".format(response.text))
         if "session limit reached" in response.text:
         #    # We need to clear the https sessions. For some reason there are too many logins
             cs=clearSessions(ip, username,password)
@@ -882,9 +877,9 @@ def getRESTcxIP(ip,username,password,url):
         return {}
     return response
 
-def putRESTcxIP(ip,username,password,url,parameters):
+def putRESTcxIP(ip,username,password,url,parameters, globalconf):
     global sessionid
-    baseurl="https://{}/rest/v1/".format(ip)
+    baseurl="https://{}/rest/{}/".format(ip, globalconf['cxapi'])
     credentials={'username': username,'password': password }
     try:
         response = sessionid.post(baseurl + "login", params=credentials, verify=False, timeout=5)
@@ -896,9 +891,9 @@ def putRESTcxIP(ip,username,password,url,parameters):
         return 401
 
 
-def postRESTcxIP(ip,username,password,url,parameters):
+def postRESTcxIP(ip,username,password,url,parameters, globalconf):
     global sessionid
-    baseurl="https://{}/rest/v1/".format(ip)
+    baseurl="https://{}/rest/{}/".format(ip, globalconf['cxapi'])
     credentials={'username': username,'password': password }
     try:
         sessionid.post(baseurl + "login", params=credentials, verify=False, timeout=10)
@@ -913,9 +908,9 @@ def postRESTcxIP(ip,username,password,url,parameters):
         return {}
     return response
 
-def deleteRESTcxIP(ip,username,password,url):
+def deleteRESTcxIP(ip,username,password,url, globalconf):
     global sessionid
-    baseurl="https://{}/rest/v1/".format(ip)
+    baseurl="https://{}/rest/{}/".format(ip, globalconf['cxapi'])
     credentials={'username': username,'password': password }
     statuscode=0
     try:
@@ -965,11 +960,11 @@ def logEntry(ztpdevice,message, cursor):
             queryStr="update ztplog set logging='{}' where ztpdevice='{}'".format(json.dumps(logging),ztpdevice)
             cursor.execute(queryStr)
 
-def checkVRF(ip,username,password):
+def checkVRF(ip,username,password, globalconf):
     # Check which VRF has the active IP address
     # Check the management VRF IP address against the configured IP address. If there is a match we need to return the mgmt VRF, else the default VRF
     url="system?attributes=mgmt_intf%2Cmgmt_intf_status&depth=2"
-    response=getRESTcxIP(ip,username,password,url)
+    response=getRESTcxIP(ip,username,password,url, globalconf)
     if response:
         if "ip" in response['mgmt_intf_status']:
             if response['mgmt_intf_status']['ip']==ip:
@@ -1000,11 +995,11 @@ def checkztpIPaddress(ztpip,netmask,macaddress,cursor):
         pass
     return ztpip
 
-def getplatformName(ip,username,password, dbimage):
+def getplatformName(ip,username,password, dbimage, globalconf):
     # Formating the image name so that we can compare with the information from the rest call
     platformNames={"6300":"FL","8320":"TL","8325":"GL"}
     url="system?attributes=platform_name"
-    platformName=getRESTcxIP(ip,username,password,url)
+    platformName=getRESTcxIP(ip,username,password,url, globalconf)
     if platformName:
         platformCode=platformNames[platformName['platform_name']]
         imagename=platformCode+"."+dbimage.split('_',2)[2].rsplit('.',1)[0].replace("_",".")
@@ -1015,18 +1010,18 @@ def getplatformName(ip,username,password, dbimage):
 def checkztpUser(ip,password):
     # Check if the ztp user exists in the switch configuration. If it does exist, this means that the configuration template has been pushed
     url="system?attributes=platform_name"
-    platformName=getRESTcxIP(ip,"ztpuser",password,url)
+    platformName=getRESTcxIP(ip,"ztpuser",password,url, globalconf)
     if platformName:
         return 1
     else:
         return 0
 
-def checkifChanged(deviceIP,ztpip,password,id,cursor):
+def checkifChanged(deviceIP,ztpip,password,id,cursor, globalconf):
     url="system?attributes=platform_name"
     # First check if the IP address has changed
     if (deviceIP==ztpip):
-        adminResult=getRESTcxIP(ztpip,"admin",password,url)
-        ztpResult=getRESTcxIP(ztpip,"ztpuser",password,url)
+        adminResult=getRESTcxIP(ztpip,"admin",password,url, globalconf)
+        ztpResult=getRESTcxIP(ztpip,"ztpuser",password,url, globalconf)
         if adminResult:
             # Nothing has changed
             return 0
@@ -1036,11 +1031,11 @@ def checkifChanged(deviceIP,ztpip,password,id,cursor):
         else:
            return 0
     else:
-        adminResult=getRESTcxIP(deviceIP,"admin",password,url)
-        ztpResult=getRESTcxIP(deviceIP,"ztpuser",password,url) 
+        adminResult=getRESTcxIP(deviceIP,"admin",password,url, globalconf)
+        ztpResult=getRESTcxIP(deviceIP,"ztpuser",password,url, globalconf) 
         # There is a third situation, where the configuration has not been pushed, so the IP address of the device has not changed
         # This means that we also have to check admin access on the ztp ip address
-        ztpinitResult=getRESTcxIP(ztpip,"admin",password,url)
+        ztpinitResult=getRESTcxIP(ztpip,"admin",password,url, globalconf)
         if ztpinitResult:
             # Nothing has changed
             return 0
@@ -1070,3 +1065,16 @@ def clearSessions(ipaddr, username,password):
         return "ok"
     except:
         return "nok"
+
+
+def obtainGlobalconf(cursor):
+    queryStr="select datacontent from systemconfig where configtype='system'"
+    cursor.execute(queryStr)
+    result = cursor.fetchall()
+    globalconf=result[0]
+    if isinstance(globalconf,str):
+        globalconf=json.loads(globalconf)
+    globalconf=globalconf['datacontent']
+    if isinstance(globalconf,str):
+        globalconf=json.loads(globalconf)
+    return globalconf

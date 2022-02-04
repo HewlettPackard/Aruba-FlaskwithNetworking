@@ -3,144 +3,169 @@
 <script>updateCookie({{ authOK | safe }}, {{ sysvars['idle_timeout'] }})</script>
 {% set userinfo="Logout" %}
 
+<div id="compassInfo" type="display:none;"></div>
 
-
-<ul id="menu">
-    <li class="menu_left no_event">
-        <img src="/static/images/umbrella.png" height="25" width="50" title="Carius" />
-    </li>
+<ul id="navigationmenu">
+    <li class="menu_left">&nbsp;&nbsp;<img src='static/images/compass.svg' width='20' height='20' class='compassInfo' data-title='Compass version {{ sysvars['softwareRelease'] }}'>&nbsp;&nbsp;</li>
     {% if va("devices","menu")== True %}
-    <li class="menu_item">
-        <a href="#" class="drop">Devices</a>
-        <div class="dropdown">
-            <div class="col_1">
-                <ul class="simple">
-                    {% if va("switchaccess","submenu")== True %}
-                    <li><a href="/switches">Switches</a></li>
-                    {% endif %}
-                    {% if va("clearpassaccess","submenu")== True %}
-                    <li><a href="/clearpass">Clearpass</a></li>
-                    {% endif %}
-                    {% if va("mobilityaccess","submenu")== True %}
-                    <li><a href="/gateways">Gateways</a></li>
-                    {% endif %}
-                </ul>
-            </div>
-        </div>
+    <li class="parentmenu">
+        <a href="#">Devices</a>
+        <ul class="childmenu">
+            {% if va("switchaccess","submenu")== True %}
+            <li><a href="/switches">Switches</a></li>
+            {% endif %}
+            {% if va("clearpassaccess","submenu")== True %}
+            <li><a href="/clearpass">Clearpass</a></li>
+            {% endif %}
+            {% if va("mobilityaccess","submenu")== True %}
+            <li><a href="/gateways">Gateways</a></li>
+            {% endif %}
+        </ul>
     </li>
     {% endif %}
     {% if va("ztp","menu")== True %}
-    <li class="menu_item">
-        <a href="#" class="drop">ZTP</a>
-        <div class="dropdown">
-            <div class="col_1">
-                <ul class="simple">
-                    {% if va("ztptemplateaccess","submenu")== True %}
-                    <li><a href="/ztptemplate">Templates</a></li>
-                    {% endif %}
-                    {% if va("ztpdeviceaccess","submenu")== True %}
-                    <li><a href="/ztpdevice">Devices</a></li>
-                    {% endif %}
-                </ul>
-            </div>
-        </div>
+    <li class="parentmenu">
+        <a href="#">ZTP</a>
+        <ul class="childmenu">
+            {% if va("ztptemplateaccess","submenu")== True %}
+            <li><a href="/ztptemplate">Templates</a></li>
+            {% endif %}
+            {% if va("ztpdeviceaccess","submenu")== True %}
+            <li><a href="/ztpdevice">Devices</a></li>
+            {% endif %}
+        </ul>
     </li>
     {% endif %}
     {% if va("deviceupdates","menu")== True %}
-    <li class="menu_item">
-        <a href="#" class="drop">Device updates</a>
-        <div class="dropdown">
-            <div class="col_1">
-                <ul class="simple">
-                    {% if va("imageaccess","submenu")== True %}
-                    <li><a href="/deviceimages">Image repository</a></li>
-                    {% endif %}
-                    {% if va("upgradescheduleraccess","submenu")== True %}
-                    <li><a href="/upgradescheduler">Upgrade monitor</a></li>
-                    {% endif %}
-                    {% if va("upgradeprofilesaccess","submenu")== True %}
-                    <li><a href="/upgradeprofiles">Upgrade profiles</a></li>
-                    {% endif %}
-                </ul>
-            </div>
-        </div>
+    <li class="parentmenu">
+        <a href="#">Device updates</a>
+        <ul class="childmenu">
+            {% if va("imageaccess","submenu")== True %}
+            <li><a href="/deviceimages">Image repository</a></li>
+            {% endif %}
+            {% if va("upgradescheduleraccess","submenu")== True %}
+            <li><a href="/upgradescheduler">Upgrade monitor</a></li>
+            {% endif %}
+            {% if va("upgradeprofilesaccess","submenu")== True %}
+            <li><a href="/upgradeprofiles">Upgrade profiles</a></li>
+            {% endif %}
+        </ul>
     </li>
     {% endif %}
     {% if va("topology","menu")== True %}
-    <li class="menu_item">
+    <li class="parentmenu">
         <a href="/topology">Topology</a>
     </li>
     {% endif %}
     {% if va("telemetry","menu")== True %}
-    <li class="menu_item">
+    <li class="parentmenu">
         <a href="/telemetry">Telemetry</a>
     </li>
     {% endif %}
     {% if va("tools","menu")== True %}
-    <li class="menu_item">
-        <a href="#" class="drop">Tools</a>
-        <div class="dropdown">
-            <div class="col_1">
-                <ul class="simple">
-                    {% if va("dhcptrackeraccess","submenu")== True %}
-                    <li><a href="/dhcptracker">DHCP</a></li>
-                    {% endif %}
-                    {% if va("snmptrackeraccess","submenu")== True %}
-                    <li><a href="/snmptracker">SNMP</a></li>
-                    {% endif %}
-                    {% if va("syslogtrackeraccess","submenu")== True %}
-                    <li><a href="/syslog">Syslog</a></li>
-                    {% endif %}
-                    {% if va("anycliaccess","submenu")== True %}
-                    <li><a href="/anycli">AnyCLI</a></li>
-                    {% endif %}
-                </ul>
-            </div>
-        </div>
+    <li class="parentmenu">
+        <a href="#">Tools</a>
+        <ul class="childmenu">
+            {% if va("dhcptrackeraccess","submenu")== True %}
+            <li><a href="/dhcptracker">DHCP</a></li>
+            {% endif %}
+            {% if va("snmptrackeraccess","submenu")== True %}
+            <li><a href="/snmptracker">SNMP</a></li>
+            {% endif %}
+            {% if va("syslogtrackeraccess","submenu")== True %}
+            <li><a href="/syslog">Syslog</a></li>
+            {% endif %}
+            {% if va("anycliaccess","submenu")== True %}
+            <li><a href="/anycli">AnyCLI</a></li>
+            {% endif %}
+        </ul>
     </li>
     {% endif %}
+
+    {% if va("afc","menu")== True %}
+    <li class="parentmenu">
+        <a href="#">Aruba Fabric Composer</a>
+        <ul class="childmenu">
+            {% if va("afcfabricsaccess","submenu")== True %}
+            <li><a href="/afcfabrics">Fabrics</a></li>
+            {% endif %}
+            {% if va("afcswitchesaccess","submenu")== True %}
+            <li><a href="/afcswitches">Switches</a></li>
+            {% endif %}
+            {% if va("afcintegrationsaccess","submenu")== True %}
+            <li><a href="/afcintegrations">Integrations</a></li>
+            {% endif %}
+            {% if va("afcauditlogaccess","submenu")== True %}
+            <li><a href="/afcauditlog">Audit log</a></li>
+            {% endif %}
+            {% if va("afcvmwareinventoryaccess","submenu")== True %}
+            <li><a href="/afcvmwareinventory">VMWare inventory</a></li>
+            {% endif %}
+        </ul>
+    </li>
+    {% endif %}
+
+    {% if va("psm","menu")== True %}
+    <li class="parentmenu">
+        <a href="#">Pensando PSM</a>
+        <ul class="childmenu">
+            {% if va("psmdssaccess","submenu")== True %}
+            <li><a href="/psmdss">DSS</a></li>
+            {% endif %}
+            {% if va("psmnetworksaccess","submenu")== True %}
+            <li><a href="/psmnetworks">Networks</a></li>
+            {% endif %}
+            {% if va("psmsecuritypoliciesaccess","submenu")== True %}
+            <li><a href="/psmsecuritypolicies">Security policies</a></li>
+            {% endif %}
+            {% if va("psmalertpoliciesaccess","submenu")== True %}
+            <li><a href="/psmalertpolicies">Alert policies</a></li>
+            {% endif %}
+        </ul>
+    </li>
+    {% endif %}
+
+
     {% if va("administration","menu")== True %}
-    <li class="menu_item">
-        <a href="#" class="drop">Administration</a>
-        <div class="dropdown">
-            <div class="col_1">
-                <ul class="simple">
-                    {% if va("sysuseraccess","submenu")== True %}
-                    <li><a href="/useradmin">Users</a></li>
-                    {% endif %}
-                    {% if va("sysroleaccess","submenu")== True %}
-                    <li><a href="/userroles">Roles</a></li>
-                    {% endif %}
-                    {% if va("deviceattributesaccess","submenu")== True %}
-                    <li><a href="/deviceattributes">Device attributes</a></li>
-                    {% endif %}
-                    {% if va("sysadminaccess","submenu")== True %}
-                    <li><a href="/sysconf">System settings</a></li>
-                    {% endif %}
-                    {% if va("servicesstatusaccess","submenu")== True %}
-                    <li><a href="/sysmon">Services status</a></li>
-                    {% endif %}
+    <li class="parentmenu">
+        <a href="#">Administration</a>
+        <ul class="childmenu">
+            {% if va("sysuseraccess","submenu")== True %}
+            <li><a href="/useradmin">Users</a></li>
+            {% endif %}
+            {% if va("sysroleaccess","submenu")== True %}
+            <li><a href="/userroles">Roles</a></li>
+            {% endif %}
+            {% if va("deviceattributesaccess","submenu")== True %}
+            <li><a href="/deviceattributes">Device attributes</a></li>
+            {% endif %}
+            {% if va("sysadminaccess","submenu")== True %}
+            <li><a href="/sysconf">System settings</a></li>
+            {% endif %}
+            {% if va("integrationsaccess","submenu")== True %}
+            <li class="parentmenu">
+                <a href="#">Integrations</a>
+                <ul class="childmenu">
+                    <li><a href="/sysldap" nowrap>LDAP</a></li>
+                    <li><a href="/sysipam" nowrap>IPAM</a></li>
+                    <li><a href="/sysafc" nowrap>Aruba Fabric Composer</a></li>
+                    <li><a href="/syspsm" nowrap>Pensando PSM</a></li>
+                    <li><a href="/sysarubacentral" nowrap>Aruba Central</a></li>
                 </ul>
-            </div>
-        </div>
+            </li>
+            {% endif %}
+            {% if va("servicesstatusaccess","submenu")== True %}
+            <li><a href="/sysmon">Services status</a></li>
+            {% endif %}
+        </ul>
     </li>
     {% endif %}
 
-
-    <li id="liProgress" style="width: 350px; display: none; overflow: visible;text-decoration: none;pointer-events:none;">
-        <div class="progressContainer" id="progressContainer">
-            <div class="progressInfo" id="progressInfo"></div>
-        </div>
-    </li>
-
+    <li id="liProgress"></li>
+    <script>clearmessageBar();</script>
     <li class="menu_right">
-        <div id="userInfo" class="transparent-button">
+        <span class="transparent-button" style="text-decoration: none; pointer-events: none;">{{ pagename }}</span>&nbsp;&nbsp;<span id="sysstatus"></span>&nbsp;&nbsp;<span id="userInfo" class="transparent-button">
             <script>getCookie('username');</script>
-        </div>
-    </li>
-    <li class="menu_right no_event">
-        <div class="transparent-button">
-            {{ pagename }}
-        </div>
+        </span>
     </li>
 </ul>

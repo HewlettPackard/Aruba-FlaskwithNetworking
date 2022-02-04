@@ -1,14 +1,13 @@
-<!-- (C) Copyright 2019 Hewlett Packard Enterprise Development LP. -->
+<!-- (C) Copyright 2021 Hewlett Packard Enterprise Development LP. -->
 
 {% block content %}
 
 {%  if sysinfo %}
-    <div id="maincontainer">
         <table class="tablewithborder">
-            <tr>
+            <tr class="tableTitle">
                 <td colspan="10"><font class="font13pxwhite"><center>{{ ipaddress }} ({{ description }}) Device information</b></center></font></td>
             </tr>
-            <tr>
+            <tr class="tableTitle">
                 <td width="10%"><font class="font12pxwhite">Hostname</font></td>
                 <td width="12%" class="whiteBG"><font face="arial" size="1"> {{ sysinfo['name'] }} </font></td>
                 <td width="10%"><font class="font12pxwhite">Part number</font></td>
@@ -20,7 +19,7 @@
                 <td width="10%"><font class="font12pxwhite">Firmware</font></td>
                 <td class="whiteBG"><font face="arial" size="1"> {{ sysinfo['firmware_version'] }} </font></td>
             </tr>
-            <tr>
+            <tr class="tableTitle">
 
                 <td><font class="font12pxwhite">Fan Status</font></td>
                 <td class="whiteBG">
@@ -50,7 +49,7 @@
                 <td class="whiteBG"><font face="arial" size="1"> {% if sysinfo['is_telnet_server_enabled']==True %} Yes  {% else %} No {% endif %} </font></td>
             </tr>
             {% for items in sysinfo.system_power_supply %}
-            <tr>
+            <tr class="tableTitle">
                 <td><font class="font12pxwhite">Power supply {{ items['power_supply_number'] }} status</font></td>
                 <td class="whiteBG"><font face="arial" size="1">{{ items['power_supply_state'][5:] }}</font></td>
                 <td><font class="font12pxwhite">Power usage</font></td>
@@ -64,7 +63,7 @@
             </tr>
             {% endfor %}
             {% for items in sysinfo.snmp_server_community_element %}
-            <tr>
+            <tr class="tableTitle">
                 <td><font class="font12pxwhite">SNMP Community</font></td>
                 <td class="whiteBG" colspan="3"><font face="arial" size="1">{{ items['community_name'] }}</font></td>
                 <td><font class="font12pxwhite">Access type</font></td>
@@ -74,7 +73,7 @@
             </tr>
             {% endfor %}
             {% for items in sysinfo.snmpv3_user_element %}
-            <tr>
+            <tr class="tableTitle">
                 <td><font class="font12pxwhite">SNMPv3 User</font></td>
                 <td class="whiteBG"><font face="arial" size="1">{{ items['user_name'] }}</font></td>
                 <td><font class="font12pxwhite">Authentication protocol</font></td>
@@ -86,7 +85,7 @@
             </tr>
             {% endfor %}
             {% for items in sysinfo.radius_server_element %}
-            <tr>
+            <tr class="tableTitle">
                 <td><font class="font12pxwhite">Radius server</font></td>
                 <td class="whiteBG"><font face="arial" size="1">{{ items['address']['octets'] }}</font></td>
                 <td><font class="font12pxwhite">Authentication port</font></td>
@@ -100,7 +99,7 @@
             </tr>
             {% endfor %}
             {% if sysinfo['time_server_protocol'] %}
-            <tr>
+            <tr class="tableTitle">
                 <td><font class="font12pxwhite">NTP protocol</font></td>
                 <td class="whiteBG"><font face="arial" size="1">{{ sysinfo['time_server_protocol'][4:] }}</font></td>
                 <td><font class="font12pxwhite">Time server</font></td>
@@ -112,7 +111,7 @@
             </tr>
             {% endif %}
             {% for items in sysinfo.vlan_element %}
-            <tr>
+            <tr class="tableTitle">
                 <td><font class="font12pxwhite">VLAN ID</font></td>
                 <td class="whiteBG"><font face="arial" size="1">{{ items['vlan_id'] }}</font></td>
                 <td><font class="font12pxwhite">Name</font></td>
@@ -153,7 +152,7 @@
             {% endfor %}
 
             {% for items in sysinfo.lacp_element |sort(attribute='trunk_group') %}
-            <tr>
+            <tr class="tableTitle">
                 <td><font class="font12pxwhite">Trunk group</font></td>
                 <td class="whiteBG"><font face="arial" size="1">{{ items['trunk_group'] }}</font></td>
                 <td><font class="font12pxwhite">Port</font></td>
@@ -174,6 +173,5 @@
             {% endfor %}
 
         </table>
-        </div>
         {% endif %}
         {% endblock %}

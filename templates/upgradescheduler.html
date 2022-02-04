@@ -7,7 +7,7 @@
 {% endblock %}
 
 {% block content %}
-{% set pagename = "Upgrade scheduler" %}
+{% set pagename = "Upgrade monitor" %}
 {% include 'navbar.html' %}
 
 {% if totalentries|int % entryperpage|int == 0 %}
@@ -140,8 +140,8 @@
 
     <div id="showSchedule" style="display:none;" data-id="">
         <table class="tablewithborder">
-            <tr style="background-color:grey;"><td colspan="8"><div id="showscheduleTitle"></div></td></tr>
-            <tr>
+            <tr class="tableTitle"><td colspan="8"><div id="showscheduleTitle"></div></td></tr>
+            <tr class="tableTitle">
                 <td><font class="font12pxwhite">Primary image before upgrade</font></td>
                 <td class="whiteBG" width="12%"><div class="bprimaryImage"></div></td>
                 <td><font class="font12pxwhite">Secondary image before upgrade</font></td>
@@ -151,7 +151,7 @@
                 <td><font class="font12pxwhite">Reboot after upgrade</font></td>
                 <td class="whiteBG" width="15%"><div class="rebootafterUpgrade"></div></td>
             </tr>
-            <tr>
+            <tr class="tableTitle">
                 <td><font class="font12pxwhite">Primary image after upgrade</font></td>
                 <td class="whiteBG"><div class="aprimaryImage"></div></td>
                 <td><font class="font12pxwhite">Secondary image after upgrade</font></td>
@@ -160,7 +160,7 @@
                 <td class="whiteBG"><div class="adefaultImage"></div></td>
                 <td class="whiteBG" colspan="2"><span class="showschedulerebootSwitch" id="showschedulerebootSwitch"></span></td>
             </tr>
-            <tr>
+            <tr class="tableTitle">
                 <td><font class="font12pxwhite">Upgrade schedule time</font></td>
                 <td class="whiteBG"><div class="upgradeSchedule"></div></td>
                 <td><font class="font12pxwhite">Upgrade started</font></td>
@@ -170,7 +170,7 @@
                 <td><font class="font12pxwhite">Upgrade duration</font></td>
                 <td class="whiteBG"><div class="upgradeDuration"></div></td>
             </tr>
-            <tr>
+            <tr class="tableTitle">
                 <td><font class="font12pxwhite">Upgrade status</font></td>
                 <td class="whiteBG" colspan="7"><div class="upgradeStatus"></div></td>
             </tr>

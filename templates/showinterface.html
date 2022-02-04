@@ -1,91 +1,90 @@
-<!-- (C) Copyright 2019 Hewlett Packard Enterprise Development LP. -->
+<!-- (C) Copyright 2021 Hewlett Packard Enterprise Development LP. -->
 
 {% block content %}
 
 {% if interfaceinfo %}
-    <div id="maincontainer">
         <table class="tablewithborder">
             {% if interfaceinfo.operStatus is defined %}
-            <tr><td><font class="font12pxwhite">Operational status:</font></td> <td class="whiteBG"><font face="arial" size="1">{{ interfaceinfo['operStatus'][5:] }} </font></td></tr>
+            <tr class="tableTitle"><td nowrap><font class="font12pxwhite">Operational status:</font></td><td class="whiteBG" nowrap><font face="arial" size="1">{{ interfaceinfo['operStatus'][5:] }} </font></td></tr>
             {% endif %}
             {% if interfaceinfo.name is defined %}
-            <tr><td><font class="font12pxwhite">Port name:</font></td> <td class="whiteBG"><font face="arial" size="1">{{ interfaceinfo['name'] }} </font></td></tr>
+            <tr class="tableTitle"><td nowrap><font class="font12pxwhite">Port name:</font></td><td class="whiteBG" nowrap><font face="arial" size="1">{{ interfaceinfo['name'] }} </font></td></tr>
             {% endif %}
             {% if interfaceinfo.port_speed_mbps is defined %}
-            <tr><td><font class="font12pxwhite">Link speed (Mbps):</font></td> <td class="whiteBG"><font face="arial" size="1">{{ interfaceinfo['port_speed_mbps'] }}</font></td></tr>
+            <tr class="tableTitle"><td nowrap><font class="font12pxwhite">Link speed (Mbps):</font></td><td class="whiteBG" nowrap><font face="arial" size="1">{{ interfaceinfo['port_speed_mbps'] }}</font></td></tr>
             {% endif %}
             {% if interfaceinfo.config_mode is defined %}
-            <tr><td><font class="font12pxwhite">Configuration mode:</font></td> <td class="whiteBG"><font face="arial" size="1"> {{ interfaceinfo['config_mode'][4:] }} </font></td></tr>
+            <tr class="tableTitle"><td nowrap><font class="font12pxwhite">Configuration mode:</font></td><td class="whiteBG" nowrap><font face="arial" size="1"> {{ interfaceinfo['config_mode'][4:] }} </font></td></tr>
             {% endif %}
             {% if interfaceinfo.packets_rx is defined %}
-            <tr><td><font class="font12pxwhite">Unicast packets received:</font></td> <td class="whiteBG"><font face="arial" size="1"> {{ interfaceinfo['packets_rx'] }} </font></td></tr>
+            <tr class="tableTitle"><td nowrap><font class="font12pxwhite">Unicast packets received:</font></td><td class="whiteBG" nowrap><font face="arial" size="1"> {{ interfaceinfo['packets_rx'] }} </font></td></tr>
             {% endif %}
             {% if interfaceinfo.bytes_rx is defined %}
-            <tr><td><font class="font12pxwhite">Bytes received:</font></td> <td class="whiteBG"><font face="arial" size="1"> {{ interfaceinfo['bytes_rx'] }} </font></td></tr>
+            <tr class="tableTitle"><td nowrap><font class="font12pxwhite">Bytes received:</font></td><td class="whiteBG" nowrap><font face="arial" size="1"> {{ interfaceinfo['bytes_rx'] }} </font></td></tr>
             {% endif %}
             {% if interfaceinfo.packets_tx is defined %}
-            <tr><td><font class="font12pxwhite">Unicast packets transmitted:</font></td> <td class="whiteBG"><font face="arial" size="1"> {{ interfaceinfo['packets_tx'] }} </font></td></tr>
+            <tr class="tableTitle"><td nowrap><font class="font12pxwhite">Unicast packets transmitted:</font></td><td class="whiteBG" nowrap><font face="arial" size="1"> {{ interfaceinfo['packets_tx'] }} </font></td></tr>
             {% endif %}
             {% if interfaceinfo.bytes_tx is defined %}
-            <tr><td><font class="font12pxwhite">Bytes transmitted:</font></td> <td class="whiteBG"><font face="arial" size="1"> {{ interfaceinfo['bytes_tx'] }} </font></td></tr>
+            <tr class="tableTitle"><td nowrap><font class="font12pxwhite">Bytes transmitted:</font></td> <td class="whiteBG" nowrap><font face="arial" size="1"> {{ interfaceinfo['bytes_tx'] }} </font></td></tr>
             {% endif %}
             {% if interfaceinfo.throughput_rx_bps is defined %}
-            <tr><td><font class="font12pxwhite">Receive throughput (bps):</font></td> <td class="whiteBG"><font face="arial" size="1"> {{ interfaceinfo['throughput_rx_bps'] }} </font></td></tr>
+            <tr class="tableTitle"><td nowrap><font class="font12pxwhite">Receive throughput (bps):</font></td><td class="whiteBG" nowrap><font face="arial" size="1"> {{ interfaceinfo['throughput_rx_bps'] }} </font></td></tr>
             {% endif %}
             {% if interfaceinfo.throughput_tx_bps is defined %}
-            <tr><td><font class="font12pxwhite">Transmit throughput (bps):</font></td> <td class="whiteBG"><font face="arial" size="1"> {{ interfaceinfo['throughput_tx_bps'] }} </font></td></tr>
+            <tr class="tableTitle"><td nowrap><font class="font12pxwhite">Transmit throughput (bps):</font></td><td class="whiteBG" nowrap><font face="arial" size="1"> {{ interfaceinfo['throughput_tx_bps'] }} </font></td></tr>
             {% endif %}
             {% if interfaceinfo.error_rx is defined %}
-            <tr><td><font class="font12pxwhite">Errors received:</font></td> <td class="whiteBG"><font face="arial" size="1"> {{ interfaceinfo['error_rx'] }} </font></td></tr>
+            <tr class="tableTitle"><td nowrap><font class="font12pxwhite">Errors received:</font></td><td class="whiteBG" nowrap><font face="arial" size="1"> {{ interfaceinfo['error_rx'] }} </font></td></tr>
             {% endif %}
             {% if interfaceinfo.error_tx is defined %}
-            <tr><td><font class="font12pxwhite">Error transmitted:</font></td> <td class="whiteBG"><font face="arial" size="1"> {{ interfaceinfo['error_tx'] }} </font></td></tr>
+            <tr class="tableTitle"><td nowrap><font class="font12pxwhite">Error transmitted:</font></td><td class="whiteBG" nowrap><font face="arial" size="1"> {{ interfaceinfo['error_tx'] }} </font></td></tr>
             {% endif %}
             {% if interfaceinfo.drop_tx is defined %}
-            <tr><td><font class="font12pxwhite">Packets dropped:</font></td> <td class="whiteBG"><font face="arial" size="1"> {{ interfaceinfo['drop_tx'] }} </font></td></tr>
+            <tr class="tableTitle"><td nowrap><font class="font12pxwhite">Packets dropped:</font></td><td class="whiteBG" nowrap><font face="arial" size="1"> {{ interfaceinfo['drop_tx'] }} </font></td></tr>
             {% endif %}
 
 
             {% if 'uri' in lldpinfo %}
-            <tr>
+            <tr class="tableTitle">
                 <td colspan="2"><font class="font13pxwhite"><center>LLDP Information</center></font></td>
             </tr>
             {% if 'system_name' in lldpinfo %}
-            <tr>
-                <td><font class="font12pxwhite">Remote system name:</font></td>
-                <td class="whiteBG">
+            <tr class="tableTitle">
+                <td nowrap><font class="font12pxwhite">Remote system name:</font></td>
+                <td class="whiteBG" nowrap>
                     <font face="arial" size="1">{{ lldpinfo['system_name'] }}</font>
                 </td>
             </tr>
             {% endif %}
             {% if 'system_description' in lldpinfo %}
-            <tr>
-                <td><font class="font12pxwhite">Remote system description:</font></td>
-                <td class="whiteBG">
+            <tr class="tableTitle">
+                <td nowrap><font class="font12pxwhite">Remote system description:</font></td>
+                <td class="whiteBG" nowrap>
                     <font face="arial" size="1">{{ lldpinfo['system_description'][:60] }}</font>
                 </td>
             </tr>
             {% endif %}
             {% if 'port_description' in lldpinfo %}
-            <tr>
-                <td><font class="font12pxwhite">Remote port:</font></td>
-                <td class="whiteBG">
+            <tr class="tableTitle">
+                <td nowrap><font class="font12pxwhite">Remote port:</font></td>
+                <td class="whiteBG" nowrap>
                     <font face="arial" size="1">{{ lldpinfo['port_description'] }}</font>
                 </td>
             </tr>
             {% endif %}
             {% if 'requested_power_in_watts' in lldpinfo['poe_plus_info'] %}
-            <tr>
-                <td><font class="font12pxwhite">Requested PoE power:</font></td>
-                <td class="whiteBG">
+            <tr class="tableTitle">
+                <td nowrap><font class="font12pxwhite">Requested PoE power:</font></td>
+                <td class="whiteBG" nowrap>
                     <font face="arial" size="1"> {{ lldpinfo['poe_plus_info']['requested_power_in_watts'] }} Watt</font>
                 </td>
             </tr>
             {% endif %}
             {% if 'actual_power_in_watts' in lldpinfo['poe_plus_info'] %}
-            <tr>
-                <td><font class="font12pxwhite">PoE power provided:</font></td>
-                <td class="whiteBG">
+            <tr class="tableTitle">
+                <td nowrap><font class="font12pxwhite">PoE power provided:</font></td>
+                <td class="whiteBG" nowrap>
                     <font face="arial" size="1"> {{ lldpinfo['poe_plus_info']['actual_power_in_watts'] }} Watt</font>
                 </td>
             </tr>
@@ -95,5 +94,4 @@
         </table>
 
         {% endif %}
-        </div>
         {% endblock %}

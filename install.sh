@@ -21,10 +21,10 @@ tput civis
 
 
 
-echo "########## Carius 2.2 Installation ##########"
+echo "########## CommPass 3.0 Installation ##########"
 echo "Ensure that you have an active Internet connection with an acceptable speed (at least 10Mbps recommended)"
 # First step is to check whether you are logged in as root
-# and which Ubuntu version is running. Carius requires 18.04 or later
+# and which Ubuntu version is running. CommPass requires Ubuntu 18.04 or later
 
 if [[ `id -u` != 0 ]]; then
 echo "Must be root to run script"
@@ -48,7 +48,7 @@ echo "System requirement is Ubuntu LTS 18.04 or higher"
 exit
 else
 IFS=':' read -r var1 var2 <<< "$(lsb_release -d)"
-echo "Installing Carius on $var2"
+echo "Installing CommPass on $var2"
 fi
 
 # Second step is to upgrade and update Ubuntu
@@ -76,7 +76,7 @@ add-apt-repository universe -y  > /dev/null
 
 
 if ! [ -x "$(command -v python3)" ]; then
-echo 'Error: Python is not installed or it is the incorrect command. Carius requires the   python3   command' >&2
+echo 'Error: Python is not installed or it is the incorrect command. CommPass requires the   python3   command' >&2
 exit 1
 fi
 
@@ -149,6 +149,7 @@ fi
 echo " Installing the app"
 cp ./__init__.py /var/www/html/__init__.py  > /dev/null
 cp ./startapp.sh /var/www/html/startapp.sh  > /dev/null
+cp ./uninstall.sh /var/www/html/uninstall.sh  > /dev/null
 cp ./views/ /var/www/html/ -r > /dev/null
 cp ./static/ /var/www/html/ -r > /dev/null
 cp ./templates/ /var/www/html/ -r > /dev/null
@@ -165,16 +166,17 @@ chmod 777 /var/www/html/images
 
 echo " Configuring the app"
 
-activeInterface=$(route | grep '^default' | grep -o '[^ ]*$')
-cat > /var/www/html/bash/globals.json  << ENDOFFILE
-{"idle_timeout": "3000", "pcap_location": "/var/www/html/bash/trace.pcap", "retain_dhcp": "15", "retain_snmp": "15", "retain_ztplog": "5", "retain_listenerlog": "5", "retain_cleanuplog": "5", "retain_topologylog": "5","retain_syslog": "15","retain_telemetrylog": "5","secret_key": "ArubaRocks!!!!!!", "appPath": "/var/www/html/", "softwareRelease": "2.2", "sysInfo": "","activeInterface":"$activeInterface","ztppassword":"ztpinit","landingpage":"/","authsource":"local"}
-ENDOFFILE
+# activeInterface=$(route | grep '^default' | grep -o '[^ ]*$')
+# cat > /var/www/html/bash/globals.json  << ENDOFFILE
+# {"idle_timeout": "3000", "pcap_location": "/var/www/html/bash/trace.pcap", "retain_dhcp": "15", "retain_snmp": "15", "retain_ztplog": "5", "retain_listenerlog": "5", "retain_cleanuplog": "5", "retain_topologylog": "5","retain_syslog": "15","retain_telemetrylog": "5","secret_key": "ArubaRocks!!!!!!", "appPath": "/var/www/html/", "softwareRelease": "2.2", "sysInfo": "","activeInterface":"$activeInterface","ztppassword":"ztpinit","landingpage":"/","authsource":"local"}
+# ENDOFFILE
 chmod 777 /var/www/html/bash/listener.sh
 chmod 777 /var/www/html/bash/cleanup.sh
 chmod 777 /var/www/html/bash/topology.sh
 chmod 777 /var/www/html/bash/ztp.sh
 chmod 777 /var/www/html/bash/telemetry.sh
 chmod 777 /var/www/html/bash/device-upgrade.sh
+chmod 777 /var/www/html/bash/data-collector.sh
 
 
 if [ ! -d "/var/www/html/log" ]; then
@@ -187,6 +189,9 @@ touch /var/www/html/log/ztp.log
 touch /var/www/html/log/listener.log
 touch /var/www/html/log/telemetry.log
 touch /var/www/html/log/device-upgrade.log
+touch /var/www/html/log/data-collector.log
+touch /var/www/html/log/device-upgrade.log
+touch /var/www/html/log/system.log
 
 chmod 777 /var/www/html/log/
 
@@ -204,9 +209,9 @@ tput cnorm
 
 # Final step is to automatically start the startapp.sh when the system boots
 
-cat > /etc/systemd/system/carius.service  << ENDOFFILE
+cat > /etc/systemd/system/CommPass.service  << ENDOFFILE
 [Unit]
-Description=Carius
+Description=CommPass
 After=mysql.service
 [Service]
 Type=simple
@@ -216,13 +221,13 @@ ExecStart=/var/www/html/startapp.sh
 WantedBy=default.target
 ENDOFFILE
 
-chmod 664 /etc/systemd/system/carius.service
+chmod 664 /etc/systemd/system/CommPass.service
 systemctl daemon-reload &> /dev/null
-systemctl enable carius.service &> /dev/null
-systemctl start carius.service &> /dev/null
+systemctl enable CommPass.service &> /dev/null
+systemctl start CommPass.service &> /dev/null
 
-echo " ######### Carius 2.2 installation completed ##########"
-echo " Navigate with your browser to http://a.b.c.d:8080   where a.b.c.d is the IP address of the Carius server"
+echo " ######### CommPass release 3.0 installation completed ##########"
+echo " Navigate with your browser to http://a.b.c.d:8080   where a.b.c.d is the IP address of the CommPass server"
 echo " The default login credentials are:"
 echo " Username:  admin"
 echo " There is no password, you are prompted to change the admin password after login as admin user"

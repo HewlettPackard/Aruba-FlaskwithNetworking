@@ -1,4 +1,4 @@
-# (C) Copyright 2020 Hewlett Packard Enterprise Development LP.
+# (C) Copyright 2021 Hewlett Packard Enterprise Development LP.
 # Generic ArubaOS-CX classes
 import classes.classes
 import requests
@@ -18,7 +18,7 @@ def checkcxCookie(deviceid):
     globalsconf=classes.classes.globalvars()
     queryStr="select ipaddress, username, password, secinfo, switchstatus from devices where id='{}'".format(deviceid)
     deviceCreds=classes.classes.sqlQuery(queryStr,"selectone")
-    baseurl="https://{}/rest/v1/".format(deviceCreds['ipaddress'])
+    baseurl="https://{}/rest/{}/".format(deviceCreds['ipaddress'],globalsconf['cxapi'])
     # First, let's check if we can perform a REST call and get a response 200
     if deviceCreds['secinfo'] is None:
         # There is no cookie in the secinfo field, we HAVE to login
@@ -51,10 +51,10 @@ def checkcxCookie(deviceid):
             return {}
     else :
         try:
-            if type(deviceCreds['secinfo']) is dict:
-                header=deviceCreds['secinfo']
-            else:
+            if isinstance(deviceCreds['secinfo'],str):
                 header=json.loads(deviceCreds['secinfo'])
+            else:
+                header=deviceCreds['secinfo']
             try:
                 response=requests.get(baseurl+"system?attributes=software_info&depth=2",headers=header,verify=False,timeout=5)
                 if response.status_code==200:
@@ -114,6 +114,7 @@ def checkcxCookie(deviceid):
     return {}
 
 def getcxREST(deviceid,url):
+    globalsconf=classes.classes.globalvars()
     response={}   
     cookie_header=checkcxCookie(deviceid)
     if type(cookie_header) is dict:
@@ -123,14 +124,14 @@ def getcxREST(deviceid,url):
     if cookie_header!="":
         queryStr="select ipaddress from devices where id='{}'".format(deviceid)
         deviceCreds=classes.classes.sqlQuery(queryStr,"selectone")
-        baseurl="https://{}/rest/v1/".format(deviceCreds['ipaddress'])
+        baseurl="https://{}/rest/{}/".format(deviceCreds['ipaddress'],globalsconf['cxapi'])
         try:
             response=requests.get(baseurl + url,headers=header,verify=False, timeout=5)
             try:
                 # If the response contains information, the content is converted to json format
                 response=json.loads(response.content.decode('utf-8'))
                 return response
-            except:
+            except Exception as e:
                 return {}
         except:
             return {}
@@ -138,6 +139,7 @@ def getcxREST(deviceid,url):
 
 
 def postcxREST(deviceid,url, parameters):
+    globalsconf=classes.classes.globalvars()
     response={}
     cookie_header=checkcxCookie(deviceid)
     if type(cookie_header) is dict:
@@ -147,7 +149,7 @@ def postcxREST(deviceid,url, parameters):
     if cookie_header!="":
         queryStr="select ipaddress from devices where id='{}'".format(deviceid)
         deviceCreds=classes.classes.sqlQuery(queryStr,"selectone")
-        baseurl="https://{}/rest/v1/".format(deviceCreds['ipaddress'])
+        baseurl="https://{}/rest/" + globalsconf['cxapi'] + "/".format(deviceCreds['ipaddress'])
         try:
             response = requests.post(baseurl+url,headers=header, data=parameters,verify=False, timeout=20)
             try:
@@ -161,9 +163,10 @@ def postcxREST(deviceid,url, parameters):
 
 
 def getcxInfo(deviceid):
+    globalsconf=classes.classes.globalvars()
     sysinfo={}
     interfaces={}
-    portinfo={}
+    portinfo=[]
     vsxinfo={}
     vrfinfo={}
     vsxlags={}
@@ -176,30 +179,47 @@ def getcxInfo(deviceid):
         # If we are dealing with a 6100, we need a different set of URL's
         deviceFamily=classes.classes.getswitchFamily(deviceid)
         if deviceFamily=="6100":
-            urllist=["system/interfaces?attributes=admin_state%2Cduplex%2Chw_intf_info%2Clink_speed%2Clink_state%2Clink_state_hw%2Clldp_statistics%2Cmtu%2Cname%2Cstatistics&depth=2","system/ports?attributes=applied_vlan_trunks%2Cip4_address%2Cip6_addresses%2Cname%2Cvrf&depth=1","system/vrfs?depth=2", "system/subsystems?attributes=resource_utilization&depth=2"]
+            urllist=["system/interfaces?attributes=admin_state%2Cduplex%2Chw_intf_info%2Clink_speed%2Clink_state%2Clink_state_hw%2Clldp_statistics%2Cmtu%2Cname%2Cstatistics&depth=2","system/interfaces?attributes=link_state,applied_vlan_trunks,ip4_address,ip4_address_secondary,ip6_addresses,lldp_neighbors,name,vrf&depth=2&filter=link_state%3Aup","system/vrfs?depth=2", "system/subsystems?attributes=resource_utilization&depth=2"]
         else:
-            urllist=["system/interfaces?attributes=admin_state%2Cduplex%2Chw_intf_info%2Clink_speed%2Clink_state%2Clink_state_hw%2Clldp_statistics%2Cmtu%2Cname%2Cstatistics&depth=2","system/ports?attributes=applied_vlan_trunks%2Cip4_address%2Cip4_address_secondary%2Cip6_addresses%2Cname%2Cvrf&depth=1","system/subsystems?attributes=resource_utilization&depth=2","system/vsx?depth=3","system/vrfs?depth=2","system/vsx_remote_lags?depth=2","system/vrfs/default/routes?depth=1"]
+            urllist=["system/interfaces?attributes=admin_state%2Cduplex%2Chw_intf_info%2Clink_speed%2Clink_state%2Clink_state_hw%2Clldp_statistics%2Cmtu%2Cname%2Cstatistics&depth=2","system/subsystems?attributes=resource_utilization&depth=2","system/interfaces?attributes=link_state,applied_vlan_trunks,ip4_address,ip4_address_secondary,ip6_addresses,lldp_neighbors,name,vrf&depth=2&filter=link_state%3Aup","system/vsx?depth=1","system/vrfs?depth=1","system/vsx_remote_lags?depth=2"]
         for items in urllist:
             try:
                 result=getcxREST(deviceid,items)
             except:
                 result={}
             # Update the database with relevant information based on the url
-            if items=="system/vsx?depth=3":         
+            if items=="system/vsx?depth=1":        
                 vsxinfo=json.dumps(result, separators=(',',':'))
-            elif items=="system/vrfs?depth=2":
+            elif items=="system/vrfs?depth=1":
                 if deviceFamily=="6100":
                     vrfinfo="{}"
                 else:
                     vrfinfo=json.dumps(result, separators=(',',':'))
             elif items=="system/vsx_remote_lags?depth=2":
                 vsxlags=json.dumps(result, separators=(',',':'))
-            elif items=="system/ports?attributes=applied_vlan_trunks%2Cip4_address%2Cip4_address_secondary%2Cip6_addresses%2Cname%2Cvrf&depth=1":
-                portinfo=json.dumps(result, separators=(',',':'))
-            elif items=="system/ports?attributes=applied_vlan_trunks%2Cip4_address%2Cip6_addresses%2Cname%2Cvrf&depth=1":
-                portinfo=json.dumps(result, separators=(',',':'))
-            elif items=="system/vrfs/default/routes?depth=1":
-                routeinfo=json.dumps(result, separators=(',',':'))
+            elif items=="system/interfaces?attributes=link_state,applied_vlan_trunks,ip4_address,ip4_address_secondary,ip6_addresses,lldp_neighbors,name,vrf&depth=2&filter=link_state%3Aup":
+                # Assign the VRF name
+                for portitems in result:
+                    try:
+                        if "vrf" in result[portitems]:
+                            if result[portitems]['vrf'] is None:
+                                result[portitems]['vrf']="default"
+                            else:
+                                # Need to obtain the key value of this dict
+                                for key,value in result[portitems]['vrf'].items():
+                                    result[portitems]['vrf']=key
+                        else:
+                            result[portitems]['vrf']="Not assigned"
+                    except:
+                        pass
+                    # Assign the trunk VLAN's
+                    assignedTrunk=[]
+                    if "applied_vlan_trunks" in result[portitems]:
+                        for trunkItems in result[portitems]['applied_vlan_trunks']:
+                            assignedTrunk.append(trunkItems)
+                        result[portitems]['applied_vlan_trunks']=assignedTrunk
+                    portinfo.append(result[portitems])
+                portinfo=json.dumps(portinfo, separators=(',',':'))               
             elif items=="system/interfaces?attributes=admin_state%2Cduplex%2Chw_intf_info%2Clink_speed%2Clink_state%2Clink_state_hw%2Clldp_statistics%2Cmtu%2Cname%2Cstatistics&depth=2":
                 interfaces=json.dumps(result, separators=(',',':'))
             elif items=="system/subsystems?attributes=resource_utilization&depth=2":
@@ -209,22 +229,20 @@ def getcxInfo(deviceid):
                 memCounter=0
                 cpuVal=0
                 memVal=0
-                # For next loop through the list. There is usually more than one entry
-                for resourceList in result:
-                    # For next loop per resource_utilization dictionary. 
-                    for key in resourceList:
-                        # For next loop through the items per resource_utilization dictionary
-                        for value in resourceList[key]:
-                            if value=="cpu":
-                                if resourceList[key][value]:
-                                    # If the CPU key has a value we have to increase the counter and sum the cpu values
-                                    cpuVal=cpuVal+resourceList[key][value]
-                                    cpuCounter=cpuCounter+1
-                            elif value=="memory":
-                                if resourceList[key][value]:
-                                    # If the CPU key has a value we have to increase the counter and sum the cpu values
-                                    memVal=memVal+resourceList[key][value]
-                                    memCounter=memCounter+1
+                try:
+                    # For next loop through the list. There is usually more than one entry
+                    for boardInfo in result:
+                        # For next loop per resource_utilization dictionary. 
+                        for key in result[boardInfo]['resource_utilization']:
+                            # For next loop through the items per resource_utilization dictionary
+                            if key=="cpu":
+                                cpuVal=cpuVal+result[boardInfo]['resource_utilization'][key]
+                                cpuCounter=cpuCounter+1
+                            elif key=="memory":
+                                memVal=memVal+result[boardInfo]['resource_utilization'][key]
+                                memCounter=memCounter+1
+                except Exception as e:
+                    pass
                 # Now that all CPU utilizations and memories are summed up, average out
                 if cpuVal>0:
                     cpuValappend=str(int(cpuVal/cpuCounter))
@@ -250,16 +268,33 @@ def getcxInfo(deviceid):
                 #Store the last 30 values in the database, this value contains timestamp as key value and CPU or memory as value
                 cpuVallist=json.dumps(cpuVallist[-30:])
                 memVallist=json.dumps(memVallist[-30:])
-        # Now obtain sysinfo
+        # Obtain system information
         if deviceFamily=="6100":
-            url="system?attributes=boot_time%2Ccapabilities%2Ccapacities%2Ccapacities_status%2Chostname%2Cplatform_name%2Csoftware_images%2Csoftware_info%2Csoftware_version%2Csubsystems&depth=2"
+            url="system?attributes=boot_time%2Ccapabilities%2Ccapacities%2Ccapacities_status%2Chostname%2Cplatform_name%2Csoftware_images%2Cmgmt_intf%2Csoftware_info%2Csoftware_version&depth=2"
+            systemResult=getcxREST(deviceid,url)
+            url="system/subsystems?attributes=product_info%2Csoftware_images&depth=2"
+            subsystemResult=getcxREST(deviceid,url)
+            subsystem=subsystemInfo(subsystemResult)
+            systemResult['subsystem']=subsystem
         else:
-            url="system?attributes=capabilities%2Ccapacities%2Ccapacities_status%2Cboot_time%2Chostname%2Cmgmt_intf%2Cmgmt_intf_status%2Cplatform_name%2Csoftware_images%2Csoftware_info%2Csoftware_version%2Csubsystems&depth=2"
+            url="system?attributes=capabilities%2Ccapacities%2Ccapacities_status%2Cboot_time%2Chostname%2Cmgmt_intf%2Cmgmt_intf_status%2Cplatform_name%2Csoftware_images%2Csoftware_info%2Csoftware_version&depth=2"               
+            systemResult=getcxREST(deviceid,url)
+            url="system/subsystems?attributes=product_info%2Csoftware_images&depth=2"
+            subsystemResult=getcxREST(deviceid,url)
+            if "chassis,1" in subsystemResult:
+                try:
+                    url="system/subsystems/chassis,1/power_supplies?depth=2"
+                    psuInfo=getcxREST(deviceid,url)
+                    systemResult['power_supply']=psuInfo
+                except:
+                    systemResult['power_supply']={}
+            else:
+                systemResult['power_supply']={}
+            systemResult['subsystem']=subsystemResult   
         try:
-            result=getcxREST(deviceid,url)
-            sysinfo=json.dumps(result)
+            sysinfo=json.dumps(systemResult)
         except:
-            pass           
+            sysinfo="{}"
         # Only update the database when we have system information, port and VRF information, otherwise don't update
         # When the switch has a clean configuration there is no interface and vsx information
         isOnline=classes.classes.checkifOnline(deviceid,"arubaos-cx")
@@ -272,32 +307,49 @@ def getcxInfo(deviceid):
                     pass
         else:
             if len(sysinfo)>2 and len(portinfo)>2 and len(vrfinfo)>2:
-                queryStr="update devices set cpu='{}', memory='{}', sysInfo='{}', ports='{}', interfaces='{}', vsx='{}',vsxlags='{}', vrf='{}', routeinfo='{}', vsf='{}' where id='{}'".format(cpuVallist, memVallist, sysinfo, portinfo, interfaces, vsxinfo, vsxlags, vrfinfo,routeinfo,vsfinfo,str(deviceid))
+                queryStr="update devices set cpu='{}', memory='{}', sysInfo='{}', ports='{}', interfaces='{}', vsx='{}',vsxlags='{}', vrf='{}' where id={}".format(cpuVallist, memVallist, sysinfo, portinfo, interfaces, vsxinfo, vsxlags, vrfinfo, deviceid)
                 try:
                     classes.classes.sqlQuery(queryStr,"update")
                 except:
+                    print("Error updating the database")
                     pass
         # If this switch is running VSF, we also need to obtain the VSF information, only update if there is VSF information
         try:
-            url="system?attributes=vsf_config%2Cvsf_status&depth=3"
-            vsfstatus=getcxREST(deviceid,url)
-            try:
-                # If the response contains information, the content is converted to json format
-                vsfstatus=json.loads(vsfstatus.content.decode('utf-8'))
-            except:
-                vsfstatus=""
-            url="system/vsf_members?depth=2"
-            vsfmember=getcxREST(deviceid,url)
-            try:
-                # If the response contains information, the content is converted to json format
-                vsfmember=json.loads(vsfmember.content.decode('utf-8'))
-            except:
-                vsfmember=""
-            if isinstance(vsfstatus,list) and isinstance(vsfmember,dict):
-                # Let's update the database because there is extensive VSF information
-                vsfinfo="["+ vsfstatus + "," + vsfmember+ "]"
-                queryStr="update devices set vsf='{}' where id='{}'".format(vsfinfo,str(deviceid))
-                classes.sqlQuery(queryStr,"update")
+            if deviceFamily=="6200" or deviceFamily=="6300":
+                vsfinfo=[]
+                url="system?attributes=vsf_config%2Cvsf_status&depth=3"
+                vsfstatus=getcxREST(deviceid,url)
+                vsfinfo.append(vsfstatus)
+                url="system/vsf_members?depth=2"
+                vsfmember=getcxREST(deviceid,url)
+                # Obtain the product info and interface count
+                for vsfitems in vsfmember:
+                    for sitems in vsfmember[vsfitems]['subsystems']:
+                        # Product info
+                        if "management_module" in sitems:
+                            url="system/subsystems/{}?attributes=product_info".format(sitems.replace("/","%2f"))
+                            productInfo=getcxREST(deviceid,url)
+                            vsfmember[vsfitems].update(productInfo)
+                        # Interface count
+                        if "line_card" in sitems:
+                            url="system/subsystems/{}?attributes=interfaces".format(sitems.replace("/","%2f"))
+                            interfaceCount=getcxREST(deviceid,url)
+                            vsfmember[vsfitems]['interface_count']=len(interfaceCount['interfaces'])
+                        # VSF link information
+                        url="system/vsf_members/{}/links?depth=2".format(vsfitems)
+                        linkInfo=getcxREST(deviceid,url)
+                        vsfmember[vsfitems]['vsflinks']={}
+                        vsfmember[vsfitems]['vsflinks'].update(linkInfo)
+                vsfinfo.append(vsfmember)
+                vsfinfo=json.dumps(vsfinfo) 
+                if isinstance(vsfstatus,dict) and isinstance(vsfmember,dict):
+                    # Let's update the database because there is extensive VSF information
+                    # vsfinfo="["+ json.dumps(vsfstatus) + "," + json.dumps(vsfmember)+ "]"
+                    try:
+                        queryStr="update devices set vsf='{}' where id={}".format(vsfinfo,deviceid)
+                        classes.classes.sqlQuery(queryStr,"update")
+                    except Exception as e:
+                        print(e)
         except:
             pass
     except:
